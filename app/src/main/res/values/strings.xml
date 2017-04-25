@@ -8,7 +8,62 @@
     <string name="title_settings">Settings</string>
     <string name="title_sync">Sync</string>
     <string name="title_activity_note_list">Notes</string>
+    <string name="facebook_app_id">1084180085015342</string>
+    <string name="banner_ad_unit_id">xxxxxxxx</string>
+    <string name="no_todo_list_found">No Todo List Item found, use + button to start</string>
+
+    <string name="no_notes_found">No Journal entry found, use the + button to start</string>
+    <string name="unknown_response">Unexpected onActivityResult response code</string>
+    <string name="unknown_sign_in_response">Unknown response from AuthUI sign-in</string>
+    <string name="sign_in_cancelled">Sign in cancelled</string>
+    <string name="no_internet_connection">No internet connection</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="label_settings">Settings</string>
+    <string name="label_sync">Sync</string>
+    <string name="label_todo_list">Todo List</string>
+
+    <string name="prompt_username">Email Address</string>
+    <string name="prompt_password">Password</string>
+    <string name="prompt_password_conformation">Confirm Password</string>
+    <string name="action_sign_in">Log In</string>
+    <string name="action_log_in_short">Sign in</string>
+    <string name="action_register">Register</string>
+    <string name="action_register_short">Register</string>
+    <string name="error_invalid_email">Username required</string>
+    <string name="error_invalid_password">Password required</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email completions."</string>
+    <string name="activity_sign_in_label">Sign In</string>
+    <string name="activity_register_label">Enable Cloud Sync</string>
+
+    <string name="menu_item_register">Register</string>
+    <string name="title_deleted">Deleted</string>
+    <string name="release_to_create_item">Release to Create Item</string>
+    <string name="pull_to_create_item">Pull to Create Item</string>
+    <string name="no_item">There is no item in this list to complete.</string>
+    <string name="server_client_id">299391824375-k3hdrdtq8g4rkh1i0pvomn397ehk92nl.apps.googleusercontent.com</string>
+    <string name="badge_placeholder">3</string>
+    <string name="switch_to_lists">Switch to Lists</string>
+    <string name="row_text_placeholder">Text</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="label_journals">Journals</string>
+    <string name="label_tag">Tags</string>
+    <string name="sync_reason_1">Backup your Journals to Pronto Diary cloud effortlessly. We value your privacy.</string>
+    <string name="sync_reason_2">Access your Journal from any Android device you own, we are adding support for other devices as well.</string>
+    <string name="sync_reason_3">Industry standard Encryption of your data at rest and SSL/TLS in flight</string>
+    <string name="sync_reason_4">Peace of mind, if something happens to your device, be rest assured that your data will be waiting for you on your next device.</string>
+    <string name="sync_reason_5">Your app will continue to work 100% offline. Only syncs when you have internet access.</string>
+    <string name="label_cancel">Cancel</string>
+    <string name="label_enable_sync">Enable Sync</string>
+    <string name="title_cloud_sync">Cloud Data Sync</string>
+    <string name="sync_reason">Enable data sync with Pronto Diary cloud. This backs up your Journals effortlessly. Your data remains completely private and only accessible by your from any Android device. We will be adding support for IOS devices and the web later.</string>
+    <string name="sync_benefits">Sync Benfites</string>
+    <string name="title_activity_auth_ui">Register or Sign In</string>
+    <string name="anonymous_account_failed_error">Anonymous Login Failed, check internet</string>
+
+
 </resources>
