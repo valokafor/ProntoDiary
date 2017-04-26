@@ -9,6 +9,10 @@ public class Constants {
 
     public static final String REALM_DATABASE = "pronto_notepad.realm";
     public static final String ANONYMOUS_ACCOUNT_USER_ID = "anonymous_account_id";
+    public static final String AUTH_METHOD_GOOGLE = "Google";
+    public static final String AUTH_METHOD_EMAIL = "Email";
+    public static final String AUTH_METHOD_FACEBOOK = "Facebook";
+    public static final String FIRST_LOGIN = "first_login";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

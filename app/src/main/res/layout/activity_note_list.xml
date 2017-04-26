@@ -107,7 +107,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="@string/label_tag"/>
+                    android:text="@string/label_folder"/>
 
             </LinearLayout>
 
@@ -133,6 +133,30 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:text="@string/label_sync"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linear_layout_login"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <ImageButton
+                    android:id="@+id/image_button_login"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@null"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_action_lock_open_holo_light"/>
+
+                <TextView
+                    android:id="@+id/login_text_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/action_sign_in"/>
             </LinearLayout>
 
             <LinearLayout

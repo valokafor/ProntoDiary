@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -18,12 +17,8 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.core.events.ShowFragmentEvent;
+import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
 import com.okason.diary.ui.settings.SyncFragment;
@@ -36,15 +31,12 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.SyncUser;
 
 public class NoteListActivity extends AppCompatActivity {
     private SharedPreferences preferences;
     private boolean unregisteredUser = false;
     private Activity mActivity;
-
-    private FirebaseAuth mAuth;
-    private FirebaseUser mFirebaseUser;
-
 
 
     public static final String ACTION_IGNORE_CURRENT_USER = "action.ignoreCurrentUser";
@@ -70,6 +62,9 @@ public class NoteListActivity extends AppCompatActivity {
     @BindView(R.id.image_button_settings)
     ImageButton settingsButton;
 
+    @BindView(R.id.image_button_login)
+    ImageButton loginButton;
+
     @BindView(R.id.notes_text_view)
     TextView noteTextView;
 
@@ -85,12 +80,18 @@ public class NoteListActivity extends AppCompatActivity {
     @BindView(R.id.settings_text_view)
     TextView settingsTextView;
 
+    @BindView(R.id.login_text_view)
+    TextView loginTextView;
+
 
     @BindView(R.id.linear_layout_settings)
     LinearLayout settingsLayout;
 
     @BindView(R.id.linear_layout_sync)
     LinearLayout syncLayout;
+
+    @BindView(R.id.linear_layout_login)
+    LinearLayout loginLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,48 +102,28 @@ public class NoteListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mActivity = this;
 
-        mAuth = FirebaseAuth.getInstance();
+
+        //Check to see if the user has registered before
+        //if yes, check to see if the user is not logged in, show login
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        unregisteredUser = preferences.getBoolean(Constants.ANONYMOUS_USER, true);
-        if (unregisteredUser){
-            loginAnonymously();
-            settingsLayout.setVisibility(View.GONE);
-            syncLayout.setVisibility(View.VISIBLE);
-        }else {
-            loginRegisteredUser();
-            settingsLayout.setVisibility(View.GONE);
-            syncLayout.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void loginAnonymously() {
-        if (mAuth == null){
-            mAuth = FirebaseAuth.getInstance();
-        }
-
-        mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()){
-                    FirebaseUser user = mAuth.getCurrentUser();
-                    if (user != null){
-                        preferences.edit().putString(Constants.ANONYMOUS_ACCOUNT_USER_ID, user.getUid()).commit();
-                    }
-                    updateUI();
-                }else {
-                    makeToast(getString(R.string.anonymous_account_failed_error));
-                }
+        boolean registeredUser = preferences.getBoolean(Constants.FIRST_LOGIN, false);
+        if (registeredUser) {
+            syncLayout.setVisibility(View.GONE);
+            final SyncUser user = SyncUser.currentUser();
+            if (user == null) {
+                loginLayout.setVisibility(View.VISIBLE);
+            }else {
+                loginLayout.setVisibility(View.GONE);
             }
-        });
-    }
-
-    private void loginRegisteredUser() {
-        mFirebaseUser = mAuth.getCurrentUser();
-        if (mFirebaseUser == null){
-            //Go to sign in Activity
+        } else {
+            syncLayout.setVisibility(View.VISIBLE);
+            loginLayout.setVisibility(View.GONE);
         }
 
+        updateUI();
     }
+
+
 
     @Override
     public void onStart() {
@@ -194,6 +175,17 @@ public class NoteListActivity extends AppCompatActivity {
             }
         });
 
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                resetBottomNavigationIcons();
+                loginButton.setImageResource(R.drawable.ic_action_lock_open_light_red);
+                loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
+                startActivity(new Intent(mActivity, SignInActivity.class));
+
+            }
+        });
+
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -239,6 +231,9 @@ public class NoteListActivity extends AppCompatActivity {
 
         syncButton.setImageResource(R.drawable.ic_action_reload_holo_light);
         syncTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
+
+        loginButton.setImageResource(R.drawable.ic_action_lock_open_holo_light);
+        loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
 
         settingsButton.setImageResource(R.drawable.ic_action_settings_holo_light);
         settingsTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));

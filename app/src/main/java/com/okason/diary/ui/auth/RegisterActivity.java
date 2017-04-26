@@ -19,7 +19,9 @@ import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.SignInButton;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.R;
+import com.okason.diary.utils.Constants;
 
 import io.realm.ObjectServerError;
 import io.realm.SyncCredentials;
@@ -39,10 +41,15 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
     private FacebookAuth facebookAuth;
     private GoogleAuth googleAuth;
 
+    private FirebaseAnalytics mFirebaseAnalytics;
+    private String signMethod = Constants.AUTH_METHOD_EMAIL;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+
         usernameView = (AutoCompleteTextView) findViewById(R.id.username);
         passwordView = (EditText) findViewById(R.id.password);
         passwordConfirmationView = (EditText) findViewById(R.id.password_confirmation);
@@ -74,6 +81,7 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             @Override
             public void onRegistrationComplete(final LoginResult loginResult) {
                 UserManager.setAuthMode(UserManager.AUTH_MODE.FACEBOOK);
+                signMethod = Constants.AUTH_METHOD_FACEBOOK;
                 SyncCredentials credentials = SyncCredentials.facebook(loginResult.getAccessToken().getToken());
                 SyncUser.loginAsync(credentials, AUTH_URL, RegisterActivity.this);
             }
@@ -84,6 +92,7 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             @Override
             public void onRegistrationComplete(GoogleSignInResult result) {
                 UserManager.setAuthMode(UserManager.AUTH_MODE.GOOGLE);
+                signMethod = Constants.AUTH_METHOD_GOOGLE;
                 GoogleSignInAccount acct = result.getSignInAccount();
                 SyncCredentials credentials = SyncCredentials.google(acct.getIdToken());
                 SyncUser.loginAsync(credentials, AUTH_URL, RegisterActivity.this);
@@ -116,6 +125,12 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             cancel = true;
         }
 
+        if (!Constants.isValidEmail(username)){
+            usernameView.setError(getString(R.string.error_invalid_email));
+            focusView = usernameView;
+            cancel = true;
+        }
+
         if (isEmpty(password)) {
             passwordView.setError(getString(R.string.error_field_required));
             focusView = passwordView;
@@ -137,6 +152,7 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             focusView.requestFocus();
         } else {
             showProgress(true);
+
             SyncUser.loginAsync(SyncCredentials.usernamePassword(username, password, true), AUTH_URL, new SyncUser.Callback() {
                 @Override
                 public void onSuccess(SyncUser user) {
@@ -159,6 +175,11 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
     }
 
     private void registrationComplete(SyncUser user) {
+
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.SIGN_UP_METHOD, signMethod);
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
+
         UserManager.setActiveUser(user);
         Intent intent = new Intent(this, SignInActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
