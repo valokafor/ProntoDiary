@@ -3,7 +3,9 @@ package com.okason.diary.ui.auth;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -20,9 +22,11 @@ import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.SignInButton;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.utils.Constants;
 
 import io.realm.ObjectServerError;
 import io.realm.SyncCredentials;
@@ -40,10 +44,14 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
     private FacebookAuth facebookAuth;
     private GoogleAuth googleAuth;
 
+    private FirebaseAnalytics mFirebaseAnalytics;
+    private String signMethod = Constants.AUTH_METHOD_EMAIL;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         //noinspection ConstantConditions
         getSupportActionBar().setTitle(R.string.action_sign_in);
@@ -87,6 +95,7 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
             @Override
             public void onRegistrationComplete(final LoginResult loginResult) {
                 UserManager.setAuthMode(UserManager.AUTH_MODE.FACEBOOK);
+                signMethod = Constants.AUTH_METHOD_FACEBOOK;
                 SyncCredentials credentials = SyncCredentials.facebook(loginResult.getAccessToken().getToken());
                 SyncUser.loginAsync(credentials, AUTH_URL, SignInActivity.this);
             }
@@ -97,6 +106,7 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
             @Override
             public void onRegistrationComplete(GoogleSignInResult result) {
                 UserManager.setAuthMode(UserManager.AUTH_MODE.GOOGLE);
+                signMethod = Constants.AUTH_METHOD_GOOGLE;
                 GoogleSignInAccount acct = result.getSignInAccount();
                 SyncCredentials credentials = SyncCredentials.google(acct.getIdToken());
                 SyncUser.loginAsync(credentials, AUTH_URL, SignInActivity.this);
@@ -119,6 +129,13 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
     private void loginComplete(SyncUser user) {
         UserManager.setActiveUser(user);
         createInitialDataIfNeeded();
+
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.SIGN_UP_METHOD, signMethod);
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        preferences.edit().putBoolean(Constants.UNREGISTERED_USER, false).commit();
         startActivity(new Intent(SignInActivity.this, NoteListActivity.class));
         finish();
     }

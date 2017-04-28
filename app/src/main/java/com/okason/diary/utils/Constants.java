@@ -13,6 +13,7 @@ public class Constants {
     public static final String AUTH_METHOD_EMAIL = "Email";
     public static final String AUTH_METHOD_FACEBOOK = "Facebook";
     public static final String FIRST_LOGIN = "first_login";
+    public static final String UNREGISTERED_USER = "unregistered_user";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

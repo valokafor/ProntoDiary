@@ -12,12 +12,16 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.okason.diary.core.events.ShowFragmentEvent;
+import com.okason.diary.data.RealmManager;
+import com.okason.diary.data.SampleData;
+import com.okason.diary.models.Note;
 import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
@@ -29,8 +33,12 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Realm;
+import io.realm.RealmResults;
 import io.realm.SyncUser;
 
 public class NoteListActivity extends AppCompatActivity {
@@ -40,6 +48,7 @@ public class NoteListActivity extends AppCompatActivity {
 
 
     public static final String ACTION_IGNORE_CURRENT_USER = "action.ignoreCurrentUser";
+    public static final String TAG = "NoteListActivity";
 
     private String currentFragmentTag = "";
     private String currentFragmentTitle = "";
@@ -93,6 +102,8 @@ public class NoteListActivity extends AppCompatActivity {
     @BindView(R.id.linear_layout_login)
     LinearLayout loginLayout;
 
+    private Realm realm;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,13 +112,17 @@ public class NoteListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mActivity = this;
+        realm = Realm.getDefaultInstance();
 
 
         //Check to see if the user has registered before
         //if yes, check to see if the user is not logged in, show login
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        boolean registeredUser = preferences.getBoolean(Constants.FIRST_LOGIN, false);
-        if (registeredUser) {
+        boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
+        if (unregisteredUser) {
+            syncLayout.setVisibility(View.VISIBLE);
+            loginLayout.setVisibility(View.GONE);
+        }else {
             syncLayout.setVisibility(View.GONE);
             final SyncUser user = SyncUser.currentUser();
             if (user == null) {
@@ -115,12 +130,10 @@ public class NoteListActivity extends AppCompatActivity {
             }else {
                 loginLayout.setVisibility(View.GONE);
             }
-        } else {
-            syncLayout.setVisibility(View.VISIBLE);
-            loginLayout.setVisibility(View.GONE);
-        }
 
+        }
         updateUI();
+        //addSampleData();
     }
 
 
@@ -128,6 +141,13 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+        RealmResults<Note> notes = realm.where(Note.class).findAll();
+        if (notes != null && notes.size() > 0){
+            Log.d(TAG, "Count of Notes: " + notes.size());
+            for (Note note: notes){
+                Log.d(TAG, note.getTitle());
+            }
+        }
         EventBus.getDefault().register(this);
     }
 
@@ -137,6 +157,12 @@ public class NoteListActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
+
+    @Override
+    protected void onDestroy() {
+        realm.close();
+        super.onDestroy();
+    }
 
     private void updateUI() {
         noteButton.setImageResource(R.drawable.ic_action_book_red_light);
@@ -256,6 +282,33 @@ public class NoteListActivity extends AppCompatActivity {
                 .addToBackStack(screenTitle)
                 .commit();
         getSupportActionBar().setTitle(screenTitle);
+    }
+
+
+    private void addSampleData(){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Realm realm = Realm.getDefaultInstance();
+                try {
+                    List<Note> notes = SampleData.getSampleNotes();
+                    for (Note note: notes){
+                        realm.beginTransaction();
+                        long id = RealmManager.getNextNoteId(realm);
+                        Note savedNote = realm.createObject(Note.class, id);
+                        savedNote.setTitle(note.getTitle());
+                        savedNote.setContent(note.getContent());
+                        savedNote.setDateModified(note.getDateCreated());
+                        realm.commitTransaction();
+                    }
+
+                }finally {
+                    realm.close();
+                }
+
+            }
+        });
+        thread.start();
     }
 
 

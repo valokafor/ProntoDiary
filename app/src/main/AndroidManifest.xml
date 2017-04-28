@@ -22,8 +22,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.auth.SignInActivity"
-            android:label="@string/label_sign_in"/>
+        <activity
+            android:name=".ui.auth.SignInActivity"
+            android:label="@string/label_sign_in" />
         <activity
             android:name=".ui.auth.RegisterActivity"
             android:label="@string/activity_register_label" />
@@ -36,8 +37,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.okason.diary.NoteListActivity" />
         </activity>
+
         <service
             android:name=".core.services.MergeAnonymousDataIntentService"
+            android:exported="false" />
+        <service
+            android:name=".core.services.AddSampleDataIntentService"
             android:exported="false"></service>
     </application>
 
