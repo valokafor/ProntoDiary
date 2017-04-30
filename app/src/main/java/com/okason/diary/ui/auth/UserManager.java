@@ -18,12 +18,23 @@ package com.okason.diary.ui.auth;
 
 import com.facebook.login.LoginManager;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.utils.Constants;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import io.realm.SyncConfiguration;
 import io.realm.SyncUser;
 
 public class UserManager {
+    public static RealmConfiguration getLocalConfig() {
+        RealmConfiguration configuration  = new RealmConfiguration.Builder()
+                .name(Constants.REALM_DATABASE)
+                .schemaVersion(5)
+                .deleteRealmIfMigrationNeeded()
+                .build();
+        return configuration;
+    }
+
     // Supported authentication mode
     public enum AUTH_MODE {
         PASSWORD,
@@ -56,7 +67,14 @@ public class UserManager {
 
     // Configure Realm for the current active user
     public static void setActiveUser(SyncUser user) {
-        SyncConfiguration defaultConfig = new SyncConfiguration.Builder(user, ProntoDiaryApplication.REALM_URL).build();
-        Realm.setDefaultConfiguration(defaultConfig);
+        Realm.setDefaultConfiguration(getSyncConfig(user));
+    }
+
+    public static RealmConfiguration getSyncConfig(SyncUser user) {
+        String identityToken = user.getAccessToken().identity();
+        SyncConfiguration defaultConfig = new SyncConfiguration.Builder(user, ProntoDiaryApplication.REALM_URL)
+                .name(identityToken + ".realm")
+                .build();
+        return defaultConfig;
     }
 }

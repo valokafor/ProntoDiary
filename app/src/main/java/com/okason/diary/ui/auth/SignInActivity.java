@@ -26,6 +26,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.services.CopyLocalDataToServerIntentService;
 import com.okason.diary.utils.Constants;
 
 import io.realm.ObjectServerError;
@@ -128,14 +129,18 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
 
     private void loginComplete(SyncUser user) {
         UserManager.setActiveUser(user);
-        createInitialDataIfNeeded();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
+        if (unregisteredUser){
+            preferences.edit().putBoolean(Constants.UNREGISTERED_USER, false).commit();
+            startService(new Intent(this, CopyLocalDataToServerIntentService.class));
+        }
+
 
         Bundle bundle = new Bundle();
         bundle.putString(FirebaseAnalytics.Param.SIGN_UP_METHOD, signMethod);
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        preferences.edit().putBoolean(Constants.UNREGISTERED_USER, false).commit();
         startActivity(new Intent(SignInActivity.this, NoteListActivity.class));
         finish();
     }

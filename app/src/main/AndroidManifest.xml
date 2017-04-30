@@ -39,7 +39,7 @@
         </activity>
 
         <service
-            android:name=".core.services.MergeAnonymousDataIntentService"
+            android:name=".core.services.CopyLocalDataToServerIntentService"
             android:exported="false" />
         <service
             android:name=".core.services.AddSampleDataIntentService"

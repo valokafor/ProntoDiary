@@ -19,10 +19,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.okason.diary.core.events.ShowFragmentEvent;
-import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.SampleData;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.auth.SignInActivity;
+import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
 import com.okason.diary.ui.settings.SyncFragment;
@@ -34,6 +34,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -112,7 +113,7 @@ public class NoteListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mActivity = this;
-        realm = Realm.getDefaultInstance();
+
 
 
         //Check to see if the user has registered before
@@ -120,20 +121,25 @@ public class NoteListActivity extends AppCompatActivity {
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
         if (unregisteredUser) {
+            Realm.setDefaultConfiguration(UserManager.getLocalConfig());
+            realm = Realm.getDefaultInstance();
+            addSampleData();
             syncLayout.setVisibility(View.VISIBLE);
             loginLayout.setVisibility(View.GONE);
+            updateUI();
         }else {
             syncLayout.setVisibility(View.GONE);
             final SyncUser user = SyncUser.currentUser();
+            UserManager.setActiveUser(user);
             if (user == null) {
-                loginLayout.setVisibility(View.VISIBLE);
+                startActivity(new Intent(mActivity, SignInActivity.class));
             }else {
-                loginLayout.setVisibility(View.GONE);
+                updateUI();
             }
 
         }
-        updateUI();
-        //addSampleData();
+
+
     }
 
 
@@ -141,13 +147,6 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        RealmResults<Note> notes = realm.where(Note.class).findAll();
-        if (notes != null && notes.size() > 0){
-            Log.d(TAG, "Count of Notes: " + notes.size());
-            for (Note note: notes){
-                Log.d(TAG, note.getTitle());
-            }
-        }
         EventBus.getDefault().register(this);
     }
 
@@ -157,10 +156,26 @@ public class NoteListActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (realm == null){
+            realm = Realm.getDefaultInstance();
+        }
+        RealmResults<Note> notes = realm.where(Note.class).findAll();
+        if (notes != null && notes.size() > 0){
+            Log.d(TAG, "Count of Notes: " + notes.size());
+            for (Note note: notes){
+                Log.d(TAG, note.getTitle());
+            }
+        }
+    }
 
     @Override
     protected void onDestroy() {
-        realm.close();
+        if (realm != null) {
+            realm.close();
+        }
         super.onDestroy();
     }
 
@@ -286,29 +301,16 @@ public class NoteListActivity extends AppCompatActivity {
 
 
     private void addSampleData(){
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Realm realm = Realm.getDefaultInstance();
-                try {
-                    List<Note> notes = SampleData.getSampleNotes();
-                    for (Note note: notes){
-                        realm.beginTransaction();
-                        long id = RealmManager.getNextNoteId(realm);
-                        Note savedNote = realm.createObject(Note.class, id);
-                        savedNote.setTitle(note.getTitle());
-                        savedNote.setContent(note.getContent());
-                        savedNote.setDateModified(note.getDateCreated());
-                        realm.commitTransaction();
-                    }
-
-                }finally {
-                    realm.close();
-                }
-
-            }
-        });
-        thread.start();
+        List<Note> notes = SampleData.getSampleNotes();
+        for (Note note: notes){
+            realm.beginTransaction();
+            String id = UUID.randomUUID().toString();
+            Note savedNote = realm.createObject(Note.class, id);
+            savedNote.setTitle(note.getTitle());
+            savedNote.setContent(note.getContent());
+            savedNote.setDateModified(note.getDateCreated());
+            realm.commitTransaction();
+        }
     }
 
 

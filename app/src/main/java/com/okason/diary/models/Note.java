@@ -11,7 +11,7 @@ import io.realm.annotations.PrimaryKey;
 
 public class Note extends RealmObject{
     @PrimaryKey
-    private long id;
+    private String id;
     @Index
     private String title;
     private String content;
@@ -27,11 +27,25 @@ public class Note extends RealmObject{
     private Category category;
     private RealmList<Friend> friends;
 
-    public long getId() {
+    public void update(Note copy){
+        title = copy.getTitle();
+        content = copy.getContent();
+        gratitude = copy.getGratitude();
+        dateCreated = dateCreated;
+        dateModified = dateModified;
+
+        attachments = copy.getAttachments();
+        todoItems = copy.getTodoItems();
+        tags = copy.getTags();
+        category = copy.getCategory();
+        friends = copy.getFriends();
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

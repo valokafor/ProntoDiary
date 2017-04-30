@@ -29,6 +29,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.services.CopyLocalDataToServerIntentService;
 import com.okason.diary.utils.Constants;
 
 import butterknife.BindView;
@@ -209,15 +210,22 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
     }
 
     private void registrationComplete(SyncUser user) {
+        //Set the newly registered user as Active thereby creating new Synchronised Realm
+        UserManager.setActiveUser(user);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
+        if (unregisteredUser){
+            preferences.edit().putBoolean(Constants.UNREGISTERED_USER, false).commit();
+            startService(new Intent(this, CopyLocalDataToServerIntentService.class));
+        }
 
         Bundle bundle = new Bundle();
         bundle.putString(FirebaseAnalytics.Param.SIGN_UP_METHOD, signMethod);
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        preferences.edit().putBoolean(Constants.UNREGISTERED_USER, false).commit();
 
-        UserManager.setActiveUser(user);
+
         Intent intent = new Intent(this, SignInActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
