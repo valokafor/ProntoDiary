@@ -23,11 +23,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.auth.SignInActivity"
-            android:label="@string/label_sign_in" />
-        <activity
-            android:name=".ui.auth.RegisterActivity"
-            android:label="@string/activity_register_label" />
+            android:name=".ui.auth.AuthUiActivity"
+            android:label="@string/title_activity_auth_ui"
+            android:parentActivityName=".NoteListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.okason.diary.NoteListActivity" />
+        </activity>
         <activity
             android:name=".ui.settings.SettingsActivity"
             android:label="@string/title_settings"
@@ -38,12 +41,16 @@
                 android:value="com.okason.diary.NoteListActivity" />
         </activity>
 
-        <service
-            android:name=".core.services.CopyLocalDataToServerIntentService"
-            android:exported="false" />
+
         <service
             android:name=".core.services.AddSampleDataIntentService"
-            android:exported="false"></service>
+            android:exported="false" />
+
+        <service
+            android:name=".core.services.C"
+            android:exported="false" />
+
+        <activity android:name=".ui.auth.SignedInActivity"></activity>
     </application>
 
 </manifest>

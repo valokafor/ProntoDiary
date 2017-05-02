@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -18,11 +19,15 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.data.SampleData;
 import com.okason.diary.models.Note;
-import com.okason.diary.ui.auth.SignInActivity;
-import com.okason.diary.ui.auth.UserManager;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
 import com.okason.diary.ui.settings.SyncFragment;
@@ -40,12 +45,13 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.Realm;
 import io.realm.RealmResults;
-import io.realm.SyncUser;
 
 public class NoteListActivity extends AppCompatActivity {
     private SharedPreferences preferences;
     private boolean unregisteredUser = false;
     private Activity mActivity;
+    private FirebaseAuth mAuth;
+    private FirebaseUser mFirebaseUser;
 
 
     public static final String ACTION_IGNORE_CURRENT_USER = "action.ignoreCurrentUser";
@@ -118,27 +124,53 @@ public class NoteListActivity extends AppCompatActivity {
 
         //Check to see if the user has registered before
         //if yes, check to see if the user is not logged in, show login
+        mAuth = FirebaseAuth.getInstance();
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
-        if (unregisteredUser) {
-            Realm.setDefaultConfiguration(UserManager.getLocalConfig());
-            realm = Realm.getDefaultInstance();
-            //addSampleData();
+        unregisteredUser = preferences.getBoolean(Constants.ANONYMOUS_USER, true);
+        if (unregisteredUser){
+            loginAnonymously();
+            settingsLayout.setVisibility(View.GONE);
             syncLayout.setVisibility(View.VISIBLE);
-            loginLayout.setVisibility(View.GONE);
-            updateUI();
         }else {
+            loginRegisteredUser();
+            settingsLayout.setVisibility(View.VISIBLE);
             syncLayout.setVisibility(View.GONE);
-            final SyncUser user = SyncUser.currentUser();
-            UserManager.setActiveUser(user);
-            if (user == null) {
-                startActivity(new Intent(mActivity, SignInActivity.class));
-            }else {
-                updateUI();
-            }
-
         }
 
+
+    }
+
+
+    private void loginAnonymously() {
+        if (mAuth == null){
+            mAuth = FirebaseAuth.getInstance();
+        }
+
+        mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()){
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    if (user != null){
+                        preferences.edit().putString(Constants.ANONYMOUS_ACCOUNT_USER_ID, user.getUid()).commit();
+                        updateUI(user);
+                    }
+
+                }else {
+                    makeToast(getString(R.string.anonymous_account_failed_error));
+                }
+            }
+        });
+    }
+
+    private void loginRegisteredUser() {
+        mFirebaseUser = mAuth.getCurrentUser();
+        if (mFirebaseUser == null){
+            //Go to sign in Activity
+            startActivity(new Intent(mActivity, AuthUiActivity.class));
+        }else {
+            updateUI(mFirebaseUser);
+        }
 
     }
 
@@ -179,7 +211,10 @@ public class NoteListActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private void updateUI() {
+    private void updateUI(FirebaseUser user) {
+        if (user == null){
+            return;
+        }
         noteButton.setImageResource(R.drawable.ic_action_book_red_light);
         noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
         openFragment(new NoteListFragment(), getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
@@ -216,16 +251,6 @@ public class NoteListActivity extends AppCompatActivity {
             }
         });
 
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                resetBottomNavigationIcons();
-                loginButton.setImageResource(R.drawable.ic_action_lock_open_light_red);
-                loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
-                startActivity(new Intent(mActivity, SignInActivity.class));
-
-            }
-        });
 
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
