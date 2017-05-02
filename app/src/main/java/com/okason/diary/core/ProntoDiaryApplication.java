@@ -23,7 +23,7 @@ import io.realm.log.RealmLog;
 
 public class ProntoDiaryApplication extends Application {
     public static final String AUTH_URL = "http://" + BuildConfig.OBJECT_SERVER_IP + ":9080/auth";
-    public static final String REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/~/realmtasks";
+    public static final String REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/~/prontodiary";
 
 
 

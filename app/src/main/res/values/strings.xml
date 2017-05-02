@@ -16,7 +16,7 @@
 
     <string name="facebook_app_id" translatable="false">1084180085015342</string>
     <string name="banner_ad_unit_id" translatable="false">xxxxxxxx</string>
-    <string name="server_client_id" translatable="false">299391824375-k3hdrdtq8g4rkh1i0pvomn397ehk92nl.apps.googleusercontent.com</string>
+    <string name="server_client_id" translatable="false">498554407152-49454rjtf4o83jkhejfk5kgvc90kru2b.apps.googleusercontent.com</string>
 
     <!--Errors and Warning-->
     <string name="no_todo_list_found">No Todo List Item found, use + button to start</string>

@@ -123,7 +123,7 @@ public class NoteListActivity extends AppCompatActivity {
         if (unregisteredUser) {
             Realm.setDefaultConfiguration(UserManager.getLocalConfig());
             realm = Realm.getDefaultInstance();
-            addSampleData();
+            //addSampleData();
             syncLayout.setVisibility(View.VISIBLE);
             loginLayout.setVisibility(View.GONE);
             updateUI();
