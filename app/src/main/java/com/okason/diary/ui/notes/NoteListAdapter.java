@@ -14,7 +14,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
-import com.okason.diary.models.Note;
+import com.okason.diary.models.viewModel.NoteViewModel;
 import com.okason.diary.utils.date.TimeUtils;
 
 import java.util.List;
@@ -27,13 +27,13 @@ import butterknife.ButterKnife;
  * Created by Valentine on 2/6/2016.
  */
 public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHolder> {
-    private List<Note> mNotes;
+    private List<NoteViewModel> mNotes;
     private final Context mContext;
     private NoteItemListener mItemListener;
     private View noteView;
 
 
-    public NoteListAdapter(List<Note> notes, Context mContext){
+    public NoteListAdapter(List<NoteViewModel> notes, Context mContext){
         mNotes = notes;
         this.mContext = mContext;
     }
@@ -48,7 +48,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final Note note = mNotes.get(position);
+        final NoteViewModel note = mNotes.get(position);
         if (note != null && !TextUtils.isEmpty(note.getContent()) && !TextUtils.isEmpty(note.getTitle())) {
             String firstLetter;
             ColorGenerator generator;
@@ -59,62 +59,12 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             holder.contentSummary.setText(note.getContent().substring(0, Math.min(100, note.getContent().length())));
             holder.date.setText(TimeUtils.getReadableModifiedDate(note.getDateModified()));
 
-//            switch (note.getNoteType()){
-//                case Constants.NOTE_TYPE_AUDIO:
-//                    holder.attachmentLayout.setVisibility(View.VISIBLE);
-//                    Glide.with(mContext).load(R.drawable.play_button_96).into(holder.firstLetterIcon);
-//                    break;
-//                case Constants.NOTE_TYPE_REMINDER:
-//                    Glide.with(mContext).load(R.drawable.appointment_reminder).into(holder.firstLetterIcon);
-//                    break;
-//                case Constants.NOTE_TYPE_IMAGE:
-//                    firstLetter = note.getTitle().substring(0, 1);
-//                    generator = ColorGenerator.MATERIAL;
-//                    color = generator.getRandomColor();
-//                    drawable = TextDrawable.builder()
-//                            .buildRound(firstLetter, color);
-//                    holder.firstLetterIcon.setImageDrawable(drawable);
-//
-//                    holder.attachmentLayout.setVisibility(View.VISIBLE);
-//                    Glide.with(mContext)
-//                            .load(note.getLocalImagePath())
-//                            .placeholder(R.drawable.default_image)
-//                            .centerCrop()
-//                            .into(holder.noteAttachment);
-//                    break;
-//                case Constants.NOTE_TYPE_SKETCH:
-//                    firstLetter = note.getTitle().substring(0, 1);
-//                    generator = ColorGenerator.MATERIAL;
-//                    color = generator.getRandomColor();
-//                    drawable = TextDrawable.builder()
-//                            .buildRound(firstLetter, color);
-//                    holder.firstLetterIcon.setImageDrawable(drawable);
-//
-//                    holder.attachmentLayout.setVisibility(View.VISIBLE);
-//                    Glide.with(mContext)
-//                            .load(note.getLocalSketchImagePath())
-//                            .placeholder(R.drawable.default_image)
-//                            .centerCrop()
-//                            .into(holder.noteAttachment);
-//                    break;
-//                case Constants.NOTE_TYPE_TEXT:
-//                    firstLetter = note.getTitle().substring(0, 1);
-//                    generator = ColorGenerator.MATERIAL;
-//                    color = generator.getRandomColor();
-//                    drawable = TextDrawable.builder()
-//                            .buildRound(firstLetter, color);
-//                    holder.firstLetterIcon.setImageDrawable(drawable);
-//                    break;
-//                default:
-//                    firstLetter = note.getTitle().substring(0, 1);
-//                    generator = ColorGenerator.MATERIAL;
-//                    color = generator.getRandomColor();
-//                    drawable = TextDrawable.builder()
-//                            .buildRound(firstLetter, color);
-//                    holder.firstLetterIcon.setImageDrawable(drawable);
-//                    break;
-//
-//            }
+            firstLetter = note.getTitle().substring(0, 1);
+            generator = ColorGenerator.MATERIAL;
+            color = generator.getRandomColor();
+            drawable = TextDrawable.builder()
+                    .buildRound(firstLetter, color);
+            holder.firstLetterIcon.setImageDrawable(drawable);
         }
 
 
@@ -127,16 +77,16 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         return mNotes.size();
     }
 
-    public Note getItem(int position) {
+    public NoteViewModel getItem(int position) {
         return mNotes.get(position);
     }
 
-    public void replaceData(List<Note> notes) {
+    public void replaceData(List<NoteViewModel> notes) {
         setList(notes);
         notifyDataSetChanged();
     }
 
-    private void setList(List<Note> notes) {
+    private void setList(List<NoteViewModel> notes) {
         mNotes = notes;
     }
 
@@ -176,7 +126,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    Note note = getItem(position);
+                    NoteViewModel note = getItem(position);
                     mItemListener.onNoteClick(note);
                 }
             });
@@ -184,7 +134,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    Note note = getItem(position);
+                    NoteViewModel note = getItem(position);
                     mItemListener.onNoteClick(note);
                 }
             });
@@ -192,7 +142,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    Note note = getItem(position);
+                    NoteViewModel note = getItem(position);
                     mItemListener.onDeleteButtonClicked(note);
                 }
             });

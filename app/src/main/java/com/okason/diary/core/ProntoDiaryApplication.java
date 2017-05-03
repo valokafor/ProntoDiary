@@ -52,14 +52,14 @@ public class ProntoDiaryApplication extends Application {
         Realm.setDefaultConfiguration(configuration);
 
         //Get the instance of this Realm that you just instantiated
-        //And use it to get the Primary Key for the Note and Category Tables
+        //And use it to get the Primary Key for the NoteViewModel and Category Tables
         Realm realm = Realm.getInstance(configuration);
 
 
 
         try {
-            //Attempt to get the last id of the last entry in the Note class and use that as the
-            //Starting point of your primary key. If your Note table is not created yet, then this
+            //Attempt to get the last id of the last entry in the NoteViewModel class and use that as the
+            //Starting point of your primary key. If your NoteViewModel table is not created yet, then this
             //attempt will fail, and then in the catch clause you want to create a table
             notePrimaryKey = new AtomicLong(realm.where(Note.class).max("id").longValue() + 1);
         } catch (Exception e) {
@@ -67,7 +67,7 @@ public class ProntoDiaryApplication extends Application {
             //Should only be called the first time your app runs
             realm.beginTransaction();
 
-            //Create temp Note so as to create the table
+            //Create temp NoteViewModel so as to create the table
             Note note = realm.createObject(Note.class, 0);
 
             //Now set the primary key again

@@ -13,7 +13,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -25,8 +24,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.core.events.ShowFragmentEvent;
-import com.okason.diary.data.SampleData;
-import com.okason.diary.models.Note;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
@@ -38,13 +35,9 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.List;
-import java.util.UUID;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.Realm;
-import io.realm.RealmResults;
 
 public class NoteListActivity extends AppCompatActivity {
     private SharedPreferences preferences;
@@ -191,16 +184,7 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (realm == null){
-            realm = Realm.getDefaultInstance();
-        }
-        RealmResults<Note> notes = realm.where(Note.class).findAll();
-        if (notes != null && notes.size() > 0){
-            Log.d(TAG, "Count of Notes: " + notes.size());
-            for (Note note: notes){
-                Log.d(TAG, note.getTitle());
-            }
-        }
+
     }
 
     @Override
@@ -325,18 +309,7 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
 
-    private void addSampleData(){
-        List<Note> notes = SampleData.getSampleNotes();
-        for (Note note: notes){
-            realm.beginTransaction();
-            String id = UUID.randomUUID().toString();
-            Note savedNote = realm.createObject(Note.class, id);
-            savedNote.setTitle(note.getTitle());
-            savedNote.setContent(note.getContent());
-            savedNote.setDateModified(note.getDateCreated());
-            realm.commitTransaction();
-        }
-    }
+
 
 
 

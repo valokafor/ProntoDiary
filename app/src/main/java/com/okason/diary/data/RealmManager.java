@@ -13,8 +13,8 @@ public class RealmManager {
     public static long getNextNoteId(Realm realm) {
         long id = 0;
         try {
-            //Attempt to get the last id of the last entry in the Note class and use that as the
-            //Starting point of your primary key. If your Note table is not created yet, then this
+            //Attempt to get the last id of the last entry in the NoteViewModel class and use that as the
+            //Starting point of your primary key. If your NoteViewModel table is not created yet, then this
             //attempt will fail, and then in the catch clause you want to create a table
             id = realm.where(Note.class).max("id").longValue() + 1;
         } catch (Exception e) {

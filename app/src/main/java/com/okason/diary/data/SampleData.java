@@ -1,6 +1,6 @@
 package com.okason.diary.data;
 
-import com.okason.diary.models.Note;
+import com.okason.diary.models.viewModel.NoteViewModel;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,12 +30,12 @@ public class SampleData {
     }
 
 
-    public static List<Note> getSampleNotes() {
+    public static List<NoteViewModel> getSampleNotes() {
 
-        List<Note> notes = new ArrayList<>();
+        List<NoteViewModel> notes = new ArrayList<>();
         //create the dummy note
-        Note note1 = new Note();
-        note1.setTitle("Sample Note - DisneyLand Trip");
+        NoteViewModel note1 = new NoteViewModel();
+        note1.setTitle("Sample NoteViewModel - DisneyLand Trip");
         note1.setContent("We went to Disneyland today and the kids had lots of fun!");
         Calendar calendar1 = GregorianCalendar.getInstance();
         note1.setDateModified(calendar1.getTimeInMillis());
@@ -43,8 +43,8 @@ public class SampleData {
 
 
         //create the dummy note
-        Note note2 = new Note();
-        note2.setTitle("Sample Note - Gym Work Out");
+        NoteViewModel note2 = new NoteViewModel();
+        note2.setTitle("Sample NoteViewModel - Gym Work Out");
         note2.setContent("I went to the Gym today and I got a lot of exercises");
 
         //change the date to random time
@@ -56,7 +56,7 @@ public class SampleData {
 
 
         //create the dummy note
-        Note note3 = new Note();
+        NoteViewModel note3 = new NoteViewModel();
         note3.setTitle("Sample - Blog Post Idea");
         note3.setContent("You can delete, I will like to write a blog post about how to make money online");
 
@@ -70,7 +70,7 @@ public class SampleData {
 
 
         //create the dummy note
-        Note note4 = new Note();
+        NoteViewModel note4 = new NoteViewModel();
         note4.setTitle("Cupcake Recipe");
         note4.setContent("You can delete, Today I found a recipe to make cup cake from www.google.");
 
@@ -84,7 +84,7 @@ public class SampleData {
 
 
         //create the dummy note
-        Note note5 = new Note();
+        NoteViewModel note5 = new NoteViewModel();
         note5.setTitle("Sample Notes from Networking Event");
         note5.setContent("You can delete, Today I attended a developer's networking event and it was great");
 
