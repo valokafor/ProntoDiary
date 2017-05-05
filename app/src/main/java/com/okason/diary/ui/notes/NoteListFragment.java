@@ -1,16 +1,23 @@
 package com.okason.diary.ui.notes;
 
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -18,7 +25,9 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.R;
+import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.models.viewModel.NoteViewModel;
+import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
@@ -30,7 +39,8 @@ import butterknife.ButterKnife;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NoteListFragment extends Fragment implements NoteListContract.View{
+public class NoteListFragment extends Fragment implements
+        NoteListContract.View, SearchView.OnQueryTextListener {
 
     private View mRootView;
     private NoteListContract.Actions mPresenter;
@@ -99,6 +109,22 @@ public class NoteListFragment extends Fragment implements NoteListContract.View{
             }
         });
 
+        mListAdapter.setNoteItemListener(new NoteItemListener() {
+            @Override
+            public void onNoteClick(NoteViewModel clickedNote) {
+                if (isDualScreen) {
+                    showDualDetailUi(clickedNote);
+                } else {
+                    showSingleDetailUi(clickedNote.getId());
+                }
+            }
+
+            @Override
+            public void onDeleteButtonClicked(NoteViewModel clickedNote) {
+                showDeleteConfirmation(clickedNote);
+            }
+        });
+
         return mRootView;
     }
 
@@ -111,7 +137,38 @@ public class NoteListFragment extends Fragment implements NoteListContract.View{
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_note_list, menu);
+        MenuItem search = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
+        searchView.setOnQueryTextListener(this);
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+        @Override
+        public boolean onQueryTextSubmit(String query) {
+            return false;
+        }
+
+        @Override
+        public boolean onQueryTextChange(String newText) {
+            return false;
+        }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+        int id = item.getItemId();
+        switch (id){
+            case R.id.action_add:
+                if (getActivity() != null) {
+                    startActivity(new Intent(getActivity(), AddNoteActivity.class));
+                }
+                break;
+            case R.id.action_sort:
+
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -141,6 +198,13 @@ public class NoteListFragment extends Fragment implements NoteListContract.View{
 
     @Override
     public void showDeleteConfirmation(NoteViewModel note) {
+        boolean shouldPromptForDelete = PreferenceManager
+                .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
+        if (shouldPromptForDelete) {
+            promptForDelete(note);
+        } else {
+            mPresenter.deleteNote(note);
+        }
 
     }
 
@@ -162,4 +226,52 @@ public class NoteListFragment extends Fragment implements NoteListContract.View{
         });
 
     }
+
+    public void showSingleDetailUi(String noteId) {
+       // startActivity(NoteDetailActivity.getStartIntent(getContext(), noteId));
+    }
+
+
+    public void showDualDetailUi(NoteViewModel note) {
+//        NoteListActivity activity = (NoteListActivity)getActivity();
+//        activity.showTwoPane(note);
+    }
+
+    public void promptForDelete(final NoteViewModel note){
+        String content;
+        if (!TextUtils.isEmpty(note.getContent())) {
+            content = note.getContent();
+        } else {
+            content = "";
+        }
+        String message =  getString(R.string.label_delete)  + " " + content.substring(0, Math.min(content.length(), 50)) + "  ... ?";
+
+
+        android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        titleText.setText(getString(R.string.warning_are_you_sure));
+        alertDialog.setCustomTitle(titleView);
+
+        alertDialog.setMessage(message);
+        alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mPresenter.deleteNote(note);
+            }
+        });
+        alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+
+
+
+
+
 }

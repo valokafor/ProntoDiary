@@ -35,7 +35,7 @@ public class SampleData {
         List<NoteViewModel> notes = new ArrayList<>();
         //create the dummy note
         NoteViewModel note1 = new NoteViewModel();
-        note1.setTitle("Sample NoteViewModel - DisneyLand Trip");
+        note1.setTitle("DisneyLand Trip");
         note1.setContent("We went to Disneyland today and the kids had lots of fun!");
         Calendar calendar1 = GregorianCalendar.getInstance();
         note1.setDateModified(calendar1.getTimeInMillis());
@@ -44,7 +44,7 @@ public class SampleData {
 
         //create the dummy note
         NoteViewModel note2 = new NoteViewModel();
-        note2.setTitle("Sample NoteViewModel - Gym Work Out");
+        note2.setTitle("Gym Work Out");
         note2.setContent("I went to the Gym today and I got a lot of exercises");
 
         //change the date to random time
@@ -57,7 +57,7 @@ public class SampleData {
 
         //create the dummy note
         NoteViewModel note3 = new NoteViewModel();
-        note3.setTitle("Sample - Blog Post Idea");
+        note3.setTitle("Blog Post Idea");
         note3.setContent("You can delete, I will like to write a blog post about how to make money online");
 
 

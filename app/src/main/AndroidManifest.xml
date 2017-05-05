@@ -41,16 +41,23 @@
                 android:value="com.okason.diary.NoteListActivity" />
         </activity>
 
-
         <service
             android:name=".core.services.AddSampleDataIntentService"
             android:exported="false" />
-
         <service
             android:name=".core.services.C"
             android:exported="false" />
 
-        <activity android:name=".ui.auth.SignedInActivity"></activity>
+        <activity android:name=".ui.auth.SignedInActivity" />
+        <activity
+            android:name=".ui.addnote.AddNoteActivity"
+            android:label="@string/title_activity_add_note"
+            android:parentActivityName=".NoteListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.okason.diary.NoteListActivity" />
+        </activity>
     </application>
 
 </manifest>

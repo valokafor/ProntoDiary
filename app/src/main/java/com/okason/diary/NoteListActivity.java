@@ -195,6 +195,8 @@ public class NoteListActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+
+
     private void updateUI(FirebaseUser user) {
         if (user == null){
             return;

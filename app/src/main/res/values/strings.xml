@@ -80,6 +80,12 @@
     <string name="action_sort">Sort</string>
     <string name="action_search">Search</string>
     <string name="error_account_already_exist">Account already exists</string>
+    <string name="label_title">Title</string>
+    <string name="label_delete">Delete</string>
+    <string name="label_yes">Yes</string>
+    <string name="warning_are_you_sure">Are you sure ?</string>
+    <string name="title_activity_add_note">AddNoteActivity</string>
+    <string name="add_new_journal">New Journal Entry</string>
 
 
 </resources>
