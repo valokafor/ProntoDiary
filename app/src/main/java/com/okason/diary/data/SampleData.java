@@ -1,6 +1,8 @@
 package com.okason.diary.data;
 
+import com.okason.diary.models.viewModel.AttachmentViewModel;
 import com.okason.diary.models.viewModel.NoteViewModel;
+import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,6 +54,11 @@ public class SampleData {
         calendar2.add(Calendar.DAY_OF_WEEK, -1);
         calendar2.add(Calendar.MILLISECOND, 10005623);
         note2.setDateModified(calendar2.getTimeInMillis());
+
+        AttachmentViewModel attachment1 = new AttachmentViewModel(Constants.MIME_TYPE_IMAGE);
+        attachment1.setUriCloudPath("https://i0.wallpaperscraft.com/image/lake_mountains_reflection_115160_300x188.jpg");
+        note2.getAttachments().add(attachment1);
+
         notes.add(note2);
 
 

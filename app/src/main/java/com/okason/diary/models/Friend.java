@@ -1,12 +1,10 @@
 package com.okason.diary.models;
 
-import io.realm.RealmObject;
-
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Friend extends RealmObject {
+public class Friend {
     private long id;
     private String name;
     private String phoneNumher;

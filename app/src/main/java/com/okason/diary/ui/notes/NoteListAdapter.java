@@ -12,9 +12,12 @@ import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
+import com.bumptech.glide.Glide;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
+import com.okason.diary.models.viewModel.AttachmentViewModel;
 import com.okason.diary.models.viewModel.NoteViewModel;
+import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
 import java.util.List;
@@ -59,12 +62,39 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             holder.contentSummary.setText(note.getContent().substring(0, Math.min(100, note.getContent().length())));
             holder.date.setText(TimeUtils.getReadableModifiedDate(note.getDateModified()));
 
-            firstLetter = note.getTitle().substring(0, 1);
-            generator = ColorGenerator.MATERIAL;
-            color = generator.getRandomColor();
-            drawable = TextDrawable.builder()
-                    .buildRound(firstLetter, color);
-            holder.firstLetterIcon.setImageDrawable(drawable);
+            if (note.getTodoItems() != null && note.getTodoItems().size() > 0){
+                Glide.with(mContext).load(R.drawable.appointment_reminder).into(holder.firstLetterIcon);
+            }else {
+                firstLetter = note.getTitle().substring(0, 1);
+                generator = ColorGenerator.MATERIAL;
+                color = generator.getRandomColor();
+                drawable = TextDrawable.builder()
+                        .buildRound(firstLetter, color);
+                holder.firstLetterIcon.setImageDrawable(drawable);
+            }
+
+            //Check to see if this Note has Attachments, if it does check if the attachment is image
+            //If it is then show the thumbnail
+            if (note.getAttachments() != null && note.getAttachments().size() > 0){
+                for (AttachmentViewModel attachment: note.getAttachments()){
+                    if (attachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE) ||
+                            attachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
+                        holder.attachmentLayout.setVisibility(View.VISIBLE);
+                        String imagePath = TextUtils.isEmpty(attachment.getUriCloudPath())
+                                ? attachment.getUriLocalPath() : attachment.getUriCloudPath();
+                        Glide.with(mContext)
+                                .load(imagePath)
+                                .placeholder(R.drawable.default_image)
+                                .centerCrop()
+                                .into(holder.noteAttachment);
+                        break;
+
+                    }
+                }
+
+            }
+
+
         }
 
 

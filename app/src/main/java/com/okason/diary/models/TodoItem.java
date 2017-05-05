@@ -1,18 +1,14 @@
 package com.okason.diary.models;
 
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.Index;
-import io.realm.annotations.PrimaryKey;
+import java.util.List;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class TodoItem extends RealmObject {
-    @PrimaryKey
+public class TodoItem  {
+
     private long id;
-    @Index
     private String title;
     private String description;
     private Category category;
@@ -27,8 +23,8 @@ public class TodoItem extends RealmObject {
     private String recurrenceRule;
     private boolean checked;
 
-    private RealmList<TodoItem> tasks;
-    private RealmList<History> historyList;
+    private List<TodoItem> tasks;
+    private List<History> historyList;
 
     public long getId() {
         return id;
@@ -142,19 +138,19 @@ public class TodoItem extends RealmObject {
         this.checked = checked;
     }
 
-    public RealmList<TodoItem> getTasks() {
+    public List<TodoItem> getTasks() {
         return tasks;
     }
 
-    public void setTasks(RealmList<TodoItem> tasks) {
+    public void setTasks(List<TodoItem> tasks) {
         this.tasks = tasks;
     }
 
-    public RealmList<History> getHistoryList() {
+    public List<History> getHistoryList() {
         return historyList;
     }
 
-    public void setHistoryList(RealmList<History> historyList) {
+    public void setHistoryList(List<History> historyList) {
         this.historyList = historyList;
     }
 }

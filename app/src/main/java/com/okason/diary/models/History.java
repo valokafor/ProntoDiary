@@ -1,12 +1,10 @@
 package com.okason.diary.models;
 
-import io.realm.RealmObject;
-
 /**
  * Created by Valentine on 4/14/2017.
  */
 
-public class History extends RealmObject{
+public class History {
     private long id;
     private String title;
     private long dateAdded;

@@ -1,11 +1,10 @@
 package com.okason.diary.models.viewModel;
 
-import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Category;
 import com.okason.diary.models.Friend;
-import com.okason.diary.models.Tag;
 import com.okason.diary.models.TodoItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,28 +18,28 @@ public class NoteViewModel {
     private String gratitude;
     private long dateCreated;
     private long dateModified;
+
+
+    public NoteViewModel(){
+
+        attachments = new ArrayList<>();
+        todoItems = new ArrayList<>();
+        tags = new ArrayList<>();
+        friends = new ArrayList<>();
+
+    }
+
+
+
     
 
     //Relationships
-    private List<Attachment> attachments;
+    private List<AttachmentViewModel> attachments;
     private List<TodoItem> todoItems;
-    private List<Tag> tags;
+    private List<TagViewModel> tags;
     private Category category;
     private List<Friend> friends;
 
-    public void update(NoteViewModel copy){
-        title = copy.getTitle();
-        content = copy.getContent();
-        gratitude = copy.getGratitude();
-        dateCreated = dateCreated;
-        dateModified = dateModified;
-
-        attachments = copy.getAttachments();
-        todoItems = copy.getTodoItems();
-        tags = copy.getTags();
-        category = copy.getCategory();
-        friends = copy.getFriends();
-    }
 
 
     public String getId() {
@@ -91,11 +90,11 @@ public class NoteViewModel {
         this.dateModified = dateModified;
     }
 
-    public List<Attachment> getAttachments() {
+    public List<AttachmentViewModel> getAttachments() {
         return attachments;
     }
 
-    public void setAttachments(List<Attachment> attachments) {
+    public void setAttachments(List<AttachmentViewModel> attachments) {
         this.attachments = attachments;
     }
 
@@ -107,11 +106,11 @@ public class NoteViewModel {
         this.todoItems = todoItems;
     }
 
-    public List<Tag> getTags() {
+    public List<TagViewModel> getTags() {
         return tags;
     }
 
-    public void setTags(List<Tag> tags) {
+    public void setTags(List<TagViewModel> tags) {
         this.tags = tags;
     }
 

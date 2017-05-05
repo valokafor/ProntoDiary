@@ -1,14 +1,12 @@
-package com.okason.diary.models;
-
-import io.realm.RealmObject;
+package com.okason.diary.models.viewModel;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Attachment extends RealmObject {
+public class AttachmentViewModel {
 
-    private long id;
+    private String id;
     private String uriLocalPath;
     private String uriCloudPath;
     private String name;
@@ -16,12 +14,20 @@ public class Attachment extends RealmObject {
     private long length;
     private String mime_type;
 
+    public AttachmentViewModel(){
 
-    public long getId() {
+    }
+
+    public AttachmentViewModel(String ext){
+        mime_type = ext;
+    }
+
+
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

@@ -1,27 +1,27 @@
 package com.okason.diary.models;
 
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
+import com.okason.diary.models.viewModel.NoteViewModel;
+
+import java.util.List;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Category extends RealmObject {
-    @PrimaryKey
-    private long id;
+public class Category{
+
+    private String id;
     private String categoryName;
     private long dateCreated;
     private long dateModified;
-    private RealmList<Note> notes;
-    private RealmList<TodoItem> todoLists;
+    private List<NoteViewModel> notes;
+    private List<TodoItem> todoLists;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -49,19 +49,11 @@ public class Category extends RealmObject {
         this.dateModified = dateModified;
     }
 
-    public RealmList<Note> getNotes() {
-        return notes;
-    }
-
-    public void setNotes(RealmList<Note> notes) {
-        this.notes = notes;
-    }
-
-    public RealmList<TodoItem> getTodoLists() {
+    public List<TodoItem> getTodoLists() {
         return todoLists;
     }
 
-    public void setTodoLists(RealmList<TodoItem> todoLists) {
+    public void setTodoLists(List<TodoItem> todoLists) {
         this.todoLists = todoLists;
     }
 }
