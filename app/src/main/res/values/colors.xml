@@ -26,4 +26,8 @@
 
     <color name="material_red_a200">#FF5252</color>
     <color name="material_deep_purple_50">#EDE7F6</color>
+    <color name="transparent">#00ffffff</color>
+    <color name="selected">#8833B5E5</color>
+    <color name="kitkat_gray_dark">#25000000</color>
+    <color name="kitkat_gray_light">#19000000</color>
 </resources>

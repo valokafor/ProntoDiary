@@ -8,4 +8,13 @@
     tools:context="com.okason.diary.ui.addnote.AddNoteActivity"
     tools:showIn="@layout/activity_add_note">
 
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottom_scrollview"/>
+
+
+
+
 </RelativeLayout>

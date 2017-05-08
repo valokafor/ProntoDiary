@@ -21,7 +21,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_add_note"
-        android:id="@+id/container"/>
+    <include layout="@layout/content_add_note" />
 
    </android.support.design.widget.CoordinatorLayout>

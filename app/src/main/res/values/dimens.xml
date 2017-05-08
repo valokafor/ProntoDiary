@@ -26,8 +26,8 @@
     <dimen name="text_size_height">30sp</dimen>
 
     <!-- Margin & padding -->
-    <dimen name="margin_padding_tiny">4dp</dimen>
-    <dimen name="margin_padding_xtiny">6dp</dimen>
+    <dimen name="margin_padding_xtiny">4dp</dimen>
+    <dimen name="margin_padding_tiny">6dp</dimen>
     <dimen name="margin_padding_small">9dp</dimen>
     <dimen name="margin_padding_xsmall">12dp</dimen>
     <dimen name="margin_padding_normal">15dp</dimen>
@@ -42,6 +42,13 @@
     <dimen name="icon_width_height">30dp</dimen>
     <dimen name="large_brush">40dp</dimen>
     <dimen name="profile_image_size">72dp</dimen>
+    <dimen name="note_editor_icon_size">24dp</dimen>
+
+    <!-- Attachment dialog -->
+    <dimen name="attachment_dialog_text_size">16sp</dimen>
+    <dimen name="attachment_dialog_drawable_padding">10dp</dimen>
+    <dimen name="attachment_dialog_items_padding">10dp</dimen>
+
     <!-- Default screen margins, per the Android Design guidelines. -->
 
 </resources>

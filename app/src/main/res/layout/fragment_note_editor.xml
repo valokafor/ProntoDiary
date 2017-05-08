@@ -1,13 +1,206 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.okason.diary.ui.addnote.NoteEditorFragment">
+    android:layout_height="match_parent">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
+        android:id="@+id/root_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:padding="@dimen/margin_padding_tiny"
+        android:animateLayoutChanges="true"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical">
 
-</FrameLayout>
+        <android.support.design.widget.CoordinatorLayout
+            android:id="@+id/detail_content_card"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingBottom="2dp">
+
+            <ScrollView
+                android:id="@+id/scrollView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbarSize="4dp"
+                android:scrollbarStyle="outsideOverlay">
+
+
+                <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:app="http://schemas.android.com/apk/res-auto"
+                    xmlns:tools="http://schemas.android.com/tools"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingBottom="@dimen/margin_padding_tiny"
+                    android:paddingLeft="@dimen/margin_padding_tiny"
+                    android:paddingRight="@dimen/margin_padding_tiny">
+
+                    <RelativeLayout
+                        android:id="@+id/toplayout1"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:paddingBottom="@dimen/margin_padding_tiny"
+                        android:paddingLeft="@dimen/margin_padding_tiny"
+                        android:paddingTop="@dimen/margin_padding_tiny">
+
+                        <EditText
+                            android:id="@+id/edit_text_category"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/margin_padding_large"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_marginLeft="@dimen/margin_padding_tiny"
+                            android:background="@android:color/transparent"
+                            android:clickable="true"
+                            android:drawableLeft="@drawable/ic_action_folder_open"
+                            android:focusable="false"
+                            android:hint="@string/select_folder"
+                            android:textSize="@dimen/text_size_xnormal" />
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:background="@color/primary_text" />
+
+
+                    <RelativeLayout
+                        android:id="@+id/toplayout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:paddingBottom="@dimen/margin_padding_tiny"
+                        android:paddingLeft="@dimen/margin_padding_tiny"
+                        android:paddingTop="@dimen/margin_padding_tiny">
+
+                        <EditText
+                            android:id="@+id/edit_text_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_marginLeft="@dimen/margin_padding_tiny"
+                            android:background="@android:color/transparent"
+                            android:hint="@string/placeholder_journal_title"
+                            android:imeOptions="actionNext"
+                            android:inputType="textCapWords"
+                            android:textSize="@dimen/text_size_xnormal" />
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:background="@color/primary_text" />
+
+
+                    <RelativeLayout
+                        android:id="@+id/toplayout_note"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_weight="1"
+                        android:paddingBottom="@dimen/margin_padding_tiny"
+                        android:paddingLeft="@dimen/margin_padding_tiny"
+                        android:paddingTop="@dimen/margin_padding_tiny">
+
+
+                        <EditText
+                            android:id="@+id/edit_text_note"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginTop="@dimen/margin_padding_tiny"
+                            android:background="#00000000"
+                            android:gravity="left|top"
+                            android:hint="@string/placeholder_journal_text"
+                            android:inputType="textMultiLine"
+                            android:minHeight="100dp"
+                            android:scrollbars="none"
+                            android:textSize="@dimen/text_size_normal" />
+
+                    </RelativeLayout>
+
+                    <ImageView
+                        android:id="@+id/image_attachment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="200dp"
+                        android:background="@null"
+                        android:contentDescription="@string/image_attachment"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/sketch_attachment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="200dp"
+                        android:background="@null"
+                        android:contentDescription="@string/image_attachment"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+            </ScrollView>
+
+
+        </android.support.design.widget.CoordinatorLayout>
+
+
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/bottom_scrollview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_alignParentBottom="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/primary"
+            android:padding="5dp"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/image_button_undo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="@null"
+                android:layout_margin="@dimen/margin_padding_small"
+                android:src="@drawable/ic_sort_white_24dp"/>
+
+            <ImageButton
+                android:id="@+id/image_button_record"
+                android:layout_width="@dimen/note_editor_icon_size"
+                android:layout_height="@dimen/note_editor_icon_size"
+                android:scaleType="center"
+                android:background="@null"
+                android:layout_margin="@dimen/margin_padding_small"
+                android:src="@drawable/ic_mic_white_24dp"/>
+
+            <ImageButton
+                android:id="@+id/image_button_play"
+                android:layout_width="@dimen/note_editor_icon_size"
+                android:layout_height="@dimen/note_editor_icon_size"
+                android:scaleType="center"
+                android:background="@null"
+                android:layout_margin="@dimen/margin_padding_small"
+                android:src="@drawable/ic_play_arrow_white_24dp"/>
+
+            <ImageButton
+                android:id="@+id/image_button_camara"
+                android:layout_width="@dimen/note_editor_icon_size"
+                android:layout_height="@dimen/note_editor_icon_size"
+                android:scaleType="center"
+                android:background="@null"
+                android:layout_margin="@dimen/margin_padding_small"
+                android:src="@drawable/ic_photo_camera_white_24dp"/>
+
+
+        </LinearLayout>
+    </HorizontalScrollView>
+</RelativeLayout>
