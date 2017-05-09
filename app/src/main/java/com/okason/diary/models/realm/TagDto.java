@@ -1,6 +1,7 @@
-package com.okason.diary.models;
+package com.okason.diary.models.realm;
 
 import com.okason.diary.models.viewModel.NoteViewModel;
+import com.okason.diary.models.viewModel.TaskViewModel;
 
 import java.util.List;
 
@@ -8,14 +9,14 @@ import java.util.List;
  * Created by Valentine on 4/10/2017.
  */
 
-public class Category{
+public class TagDto {
 
     private String id;
-    private String categoryName;
+    private String tagName;
     private long dateCreated;
     private long dateModified;
     private List<NoteViewModel> notes;
-    private List<TodoItem> todoLists;
+    private List<TaskViewModel> todoLists;
 
     public String getId() {
         return id;
@@ -25,12 +26,12 @@ public class Category{
         this.id = id;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    public String getTagName() {
+        return tagName;
     }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setTagName(String tagName) {
+        this.tagName = tagName;
     }
 
     public long getDateCreated() {
@@ -49,11 +50,19 @@ public class Category{
         this.dateModified = dateModified;
     }
 
-    public List<TodoItem> getTodoLists() {
+    public List<NoteViewModel> getNotes() {
+        return notes;
+    }
+
+    public void setNotes(List<NoteViewModel> notes) {
+        this.notes = notes;
+    }
+
+    public List<TaskViewModel> getTodoLists() {
         return todoLists;
     }
 
-    public void setTodoLists(List<TodoItem> todoLists) {
+    public void setTodoLists(List<TaskViewModel> todoLists) {
         this.todoLists = todoLists;
     }
 }

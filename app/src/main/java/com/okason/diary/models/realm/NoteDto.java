@@ -1,4 +1,10 @@
-package com.okason.diary.models.viewModel;
+package com.okason.diary.models.realm;
+
+import com.okason.diary.models.viewModel.AttachmentViewModel;
+import com.okason.diary.models.viewModel.FolderViewModel;
+import com.okason.diary.models.viewModel.PeopleJournal;
+import com.okason.diary.models.viewModel.TagViewModel;
+import com.okason.diary.models.viewModel.TaskViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +13,7 @@ import java.util.List;
  * Created by Valentine on 4/10/2017.
  */
 
-public class NoteViewModel {
+public class NoteDto {
     private String id;
     private String title;
     private String content;
@@ -16,7 +22,7 @@ public class NoteViewModel {
     private long dateModified;
 
 
-    public NoteViewModel(){
+    public NoteDto(){
         attachments = new ArrayList<>();
         taskViewModels = new ArrayList<>();
         tags = new ArrayList<>();

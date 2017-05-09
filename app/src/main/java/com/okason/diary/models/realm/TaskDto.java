@@ -1,4 +1,7 @@
-package com.okason.diary.models;
+package com.okason.diary.models.realm;
+
+import com.okason.diary.models.viewModel.FolderViewModel;
+import com.okason.diary.models.viewModel.HistoryViewModel;
 
 import java.util.List;
 
@@ -6,12 +9,12 @@ import java.util.List;
  * Created by Valentine on 4/10/2017.
  */
 
-public class TodoItem  {
+public class TaskDto {
 
     private long id;
     private String title;
     private String description;
-    private Category category;
+    private FolderViewModel category;
     private long dateCreated;
     private long duetime;
     private long dateModified;
@@ -23,8 +26,8 @@ public class TodoItem  {
     private String recurrenceRule;
     private boolean checked;
 
-    private List<TodoItem> tasks;
-    private List<History> historyList;
+    private List<TaskDto> tasks;
+    private List<HistoryViewModel> historyList;
 
     public long getId() {
         return id;
@@ -50,11 +53,11 @@ public class TodoItem  {
         this.description = description;
     }
 
-    public Category getCategory() {
+    public FolderViewModel getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(FolderViewModel category) {
         this.category = category;
     }
 
@@ -138,19 +141,19 @@ public class TodoItem  {
         this.checked = checked;
     }
 
-    public List<TodoItem> getTasks() {
+    public List<TaskDto> getTasks() {
         return tasks;
     }
 
-    public void setTasks(List<TodoItem> tasks) {
+    public void setTasks(List<TaskDto> tasks) {
         this.tasks = tasks;
     }
 
-    public List<History> getHistoryList() {
+    public List<HistoryViewModel> getHistoryList() {
         return historyList;
     }
 
-    public void setHistoryList(List<History> historyList) {
+    public void setHistoryList(List<HistoryViewModel> historyList) {
         this.historyList = historyList;
     }
 }

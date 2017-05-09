@@ -34,10 +34,19 @@
 
 
     <!--Account Register and Login Related-->
+    <string name="prompt_username">Email Address</string>
+    <string name="prompt_password">Password</string>
+    <string name="prompt_password_conformation">Confirm Password</string>
     <string name="action_sign_in">Log In</string>
     <string name="label_sign_in">Sign in</string>
     <string name="action_log_out">Sign Out</string>
     <string name="action_delete_account">Delete Account</string>
+    <string name="action_register">Register</string>
+    <string name="error_invalid_email">Username required</string>
+    <string name="error_invalid_password">Password required</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email completions."</string>
     <string name="activity_register_label">Enable Cloud Sync</string>
     <string name="anonymous_account_failed_error">Anonymous Login Failed, check internet</string>
     <string name="title_activity_auth_ui">Register or Sign In</string>
@@ -113,6 +122,11 @@
     <string name="action_attachment">Attachment</string>
     <string name="action_share">Share</string>
     <string name="action_tag">Tag</string>
+    <string name="hint_enter_folder">Enter folder name</string>
+    <string name="edit_folder">Edit Folder</string>
+    <string name="add_folder">Add Folder</string>
+    <string name="required">Required</string>
+    <string name="no_folder">No folder found</string>
 
 
 </resources>

@@ -62,7 +62,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             holder.contentSummary.setText(note.getContent().substring(0, Math.min(100, note.getContent().length())));
             holder.date.setText(TimeUtils.getReadableModifiedDate(note.getDateModified()));
 
-            if (note.getTodoItems() != null && note.getTodoItems().size() > 0){
+            if (note.getTaskViewModels() != null && note.getTaskViewModels().size() > 0){
                 Glide.with(mContext).load(R.drawable.appointment_reminder).into(holder.firstLetterIcon);
             }else {
                 firstLetter = note.getTitle().substring(0, 1);

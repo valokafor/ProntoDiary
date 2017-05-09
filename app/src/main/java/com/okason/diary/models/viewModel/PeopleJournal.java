@@ -1,10 +1,10 @@
-package com.okason.diary.models;
+package com.okason.diary.models.viewModel;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Friend {
+public class PeopleJournal {
     private long id;
     private String name;
     private String phoneNumher;

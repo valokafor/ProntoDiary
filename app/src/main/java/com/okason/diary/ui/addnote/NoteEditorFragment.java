@@ -14,10 +14,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.okason.diary.R;
+import com.okason.diary.ui.folder.AddFolderDialogFragment;
+import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.utils.Constants;
+
+import butterknife.BindView;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -27,6 +33,16 @@ public class NoteEditorFragment extends Fragment {
     private final static String LOG_TAG = "NoteEditorFragment";
 
     private View mRootView;
+    private SelectFolderDialogFragment selectFolderDialogFragment;
+    private AddFolderDialogFragment addFolderDialogFragment;
+
+    @BindView(R.id.edit_text_category)
+    EditText mCategory;
+    @BindView(R.id.edit_text_title) EditText mTitle;
+    @BindView(R.id.edit_text_note) EditText mContent;
+    @BindView(R.id.image_attachment)
+    ImageView mImageAttachment;
+    @BindView(R.id.sketch_attachment) ImageView mSketchAttachment;
 
 
 

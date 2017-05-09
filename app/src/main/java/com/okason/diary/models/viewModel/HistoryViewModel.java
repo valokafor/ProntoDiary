@@ -1,10 +1,10 @@
-package com.okason.diary.models;
+package com.okason.diary.models.viewModel;
 
 /**
  * Created by Valentine on 4/14/2017.
  */
 
-public class History {
+public class HistoryViewModel {
     private long id;
     private String title;
     private long dateAdded;
