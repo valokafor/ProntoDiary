@@ -2,7 +2,7 @@ package com.okason.diary.ui.notes;
 
 import android.content.Context;
 
-import com.okason.diary.models.viewModel.NoteViewModel;
+import com.okason.diary.models.Note;
 
 import java.util.List;
 
@@ -13,23 +13,31 @@ import java.util.List;
 public interface NoteListContract {
     interface View{
         void onDataSetChanged();
-        void showNotes(List<NoteViewModel> notes);
+        void showNotes(List<Note> notes);
         void showEmptyText(boolean showText);
-        void showDeleteConfirmation(NoteViewModel note);
+        void showDeleteConfirmation(Note note);
         void setProgressIndicator(boolean active);
         Context getContext();
     }
 
     interface Actions{
         void loadNotes(boolean forceUpdate);
-        void deleteNote(NoteViewModel note);
+        void deleteNote(Note note);
+
+
 
     }
 
     interface Repository{
-        List<NoteViewModel> getAllNotes();
-        void addNote(NoteViewModel note);
-        void deleteNote(NoteViewModel note);
-        void updateNote(NoteViewModel note);
+        List<Note> getAllNotes();
+        Note getNoteById(String noteId);
+        Note createNewNote();
+        void updatedNoteTitle(String noteId, String title);
+        void updatedNoteContent(String noteId, String content);
+        void setFolder(String folderId, String noteId);
+        void deleteNote(Note note);
+        void saveNote(Note note);
+
+
     }
 }

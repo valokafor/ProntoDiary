@@ -15,8 +15,8 @@ import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
-import com.okason.diary.models.viewModel.AttachmentViewModel;
-import com.okason.diary.models.viewModel.NoteViewModel;
+import com.okason.diary.models.Attachment;
+import com.okason.diary.models.Note;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
@@ -30,13 +30,13 @@ import butterknife.ButterKnife;
  * Created by Valentine on 2/6/2016.
  */
 public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHolder> {
-    private List<NoteViewModel> mNotes;
+    private List<Note> mNotes;
     private final Context mContext;
     private NoteItemListener mItemListener;
     private View noteView;
 
 
-    public NoteListAdapter(List<NoteViewModel> notes, Context mContext){
+    public NoteListAdapter(List<Note> notes, Context mContext){
         mNotes = notes;
         this.mContext = mContext;
     }
@@ -51,7 +51,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final NoteViewModel note = mNotes.get(position);
+        final Note note = mNotes.get(position);
         if (note != null && !TextUtils.isEmpty(note.getContent()) && !TextUtils.isEmpty(note.getTitle())) {
             String firstLetter;
             ColorGenerator generator;
@@ -62,7 +62,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             holder.contentSummary.setText(note.getContent().substring(0, Math.min(100, note.getContent().length())));
             holder.date.setText(TimeUtils.getReadableModifiedDate(note.getDateModified()));
 
-            if (note.getTaskViewModels() != null && note.getTaskViewModels().size() > 0){
+            if (note.getTasks() != null && note.getTasks().size() > 0){
                 Glide.with(mContext).load(R.drawable.appointment_reminder).into(holder.firstLetterIcon);
             }else {
                 firstLetter = note.getTitle().substring(0, 1);
@@ -76,7 +76,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             //Check to see if this Note has Attachments, if it does check if the attachment is image
             //If it is then show the thumbnail
             if (note.getAttachments() != null && note.getAttachments().size() > 0){
-                for (AttachmentViewModel attachment: note.getAttachments()){
+                for (Attachment attachment: note.getAttachments()){
                     if (attachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE) ||
                             attachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
                         holder.attachmentLayout.setVisibility(View.VISIBLE);
@@ -107,16 +107,16 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         return mNotes.size();
     }
 
-    public NoteViewModel getItem(int position) {
+    public Note getItem(int position) {
         return mNotes.get(position);
     }
 
-    public void replaceData(List<NoteViewModel> notes) {
+    public void replaceData(List<Note> notes) {
         setList(notes);
         notifyDataSetChanged();
     }
 
-    private void setList(List<NoteViewModel> notes) {
+    private void setList(List<Note> notes) {
         mNotes = notes;
     }
 
@@ -156,7 +156,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    NoteViewModel note = getItem(position);
+                    Note note = getItem(position);
                     mItemListener.onNoteClick(note);
                 }
             });
@@ -164,7 +164,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    NoteViewModel note = getItem(position);
+                    Note note = getItem(position);
                     mItemListener.onNoteClick(note);
                 }
             });
@@ -172,7 +172,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    NoteViewModel note = getItem(position);
+                    Note note = getItem(position);
                     mItemListener.onDeleteButtonClicked(note);
                 }
             });

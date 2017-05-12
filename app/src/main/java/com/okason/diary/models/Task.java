@@ -1,20 +1,19 @@
-package com.okason.diary.models.realm;
+package com.okason.diary.models;
 
-import com.okason.diary.models.viewModel.FolderViewModel;
-import com.okason.diary.models.viewModel.HistoryViewModel;
-
-import java.util.List;
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class TaskDto {
+public class Task extends RealmObject{
 
-    private long id;
+    @PrimaryKey
+    private String id;
     private String title;
     private String description;
-    private FolderViewModel category;
     private long dateCreated;
     private long duetime;
     private long dateModified;
@@ -26,14 +25,16 @@ public class TaskDto {
     private String recurrenceRule;
     private boolean checked;
 
-    private List<TaskDto> tasks;
-    private List<HistoryViewModel> historyList;
+    private Folder folder;
+    private RealmList<History> historyList;
+    private RealmList<Tag> tags;
 
-    public long getId() {
+
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -51,14 +52,6 @@ public class TaskDto {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public FolderViewModel getCategory() {
-        return category;
-    }
-
-    public void setCategory(FolderViewModel category) {
-        this.category = category;
     }
 
     public long getDateCreated() {
@@ -141,19 +134,27 @@ public class TaskDto {
         this.checked = checked;
     }
 
-    public List<TaskDto> getTasks() {
-        return tasks;
+    public Folder getFolder() {
+        return folder;
     }
 
-    public void setTasks(List<TaskDto> tasks) {
-        this.tasks = tasks;
+    public void setFolder(Folder folder) {
+        this.folder = folder;
     }
 
-    public List<HistoryViewModel> getHistoryList() {
+    public RealmList<History> getHistoryList() {
         return historyList;
     }
 
-    public void setHistoryList(List<HistoryViewModel> historyList) {
+    public void setHistoryList(RealmList<History> historyList) {
         this.historyList = historyList;
+    }
+
+    public RealmList<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(RealmList<Tag> tags) {
+        this.tags = tags;
     }
 }

@@ -1,19 +1,19 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.viewModel.FolderViewModel;
+import com.okason.diary.models.Folder;
 
 /**
  * Created by Valentine on 5/8/2017.
  */
 
 public class OnFolderUpdatedEvent {
-    private final FolderViewModel updatedFolder;
+    private final Folder updatedFolder;
 
-    public OnFolderUpdatedEvent(FolderViewModel updatedFolder) {
+    public OnFolderUpdatedEvent(Folder updatedFolder) {
         this.updatedFolder = updatedFolder;
     }
 
-    public FolderViewModel getAddedFolder() {
+    public Folder getAddedFolder() {
         return updatedFolder;
     }
 }

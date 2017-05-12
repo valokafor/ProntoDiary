@@ -1,7 +1,7 @@
 package com.okason.diary.data;
 
-import com.okason.diary.models.viewModel.AttachmentViewModel;
-import com.okason.diary.models.viewModel.NoteViewModel;
+import com.okason.diary.models.Attachment;
+import com.okason.diary.models.Note;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
@@ -32,11 +32,11 @@ public class SampleData {
     }
 
 
-    public static List<NoteViewModel> getSampleNotes() {
+    public static List<Note> getSampleNotes() {
 
-        List<NoteViewModel> notes = new ArrayList<>();
+        List<Note> notes = new ArrayList<>();
         //create the dummy note
-        NoteViewModel note1 = new NoteViewModel();
+        Note note1 = new Note();
         note1.setTitle("DisneyLand Trip");
         note1.setContent("We went to Disneyland today and the kids had lots of fun!");
         Calendar calendar1 = GregorianCalendar.getInstance();
@@ -45,7 +45,7 @@ public class SampleData {
 
 
         //create the dummy note
-        NoteViewModel note2 = new NoteViewModel();
+        Note note2 = new Note();
         note2.setTitle("Gym Work Out");
         note2.setContent("I went to the Gym today and I got a lot of exercises");
 
@@ -55,7 +55,7 @@ public class SampleData {
         calendar2.add(Calendar.MILLISECOND, 10005623);
         note2.setDateModified(calendar2.getTimeInMillis());
 
-        AttachmentViewModel attachment1 = new AttachmentViewModel(Constants.MIME_TYPE_IMAGE);
+        Attachment attachment1 = new Attachment(Constants.MIME_TYPE_IMAGE);
         attachment1.setUriCloudPath("https://i0.wallpaperscraft.com/image/lake_mountains_reflection_115160_300x188.jpg");
         note2.getAttachments().add(attachment1);
 
@@ -63,7 +63,7 @@ public class SampleData {
 
 
         //create the dummy note
-        NoteViewModel note3 = new NoteViewModel();
+        Note note3 = new Note();
         note3.setTitle("Blog Post Idea");
         note3.setContent("You can delete, I will like to write a blog post about how to make money online");
 
@@ -77,7 +77,7 @@ public class SampleData {
 
 
         //create the dummy note
-        NoteViewModel note4 = new NoteViewModel();
+        Note note4 = new Note();
         note4.setTitle("Cupcake Recipe");
         note4.setContent("You can delete, Today I found a recipe to make cup cake from www.google.");
 
@@ -91,7 +91,7 @@ public class SampleData {
 
 
         //create the dummy note
-        NoteViewModel note5 = new NoteViewModel();
+        Note note5 = new Note();
         note5.setTitle("Sample Notes from Networking Event");
         note5.setContent("You can delete, Today I attended a developer's networking event and it was great");
 

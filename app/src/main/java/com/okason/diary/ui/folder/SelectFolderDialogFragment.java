@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
-import com.okason.diary.models.viewModel.FolderViewModel;
+import com.okason.diary.models.Folder;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class SelectFolderDialogFragment extends DialogFragment {
 
-    private List<FolderViewModel> mCategories;
+    private List<Folder> mCategories;
     private FolderListViewAdapter mCategoryAdapter;
     private OnFolderSelectedListener mCategorySelectedListener;
 
@@ -48,7 +48,7 @@ public class SelectFolderDialogFragment extends DialogFragment {
         return new SelectFolderDialogFragment();
     }
 
-    public void setCategories(List<FolderViewModel> categories) {
+    public void setCategories(List<Folder> categories) {
         mCategories = categories;
     }
 
@@ -83,7 +83,7 @@ public class SelectFolderDialogFragment extends DialogFragment {
         dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-               FolderViewModel mSelectedCategory = mCategories.get(position);
+               Folder mSelectedCategory = mCategories.get(position);
                 if (mSelectedCategory != null){
                     mCategorySelectedListener.onCategorySelected(mSelectedCategory);
                 }

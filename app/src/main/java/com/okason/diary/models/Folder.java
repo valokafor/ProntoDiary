@@ -1,19 +1,23 @@
-package com.okason.diary.models.viewModel;
+package com.okason.diary.models;
 
-import java.util.List;
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class FolderViewModel {
+public class Folder extends RealmObject{
 
+    @PrimaryKey
     private String id;
-    private String categoryName;
+    private String folderName;
     private long dateCreated;
     private long dateModified;
-    private List<NoteViewModel> notes;
-    private List<TaskViewModel> todoLists;
+
+    private RealmList<Note> notes;
+    private RealmList<Task> todoLists;
 
     public String getId() {
         return id;
@@ -23,12 +27,12 @@ public class FolderViewModel {
         this.id = id;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    public String getFolderName() {
+        return folderName;
     }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
     }
 
     public long getDateCreated() {
@@ -47,19 +51,19 @@ public class FolderViewModel {
         this.dateModified = dateModified;
     }
 
-    public List<TaskViewModel> getTodoLists() {
+    public RealmList<Task> getTodoLists() {
         return todoLists;
     }
 
-    public void setTodoLists(List<TaskViewModel> todoLists) {
+    public void setTodoLists(RealmList<Task> todoLists) {
         this.todoLists = todoLists;
     }
 
-    public List<NoteViewModel> getNotes() {
+    public RealmList<Note> getNotes() {
         return notes;
     }
 
-    public void setNotes(List<NoteViewModel> notes) {
+    public void setNotes(RealmList<Note> notes) {
         this.notes = notes;
     }
 }

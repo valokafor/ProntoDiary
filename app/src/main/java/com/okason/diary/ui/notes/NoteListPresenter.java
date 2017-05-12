@@ -1,10 +1,7 @@
 package com.okason.diary.ui.notes;
 
-import android.os.Handler;
-import android.os.Looper;
-
-import com.okason.diary.data.SampleData;
-import com.okason.diary.models.viewModel.NoteViewModel;
+import com.okason.diary.data.NoteRealmRepository;
+import com.okason.diary.models.Note;
 
 import java.util.List;
 
@@ -15,36 +12,36 @@ import java.util.List;
 public class NoteListPresenter implements NoteListContract.Actions{
     private final NoteListContract.View mView;
     private  NoteListContract.Repository mRepository;
+    private Note mCurrentNote = null;
 
     private boolean isDualScreen = false;
 
     public NoteListPresenter(NoteListContract.View mView) {
         this.mView = mView;
-        this.mRepository = mRepository;
+        this.mRepository = new NoteRealmRepository();
     }
 
 
     @Override
     public void loadNotes(boolean forceUpdate) {
         mView.setProgressIndicator(true);
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                List<NoteViewModel> notes = SampleData.getSampleNotes();
-                mView.setProgressIndicator(false);
-                if (notes != null && notes.size() > 0){
-                    mView.showEmptyText(false);
-                    mView.showNotes(notes);
-                }else {
-                    mView.showEmptyText(true);
-                }
-            }
-        }, 500);
+        List<Note> notes = mRepository.getAllNotes();
+        mView.setProgressIndicator(false);
+        if (notes != null && notes.size() > 0){
+            mView.showEmptyText(false);
+            mView.showNotes(notes);
+        }else {
+            mView.showEmptyText(true);
+        }
 
     }
 
     @Override
-    public void deleteNote(NoteViewModel note) {
-
+    public void deleteNote(Note note) {
+        mRepository.deleteNote(note);
     }
+
+
+
+
 }

@@ -1,22 +1,29 @@
-package com.okason.diary.models.realm;
+package com.okason.diary.models;
 
-import com.okason.diary.models.viewModel.NoteViewModel;
-import com.okason.diary.models.viewModel.TaskViewModel;
-
-import java.util.List;
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class TagDto {
+public class Tag extends RealmObject{
 
+    @PrimaryKey
     private String id;
     private String tagName;
     private long dateCreated;
     private long dateModified;
-    private List<NoteViewModel> notes;
-    private List<TaskViewModel> todoLists;
+
+    private RealmList<Note> notes;
+    private RealmList<Task> todoLists;
+
+    public Tag(){
+
+    }
+
+
 
     public String getId() {
         return id;
@@ -50,19 +57,19 @@ public class TagDto {
         this.dateModified = dateModified;
     }
 
-    public List<NoteViewModel> getNotes() {
+    public RealmList<Note> getNotes() {
         return notes;
     }
 
-    public void setNotes(List<NoteViewModel> notes) {
+    public void setNotes(RealmList<Note> notes) {
         this.notes = notes;
     }
 
-    public List<TaskViewModel> getTodoLists() {
+    public RealmList<Task> getTodoLists() {
         return todoLists;
     }
 
-    public void setTodoLists(List<TaskViewModel> todoLists) {
+    public void setTodoLists(RealmList<Task> todoLists) {
         this.todoLists = todoLists;
     }
 }

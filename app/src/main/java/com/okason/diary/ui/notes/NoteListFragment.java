@@ -26,7 +26,7 @@ import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
-import com.okason.diary.models.viewModel.NoteViewModel;
+import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.utils.Constants;
 
@@ -89,7 +89,7 @@ public class NoteListFragment extends Fragment implements
         ButterKnife.bind(this, mRootView);
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
-        mListAdapter = new NoteListAdapter(new ArrayList<NoteViewModel>(), getContext());
+        mListAdapter = new NoteListAdapter(new ArrayList<Note>(), getContext());
         mRecyclerView.setAdapter(mListAdapter);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -111,7 +111,7 @@ public class NoteListFragment extends Fragment implements
 
         mListAdapter.setNoteItemListener(new NoteItemListener() {
             @Override
-            public void onNoteClick(NoteViewModel clickedNote) {
+            public void onNoteClick(Note clickedNote) {
                 if (isDualScreen) {
                     showDualDetailUi(clickedNote);
                 } else {
@@ -120,7 +120,7 @@ public class NoteListFragment extends Fragment implements
             }
 
             @Override
-            public void onDeleteButtonClicked(NoteViewModel clickedNote) {
+            public void onDeleteButtonClicked(Note clickedNote) {
                 showDeleteConfirmation(clickedNote);
             }
         });
@@ -177,7 +177,7 @@ public class NoteListFragment extends Fragment implements
     }
 
     @Override
-    public void showNotes(List<NoteViewModel> notes) {
+    public void showNotes(List<Note> notes) {
         mListAdapter.replaceData(notes);
     }
 
@@ -197,7 +197,7 @@ public class NoteListFragment extends Fragment implements
     }
 
     @Override
-    public void showDeleteConfirmation(NoteViewModel note) {
+    public void showDeleteConfirmation(Note note) {
         boolean shouldPromptForDelete = PreferenceManager
                 .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
         if (shouldPromptForDelete) {
@@ -232,12 +232,12 @@ public class NoteListFragment extends Fragment implements
     }
 
 
-    public void showDualDetailUi(NoteViewModel note) {
+    public void showDualDetailUi(Note note) {
 //        NoteListActivity activity = (NoteListActivity)getActivity();
 //        activity.showTwoPane(note);
     }
 
-    public void promptForDelete(final NoteViewModel note){
+    public void promptForDelete(final Note note){
         String content;
         if (!TextUtils.isEmpty(note.getContent())) {
             content = note.getContent();

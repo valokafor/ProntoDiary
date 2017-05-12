@@ -1,14 +1,14 @@
 package com.okason.diary.core.listeners;
 
 
-import com.okason.diary.models.viewModel.FolderViewModel;
+import com.okason.diary.models.Folder;
 
 /**
  * Created by Valentine on 3/6/2016.
  */
 public interface OnFolderSelectedListener {
-    void onCategorySelected(FolderViewModel selectedCategory);
-    void onEditCategoryButtonClicked(FolderViewModel selectedCategory);
-    void onDeleteCategoryButtonClicked(FolderViewModel selectedCategory);
+    void onCategorySelected(Folder selectedCategory);
+    void onEditCategoryButtonClicked(Folder selectedCategory);
+    void onDeleteCategoryButtonClicked(Folder selectedCategory);
     void onAddCategoryButtonClicked();
 }

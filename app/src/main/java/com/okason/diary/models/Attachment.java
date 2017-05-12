@@ -1,24 +1,30 @@
-package com.okason.diary.models.viewModel;
+package com.okason.diary.models;
+
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class AttachmentViewModel {
+public class Attachment extends RealmObject{
 
+    @PrimaryKey
     private String id;
     private String uriLocalPath;
     private String uriCloudPath;
     private String name;
+    private String comment;
     private long size;
     private long length;
     private String mime_type;
 
-    public AttachmentViewModel(){
+    public Attachment(){
 
     }
 
-    public AttachmentViewModel(String ext){
+
+    public Attachment(String ext){
         mime_type = ext;
     }
 
@@ -77,5 +83,13 @@ public class AttachmentViewModel {
 
     public void setMime_type(String mime_type) {
         this.mime_type = mime_type;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

@@ -16,9 +16,9 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.okason.diary.R;
-import com.okason.diary.core.events.OnFolderAddedEvent;
+import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.events.OnFolderUpdatedEvent;
-import com.okason.diary.models.viewModel.FolderViewModel;
+import com.okason.diary.models.Folder;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
@@ -35,7 +35,7 @@ public class AddFolderDialogFragment extends DialogFragment {
     private Realm realm;
     private String categoryId = "";
 
-    private FolderViewModel mFolder = null;
+    private Folder mFolder = null;
 
 
 
@@ -70,7 +70,7 @@ public class AddFolderDialogFragment extends DialogFragment {
             String jsonCategory = args.getString(Constants.SERIALIZED_CATEGORY);
             if (!TextUtils.isEmpty(jsonCategory)){
                 Gson gson = new Gson();
-                mFolder = gson.fromJson(jsonCategory, FolderViewModel.class);
+                mFolder = gson.fromJson(jsonCategory, Folder.class);
             }
             if (mFolder != null){
                 mInEditMode = true;
@@ -114,9 +114,9 @@ public class AddFolderDialogFragment extends DialogFragment {
                 }
             });
 
-            if (mFolder != null && !TextUtils.isEmpty(mFolder.getCategoryName())){
+            if (mFolder != null && !TextUtils.isEmpty(mFolder.getFolderName())){
                 populateFields(mFolder);
-                addCategoryDialog.setTitle(mFolder.getCategoryName());
+                addCategoryDialog.setTitle(mFolder.getFolderName());
             }
 
 
@@ -125,8 +125,8 @@ public class AddFolderDialogFragment extends DialogFragment {
         return addCategoryDialog.create();
     }
 
-    private void populateFields(FolderViewModel category) {
-        mFolderEditText.setText(category.getCategoryName());
+    private void populateFields(Folder category) {
+        mFolderEditText.setText(category.getFolderName());
     }
 
     private boolean requiredFieldCompleted(){
@@ -175,12 +175,12 @@ public class AddFolderDialogFragment extends DialogFragment {
             @Override
             public void execute(Realm realm) {
                 if (mInEditMode){
-                    mFolder.setCategoryName(categoryName);
+                    mFolder.setFolderName(categoryName);
                     EventBus.getDefault().post(new OnFolderUpdatedEvent(mFolder));
                 } else {
-                    mFolder = new FolderViewModel();
-                    mFolder.setCategoryName(categoryName);
-                    EventBus.getDefault().post(new OnFolderAddedEvent(mFolder));
+                    mFolder = new Folder();
+                    mFolder.setFolderName(categoryName);
+                    EventBus.getDefault().post(new FolderAddedEvent(mFolder));
                 }
             }
         });

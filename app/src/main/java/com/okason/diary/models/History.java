@@ -1,10 +1,14 @@
-package com.okason.diary.models.viewModel;
+package com.okason.diary.models;
+
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Valentine on 4/14/2017.
  */
 
-public class HistoryViewModel {
+public class History extends RealmObject{
+    @PrimaryKey
     private long id;
     private String title;
     private long dateAdded;
