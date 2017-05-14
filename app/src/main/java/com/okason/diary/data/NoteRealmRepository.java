@@ -1,8 +1,12 @@
 package com.okason.diary.data;
 
+import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.notes.NoteListContract;
+import com.okason.diary.utils.Constants;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +33,25 @@ public class NoteRealmRepository implements NoteListContract.Repository{
     }
 
     @Override
+    public int getNotePosition(String noteId) {
+        List<Note> noteList = getAllNotes();
+        for (int i = 0; i < noteList.size(); i++){
+            if (noteList.get(i).getId().equals(noteId)){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
     public Note getNoteById(String noteId) {
-        return null;
+        Note selectedNote;
+        try (Realm realm = Realm.getDefaultInstance()){
+            selectedNote = realm.where(Note.class).equalTo("id", noteId).findFirst();
+        }catch (Exception e){
+            selectedNote = null;
+        }
+        return selectedNote;
     }
 
     @Override
@@ -106,12 +127,23 @@ public class NoteRealmRepository implements NoteListContract.Repository{
     }
 
     @Override
-    public void deleteNote(final Note note) {
+    public void deleteNote(final String noteId) {
+        String result;
         try (Realm realm = Realm.getDefaultInstance()){
             realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm backgroundRealm) {
-                    backgroundRealm.where(Note.class).equalTo("id", note.getId()).findFirst().deleteFromRealm();
+                    backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst().deleteFromRealm();
+                }
+            }, new Realm.Transaction.OnSuccess() {
+                @Override
+                public void onSuccess() {
+                    EventBus.getDefault().post(new ItemDeletedEvent(Constants.RESULT_OK));
+                }
+            }, new Realm.Transaction.OnError() {
+                @Override
+                public void onError(Throwable error) {
+                    EventBus.getDefault().post(new ItemDeletedEvent(error.getLocalizedMessage()));
                 }
             });
         }

@@ -88,7 +88,7 @@
     <string name="action_add">Add</string>
     <string name="action_sort">Sort</string>
     <string name="action_search">Search</string>
-    <string name="action_edit">Play</string>
+    <string name="action_edit">Edit</string>
     <string name="action_play">Play</string>
     <string name="note_detail">Note Detail</string>
     <string name="action_send">Send</string>
@@ -127,6 +127,11 @@
     <string name="add_folder">Add Folder</string>
     <string name="required">Required</string>
     <string name="no_folder">No folder found</string>
+    <string name="title_activity_note_detail">Journal Entry</string>
+
+    <string name="creation">Created:</string>
+    <string name="last_update">Updated:</string>
+    <string name="delete_prompt">Delete</string>
 
 
 </resources>

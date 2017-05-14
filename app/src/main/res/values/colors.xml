@@ -10,6 +10,7 @@
     <color name="divider">#BDBDBD</color>
 
     <color name="white">#ffffff</color>
+    <color name="off_white">#FFFDE7</color>
 
     <color name="material_green_50">#E8F5E9</color>
     <color name="material_green_500">#4CAF50</color>

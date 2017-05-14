@@ -30,12 +30,13 @@ public interface NoteListContract {
 
     interface Repository{
         List<Note> getAllNotes();
+        int getNotePosition(String noteId);
         Note getNoteById(String noteId);
         Note createNewNote();
         void updatedNoteTitle(String noteId, String title);
         void updatedNoteContent(String noteId, String content);
         void setFolder(String folderId, String noteId);
-        void deleteNote(Note note);
+        void deleteNote(String noteId);
         void saveNote(Note note);
 
 

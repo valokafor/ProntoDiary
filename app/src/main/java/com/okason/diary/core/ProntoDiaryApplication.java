@@ -4,8 +4,7 @@ import android.app.Application;
 
 import com.facebook.FacebookSdk;
 import com.okason.diary.BuildConfig;
-
-import java.util.concurrent.atomic.AtomicLong;
+import com.squareup.leakcanary.LeakCanary;
 
 import io.realm.Realm;
 import io.realm.log.LogLevel;
@@ -19,21 +18,21 @@ public class ProntoDiaryApplication extends Application {
     public static final String AUTH_URL = "http://" + BuildConfig.OBJECT_SERVER_IP + ":9080/auth";
     public static final String REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/~/prontodiary";
 
-    public static AtomicLong notePrimaryKey;
-    public static AtomicLong folderPrimaryKey;
-    public static AtomicLong taskPrimaryKey;
-
-
-
-
 
 
     @Override
     public void onCreate() {
         super.onCreate();
+        if (LeakCanary.isInAnalyzerProcess(this)) {
+            // This process is dedicated to LeakCanary for heap analysis.
+            // You should not init your app in this process.
+            return;
+        }
+        LeakCanary.install(this);
         Realm.init(this);
         FacebookSdk.sdkInitialize(this);
         RealmLog.setLevel(LogLevel.TRACE);
+
     }
 
 

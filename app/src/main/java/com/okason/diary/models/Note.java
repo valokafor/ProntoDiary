@@ -18,7 +18,9 @@ public class Note extends RealmObject {
 
 
     public Note(){
-
+        attachments = new RealmList<>();
+        dateCreated = System.currentTimeMillis();
+        dateModified = System.currentTimeMillis();
     }
 
 

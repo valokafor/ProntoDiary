@@ -3,9 +3,11 @@ package com.okason.diary.ui.notes;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -25,10 +27,16 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.R;
+import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
+import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -115,7 +123,7 @@ public class NoteListFragment extends Fragment implements
                 if (isDualScreen) {
                     showDualDetailUi(clickedNote);
                 } else {
-                    showSingleDetailUi(clickedNote.getId());
+                    showSingleDetailUi(clickedNote);
                 }
             }
 
@@ -132,6 +140,32 @@ public class NoteListFragment extends Fragment implements
     public void onResume() {
         super.onResume();
         mPresenter.loadNotes(false);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    /**
+     * This event will be fired when a Note is deleted
+     * If deleted successfuly, go back to the Note List
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onItemDeletedEvent(ItemDeletedEvent event){
+        if (event.getResult().equals(Constants.RESULT_OK)){
+            mPresenter.loadNotes(true);
+        }else {
+            makeToast(event.getResult());
+        }
     }
 
     @Override
@@ -227,8 +261,8 @@ public class NoteListFragment extends Fragment implements
 
     }
 
-    public void showSingleDetailUi(String noteId) {
-       // startActivity(NoteDetailActivity.getStartIntent(getContext(), noteId));
+    public void showSingleDetailUi(Note selectedNote) {
+       startActivity(NoteDetailActivity.getStartIntent(getContext(), selectedNote.getId()));
     }
 
 
@@ -268,6 +302,15 @@ public class NoteListFragment extends Fragment implements
             }
         });
         alertDialog.show();
+    }
+
+    private void makeToast(String message){
+        Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
+        View snackBarView = snackbar.getView();
+        snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
+        TextView tv = (TextView)snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+        tv.setTextColor(Color.WHITE);
+        snackbar.show();
     }
 
 

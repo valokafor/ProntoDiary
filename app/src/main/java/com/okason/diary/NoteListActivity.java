@@ -20,6 +20,8 @@ import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.core.events.ShowFragmentEvent;
+import com.okason.diary.data.SampleData;
+import com.okason.diary.models.Note;
 import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.notes.NoteListFragment;
@@ -31,6 +33,9 @@ import com.okason.diary.utils.Constants;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.List;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -154,41 +159,6 @@ public class NoteListActivity extends AppCompatActivity {
 
 
     }
-
-
-//    private void loginAnonymously() {
-//        if (mAuth == null){
-//            mAuth = FirebaseAuth.getInstance();
-//        }
-//
-//        mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-//            @Override
-//            public void onComplete(@NonNull Task<AuthResult> task) {
-//                if (task.isSuccessful()){
-//                    FirebaseUser user = mAuth.getCurrentUser();
-//                    if (user != null){
-//                        preferences.edit().putString(Constants.ANONYMOUS_ACCOUNT_USER_ID, user.getUid()).commit();
-//                        updateUI(user);
-//                    }
-//
-//                }else {
-//                    makeToast(getString(R.string.anonymous_account_failed_error));
-//                }
-//            }
-//        });
-//    }
-//
-//    private void loginRegisteredUser() {
-//        mFirebaseUser = mAuth.getCurrentUser();
-//        if (mFirebaseUser == null){
-//            //Go to sign in Activity
-//            startActivity(new Intent(mActivity, AuthUiActivity.class));
-//        }else {
-//            updateUI(mFirebaseUser);
-//        }
-//
-//    }
-
 
 
     @Override
@@ -331,6 +301,20 @@ public class NoteListActivity extends AppCompatActivity {
                 .commit();
         getSupportActionBar().setTitle(screenTitle);
     }
+
+    private void addSampleData(){
+        List<Note> notes = SampleData.getSampleNotes();
+        for (Note note: notes){
+            realm.beginTransaction();
+            String id = UUID.randomUUID().toString();
+            Note savedNote = realm.createObject(Note.class, id);
+            savedNote.setTitle(note.getTitle());
+            savedNote.setContent(note.getContent());
+            savedNote.setDateModified(note.getDateCreated());
+            realm.commitTransaction();
+        }
+    }
+
 
 
 

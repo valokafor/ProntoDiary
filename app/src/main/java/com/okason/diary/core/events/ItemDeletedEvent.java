@@ -5,13 +5,13 @@ package com.okason.diary.core.events;
  */
 
 public class ItemDeletedEvent {
-    private final boolean shouldUpdatedList;
+    private final String result;
 
-    public ItemDeletedEvent(boolean shouldUpdatedList) {
-        this.shouldUpdatedList = shouldUpdatedList;
+    public ItemDeletedEvent(String deleteResult) {
+        this.result = deleteResult;
     }
 
-    public boolean isShouldUpdatedList() {
-        return shouldUpdatedList;
+    public String getResult() {
+        return result;
     }
 }

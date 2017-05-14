@@ -54,7 +54,7 @@ public class TimeUtils {
 
     public static String getDueDate(long date){
 
-        String displayDate = new SimpleDateFormat("MMM dd, yyyy").format(new Date(date));
+        String displayDate = new SimpleDateFormat("EEEE, MMMM d, yyyy").format(new Date(date));
         return displayDate;
     }
 

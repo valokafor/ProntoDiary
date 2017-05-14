@@ -58,6 +58,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.okason.diary.NoteListActivity" />
         </activity>
+        <activity
+            android:name=".ui.notedetails.NoteDetailActivity"
+            android:label="@string/title_activity_note_detail"
+            android:parentActivityName=".NoteListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.okason.diary.NoteListActivity" />
+        </activity>
     </application>
 
 </manifest>

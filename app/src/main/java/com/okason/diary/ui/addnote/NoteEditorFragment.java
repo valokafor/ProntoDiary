@@ -178,7 +178,7 @@ public class NoteEditorFragment extends Fragment implements
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onItemDeletedEvent(ItemDeletedEvent event){
-        if (event.isShouldUpdatedList()){
+        if (event.getResult().equals(Constants.RESULT_OK)){
             //When a Note is Deleted, go to the Note List
             startActivity(new Intent(getActivity(), NoteListActivity.class));
         }
@@ -198,6 +198,40 @@ public class NoteEditorFragment extends Fragment implements
 
     @Override
     public void populateNote(Note note) {
+
+        mTitle.setHint(R.string.placeholder_journal_title);
+        mContent.setHint(R.string.placeholder_journal_text);
+
+        try {
+            mContent.setText(note.getContent());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            mTitle.setText(note.getTitle());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (note.getFolder() != null){
+            mCategory.setText(note.getFolder().getFolderName());
+        }else {
+            mCategory.setText(Constants.DEFAULT_CATEGORY);
+        }
+        mContent.requestFocus();
+
+//        if (!TextUtils.isEmpty(note.getLocalAudioPath())){
+//            mLocalAudioFilePath = note.getLocalAudioPath();
+//        }
+//        if (!TextUtils.isEmpty(note.getLocalImagePath())){
+//            mLocalImagePath = note.getLocalImagePath();
+//            populateImage(mLocalImagePath);
+//        }
+//        if (!TextUtils.isEmpty(note.getLocalSketchImagePath())){
+//            mLocalSketchPath = note.getLocalSketchImagePath();
+//            populateSketch(mLocalSketchPath);
+//        }
+
 
     }
 

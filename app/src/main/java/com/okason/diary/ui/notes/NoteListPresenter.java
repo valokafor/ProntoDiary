@@ -38,7 +38,7 @@ public class NoteListPresenter implements NoteListContract.Actions{
 
     @Override
     public void deleteNote(Note note) {
-        mRepository.deleteNote(note);
+        mRepository.deleteNote(note.getId());
     }
 
 
