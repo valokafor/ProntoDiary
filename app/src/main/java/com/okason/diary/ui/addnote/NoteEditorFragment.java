@@ -8,6 +8,8 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -17,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -24,7 +27,9 @@ import android.widget.TextView;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.ItemDeletedEvent;
+import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
+import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.utils.Constants;
@@ -32,6 +37,8 @@ import com.okason.diary.utils.Constants;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -48,6 +55,7 @@ public class NoteEditorFragment extends Fragment implements
     private AddNoteContract.Action mPresenter;
     private SelectFolderDialogFragment selectFolderDialogFragment;
     private AddFolderDialogFragment addFolderDialogFragment;
+    private AttachmentListAdapter attachmentListAdapter;
 
     @BindView(R.id.edit_text_category)
     EditText mCategory;
@@ -56,6 +64,10 @@ public class NoteEditorFragment extends Fragment implements
     @BindView(R.id.image_attachment)
     ImageView mImageAttachment;
     @BindView(R.id.sketch_attachment) ImageView mSketchAttachment;
+    @BindView(R.id.attachment_list)
+    ViewStub attachmentLayout;
+    private RecyclerView attachmentRecyclerView;
+
 
 
 
@@ -219,19 +231,22 @@ public class NoteEditorFragment extends Fragment implements
             mCategory.setText(Constants.DEFAULT_CATEGORY);
         }
         mContent.requestFocus();
+        if (note.getAttachments() != null && note.getAttachments().size() > 0){
+            initViewAttachments(note.getAttachments());
+        }
 
-//        if (!TextUtils.isEmpty(note.getLocalAudioPath())){
-//            mLocalAudioFilePath = note.getLocalAudioPath();
-//        }
-//        if (!TextUtils.isEmpty(note.getLocalImagePath())){
-//            mLocalImagePath = note.getLocalImagePath();
-//            populateImage(mLocalImagePath);
-//        }
-//        if (!TextUtils.isEmpty(note.getLocalSketchImagePath())){
-//            mLocalSketchPath = note.getLocalSketchImagePath();
-//            populateSketch(mLocalSketchPath);
-//        }
+    }
 
+    private void initViewAttachments(List<Attachment> attachmentList){
+        attachmentLayout.inflate();
+        attachmentRecyclerView = (RecyclerView) mRootView.findViewById(R.id.attachment_list_recyclerview);
+
+        attachmentListAdapter = new AttachmentListAdapter(attachmentList, getActivity());
+        RecyclerView.LayoutManager layoutManager =
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+        attachmentRecyclerView.setLayoutManager(layoutManager);
+        attachmentRecyclerView.setHasFixedSize(true);
+        attachmentRecyclerView.setAdapter(attachmentListAdapter);
 
     }
 

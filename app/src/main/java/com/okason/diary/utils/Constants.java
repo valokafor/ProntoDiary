@@ -22,8 +22,7 @@ public class Constants {
     }
 
 
-    public static final String TAG = "Pronto Notes";
-    public static final String PACKAGE = "com.okason.prontonote";
+
     public static final String DATE_FORMAT_SORTABLE = "yyyyMMdd_HHmmss_SSS";
     public static final String DATE_FORMAT_SORTABLE_OLD = "yyyyMMddHHmmss";
     public static final String DATE_FORMAT_EXPORT = "yyyy.MM.dd-HH.mm";
@@ -102,14 +101,17 @@ public class Constants {
     public static final String ATTACHMENTS_FOLDER = "ProntoNote/Attachments";
 
 
-    public final static String MIME_TYPE_IMAGE = "image/jpeg";
-    public final static String MIME_TYPE_AUDIO = "audio/amr";
-    public final static String MIME_TYPE_SKETCH = "image/png";
+    public static final String MIME_TYPE_IMAGE = "image/jpeg";
+    public static final String MIME_TYPE_AUDIO = "audio/amr";
+    public static final String MIME_TYPE_VIDEO = "video/mp4";
+    public static final String MIME_TYPE_SKETCH = "image/png";
+    public static final String MIME_TYPE_FILES = "file/*";
 
-
-    public final static String MIME_TYPE_IMAGE_EXT = ".jpeg";
-    public final static String MIME_TYPE_AUDIO_EXT = ".amr";
-    public final static String MIME_TYPE_SKETCH_EXT = ".png";
+    public static final String MIME_TYPE_IMAGE_EXT = ".jpeg";
+    public static final String MIME_TYPE_AUDIO_EXT = ".amr";
+    public static final String MIME_TYPE_VIDEO_EXT = ".mp4";
+    public static final String MIME_TYPE_SKETCH_EXT = ".png";
+    public static final String MIME_TYPE_CONTACT_EXT = ".vcf";
 
 
     public static final String FIREBASE_STORAGE_BUCKET = "gs://prontonote.appspot.com";
@@ -128,4 +130,10 @@ public class Constants {
     public static final String TODO_LIST_FRAGMENT_TAG = "todo_list_fragment";
     public static final String SYNC_FRAGMENT_TAG = "sync_fragment";
     public static final String TAG_FRAGMENT_TAG = "tag_fragment";
+
+
+    public static final String TAG = "Pronto Diary";
+    public static final String EXTERNAL_STORAGE_FOLDER = "Pronto_Diary";
+    public static final String PACKAGE = "com.okason.diary";
+    public static final String PREFS_NAME = PACKAGE + "_preferences";
 }

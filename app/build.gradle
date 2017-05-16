@@ -95,6 +95,8 @@ dependencies {
     compile('com.mikepenz:materialdrawer:5.9.1@aar') {
         transitive = true
     }
+
+    //Leak Canary
     compile 'com.google.android.gms:play-services-auth:10.2.0'
     compile 'com.google.firebase:firebase-ads:10.2.0'
     compile 'com.firebaseui:firebase-ui:1.2.0'
@@ -108,12 +110,11 @@ dependencies {
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.android.support:support-v4:25.3.1'
     testCompile 'junit:junit:4.12'
+    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
-
-    //Leak Canary
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.1'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
-    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+    compile 'commons-io:commons-io:2.5'
 }
 
 apply plugin: 'com.google.gms.google-services'

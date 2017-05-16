@@ -132,6 +132,11 @@
     <string name="creation">Created:</string>
     <string name="last_update">Updated:</string>
     <string name="delete_prompt">Delete</string>
+    <string name="storage_not_available">Strorage not available</string>
+    <string name="attachment">Attachment</string>
+
+    <string name="alarm_set_on">Reminder set for</string>
+    <string name="starting_from">starting from</string>
 
 
 </resources>

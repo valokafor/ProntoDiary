@@ -13,6 +13,13 @@
         android:focusableInTouchMode="true"
         android:orientation="vertical">
 
+        <ViewStub
+            android:id="@+id/attachment_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/accent"
+            android:layout="@layout/fragment_attachment_list"/>
+
         <android.support.design.widget.CoordinatorLayout
             android:id="@+id/detail_content_card"
             android:layout_width="match_parent"
