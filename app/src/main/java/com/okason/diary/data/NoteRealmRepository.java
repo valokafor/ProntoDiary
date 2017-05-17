@@ -1,6 +1,7 @@
 package com.okason.diary.data;
 
 import com.okason.diary.core.events.ItemDeletedEvent;
+import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.notes.NoteListContract;
@@ -153,6 +154,17 @@ public class NoteRealmRepository implements NoteListContract.Repository{
     @Override
     public void saveNote(Note note) {
 
+    }
+
+    @Override
+    public Attachment getAttachmentbyId(String id) {
+        Attachment attachment;
+        try (Realm realm = Realm.getDefaultInstance()){
+            attachment = realm.where(Attachment.class).equalTo("id", id).findFirst();
+        }catch (Exception e){
+            attachment = null;
+        }
+        return attachment;
     }
 
 

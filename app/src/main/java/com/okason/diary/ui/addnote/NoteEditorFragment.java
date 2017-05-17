@@ -24,9 +24,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.ItemDeletedEvent;
+import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
@@ -38,6 +40,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -237,7 +240,7 @@ public class NoteEditorFragment extends Fragment implements
 
     }
 
-    private void initViewAttachments(List<Attachment> attachmentList){
+    private void initViewAttachments(final List<Attachment> attachmentList){
         attachmentLayout.inflate();
         attachmentRecyclerView = (RecyclerView) mRootView.findViewById(R.id.attachment_list_recyclerview);
 
@@ -246,6 +249,23 @@ public class NoteEditorFragment extends Fragment implements
                 new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         attachmentRecyclerView.setLayoutManager(layoutManager);
         attachmentRecyclerView.setHasFixedSize(true);
+
+        attachmentListAdapter.setListener(new OnAttachmentClickedListener() {
+            @Override
+            public void idOfClickedAttachment(String id) {
+                List<String> imageIds = new ArrayList<String>();
+                for (Attachment mAttachment : attachmentList) {
+                    if (Constants.MIME_TYPE_IMAGE.equals(mAttachment.getMime_type())
+                            || Constants.MIME_TYPE_SKETCH.equals(mAttachment.getMime_type())
+                            || Constants.MIME_TYPE_VIDEO.equals(mAttachment.getMime_type())) {
+                        imageIds.add(mAttachment.getId());
+
+                    }
+                }
+                Gson gson = new Gson();
+                String serializedAttachmentId = gson.toJson(imageIds, ArrayList<String>().cla)
+            }
+        });
         attachmentRecyclerView.setAdapter(attachmentListAdapter);
 
     }

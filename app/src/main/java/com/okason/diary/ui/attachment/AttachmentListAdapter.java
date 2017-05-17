@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.okason.diary.R;
+import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.utils.BitmapHelper;
 import com.okason.diary.utils.Constants;
@@ -32,6 +33,7 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
     private final List<Attachment> attachmentList;
     private final Context context;
     private final int screenWidth;
+    private OnAttachmentClickedListener listener;
 
     public AttachmentListAdapter(List<Attachment> attachmentList, Context context) {
         this.attachmentList = attachmentList;
@@ -39,6 +41,9 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
         screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
     }
 
+    public void setListener(OnAttachmentClickedListener listener) {
+        this.listener = listener;
+    }
 
     @Override
     public AttachmentListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -120,6 +125,12 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
         public ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this,itemView);
+            image.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.idOfClickedAttachment(attachmentList.get(getLayoutPosition()).getId());
+                }
+            });
         }
     }
 

@@ -137,6 +137,7 @@
 
     <string name="alarm_set_on">Reminder set for</string>
     <string name="starting_from">starting from</string>
+    <string name="action_gallery">Gallery</string>
 
 
 </resources>

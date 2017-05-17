@@ -20,7 +20,6 @@ import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.core.events.ShowFragmentEvent;
-import com.okason.diary.data.SampleData;
 import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.notes.NoteListFragment;
@@ -136,7 +135,7 @@ public class NoteListActivity extends AppCompatActivity {
         if (unregisteredUser) {
             Realm.setDefaultConfiguration(UserManager.getLocalConfig());
             realm = Realm.getDefaultInstance();
-            SampleData.getSampleNotes();
+            //SampleData.getSampleNotes();
             syncLayout.setVisibility(View.VISIBLE);
             settingsLayout.setVisibility(View.GONE);
             updateUI();

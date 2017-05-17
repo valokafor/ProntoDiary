@@ -2,6 +2,7 @@ package com.okason.diary.ui.notes;
 
 import android.content.Context;
 
+import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public interface NoteListContract {
         void setFolder(String folderId, String noteId);
         void deleteNote(String noteId);
         void saveNote(Note note);
+        Attachment getAttachmentbyId(String id);
 
 
     }

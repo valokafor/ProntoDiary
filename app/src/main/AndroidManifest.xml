@@ -67,6 +67,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.okason.diary.NoteListActivity" />
         </activity>
+        <activity android:name=".ui.attachment.GalleryActivity"></activity>
     </application>
 
 </manifest>
