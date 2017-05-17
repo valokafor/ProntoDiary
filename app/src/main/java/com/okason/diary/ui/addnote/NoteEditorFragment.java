@@ -32,6 +32,7 @@ import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
+import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.utils.Constants;
@@ -252,8 +253,10 @@ public class NoteEditorFragment extends Fragment implements
 
         attachmentListAdapter.setListener(new OnAttachmentClickedListener() {
             @Override
-            public void idOfClickedAttachment(String id) {
+            public void onAttachmentClicked(String selectedAttachmentId) {
+                //Create an Arraylist to hold Ids of Attachments that are image or Video
                 List<String> imageIds = new ArrayList<String>();
+
                 for (Attachment mAttachment : attachmentList) {
                     if (Constants.MIME_TYPE_IMAGE.equals(mAttachment.getMime_type())
                             || Constants.MIME_TYPE_SKETCH.equals(mAttachment.getMime_type())
@@ -262,8 +265,13 @@ public class NoteEditorFragment extends Fragment implements
 
                     }
                 }
+                //Create an Intent to take the Attachment Arraylist to Gallery Activity
                 Gson gson = new Gson();
-                String serializedAttachmentId = gson.toJson(imageIds, ArrayList<String>().cla)
+                String serializedAttachmentIds = gson.toJson(imageIds);
+                Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
+                galleryIntent.putExtra(Constants.SERIALIZED_ATTACHMENT_ID, serializedAttachmentIds);
+                galleryIntent.putExtra(Constants.SELECTED_ID, selectedAttachmentId);
+                startActivity(galleryIntent);
             }
         });
         attachmentRecyclerView.setAdapter(attachmentListAdapter);

@@ -5,5 +5,5 @@ package com.okason.diary.core.listeners;
  */
 
 public interface OnAttachmentClickedListener {
-    void idOfClickedAttachment(String id);
+    void onAttachmentClicked(String selectedAttachmentId);
 }

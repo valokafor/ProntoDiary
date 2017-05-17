@@ -128,7 +128,7 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
             image.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    listener.idOfClickedAttachment(attachmentList.get(getLayoutPosition()).getId());
+                    listener.onAttachmentClicked(attachmentList.get(getLayoutPosition()).getId());
                 }
             });
         }

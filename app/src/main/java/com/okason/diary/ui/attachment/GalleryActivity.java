@@ -77,19 +77,19 @@ public class GalleryActivity extends AppCompatActivity {
         int selectedPosition = 0;
 
         Gson gson = new Gson();
-        List<String> attachmentIds = gson.fromJson(serializedAttachmentsIds, new TypeToken<List<String>>(){}.getType());
+        List<String> listOfIds = gson.fromJson(serializedAttachmentsIds, new TypeToken<List<String>>(){}.getType());
 
-        if (attachmentIds != null && attachmentIds.size() > 0){
+        if (listOfIds != null && listOfIds.size() > 0){
             images = new ArrayList<>();
             repository = new NoteRealmRepository();
-            for (String id: attachmentIds){
+            for (String id: listOfIds){
                 //Get Attachment from Database
                 Attachment attachment = repository.getAttachmentbyId(id);
                 if (attachment != null){
                     images.add(attachment);
                 }
                 if (id.equals(selectAttachmentId)){
-                    selectedPosition = selectAttachmentId.indexOf(selectAttachmentId);
+                    selectedPosition = listOfIds.indexOf(selectAttachmentId);
                 }
             }
         }
