@@ -20,6 +20,7 @@ public interface AddNoteContract {
         void onFolderChange(Folder newFolder);
         void onNoteContentChange(String newContent);
         void getCurrentNote(String noteId);
+        String getCurrentNoteId();
     }
 
 

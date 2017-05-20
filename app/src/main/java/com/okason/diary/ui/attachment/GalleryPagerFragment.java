@@ -2,8 +2,6 @@ package com.okason.diary.ui.attachment;
 
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
-import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,7 +12,9 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.okason.diary.R;
-import com.okason.diary.utils.Display;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -25,6 +25,10 @@ public class GalleryPagerFragment extends Fragment {
     public static final String ARG_PATH = "path";
     private int mPageNumber;
     private Uri mImagePath;
+    private View mRootView;
+
+    @BindView(R.id.gallery_full_image)
+    ImageView mImageView;
 
     public GalleryPagerFragment() {
     }
@@ -46,11 +50,15 @@ public class GalleryPagerFragment extends Fragment {
 
     @SuppressLint({"NewApi"})
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ImageView rootView = new ImageView(this.getActivity());
-        rootView.setLayoutParams(new ActionBar.LayoutParams(-1, -1));
-        Point dimensions = Display.getUsableSize(this.getActivity());
-        Glide.with(this.getActivity()).load(this.mImagePath).fitCenter().crossFade().override(dimensions.x, dimensions.y).error(R.drawable.image_broken).into(rootView);
-        return rootView;
+
+        mRootView = inflater.inflate(R.layout.fragment_gallery_pager, container, false);
+        ButterKnife.bind(this, mRootView);
+
+        Glide.with(this.getActivity())
+                .load(this.mImagePath)
+                .centerCrop().crossFade()
+                .error(R.drawable.image_broken).into(mImageView);
+        return mRootView;
     }
 
     public int getPageNumber() {

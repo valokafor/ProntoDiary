@@ -8,17 +8,24 @@
         android:id="@+id/root_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="@dimen/margin_padding_tiny"
         android:animateLayoutChanges="true"
         android:focusableInTouchMode="true"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="@dimen/margin_padding_tiny">
 
-        <ViewStub
-            android:id="@+id/attachment_list"
+        <FrameLayout
+            android:id="@+id/attachment_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/accent"
-            android:layout="@layout/fragment_attachment_list"/>
+            android:visibility="gone">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/attachment_list_recyclerview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+
+        </FrameLayout>
 
         <android.support.design.widget.CoordinatorLayout
             android:id="@+id/detail_content_card"
@@ -154,6 +161,36 @@
 
         </android.support.design.widget.CoordinatorLayout>
 
+        <LinearLayout
+            android:id="@+id/timestap_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="3dp"
+            android:visibility="gone"
+            android:paddingTop="3dp">
+
+            <TextView
+                android:id="@+id/creation"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="left|start"
+                android:padding="0dp"
+                android:text="Updated Today"
+                android:textSize="@dimen/text_size_small" />
+
+            <TextView
+                android:id="@+id/last_modification"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:padding="0dp"
+                android:text="Modified Today"
+                android:textSize="@dimen/text_size_small" />
+        </LinearLayout>
+
 
     </LinearLayout>
 
@@ -161,51 +198,51 @@
         android:id="@+id/bottom_scrollview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/primary"
-            android:padding="5dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="5dp">
 
             <ImageButton
                 android:id="@+id/image_button_undo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:background="@null"
                 android:layout_margin="@dimen/margin_padding_small"
-                android:src="@drawable/ic_sort_white_24dp"/>
+                android:background="@null"
+                android:src="@drawable/ic_sort_white_24dp" />
 
             <ImageButton
                 android:id="@+id/image_button_record"
                 android:layout_width="@dimen/note_editor_icon_size"
                 android:layout_height="@dimen/note_editor_icon_size"
-                android:scaleType="center"
-                android:background="@null"
                 android:layout_margin="@dimen/margin_padding_small"
-                android:src="@drawable/ic_mic_white_24dp"/>
+                android:background="@null"
+                android:scaleType="center"
+                android:src="@drawable/ic_mic_white_24dp" />
 
             <ImageButton
                 android:id="@+id/image_button_play"
                 android:layout_width="@dimen/note_editor_icon_size"
                 android:layout_height="@dimen/note_editor_icon_size"
-                android:scaleType="center"
-                android:background="@null"
                 android:layout_margin="@dimen/margin_padding_small"
-                android:src="@drawable/ic_play_arrow_white_24dp"/>
+                android:background="@null"
+                android:scaleType="center"
+                android:src="@drawable/ic_play_arrow_white_24dp" />
 
             <ImageButton
                 android:id="@+id/image_button_camara"
                 android:layout_width="@dimen/note_editor_icon_size"
                 android:layout_height="@dimen/note_editor_icon_size"
-                android:scaleType="center"
-                android:background="@null"
                 android:layout_margin="@dimen/margin_padding_small"
-                android:src="@drawable/ic_photo_camera_white_24dp"/>
+                android:background="@null"
+                android:scaleType="center"
+                android:src="@drawable/ic_photo_camera_white_24dp" />
 
 
         </LinearLayout>

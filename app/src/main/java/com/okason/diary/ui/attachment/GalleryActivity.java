@@ -10,14 +10,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
+import android.widget.LinearLayout;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
-import com.okason.diary.core.listeners.OnViewTouchedListener;
 import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Attachment;
+import com.okason.diary.models.Note;
 import com.okason.diary.ui.notes.NoteListContract;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.StorageHelper;
@@ -47,12 +45,18 @@ public class GalleryActivity extends AppCompatActivity {
      */
     private static final boolean TOGGLE_ON_CLICK = true;
 
-    @BindView(R.id.gallery_root) InterceptorFrameLayout galleryRootView;
-    @BindView(R.id.fullscreen_content)
+    @BindView(R.id.gallery_root)
+    LinearLayout galleryRootView;
+    @BindView(R.id.viewpager)
     ViewPager mViewPager;
 
-    private List<Attachment> images;
+    private List<Attachment> attachments;
+
+
     private NoteListContract.Repository repository;
+
+    //This Id is used to go back to the Note that has this attachment
+    private Note parentNote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +64,8 @@ public class GalleryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_gallery);
         ButterKnife.bind(this);
 
-        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_ATTACHMENT_ID)){
+        if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)){
+            repository = new NoteRealmRepository();
             initViews();
             initData();
         }else {
@@ -72,41 +77,50 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     private void initData() {
-        String serializedAttachmentsIds = getIntent().getStringExtra(Constants.SERIALIZED_ATTACHMENT_ID);
+        String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
+        parentNote = repository.getNoteById(noteId);
         String selectAttachmentId = getIntent().getStringExtra(Constants.SELECTED_ID);
         int selectedPosition = 0;
 
-        Gson gson = new Gson();
-        List<String> listOfIds = gson.fromJson(serializedAttachmentsIds, new TypeToken<List<String>>(){}.getType());
+        if (parentNote != null){
+            //Create an Arraylist to hold Ids of Attachments that are image or Video
+            attachments = new ArrayList<Attachment>();
 
-        if (listOfIds != null && listOfIds.size() > 0){
-            images = new ArrayList<>();
-            repository = new NoteRealmRepository();
-            for (String id: listOfIds){
-                //Get Attachment from Database
-                Attachment attachment = repository.getAttachmentbyId(id);
-                if (attachment != null){
-                    images.add(attachment);
-                }
-                if (id.equals(selectAttachmentId)){
-                    selectedPosition = listOfIds.indexOf(selectAttachmentId);
+            for (Attachment attachment : parentNote.getAttachments()) {
+                if (Constants.MIME_TYPE_IMAGE.equals(attachment.getMime_type())
+                        || Constants.MIME_TYPE_SKETCH.equals(attachment.getMime_type())
+                        || Constants.MIME_TYPE_VIDEO.equals(attachment.getMime_type())) {
+                    attachments.add(attachment);
+
                 }
             }
+
+
+
+            for (int i = 0; i < attachments.size(); i++){
+                if (attachments.get(i).getId().equals(selectAttachmentId)){
+                    selectedPosition = i;
+                    break;
+                }
+            }
+
+
+            AttachmentPagerAdapter pagerAdapter = new AttachmentPagerAdapter(getSupportFragmentManager(), attachments);
+            mViewPager.setOffscreenPageLimit(3);
+            mViewPager.setAdapter(pagerAdapter);
+            mViewPager.setCurrentItem(selectedPosition);
+
+            getSupportActionBar().setTitle(parentNote.getTitle());
+            getSupportActionBar().setSubtitle("(" + (selectedPosition + 1) + "/" + attachments.size() + ")");
+
         }
 
-        AttachmentPagerAdapter pagerAdapter = new AttachmentPagerAdapter(getSupportFragmentManager(), images);
-        mViewPager.setOffscreenPageLimit(3);
-        mViewPager.setAdapter(pagerAdapter);
-        mViewPager.setCurrentItem(selectedPosition);
 
-        getSupportActionBar().setTitle("sample Title");
-        getSupportActionBar().setSubtitle("(" + (selectedPosition + 1) + "/" + images.size() + ")");
 
         // If selected attachment is a video it will be immediately played
 //        if (images.get(clickedImage).getMime_type().equals(Constants.MIME_TYPE_VIDEO)) {
 //            viewMedia();
 //        }
-
 
 
     }
@@ -145,7 +159,7 @@ public class GalleryActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        galleryRootView.setOnViewTouchedListener(screenTouches);
+
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -154,7 +168,7 @@ public class GalleryActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                getSupportActionBar().setSubtitle("(" + (position + 1) + "/" + images.size() + ")");
+                getSupportActionBar().setSubtitle("(" + (position + 1) + "/" + attachments.size() + ")");
             }
 
             @Override
@@ -167,7 +181,7 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     private void viewMedia() {
-        Attachment attachment = images.get(mViewPager.getCurrentItem());
+        Attachment attachment = attachments.get(mViewPager.getCurrentItem());
         String imageFilePath = TextUtils.isEmpty(attachment.getUriCloudPath())
                 ? attachment.getUriLocalPath(): attachment.getUriCloudPath();
 
@@ -180,7 +194,7 @@ public class GalleryActivity extends AppCompatActivity {
 
     private void shareMedia() {
 
-        Attachment attachment = images.get(mViewPager.getCurrentItem());
+        Attachment attachment = attachments.get(mViewPager.getCurrentItem());
         String imageFilePath = TextUtils.isEmpty(attachment.getUriCloudPath())
                 ? attachment.getUriLocalPath(): attachment.getUriCloudPath();
 
@@ -192,44 +206,6 @@ public class GalleryActivity extends AppCompatActivity {
 
 
 
-    OnViewTouchedListener screenTouches = new OnViewTouchedListener() {
-        private final int MOVING_THRESHOLD = 30;
-        float x;
-        float y;
-        private boolean status_pressed = false;
 
-
-        @Override
-        public void onViewTouchOccurred(MotionEvent ev) {
-            if ((ev.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
-                x = ev.getX();
-                y = ev.getY();
-                status_pressed = true;
-            }
-            if ((ev.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_MOVE) {
-                float dx = Math.abs(x - ev.getX());
-                float dy = Math.abs(y - ev.getY());
-                double dxy = Math.sqrt(dx * dx + dy * dy);
-                Log.d(Constants.TAG, "Moved of " + dxy);
-                if (dxy >= MOVING_THRESHOLD) {
-                    status_pressed = false;
-                }
-            }
-            if ((ev.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
-                if (status_pressed) {
-                    click();
-                    status_pressed = false;
-                }
-            }
-        }
-
-
-        private void click() {
-            Attachment attachment = images.get(mViewPager.getCurrentItem());
-            if (attachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)) {
-                viewMedia();
-            }
-        }
-    };
 
 }

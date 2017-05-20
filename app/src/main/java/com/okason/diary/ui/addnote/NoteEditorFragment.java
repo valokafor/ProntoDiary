@@ -19,12 +19,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewStub;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.ItemDeletedEvent;
@@ -41,7 +40,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -63,14 +61,20 @@ public class NoteEditorFragment extends Fragment implements
 
     @BindView(R.id.edit_text_category)
     EditText mCategory;
+
     @BindView(R.id.edit_text_title) EditText mTitle;
+
     @BindView(R.id.edit_text_note) EditText mContent;
+
     @BindView(R.id.image_attachment)
     ImageView mImageAttachment;
+
     @BindView(R.id.sketch_attachment) ImageView mSketchAttachment;
-    @BindView(R.id.attachment_list)
-    ViewStub attachmentLayout;
-    private RecyclerView attachmentRecyclerView;
+
+    @BindView(R.id.attachment_container)
+    FrameLayout attachmentContainer;
+
+    @BindView(R.id.attachment_list_recyclerview) RecyclerView attachmentRecyclerView;
 
 
 
@@ -242,7 +246,8 @@ public class NoteEditorFragment extends Fragment implements
     }
 
     private void initViewAttachments(final List<Attachment> attachmentList){
-        attachmentLayout.inflate();
+
+        attachmentContainer.setVisibility(View.VISIBLE);
         attachmentRecyclerView = (RecyclerView) mRootView.findViewById(R.id.attachment_list_recyclerview);
 
         attachmentListAdapter = new AttachmentListAdapter(attachmentList, getActivity());
@@ -253,25 +258,17 @@ public class NoteEditorFragment extends Fragment implements
 
         attachmentListAdapter.setListener(new OnAttachmentClickedListener() {
             @Override
-            public void onAttachmentClicked(String selectedAttachmentId) {
-                //Create an Arraylist to hold Ids of Attachments that are image or Video
-                List<String> imageIds = new ArrayList<String>();
-
-                for (Attachment mAttachment : attachmentList) {
-                    if (Constants.MIME_TYPE_IMAGE.equals(mAttachment.getMime_type())
-                            || Constants.MIME_TYPE_SKETCH.equals(mAttachment.getMime_type())
-                            || Constants.MIME_TYPE_VIDEO.equals(mAttachment.getMime_type())) {
-                        imageIds.add(mAttachment.getId());
-
-                    }
+            public void onAttachmentClicked(Attachment clickedAttachment) {
+                //If clicked Attachment is of type Document
+                //Launch an Intent to show it, otherwise start Gallery Activity
+                if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
+                    //show file
+                }else {
+                    Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
+                    galleryIntent.putExtra(Constants.NOTE_ID, mPresenter.getCurrentNoteId());
+                    galleryIntent.putExtra(Constants.SELECTED_ID, clickedAttachment.getId());
+                    startActivity(galleryIntent);
                 }
-                //Create an Intent to take the Attachment Arraylist to Gallery Activity
-                Gson gson = new Gson();
-                String serializedAttachmentIds = gson.toJson(imageIds);
-                Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-                galleryIntent.putExtra(Constants.SERIALIZED_ATTACHMENT_ID, serializedAttachmentIds);
-                galleryIntent.putExtra(Constants.SELECTED_ID, selectedAttachmentId);
-                startActivity(galleryIntent);
             }
         });
         attachmentRecyclerView.setAdapter(attachmentListAdapter);

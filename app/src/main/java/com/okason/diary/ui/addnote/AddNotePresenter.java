@@ -59,4 +59,12 @@ public class AddNotePresenter implements AddNoteContract.Action {
         }
     }
 
+    @Override
+    public String getCurrentNoteId() {
+        if (mCurrentNote != null){
+            return mCurrentNote.getId();
+        }
+        return null;
+    }
+
 }
