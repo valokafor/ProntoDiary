@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -44,6 +45,7 @@ import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.IntentChecker;
 import com.okason.diary.utils.StorageHelper;
 
 import org.greenrobot.eventbus.EventBus;
@@ -375,6 +377,27 @@ public class NoteEditorFragment extends Fragment implements
         startActivityForResult(intent, IMAGE_CAPTURE_REQUEST);
     }
 
+    private void takeVideo() {
+        Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+
+        // File is stored in custom ON folder to speedup the attachment
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
+            File f = StorageHelper.createNewAttachmentFile(getActivity(), Constants.MIME_TYPE_VIDEO_EXT);
+            if (f == null) {
+                makeToast(getString(R.string.error_unable_to_save_file));
+
+                return;
+            }
+            attachmentUri = Uri.fromFile(f);
+            takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
+        }
+        String maxVideoSizeStr = "".equals(prefs.getString("settings_max_video_size",
+                "")) ? "0" : prefs.getString("settings_max_video_size", "");
+        int maxVideoSize = Integer.parseInt(maxVideoSizeStr);
+        takeVideoIntent.putExtra(MediaStore.EXTRA_SIZE_LIMIT, Long.valueOf(maxVideoSize * 1024 * 1024));
+        startActivityForResult(takeVideoIntent, TAKE_VIDEO);
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -399,6 +422,53 @@ public class NoteEditorFragment extends Fragment implements
         Uri contentUri = Uri.fromFile(f);
         mediaScanIntent.setData(contentUri);
         this.getActivity().sendBroadcast(mediaScanIntent);
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case EXTERNAL_PERMISSION_REQUEST:
+//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    if (isRecordPermissionGranted()) {
+//                        promptToStartRecording();
+//                    }
+//                } else {
+//                    //permission was denied, disable backup
+//                    makeToast("External storage access denied");
+//                }
+                break;
+            case RECORD_AUDIO_PERMISSION_REQUEST:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                   // promptToStartRecording();
+                } else {
+                    //permission was denied, disable backup
+                    makeToast("Mic access denied");
+                }
+                break;
+            case IMAGE_CAPTURE_REQUEST:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //permission was granted take picture
+                    takePhoto();
+                } else {
+                    //permission was denied, disable backup
+                    makeToast("External storage access denied");
+                }
+                break;
+            case SKETCH_CAPTURE_REQUEST:
+//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    //permission was granted perform backup
+//                    Intent sketchIntent = new Intent(getActivity(), SketchActivity.class);
+//                    startActivityForResult(sketchIntent, SKETCH_CAPTURE_REQUEST);
+//                } else {
+//                    //permission was denied, disable backup
+//                    makeToast("External storage access denied");
+//                }
+                break;
+
+
+        }
+
 
     }
 

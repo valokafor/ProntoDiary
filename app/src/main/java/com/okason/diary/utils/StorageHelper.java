@@ -30,7 +30,6 @@ import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import com.okason.diary.R;
-import com.okason.diary.models.Attachment;
 
 import org.apache.commons.io.FileUtils;
 
@@ -44,7 +43,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Locale;
 
 
 
@@ -454,45 +452,45 @@ public class StorageHelper {
         return mimeType;
     }
 
+//
+//    /**
+//     * Creates a new attachment file copying data from source file
+//     *
+//     * @param mContext
+//     * @param uri
+//     * @return
+//     */
+//    public static Attachment createAttachmentFromUri(Context mContext, Uri uri) {
+//        return createAttachmentFromUri(mContext, uri, false);
+//    }
 
-    /**
-     * Creates a new attachment file copying data from source file
-     *
-     * @param mContext
-     * @param uri
-     * @return
-     */
-    public static Attachment createAttachmentFromUri(Context mContext, Uri uri) {
-        return createAttachmentFromUri(mContext, uri, false);
-    }
 
-
-    /**
-     * Creates a fiile to be used as attachment.
-     */
-    public static Attachment createAttachmentFromUri(Context mContext, Uri uri, boolean moveSource) {
-        String name = FileHelper.getNameFromUri(mContext, uri);
-        String extension = FileHelper.getFileExtension(FileHelper.getNameFromUri(mContext, uri)).toLowerCase(
-                Locale.getDefault());
-        File f;
-        if (moveSource) {
-            f = createNewAttachmentFile(mContext, extension);
-            try {
-                FileUtils.moveFile(new File(uri.getPath()), f);
-            } catch (IOException e) {
-                Log.e(Constants.TAG, "Can't move file " + uri.getPath());
-            }
-        } else {
-            f = StorageHelper.createExternalStoragePrivateFile(mContext, uri, extension);
-        }
-        Attachment mAttachment = null;
-        if (f != null) {
-            mAttachment = new Attachment(Uri.fromFile(f), StorageHelper.getMimeTypeInternal(mContext, uri));
-            mAttachment.setName(name);
-            mAttachment.setSize(f.length());
-        }
-        return mAttachment;
-    }
+//    /**
+//     * Creates a fiile to be used as attachment.
+//     */
+//    public static Attachment createAttachmentFromUri(Context mContext, Uri uri, boolean moveSource) {
+//        String name = FileHelper.getNameFromUri(mContext, uri);
+//        String extension = FileHelper.getFileExtension(FileHelper.getNameFromUri(mContext, uri)).toLowerCase(
+//                Locale.getDefault());
+//        File f;
+//        if (moveSource) {
+//            f = createNewAttachmentFile(mContext, extension);
+//            try {
+//                FileUtils.moveFile(new File(uri.getPath()), f);
+//            } catch (IOException e) {
+//                Log.e(Constants.TAG, "Can't move file " + uri.getPath());
+//            }
+//        } else {
+//            f = StorageHelper.createExternalStoragePrivateFile(mContext, uri, extension);
+//        }
+//        Attachment mAttachment = null;
+//        if (f != null) {
+//            mAttachment = new Attachment(Uri.fromFile(f), StorageHelper.getMimeTypeInternal(mContext, uri));
+//            mAttachment.setName(name);
+//            mAttachment.setSize(f.length());
+//        }
+//        return mAttachment;
+//    }
 
 
     /**
