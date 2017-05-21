@@ -115,6 +115,11 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
         return attachmentList.size();
     }
 
+    public void addAttachment(Attachment attachment){
+        attachmentList.add(attachment);
+        notifyItemInserted(attachmentList.size() - 0);
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.attachment_item_text)
         TextView text;
@@ -134,11 +139,5 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
         }
     }
 
-    public static float dpFromPx(final Context context, final float px) {
-        return px / context.getResources().getDisplayMetrics().density;
-    }
 
-    public static float pxFromDp(final Context context, final float dp) {
-        return dp * context.getResources().getDisplayMetrics().density;
-    }
 }

@@ -1,7 +1,5 @@
 package com.okason.diary.models;
 
-import android.net.Uri;
-
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -35,9 +33,15 @@ public class Attachment extends RealmObject{
 
     }
 
-    public Attachment(Uri uri, String mime_type) {
-        uriLocalPath = uri.toString();
-        mime_type = mime_type;
+    public Attachment(String uri, String mime_type) {
+        this.uriLocalPath = uri.toString();
+        this.mime_type = mime_type;
+        this.uriCloudPath ="";
+        this.name = "";
+        this.comment = "";
+        this.size = 0;
+        this.length = 0;
+        this.dateCreated = System.currentTimeMillis();
 
     }
 

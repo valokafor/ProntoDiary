@@ -1,5 +1,6 @@
 package com.okason.diary.ui.addnote;
 
+import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 
@@ -21,6 +22,7 @@ public interface AddNoteContract {
         void onNoteContentChange(String newContent);
         void getCurrentNote(String noteId);
         String getCurrentNoteId();
+        void onAttachmentAdded(Attachment attachment);
     }
 
 

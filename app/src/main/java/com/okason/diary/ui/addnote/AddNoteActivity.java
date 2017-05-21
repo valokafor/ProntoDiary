@@ -1,8 +1,6 @@
 package com.okason.diary.ui.addnote;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -12,7 +10,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -60,7 +57,7 @@ public class AddNoteActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_add_note, menu);
+       // getMenuInflater().inflate(R.menu.menu_add_note, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -91,9 +88,7 @@ public class AddNoteActivity extends AppCompatActivity {
                     getFragmentManager().popBackStack();
                 }
                 return true;
-            case R.id.action_attachment:
-                showSelectAttachmentDialog();
-                break;
+
         }
         return super.onOptionsItemSelected(item);
     }
@@ -108,32 +103,7 @@ public class AddNoteActivity extends AppCompatActivity {
         }
     }
 
-    private void showSelectAttachmentDialog() {
 
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(mActivity);
-        LayoutInflater inflater = mActivity.getLayoutInflater();
-
-        final View layout = (View) inflater.inflate(R.layout.attachment_dialog, null);
-        alertDialog.setView(layout);
-
-        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
-        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
-        titleText.setText("Select Attachment");
-        alertDialog.setCustomTitle(titleView);
-        final Dialog dialog = alertDialog.create();
-        dialog.show();
-
-        TextView cameraSelection = (TextView) layout.findViewById(R.id.camera);
-        cameraSelection.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                makeToast("Camera clicked");
-            }
-        });
-
-
-
-    }
 
     private void makeToast(String message){
         Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);

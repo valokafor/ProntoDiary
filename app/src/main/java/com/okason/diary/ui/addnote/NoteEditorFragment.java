@@ -1,9 +1,17 @@
 package com.okason.diary.ui.addnote;
 
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -13,6 +21,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,11 +44,13 @@ import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.StorageHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.util.List;
 
 import butterknife.BindView;
@@ -57,7 +68,10 @@ public class NoteEditorFragment extends Fragment implements
     private AddNoteContract.Action mPresenter;
     private SelectFolderDialogFragment selectFolderDialogFragment;
     private AddFolderDialogFragment addFolderDialogFragment;
+
     private AttachmentListAdapter attachmentListAdapter;
+
+    private Uri attachmentUri;
 
     @BindView(R.id.edit_text_category)
     EditText mCategory;
@@ -74,7 +88,13 @@ public class NoteEditorFragment extends Fragment implements
     @BindView(R.id.attachment_container)
     FrameLayout attachmentContainer;
 
-    @BindView(R.id.attachment_list_recyclerview) RecyclerView attachmentRecyclerView;
+    @BindView(R.id.attachment_list_recyclerview)
+    RecyclerView attachmentRecyclerView;
+
+    private final int EXTERNAL_PERMISSION_REQUEST = 1;
+    private final int RECORD_AUDIO_PERMISSION_REQUEST = 2;
+    private final int IMAGE_CAPTURE_REQUEST = 3;
+    private final int SKETCH_CAPTURE_REQUEST = 4;
 
 
 
@@ -86,6 +106,7 @@ public class NoteEditorFragment extends Fragment implements
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         getPassedInNote();
     }
 
@@ -158,11 +179,7 @@ public class NoteEditorFragment extends Fragment implements
         return mRootView;
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_add_note, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
+
 
     @Override
     public void onResume() {
@@ -182,11 +199,18 @@ public class NoteEditorFragment extends Fragment implements
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_add_note, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-
         int id = item.getItemId();
         switch (id){
+            case R.id.action_attachment:
+                showSelectAttachmentDialog();
+                break;
 
 
         }
@@ -245,6 +269,11 @@ public class NoteEditorFragment extends Fragment implements
 
     }
 
+    /**
+     * Shows a horizontal layout at the top of the screen that displays
+     * thunmnail of attachments
+     * @param attachmentList - the list of attachments for this Note
+     */
     private void initViewAttachments(final List<Attachment> attachmentList){
 
         attachmentContainer.setVisibility(View.VISIBLE);
@@ -275,6 +304,102 @@ public class NoteEditorFragment extends Fragment implements
 
     }
 
+    private void showSelectAttachmentDialog() {
 
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+
+        final View layout = (View) inflater.inflate(R.layout.attachment_dialog, null);
+        alertDialog.setView(layout);
+
+        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        titleText.setText("Select Attachment");
+        alertDialog.setCustomTitle(titleView);
+        final Dialog dialog = alertDialog.create();
+        dialog.show();
+
+        TextView cameraSelection = (TextView) layout.findViewById(R.id.camera);
+        cameraSelection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+                    if (isStoragePermissionGrantedForImage()){
+                        takePhoto();
+                    }
+                }else {
+                    makeToast(getString(R.string.feature_not_available_on_this_device));
+                }
+                dialog.dismiss();
+            }
+        });
+
+
+
+    }
+
+
+    //Checks whether the user has granted the app permission to
+    //access external storage
+    private boolean isStoragePermissionGrantedForImage() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v(LOG_TAG,"Permission is granted");
+                return true;
+            } else {
+                Log.v(LOG_TAG,"Permission is revoked");
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, IMAGE_CAPTURE_REQUEST);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(LOG_TAG,"Permission is granted  API < 23");
+            return true;
+        }
+    }
+
+    private void takePhoto() {
+        // Checks for camera app available
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        // Checks for created file validity
+        File f = StorageHelper.createNewAttachmentFile(getActivity(), Constants.MIME_TYPE_IMAGE_EXT);
+        if (f == null) {
+            makeToast(getString(R.string.error_unable_to_save_photo));
+            return;
+        }
+        // Launches intent
+        attachmentUri = Uri.fromFile(f);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
+        startActivityForResult(intent, IMAGE_CAPTURE_REQUEST);
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Attachment attachment;
+        if (resultCode == Activity.RESULT_OK){
+            switch (requestCode){
+                case IMAGE_CAPTURE_REQUEST:
+                    String imagePath = attachmentUri.getPath();
+                    attachment = new Attachment(imagePath, Constants.MIME_TYPE_IMAGE);
+                    addPhotoToGallery(imagePath);
+                    attachmentListAdapter.addAttachment(attachment);
+                    mPresenter.onAttachmentAdded(attachment);
+                    break;
+
+            }
+        }
+    }
+
+    private void addPhotoToGallery(String path) {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(path);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.getActivity().sendBroadcast(mediaScanIntent);
+
+    }
 
 }
