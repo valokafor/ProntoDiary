@@ -6,17 +6,21 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -34,8 +38,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.events.DatabaseOperationCompletedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.models.Attachment;
@@ -45,14 +51,15 @@ import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.utils.Constants;
-import com.okason.diary.utils.IntentChecker;
-import com.okason.diary.utils.StorageHelper;
+import com.okason.diary.utils.date.TimeUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
@@ -74,6 +81,10 @@ public class NoteEditorFragment extends Fragment implements
     private AttachmentListAdapter attachmentListAdapter;
 
     private Uri attachmentUri;
+    private String mLocalAudioFilePath = null;
+    private String mLocalImagePath = null;
+    private String mLocalSketchPath = null;
+    private Calendar mReminderTime;
 
     @BindView(R.id.edit_text_category)
     EditText mCategory;
@@ -97,6 +108,9 @@ public class NoteEditorFragment extends Fragment implements
     private final int RECORD_AUDIO_PERMISSION_REQUEST = 2;
     private final int IMAGE_CAPTURE_REQUEST = 3;
     private final int SKETCH_CAPTURE_REQUEST = 4;
+    private final int VIDEO_CAPTURE_REQUEST = 5;
+
+    private SharedPreferences prefs;
 
 
 
@@ -140,6 +154,7 @@ public class NoteEditorFragment extends Fragment implements
         mRootView = inflater.inflate(R.layout.fragment_note_editor, container, false);
         ButterKnife.bind(this, mRootView);
         mPresenter = new AddNotePresenter(this);
+        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         mTitle.addTextChangedListener(new TextWatcher() {
             @Override
@@ -227,6 +242,16 @@ public class NoteEditorFragment extends Fragment implements
         if (event.getResult().equals(Constants.RESULT_OK)){
             //When a Note is Deleted, go to the Note List
             startActivity(new Intent(getActivity(), NoteListActivity.class));
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDatabaseOperationCompleteEvent(DatabaseOperationCompletedEvent event){
+        if (event.isShouldUpdateUi()){
+            mPresenter.updatedUI();
+        }
+        if (!TextUtils.isEmpty(event.getMessage())){
+            makeToast(event.getMessage());
         }
     }
 
@@ -361,41 +386,69 @@ public class NoteEditorFragment extends Fragment implements
         }
     }
 
-    private void takePhoto() {
-        // Checks for camera app available
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-        // Checks for created file validity
-        File f = StorageHelper.createNewAttachmentFile(getActivity(), Constants.MIME_TYPE_IMAGE_EXT);
-        if (f == null) {
-            makeToast(getString(R.string.error_unable_to_save_photo));
-            return;
+    private void takePhoto() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        File photoFile = null;
+        try {
+            photoFile = createImageFile(Constants.MIME_TYPE_IMAGE);
+
+        } catch (IOException ex) {
+            // Error occurred while creating the File
+            makeToast("There was a problem saving the photo...");
+            Log.d(LOG_TAG, ex.getLocalizedMessage());
         }
-        // Launches intent
-        attachmentUri = Uri.fromFile(f);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
-        startActivityForResult(intent, IMAGE_CAPTURE_REQUEST);
+        // Continue only if the File was successfully created
+        mLocalImagePath = photoFile.getAbsolutePath();
+        if (photoFile != null) {
+            Uri fileUri = FileProvider.getUriForFile(getContext(),
+                    BuildConfig.APPLICATION_ID + ".provider",
+                    photoFile);
+            attachmentUri = fileUri;
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
+            startActivityForResult(takePictureIntent, IMAGE_CAPTURE_REQUEST);
+        };
     }
+
+    public File createImageFile(String mimeType) throws IOException {
+        // Create an image file name
+        String timeStamp = TimeUtils.getDatetimeSuffix(System.currentTimeMillis());
+        String imageFileName = "Image_" + timeStamp + "_";
+        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                Constants.MIME_TYPE_IMAGE_EXT,         /* suffix */
+                storageDir      /* directory */
+        );
+
+        return image;
+    }
+
 
     private void takeVideo() {
         Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 
         // File is stored in custom ON folder to speedup the attachment
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
-            File f = StorageHelper.createNewAttachmentFile(getActivity(), Constants.MIME_TYPE_VIDEO_EXT);
-            if (f == null) {
+            File videoFile = null;
+            try {
+                videoFile = createImageFile(Constants.MIME_TYPE_VIDEO_EXT);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (videoFile == null) {
                 makeToast(getString(R.string.error_unable_to_save_file));
 
                 return;
             }
-            attachmentUri = Uri.fromFile(f);
+            attachmentUri = Uri.fromFile(videoFile);
             takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
         }
         String maxVideoSizeStr = "".equals(prefs.getString("settings_max_video_size",
                 "")) ? "0" : prefs.getString("settings_max_video_size", "");
         int maxVideoSize = Integer.parseInt(maxVideoSizeStr);
         takeVideoIntent.putExtra(MediaStore.EXTRA_SIZE_LIMIT, Long.valueOf(maxVideoSize * 1024 * 1024));
-        startActivityForResult(takeVideoIntent, TAKE_VIDEO);
+        startActivityForResult(takeVideoIntent, VIDEO_CAPTURE_REQUEST);
     }
 
 
@@ -405,10 +458,8 @@ public class NoteEditorFragment extends Fragment implements
         if (resultCode == Activity.RESULT_OK){
             switch (requestCode){
                 case IMAGE_CAPTURE_REQUEST:
-                    String imagePath = attachmentUri.getPath();
-                    attachment = new Attachment(imagePath, Constants.MIME_TYPE_IMAGE);
-                    addPhotoToGallery(imagePath);
-                    attachmentListAdapter.addAttachment(attachment);
+                    attachment = new Attachment(mLocalImagePath, Constants.MIME_TYPE_IMAGE);
+                    addPhotoToGallery(mLocalImagePath);
                     mPresenter.onAttachmentAdded(attachment);
                     break;
 

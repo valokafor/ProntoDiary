@@ -1,5 +1,6 @@
 package com.okason.diary.data;
 
+import com.okason.diary.core.events.DatabaseOperationCompletedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
@@ -165,6 +166,36 @@ public class NoteRealmRepository implements NoteListContract.Repository{
             attachment = null;
         }
         return attachment;
+    }
+
+    @Override
+    public void addAttachment(final String noteId, final Attachment attachment) {
+        final String attachmentId = UUID.randomUUID().toString();
+
+        try (Realm realm = Realm.getDefaultInstance()){
+            realm.executeTransactionAsync(new Realm.Transaction() {
+                @Override
+                public void execute(Realm backgroundRealm) {
+                    Attachment savedAttachment = backgroundRealm.createObject(Attachment.class, attachmentId);
+                    savedAttachment.update(attachment);
+
+                    Note parentNote = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
+                    parentNote.getAttachments().add(savedAttachment);
+
+                }
+            }, new Realm.Transaction.OnSuccess() {
+                @Override
+                public void onSuccess() {
+                    EventBus.getDefault().post(new DatabaseOperationCompletedEvent(true, ""));
+                }
+            }, new Realm.Transaction.OnError() {
+                @Override
+                public void onError(Throwable error) {
+                    EventBus.getDefault().post(new DatabaseOperationCompletedEvent(false, error.getLocalizedMessage()));
+                }
+            });
+
+        }
     }
 
 

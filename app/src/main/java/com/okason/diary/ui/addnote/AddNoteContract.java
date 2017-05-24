@@ -22,6 +22,7 @@ public interface AddNoteContract {
         void onNoteContentChange(String newContent);
         void getCurrentNote(String noteId);
         String getCurrentNoteId();
+        void updatedUI();
         void onAttachmentAdded(Attachment attachment);
     }
 

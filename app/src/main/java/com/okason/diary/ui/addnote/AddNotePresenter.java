@@ -1,6 +1,7 @@
 package com.okason.diary.ui.addnote;
 
 import com.okason.diary.data.NoteRealmRepository;
+import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.notes.NoteListContract;
@@ -65,6 +66,28 @@ public class AddNotePresenter implements AddNoteContract.Action {
             return mCurrentNote.getId();
         }
         return null;
+    }
+
+    @Override
+    public void updatedUI() {
+        getCurrentNote(mCurrentNote.getId());
+    }
+
+    /**
+     * Called when an attachment is added to a Note
+     * @param attachment - the added attachment
+     */
+    @Override
+    public void onAttachmentAdded(Attachment attachment) {
+        //First ensure a Note has been created
+        if (mCurrentNote == null){
+            mCurrentNote = mRepository.createNewNote();
+        }
+
+        //Add the attachment to the Note
+        mRepository.addAttachment(mCurrentNote.getId(), attachment);
+
+
     }
 
 }

@@ -80,10 +80,8 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                     if (attachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE) ||
                             attachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
                         holder.attachmentLayout.setVisibility(View.VISIBLE);
-                        String imagePath = TextUtils.isEmpty(attachment.getUriCloudPath())
-                                ? attachment.getUriLocalPath() : attachment.getUriCloudPath();
                         Glide.with(mContext)
-                                .load(imagePath)
+                                .load(attachment.getFilePath())
                                 .placeholder(R.drawable.default_image)
                                 .centerCrop()
                                 .into(holder.noteAttachment);

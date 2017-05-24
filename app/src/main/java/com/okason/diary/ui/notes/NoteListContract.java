@@ -40,6 +40,7 @@ public interface NoteListContract {
         void deleteNote(String noteId);
         void saveNote(Note note);
         Attachment getAttachmentbyId(String id);
+        void addAttachment(String noteId, Attachment attachment);
 
 
     }

@@ -11,8 +11,7 @@ public class Attachment extends RealmObject{
 
     @PrimaryKey
     private String id;
-    private String uriLocalPath;
-    private String uriCloudPath;
+    private String filePath;
     private String name;
     private String comment;
     private long size;
@@ -22,27 +21,35 @@ public class Attachment extends RealmObject{
 
 
     public Attachment(){
-        uriLocalPath = "";
-        uriCloudPath ="";
+        filePath = "";
         name = "";
         comment = "";
         size = 0;
         length = 0;
         mime_type = "";
-        dateCreated = 0;
+        dateCreated = System.currentTimeMillis();
 
     }
 
-    public Attachment(String uri, String mime_type) {
-        this.uriLocalPath = uri.toString();
+    public Attachment(String imagePath, String mime_type) {
+        this.filePath = imagePath;
         this.mime_type = mime_type;
-        this.uriCloudPath ="";
         this.name = "";
         this.comment = "";
         this.size = 0;
         this.length = 0;
-        this.dateCreated = System.currentTimeMillis();
+        this.dateCreated  = System.currentTimeMillis();
 
+    }
+
+    public void update(Attachment attachment){
+        this.filePath = attachment.getFilePath();
+        this.mime_type = attachment.getMime_type();
+        this.name = attachment.getName();
+        this.comment = attachment.getComment();
+        this.size = attachment.getSize();
+        this.length = attachment.getLength();
+        this.dateCreated = System.currentTimeMillis();
     }
 
 
@@ -59,20 +66,12 @@ public class Attachment extends RealmObject{
         this.id = id;
     }
 
-    public String getUriLocalPath() {
-        return uriLocalPath;
+    public String getFilePath() {
+        return filePath;
     }
 
-    public void setUriLocalPath(String uriLocalPath) {
-        this.uriLocalPath = uriLocalPath;
-    }
-
-    public String getUriCloudPath() {
-        return uriCloudPath;
-    }
-
-    public void setUriCloudPath(String uriCloudPath) {
-        this.uriCloudPath = uriCloudPath;
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public String getName() {

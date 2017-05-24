@@ -2,7 +2,6 @@ package com.okason.diary.ui.attachment;
 
 
 import android.annotation.SuppressLint;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -24,7 +23,7 @@ public class GalleryPagerFragment extends Fragment {
     public static final String ARG_PAGE = "page";
     public static final String ARG_PATH = "path";
     private int mPageNumber;
-    private Uri mImagePath;
+    private String mImagePath;
     private View mRootView;
 
     @BindView(R.id.gallery_full_image)
@@ -33,19 +32,19 @@ public class GalleryPagerFragment extends Fragment {
     public GalleryPagerFragment() {
     }
 
-    public static GalleryPagerFragment create(int pageNumber, Uri imagePath) {
+    public static GalleryPagerFragment newInstance(int pageNumber, String imagePath) {
         GalleryPagerFragment fragment = new GalleryPagerFragment();
         Bundle args = new Bundle();
         args.putInt("page", pageNumber);
-        args.putSerializable("path", imagePath.toString());
+        args.putString("path", imagePath);
         fragment.setArguments(args);
         return fragment;
     }
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.mPageNumber = this.getArguments().getInt("page");
-        this.mImagePath = Uri.parse(this.getArguments().getString("path"));
+        this.mPageNumber = this.getArguments().getInt(ARG_PAGE);
+        this.mImagePath = getArguments().getString(ARG_PATH);
     }
 
     @SuppressLint({"NewApi"})
@@ -54,10 +53,16 @@ public class GalleryPagerFragment extends Fragment {
         mRootView = inflater.inflate(R.layout.fragment_gallery_pager, container, false);
         ButterKnife.bind(this, mRootView);
 
-        Glide.with(this.getActivity())
-                .load(this.mImagePath)
-                .centerCrop().crossFade()
-                .error(R.drawable.image_broken).into(mImageView);
+        if (mImagePath.contains("http")){
+
+        }
+
+
+        Glide.with(getActivity().getApplicationContext())
+                .load(mImagePath)
+                .centerCrop()
+                .crossFade()
+                .into(mImageView);
         return mRootView;
     }
 

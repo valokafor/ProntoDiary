@@ -47,27 +47,27 @@ public class SampleData {
 
 
             Attachment attachment1 = realm.createObject(Attachment.class,UUID.randomUUID().toString() );
-            attachment1.setUriCloudPath("https://wallpaperscraft.com/image/car_trees_rear_view_115473_602x339.jpg");
+            attachment1.setFilePath("https://wallpaperscraft.com/image/car_trees_rear_view_115473_602x339.jpg");
             attachment1.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment1);
 
             Attachment attachment2 = realm.createObject(Attachment.class,UUID.randomUUID().toString() );
-            attachment2.setUriCloudPath("https://wallpaperscraft.com/image/aston_martin_dbs_2008_gray_rear_view_car_house_trees_27721_602x339.jpg");
+            attachment2.setFilePath("https://wallpaperscraft.com/image/aston_martin_dbs_2008_gray_rear_view_car_house_trees_27721_602x339.jpg");
             attachment2.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment2);
 
             Attachment attachment3 = realm.createObject(Attachment.class,UUID.randomUUID().toString() );
-            attachment3.setUriCloudPath("http://images.all-free-download.com/images/graphicthumb/tree_meadow_nature_220408.jpg");
+            attachment3.setFilePath("http://images.all-free-download.com/images/graphicthumb/tree_meadow_nature_220408.jpg");
             attachment3.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment3);
 
             Attachment attachment4 = realm.createObject(Attachment.class,UUID.randomUUID().toString() );
-            attachment4.setUriCloudPath("https://static.pexels.com/photos/132982/pexels-photo-132982.jpeg");
+            attachment4.setFilePath("https://static.pexels.com/photos/132982/pexels-photo-132982.jpeg");
             attachment4.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment4);
 
             Attachment attachment5 = realm.createObject(Attachment.class,UUID.randomUUID().toString() );
-            attachment5.setUriCloudPath("https://i1.wallpaperscraft.com/image/cups_tea_drink_tea_115303_300x188.jpg");
+            attachment5.setFilePath("https://i1.wallpaperscraft.com/image/cups_tea_drink_tea_115303_300x188.jpg");
             attachment5.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment5);
 

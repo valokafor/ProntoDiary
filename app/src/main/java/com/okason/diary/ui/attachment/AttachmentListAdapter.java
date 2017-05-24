@@ -2,7 +2,6 @@ package com.okason.diary.ui.attachment;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -15,7 +14,6 @@ import com.bumptech.glide.Glide;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.models.Attachment;
-import com.okason.diary.utils.BitmapHelper;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
@@ -88,25 +86,11 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
             holder.text.setVisibility(View.VISIBLE);
         }
 
-        if (!TextUtils.isEmpty(selectedAttachment.getUriCloudPath())){
-            Glide.with(context.getApplicationContext())
-                    .load(selectedAttachment.getUriCloudPath())
-                    .centerCrop()
-                    .crossFade()
-                    .into(holder.image);
-
-            //Load image from cloud
-        }else {
-            //Load image from local
-            Uri thumbnailUri = BitmapHelper.getThumbnailUri(context, selectedAttachment);
-            if (thumbnailUri != null) {
-                Glide.with(context.getApplicationContext())
-                        .load(thumbnailUri)
-                        .centerCrop()
-                        .crossFade()
-                        .into(holder.image);
-            }
-        }
+        Glide.with(context.getApplicationContext())
+                .load(selectedAttachment.getFilePath())
+                .centerCrop()
+                .crossFade()
+                .into(holder.image);
 
     }
 

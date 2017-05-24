@@ -62,7 +62,6 @@ public class AddNoteActivity extends AppCompatActivity {
     }
 
 
-
     private void openFragment(Fragment fragment, String screenTitle){
         getSupportFragmentManager()
                 .beginTransaction()

@@ -1,11 +1,8 @@
 package com.okason.diary.ui.attachment;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,7 +15,6 @@ import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.notes.NoteListContract;
 import com.okason.diary.utils.Constants;
-import com.okason.diary.utils.StorageHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -140,10 +136,10 @@ public class GalleryActivity extends AppCompatActivity {
                 onBackPressed();
                 break;
             case R.id.menu_gallery_share:
-                shareMedia();
+               // shareMedia();
                 break;
             case R.id.menu_gallery:
-                viewMedia();
+                //viewMedia();
                 break;
             default:
                 Log.e(Constants.TAG, "Wrong element choosen: " + item.getItemId());
@@ -180,29 +176,29 @@ public class GalleryActivity extends AppCompatActivity {
 
     }
 
-    private void viewMedia() {
-        Attachment attachment = attachments.get(mViewPager.getCurrentItem());
-        String imageFilePath = TextUtils.isEmpty(attachment.getUriCloudPath())
-                ? attachment.getUriLocalPath(): attachment.getUriCloudPath();
-
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.parse(imageFilePath),
-                StorageHelper.getMimeType(this, Uri.parse(imageFilePath)));
-        startActivity(intent);
-    }
-
-
-    private void shareMedia() {
-
-        Attachment attachment = attachments.get(mViewPager.getCurrentItem());
-        String imageFilePath = TextUtils.isEmpty(attachment.getUriCloudPath())
-                ? attachment.getUriLocalPath(): attachment.getUriCloudPath();
-
-                Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType(StorageHelper.getMimeType(this, Uri.parse(imageFilePath)));
-        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(imageFilePath));
-        startActivity(intent);
-    }
+//    private void viewMedia() {
+//        Attachment attachment = attachments.get(mViewPager.getCurrentItem());
+//        String imageFilePath = TextUtils.isEmpty(attachment.getUriCloudPath())
+//                ? attachment.getUriLocalPath(): attachment.getUriCloudPath();
+//
+//        Intent intent = new Intent(Intent.ACTION_VIEW);
+//        intent.setDataAndType(Uri.parse(imageFilePath),
+//                StorageHelper.getMimeType(this, Uri.parse(imageFilePath)));
+//        startActivity(intent);
+//    }
+//
+//
+//    private void shareMedia() {
+//
+//        Attachment attachment = attachments.get(mViewPager.getCurrentItem());
+//        String imageFilePath = TextUtils.isEmpty(attachment.getUriCloudPath())
+//                ? attachment.getUriLocalPath(): attachment.getUriCloudPath();
+//
+//                Intent intent = new Intent(Intent.ACTION_SEND);
+//        intent.setType(StorageHelper.getMimeType(this, Uri.parse(imageFilePath)));
+//        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(imageFilePath));
+//        startActivity(intent);
+//    }
 
 
 
