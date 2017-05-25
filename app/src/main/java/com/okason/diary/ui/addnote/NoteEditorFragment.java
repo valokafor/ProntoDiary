@@ -83,6 +83,7 @@ public class NoteEditorFragment extends Fragment implements
     private Uri attachmentUri;
     private String mLocalAudioFilePath = null;
     private String mLocalImagePath = null;
+    private String mLocalVideoPath = null;
     private String mLocalSketchPath = null;
     private Calendar mReminderTime;
 
@@ -341,10 +342,19 @@ public class NoteEditorFragment extends Fragment implements
 
         View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
         TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
-        titleText.setText("Select Attachment");
+        titleText.setText(getString(R.string.select_attachment));
         alertDialog.setCustomTitle(titleView);
         final Dialog dialog = alertDialog.create();
         dialog.show();
+
+        TextView pictureSelection = (TextView) layout.findViewById(R.id.camera);
+        pictureSelection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                picturePicture();
+                dialog.dismiss();
+            }
+        });
 
         TextView cameraSelection = (TextView) layout.findViewById(R.id.camera);
         cameraSelection.setOnClickListener(new View.OnClickListener() {
@@ -362,6 +372,26 @@ public class NoteEditorFragment extends Fragment implements
         });
 
 
+        TextView  videoSelection = (TextView) layout.findViewById(R.id.video);
+        videoSelection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+                    if (isStoragePermissionGrantedForImage()){
+                        takeVideo();
+                    }
+                }else {
+                    makeToast(getString(R.string.feature_not_available_on_this_device));
+                }
+                dialog.dismiss();
+            }
+        });
+
+
+
+    }
+
+    private void picturePicture() {
 
     }
 
@@ -395,7 +425,7 @@ public class NoteEditorFragment extends Fragment implements
 
         } catch (IOException ex) {
             // Error occurred while creating the File
-            makeToast("There was a problem saving the photo...");
+            makeToast(getString(R.string.unable_to_save_file));
             Log.d(LOG_TAG, ex.getLocalizedMessage());
         }
         // Continue only if the File was successfully created
@@ -428,26 +458,30 @@ public class NoteEditorFragment extends Fragment implements
     private void takeVideo() {
         Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 
-        // File is stored in custom ON folder to speedup the attachment
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
-            File videoFile = null;
-            try {
-                videoFile = createImageFile(Constants.MIME_TYPE_VIDEO_EXT);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (videoFile == null) {
-                makeToast(getString(R.string.error_unable_to_save_file));
+        File videoFile = null;
+        try {
+            videoFile = createImageFile(Constants.MIME_TYPE_VIDEO);
 
-                return;
-            }
-            attachmentUri = Uri.fromFile(videoFile);
-            takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
+        } catch (IOException ex) {
+            // Error occurred while creating the File
+            makeToast(getString(R.string.unable_to_save_file));
+            Log.d(LOG_TAG, ex.getLocalizedMessage());
         }
+        // Continue only if the File was successfully created
+        mLocalVideoPath = videoFile.getAbsolutePath();
+        if (videoFile != null) {
+            Uri fileUri = FileProvider.getUriForFile(getContext(),
+                    BuildConfig.APPLICATION_ID + ".provider",
+                    videoFile);
+            attachmentUri = fileUri;
+            takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
+        };
+
         String maxVideoSizeStr = "".equals(prefs.getString("settings_max_video_size",
                 "")) ? "0" : prefs.getString("settings_max_video_size", "");
         int maxVideoSize = Integer.parseInt(maxVideoSizeStr);
-        takeVideoIntent.putExtra(MediaStore.EXTRA_SIZE_LIMIT, Long.valueOf(maxVideoSize * 1024 * 1024));
+        long limit =  Long.valueOf(maxVideoSize * 1024 * 1024);
+        takeVideoIntent.putExtra(MediaStore.EXTRA_SIZE_LIMIT, limit);
         startActivityForResult(takeVideoIntent, VIDEO_CAPTURE_REQUEST);
     }
 
@@ -460,6 +494,10 @@ public class NoteEditorFragment extends Fragment implements
                 case IMAGE_CAPTURE_REQUEST:
                     attachment = new Attachment(mLocalImagePath, Constants.MIME_TYPE_IMAGE);
                     addPhotoToGallery(mLocalImagePath);
+                    mPresenter.onAttachmentAdded(attachment);
+                    break;
+                case VIDEO_CAPTURE_REQUEST:
+                    attachment = new Attachment(mLocalVideoPath, Constants.MIME_TYPE_VIDEO);
                     mPresenter.onAttachmentAdded(attachment);
                     break;
 

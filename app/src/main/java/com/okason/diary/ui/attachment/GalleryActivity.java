@@ -1,5 +1,7 @@
 package com.okason.diary.ui.attachment;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -60,14 +62,13 @@ public class GalleryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_gallery);
         ButterKnife.bind(this);
 
-        if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)){
+        if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
             repository = new NoteRealmRepository();
             initViews();
             initData();
-        }else {
+        } else {
             finish();
         }
-
 
 
     }
@@ -78,7 +79,7 @@ public class GalleryActivity extends AppCompatActivity {
         String selectAttachmentId = getIntent().getStringExtra(Constants.SELECTED_ID);
         int selectedPosition = 0;
 
-        if (parentNote != null){
+        if (parentNote != null) {
             //Create an Arraylist to hold Ids of Attachments that are image or Video
             attachments = new ArrayList<Attachment>();
 
@@ -92,9 +93,8 @@ public class GalleryActivity extends AppCompatActivity {
             }
 
 
-
-            for (int i = 0; i < attachments.size(); i++){
-                if (attachments.get(i).getId().equals(selectAttachmentId)){
+            for (int i = 0; i < attachments.size(); i++) {
+                if (attachments.get(i).getId().equals(selectAttachmentId)) {
                     selectedPosition = i;
                     break;
                 }
@@ -112,11 +112,10 @@ public class GalleryActivity extends AppCompatActivity {
         }
 
 
-
-        // If selected attachment is a video it will be immediately played
-//        if (images.get(clickedImage).getMime_type().equals(Constants.MIME_TYPE_VIDEO)) {
-//            viewMedia();
-//        }
+        //If selected attachment is a video it will be immediately played
+        if (attachments.get(selectedPosition).getMime_type().equals(Constants.MIME_TYPE_VIDEO)) {
+            viewMedia();
+        }
 
 
     }
@@ -136,7 +135,7 @@ public class GalleryActivity extends AppCompatActivity {
                 onBackPressed();
                 break;
             case R.id.menu_gallery_share:
-               // shareMedia();
+                // shareMedia();
                 break;
             case R.id.menu_gallery:
                 //viewMedia();
@@ -176,32 +175,25 @@ public class GalleryActivity extends AppCompatActivity {
 
     }
 
-//    private void viewMedia() {
-//        Attachment attachment = attachments.get(mViewPager.getCurrentItem());
-//        String imageFilePath = TextUtils.isEmpty(attachment.getUriCloudPath())
-//                ? attachment.getUriLocalPath(): attachment.getUriCloudPath();
-//
-//        Intent intent = new Intent(Intent.ACTION_VIEW);
-//        intent.setDataAndType(Uri.parse(imageFilePath),
-//                StorageHelper.getMimeType(this, Uri.parse(imageFilePath)));
-//        startActivity(intent);
-//    }
-//
-//
+    private void viewMedia() {
+        Attachment attachment = attachments.get(mViewPager.getCurrentItem());
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.parse(attachment.getFilePath()), attachment.getMime_type());
+        startActivity(intent);
+    }
+
+
 //    private void shareMedia() {
 //
 //        Attachment attachment = attachments.get(mViewPager.getCurrentItem());
 //        String imageFilePath = TextUtils.isEmpty(attachment.getUriCloudPath())
-//                ? attachment.getUriLocalPath(): attachment.getUriCloudPath();
+//                ? attachment.getUriLocalPath() : attachment.getUriCloudPath();
 //
-//                Intent intent = new Intent(Intent.ACTION_SEND);
+//        Intent intent = new Intent(Intent.ACTION_SEND);
 //        intent.setType(StorageHelper.getMimeType(this, Uri.parse(imageFilePath)));
 //        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(imageFilePath));
 //        startActivity(intent);
 //    }
-
-
-
 
 
 }
