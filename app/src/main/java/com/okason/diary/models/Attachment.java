@@ -1,5 +1,7 @@
 package com.okason.diary.models;
 
+import android.net.Uri;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -12,6 +14,7 @@ public class Attachment extends RealmObject{
     @PrimaryKey
     private String id;
     private String filePath;
+    private String uri;
     private String name;
     private String comment;
     private long size;
@@ -31,7 +34,8 @@ public class Attachment extends RealmObject{
 
     }
 
-    public Attachment(String imagePath, String mime_type) {
+    public Attachment(Uri uri, String imagePath, String mime_type) {
+        this.uri = uri.toString();
         this.filePath = imagePath;
         this.mime_type = mime_type;
         this.name = "";
@@ -42,7 +46,20 @@ public class Attachment extends RealmObject{
 
     }
 
+    public Attachment(Uri uri, String imagePath, String mime_type, String name) {
+        this.uri = uri.toString();
+        this.filePath = imagePath;
+        this.mime_type = mime_type;
+        this.name = name;
+        this.comment = "";
+        this.size = 0;
+        this.length = 0;
+        this.dateCreated  = System.currentTimeMillis();
+
+    }
+
     public void update(Attachment attachment){
+        this.uri = attachment.getUri();
         this.filePath = attachment.getFilePath();
         this.mime_type = attachment.getMime_type();
         this.name = attachment.getName();
@@ -72,6 +89,14 @@ public class Attachment extends RealmObject{
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
     public String getName() {

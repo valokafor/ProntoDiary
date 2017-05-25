@@ -51,6 +51,8 @@ import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.FileHelper;
+import com.okason.diary.utils.IntentChecker;
 import com.okason.diary.utils.date.TimeUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -59,6 +61,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -110,6 +113,7 @@ public class NoteEditorFragment extends Fragment implements
     private final int IMAGE_CAPTURE_REQUEST = 3;
     private final int SKETCH_CAPTURE_REQUEST = 4;
     private final int VIDEO_CAPTURE_REQUEST = 5;
+    private final int FILE_PICK_REQUEST = 6;
 
     private SharedPreferences prefs;
 
@@ -320,6 +324,16 @@ public class NoteEditorFragment extends Fragment implements
                 //Launch an Intent to show it, otherwise start Gallery Activity
                 if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
                     //show file
+                    Intent fileViewIntent = new Intent(Intent.ACTION_VIEW);
+                    fileViewIntent.setDataAndType(Uri.parse(clickedAttachment.getUri()), clickedAttachment.getMime_type());
+                    fileViewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent
+                            .FLAG_GRANT_WRITE_URI_PERMISSION);
+                    if (IntentChecker.isAvailable(getActivity().getApplicationContext(), fileViewIntent, null)) {
+                        startActivity(Intent.createChooser(fileViewIntent, getResources().getText(R.string.open_with)));
+                    } else {
+                        makeToast(getString(R.string.feature_not_available_on_this_device));
+                    }
+
                 }else {
                     Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
                     galleryIntent.putExtra(Constants.NOTE_ID, mPresenter.getCurrentNoteId());
@@ -387,7 +401,26 @@ public class NoteEditorFragment extends Fragment implements
             }
         });
 
+        TextView fileSelection = (TextView) layout.findViewById(R.id.files);
+        fileSelection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pickFile();
+                dialog.dismiss();
+            }
+        });
 
+
+
+    }
+
+    private void pickFile() {
+        Intent filesIntent;
+        filesIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        filesIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        filesIntent.addCategory(Intent.CATEGORY_OPENABLE);
+        filesIntent.setType("*/*");
+        startActivityForResult(filesIntent, FILE_PICK_REQUEST);
 
     }
 
@@ -421,7 +454,7 @@ public class NoteEditorFragment extends Fragment implements
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         File photoFile = null;
         try {
-            photoFile = createImageFile(Constants.MIME_TYPE_IMAGE);
+            photoFile = createImageFile(Constants.MIME_TYPE_IMAGE_EXT);
 
         } catch (IOException ex) {
             // Error occurred while creating the File
@@ -440,14 +473,14 @@ public class NoteEditorFragment extends Fragment implements
         };
     }
 
-    public File createImageFile(String mimeType) throws IOException {
+    public File createImageFile(String extension) throws IOException {
         // Create an image file name
         String timeStamp = TimeUtils.getDatetimeSuffix(System.currentTimeMillis());
         String imageFileName = "Image_" + timeStamp + "_";
         File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
-                Constants.MIME_TYPE_IMAGE_EXT,         /* suffix */
+                extension,         /* suffix */
                 storageDir      /* directory */
         );
 
@@ -460,7 +493,7 @@ public class NoteEditorFragment extends Fragment implements
 
         File videoFile = null;
         try {
-            videoFile = createImageFile(Constants.MIME_TYPE_VIDEO);
+            videoFile = createImageFile(Constants.MIME_TYPE_VIDEO_EXT);
 
         } catch (IOException ex) {
             // Error occurred while creating the File
@@ -492,16 +525,52 @@ public class NoteEditorFragment extends Fragment implements
         if (resultCode == Activity.RESULT_OK){
             switch (requestCode){
                 case IMAGE_CAPTURE_REQUEST:
-                    attachment = new Attachment(mLocalImagePath, Constants.MIME_TYPE_IMAGE);
+                    attachment = new Attachment(attachmentUri, mLocalImagePath, Constants.MIME_TYPE_IMAGE);
                     addPhotoToGallery(mLocalImagePath);
                     mPresenter.onAttachmentAdded(attachment);
                     break;
                 case VIDEO_CAPTURE_REQUEST:
-                    attachment = new Attachment(mLocalVideoPath, Constants.MIME_TYPE_VIDEO);
+                    attachment = new Attachment(attachmentUri, mLocalVideoPath, Constants.MIME_TYPE_VIDEO);
                     mPresenter.onAttachmentAdded(attachment);
+                    break;
+                case FILE_PICK_REQUEST:
+                    handleFilePickIntent(data);
                     break;
 
             }
+        }
+    }
+
+    //Called when a file is picked
+    private void handleFilePickIntent(Intent intent) {
+        List<Uri> uris = new ArrayList<>();
+
+        if (Build.VERSION.SDK_INT > 16 && intent.getClipData() != null) {
+            for (int i = 0; i < intent.getClipData().getItemCount(); i++) {
+                uris.add(intent.getClipData().getItemAt(i).getUri());
+            }
+        } else {
+            uris.add(intent.getData());
+        }
+
+
+        for (Uri uri : uris) {
+            String name = FileHelper.getNameFromUri(getActivity(), uri);
+            String extension = FileHelper.getFileExtension(name).toLowerCase();
+
+            File file = null;
+            try {
+                file = createImageFile(extension);
+
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+                makeToast(getString(R.string.unable_to_save_file));
+
+            }
+            // Continue only if the File was successfully created
+            String filePath = file.getAbsolutePath();
+            Attachment attachment = new Attachment(uri, filePath, Constants.MIME_TYPE_FILES, name);
+            mPresenter.onAttachmentAdded(attachment);
         }
     }
 

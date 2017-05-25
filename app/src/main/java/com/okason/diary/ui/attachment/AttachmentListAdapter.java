@@ -82,15 +82,22 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
 
         // Draw name in case the type is an audio recording (or file in the future)
         if (selectedAttachment.getMime_type() != null && selectedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)) {
-            holder.text.setText(selectedAttachment.getName());
-            holder.text.setVisibility(View.VISIBLE);
+            Glide.with(context.getApplicationContext())
+                    .load(selectedAttachment.getUri())
+                    .centerCrop()
+                    .crossFade()
+                    .placeholder(R.drawable.image_broken)
+                    .into(holder.image);
+        } else {
+            Glide.with(context.getApplicationContext())
+                    .load(selectedAttachment.getFilePath())
+                    .centerCrop()
+                    .crossFade()
+                    .placeholder(R.drawable.image_broken)
+                    .into(holder.image);
         }
 
-        Glide.with(context.getApplicationContext())
-                .load(selectedAttachment.getFilePath())
-                .centerCrop()
-                .crossFade()
-                .into(holder.image);
+
 
     }
 

@@ -143,6 +143,7 @@
     <string name="unable_to_save_file">Unable to save file</string>
     <string name="picture">Picture</string>
     <string name="select_attachment">Select Attachment</string>
+    <string name="open_with">Open With</string>
 
 
 </resources>

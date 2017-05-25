@@ -198,7 +198,7 @@ public class NoteListActivity extends AppCompatActivity {
                 resetBottomNavigationIcons();
                 noteButton.setImageResource(R.drawable.ic_action_book_red_light);
                 noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
-                openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list), Constants.NOTE_LIST_FRAGMENT_TAG);
+                openFragment(new NoteListFragment(), getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
             }
         });
 
