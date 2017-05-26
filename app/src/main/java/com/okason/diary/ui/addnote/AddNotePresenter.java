@@ -1,5 +1,7 @@
 package com.okason.diary.ui.addnote;
 
+import android.net.Uri;
+
 import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
@@ -88,6 +90,16 @@ public class AddNotePresenter implements AddNoteContract.Action {
         mRepository.addAttachment(mCurrentNote.getId(), attachment);
 
 
+    }
+
+    @Override
+    public void onFileAttachmentSelected(Uri fileUri, String fileName) {
+        //First ensure a Note has been created
+        if (mCurrentNote == null){
+            mCurrentNote = mRepository.createNewNote();
+        }
+
+        mRepository.addFileAttachment(fileUri, fileName, mCurrentNote.getId());
     }
 
 }

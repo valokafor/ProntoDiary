@@ -1,5 +1,7 @@
 package com.okason.diary.ui.addnote;
 
+import android.net.Uri;
+
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -24,6 +26,7 @@ public interface AddNoteContract {
         String getCurrentNoteId();
         void updatedUI();
         void onAttachmentAdded(Attachment attachment);
+        void onFileAttachmentSelected(Uri fileUri, String fileName);
     }
 
 

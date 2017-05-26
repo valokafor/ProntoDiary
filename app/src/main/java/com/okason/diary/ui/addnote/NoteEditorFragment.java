@@ -324,8 +324,22 @@ public class NoteEditorFragment extends Fragment implements
                 //Launch an Intent to show it, otherwise start Gallery Activity
                 if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
                     //show file
+                    Uri uri = Uri.parse(clickedAttachment.getUri());
+                    String fileType = "";
+                    String name = FileHelper.getNameFromUri(getActivity(), uri);
+                    String extension = FileHelper.getFileExtension(name).toLowerCase();
+
+                    if (extension.equals(".png") || extension.equals(".jpg") || extension.equals(".jpeg")){
+                        fileType = "image/jpeg";
+                    }else if (extension.equals(".pdf")){
+                        fileType = "application/pdf";
+                    }else {
+                        fileType = "plain/text";
+                    }
+
                     Intent fileViewIntent = new Intent(Intent.ACTION_VIEW);
-                    fileViewIntent.setDataAndType(Uri.parse(clickedAttachment.getUri()), clickedAttachment.getMime_type());
+                    fileViewIntent.setDataAndType(uri, "application/pdf");
+                    fileViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                     fileViewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent
                             .FLAG_GRANT_WRITE_URI_PERMISSION);
                     if (IntentChecker.isAvailable(getActivity().getApplicationContext(), fileViewIntent, null)) {
@@ -390,12 +404,8 @@ public class NoteEditorFragment extends Fragment implements
         videoSelection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
-                    if (isStoragePermissionGrantedForImage()){
-                        takeVideo();
-                    }
-                }else {
-                    makeToast(getString(R.string.feature_not_available_on_this_device));
+                if (isStoragePermissionGrantedForPickingFile()){
+                    pickFile();
                 }
                 dialog.dismiss();
             }
@@ -405,7 +415,13 @@ public class NoteEditorFragment extends Fragment implements
         fileSelection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pickFile();
+                if (getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+                    if (isStoragePermissionGrantedForImage()){
+                        pickFile();
+                    }
+                }else {
+                    makeToast(getString(R.string.feature_not_available_on_this_device));
+                }
                 dialog.dismiss();
             }
         });
@@ -440,6 +456,26 @@ public class NoteEditorFragment extends Fragment implements
             } else {
                 Log.v(LOG_TAG,"Permission is revoked");
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, IMAGE_CAPTURE_REQUEST);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(LOG_TAG,"Permission is granted  API < 23");
+            return true;
+        }
+    }
+
+    //Checks whether the user has granted the app permission to
+    //access external storage
+    private boolean isStoragePermissionGrantedForPickingFile() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v(LOG_TAG,"Permission is granted");
+                return true;
+            } else {
+                Log.v(LOG_TAG,"Permission is revoked");
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, FILE_PICK_REQUEST);
                 return false;
             }
         }
@@ -556,21 +592,7 @@ public class NoteEditorFragment extends Fragment implements
 
         for (Uri uri : uris) {
             String name = FileHelper.getNameFromUri(getActivity(), uri);
-            String extension = FileHelper.getFileExtension(name).toLowerCase();
-
-            File file = null;
-            try {
-                file = createImageFile(extension);
-
-            } catch (IOException ex) {
-                // Error occurred while creating the File
-                makeToast(getString(R.string.unable_to_save_file));
-
-            }
-            // Continue only if the File was successfully created
-            String filePath = file.getAbsolutePath();
-            Attachment attachment = new Attachment(uri, filePath, Constants.MIME_TYPE_FILES, name);
-            mPresenter.onAttachmentAdded(attachment);
+            mPresenter.onFileAttachmentSelected(uri, name);
         }
     }
 
@@ -610,7 +632,16 @@ public class NoteEditorFragment extends Fragment implements
                     takePhoto();
                 } else {
                     //permission was denied, disable backup
-                    makeToast("External storage access denied");
+                    makeToast(getString(R.string.external_access_denied));
+                }
+                break;
+            case FILE_PICK_REQUEST:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //permission was granted take picture
+                    pickFile();
+                } else {
+                    //permission was denied, disable backup
+                    makeToast(getString(R.string.external_access_denied));
                 }
                 break;
             case SKETCH_CAPTURE_REQUEST:

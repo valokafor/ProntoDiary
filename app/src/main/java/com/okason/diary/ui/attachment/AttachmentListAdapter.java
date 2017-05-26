@@ -2,6 +2,7 @@ package com.okason.diary.ui.attachment;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
 
@@ -82,12 +84,34 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
 
         // Draw name in case the type is an audio recording (or file in the future)
         if (selectedAttachment.getMime_type() != null && selectedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)) {
-            Glide.with(context.getApplicationContext())
-                    .load(selectedAttachment.getUri())
-                    .centerCrop()
-                    .crossFade()
-                    .placeholder(R.drawable.image_broken)
-                    .into(holder.image);
+
+            Uri uri = Uri.parse(selectedAttachment.getUri());
+            String name = FileHelper.getNameFromUri(context, uri);
+            String extension = FileHelper.getFileExtension(name).toLowerCase();
+
+            if (extension.equals(".png") || extension.equals(".jpg") || extension.equals(".jpeg")){
+                Glide.with(context.getApplicationContext())
+                        .load(selectedAttachment.getFilePath())
+                        .centerCrop()
+                        .crossFade()
+                        .placeholder(R.drawable.image_broken)
+                        .into(holder.image);
+            }else if (extension.equals(".pdf")){
+                Glide.with(context.getApplicationContext())
+                        .load(R.drawable.pdf_icon_2)
+                        .centerCrop()
+                        .crossFade()
+                        .placeholder(R.drawable.image_broken)
+                        .into(holder.image);
+            }else {
+                Glide.with(context.getApplicationContext())
+                        .load(R.drawable.ic_action_document)
+                        .centerCrop()
+                        .crossFade()
+                        .placeholder(R.drawable.image_broken)
+                        .into(holder.image);
+            }
+
         } else {
             Glide.with(context.getApplicationContext())
                     .load(selectedAttachment.getFilePath())

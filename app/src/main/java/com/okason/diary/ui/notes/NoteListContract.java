@@ -1,6 +1,7 @@
 package com.okason.diary.ui.notes;
 
 import android.content.Context;
+import android.net.Uri;
 
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
@@ -41,6 +42,7 @@ public interface NoteListContract {
         void saveNote(Note note);
         Attachment getAttachmentbyId(String id);
         void addAttachment(String noteId, Attachment attachment);
+        void addFileAttachment(Uri uri, String filename, String noteId);
 
 
     }
