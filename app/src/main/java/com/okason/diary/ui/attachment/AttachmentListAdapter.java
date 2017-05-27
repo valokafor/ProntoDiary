@@ -57,9 +57,6 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
     @Override
     public void onBindViewHolder(AttachmentListAdapter.ViewHolder holder, int position) {
         Attachment selectedAttachment = attachmentList.get(position);
-        if (!TextUtils.isEmpty(selectedAttachment.getName())){
-            holder.text.setVisibility(View.VISIBLE);
-        }
 
         // Draw name in case the type is an audio recording
         if (selectedAttachment.getMime_type() != null && selectedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)) {
@@ -84,6 +81,11 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
 
         // Draw name in case the type is an audio recording (or file in the future)
         if (selectedAttachment.getMime_type() != null && selectedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)) {
+
+            //Set File name
+            holder.text.setVisibility(View.VISIBLE);
+            String filename = TextUtils.isEmpty(selectedAttachment.getName()) ? "File" : selectedAttachment.getName();
+            holder.text.setText(filename);
 
             Uri uri = Uri.parse(selectedAttachment.getUri());
             String name = FileHelper.getNameFromUri(context, uri);

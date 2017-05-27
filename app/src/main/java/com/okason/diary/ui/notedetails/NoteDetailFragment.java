@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -34,12 +35,16 @@ import com.okason.diary.models.Note;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.FileHelper;
+import com.okason.diary.utils.IntentChecker;
 import com.okason.diary.utils.date.TimeUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
@@ -284,6 +289,11 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
 
     }
 
+    /**
+     * Shows a horizontal layout at the top of the screen that displays
+     * thunmnail of attachments
+     * @param attachmentList - the list of attachments for this Note
+     */
     private void initViewAttachments(final List<Attachment> attachmentList){
 
         attachmentContainer.setVisibility(View.VISIBLE);
@@ -302,6 +312,30 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
                 //Launch an Intent to show it, otherwise start Gallery Activity
                 if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
                     //show file
+                    Uri uri = Uri.parse(clickedAttachment.getUri());
+                    String fileType = "";
+                    String name = FileHelper.getNameFromUri(getActivity(), uri);
+                    String extension = FileHelper.getFileExtension(name).toLowerCase();
+
+                    if (extension.equals(".png") || extension.equals(".jpg") || extension.equals(".jpeg")){
+                        fileType = "image/jpeg";
+                    }else if (extension.equals(".pdf")){
+                        fileType = "application/pdf";
+                    }else {
+                        fileType = "plain/text";
+                    }
+
+                    Intent fileViewIntent = new Intent(Intent.ACTION_VIEW);
+                    fileViewIntent.setDataAndType(uri, fileType);
+                    fileViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                    fileViewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent
+                            .FLAG_GRANT_WRITE_URI_PERMISSION);
+                    if (IntentChecker.isAvailable(getActivity().getApplicationContext(), fileViewIntent, null)) {
+                        startActivity(Intent.createChooser(fileViewIntent, getResources().getText(R.string.open_with)));
+                    } else {
+                        makeToast(getString(R.string.feature_not_available_on_this_device));
+                    }
+
                 }else {
                     Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
                     galleryIntent.putExtra(Constants.NOTE_ID, mPresenter.getCurrentNoteId());
@@ -311,14 +345,54 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
             }
         });
         attachmentRecyclerView.setAdapter(attachmentListAdapter);
+        //Scroll to the last attachment on the list
+        int lastPosition = attachmentList.size() - 1;
+        attachmentRecyclerView.scrollToPosition(lastPosition);
 
     }
 
-    public void displayShareIntent() {
-        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-        sharingIntent.setType("text/plain");
-        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, mTitle.getText().toString());
-        sharingIntent.putExtra(Intent.EXTRA_TEXT, mContent.getText().toString());
-        startActivity(Intent.createChooser(sharingIntent, getResources().getString(R.string.share_using)));
+    public void displayShareIntent(Note note) {
+        String titleText = note.getTitle();
+
+        String contentText = titleText
+                + System.getProperty("line.separator")
+                + note.getContent();
+
+
+        Intent shareIntent = new Intent();
+        // Prepare sharing intent with only text
+        if (note.getAttachments().size() == 0) {
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+
+            // Intent with single image attachment
+        } else if (note.getAttachments().size() == 1) {
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.setType(note.getAttachments().get(0).getMime_type());
+            shareIntent.putExtra(Intent.EXTRA_STREAM, note.getAttachments().get(0).getUri());
+
+            // Intent with multiple images
+        } else if (note.getAttachments().size() > 1) {
+            shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+            ArrayList<Uri> uris = new ArrayList<>();
+            // A check to decide the mime type of attachments to share is done here
+            HashMap<String, Boolean> mimeTypes = new HashMap<>();
+            for (Attachment attachment : note.getAttachments()) {
+                uris.add(Uri.parse(attachment.getUri()));
+                mimeTypes.put(attachment.getMime_type(), true);
+            }
+            // If many mime types are present a general type is assigned to intent
+            if (mimeTypes.size() > 1) {
+                shareIntent.setType("*/*");
+            } else {
+                shareIntent.setType((String) mimeTypes.keySet().toArray()[0]);
+            }
+
+            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+        }
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
+
+        startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
     }
 }

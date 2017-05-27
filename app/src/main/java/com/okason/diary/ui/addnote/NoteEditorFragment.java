@@ -338,7 +338,7 @@ public class NoteEditorFragment extends Fragment implements
                     }
 
                     Intent fileViewIntent = new Intent(Intent.ACTION_VIEW);
-                    fileViewIntent.setDataAndType(uri, "application/pdf");
+                    fileViewIntent.setDataAndType(uri, fileType);
                     fileViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                     fileViewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent
                             .FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -357,6 +357,9 @@ public class NoteEditorFragment extends Fragment implements
             }
         });
         attachmentRecyclerView.setAdapter(attachmentListAdapter);
+        //Scroll to the last attachment on the list
+        int lastPosition = attachmentList.size() - 1;
+        attachmentRecyclerView.scrollToPosition(lastPosition);
 
     }
 
@@ -374,15 +377,6 @@ public class NoteEditorFragment extends Fragment implements
         alertDialog.setCustomTitle(titleView);
         final Dialog dialog = alertDialog.create();
         dialog.show();
-
-        TextView pictureSelection = (TextView) layout.findViewById(R.id.camera);
-        pictureSelection.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                picturePicture();
-                dialog.dismiss();
-            }
-        });
 
         TextView cameraSelection = (TextView) layout.findViewById(R.id.camera);
         cameraSelection.setOnClickListener(new View.OnClickListener() {
@@ -405,7 +399,7 @@ public class NoteEditorFragment extends Fragment implements
             @Override
             public void onClick(View view) {
                 if (isStoragePermissionGrantedForPickingFile()){
-                    pickFile();
+                    takeVideo();
                 }
                 dialog.dismiss();
             }
@@ -415,12 +409,8 @@ public class NoteEditorFragment extends Fragment implements
         fileSelection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
-                    if (isStoragePermissionGrantedForImage()){
-                        pickFile();
-                    }
-                }else {
-                    makeToast(getString(R.string.feature_not_available_on_this_device));
+                if (isStoragePermissionGrantedForPickingFile()){
+                    pickFile();
                 }
                 dialog.dismiss();
             }
@@ -440,9 +430,7 @@ public class NoteEditorFragment extends Fragment implements
 
     }
 
-    private void picturePicture() {
 
-    }
 
 
     //Checks whether the user has granted the app permission to
