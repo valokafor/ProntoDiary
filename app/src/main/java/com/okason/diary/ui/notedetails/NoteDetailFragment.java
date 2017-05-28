@@ -183,7 +183,7 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
                 mPresenter.onDeleteNoteButtonClicked();
                 break;
             case R.id.action_share:
-                displayShareIntent();
+                //displayShareIntent();
                 break;
             case R.id.action_play:
                // onPlayAudioButtonClicked();

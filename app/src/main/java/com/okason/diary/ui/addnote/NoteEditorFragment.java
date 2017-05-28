@@ -50,6 +50,7 @@ import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
+import com.okason.diary.ui.sketch.SketchActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.IntentChecker;
@@ -417,6 +418,19 @@ public class NoteEditorFragment extends Fragment implements
         });
 
 
+        TextView sketchSelection = (TextView) layout.findViewById(R.id.sketch);
+        sketchSelection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isStoragePermissionGrantedForSketch()) {
+                    Intent sketchIntent = new Intent(getActivity(), SketchActivity.class);
+                    startActivityForResult(sketchIntent, SKETCH_CAPTURE_REQUEST);
+                }
+                dialog.dismiss();
+            }
+        });
+
+
 
     }
 
@@ -464,6 +478,24 @@ public class NoteEditorFragment extends Fragment implements
             } else {
                 Log.v(LOG_TAG,"Permission is revoked");
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, FILE_PICK_REQUEST);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(LOG_TAG,"Permission is granted  API < 23");
+            return true;
+        }
+    }
+
+    private boolean isStoragePermissionGrantedForSketch() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (getActivity().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v(LOG_TAG,"Permission is granted");
+                return true;
+            } else {
+                Log.v(LOG_TAG,"Permission is revoked");
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, SKETCH_CAPTURE_REQUEST);
                 return false;
             }
         }
@@ -560,6 +592,15 @@ public class NoteEditorFragment extends Fragment implements
                 case FILE_PICK_REQUEST:
                     handleFilePickIntent(data);
                     break;
+                case SKETCH_CAPTURE_REQUEST:
+                    String sketchFilePath = data.getData().toString();
+                    if (!TextUtils.isEmpty(sketchFilePath)){
+                        attachment = new Attachment(Uri.parse(sketchFilePath), sketchFilePath, Constants.MIME_TYPE_SKETCH);
+                        mPresenter.onAttachmentAdded(attachment);
+                    }else {
+                        makeToast(getString(R.string.error_sketch_is_empty));
+                    }
+                    break;
 
             }
         }
@@ -633,14 +674,14 @@ public class NoteEditorFragment extends Fragment implements
                 }
                 break;
             case SKETCH_CAPTURE_REQUEST:
-//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    //permission was granted perform backup
-//                    Intent sketchIntent = new Intent(getActivity(), SketchActivity.class);
-//                    startActivityForResult(sketchIntent, SKETCH_CAPTURE_REQUEST);
-//                } else {
-//                    //permission was denied, disable backup
-//                    makeToast("External storage access denied");
-//                }
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //permission was granted perform backup
+                    Intent sketchIntent = new Intent(getActivity(), SketchActivity.class);
+                    startActivityForResult(sketchIntent, SKETCH_CAPTURE_REQUEST);
+                } else {
+                    //permission was denied, disable backup
+                    makeToast("External storage access denied");
+                }
                 break;
 
 

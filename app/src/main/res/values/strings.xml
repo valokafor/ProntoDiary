@@ -145,6 +145,9 @@
     <string name="select_attachment">Select Attachment</string>
     <string name="open_with">Open With</string>
     <string name="external_access_denied">External storage access denied</string>
+    <string name="share_message_chooser">Share using</string>
+    <string name="action_erase">erase</string>
+    <string name="error_sketch_is_empty">Sketch is empty</string>
 
 
 </resources>
