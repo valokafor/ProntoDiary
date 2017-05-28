@@ -76,19 +76,35 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             //Check to see if this Note has Attachments, if it does check if the attachment is image
             //If it is then show the thumbnail
             if (note.getAttachments() != null && note.getAttachments().size() > 0){
-                for (Attachment attachment: note.getAttachments()){
-                    if (attachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE) ||
-                            attachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
-                        holder.attachmentLayout.setVisibility(View.VISIBLE);
-                        Glide.with(mContext)
-                                .load(attachment.getFilePath())
-                                .placeholder(R.drawable.default_image)
-                                .centerCrop()
-                                .into(holder.noteAttachment);
-                        break;
+                Attachment lastAttachment = note.getAttachments().get(note.getAttachments().size() - 1);
 
-                    }
+                if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
+                    holder.attachmentLayout.setVisibility(View.VISIBLE);
+                    Glide.with(mContext)
+                            .load(lastAttachment.getFilePath())
+                            .placeholder(R.drawable.default_image)
+                            .centerCrop()
+                            .into(holder.noteAttachment);
+                } else if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
+                    holder.attachmentLayout.setVisibility(View.VISIBLE);
+                    Glide.with(mContext)
+                            .load(R.drawable.ic_action_playback_play)
+                            .placeholder(R.drawable.default_image)
+                            .centerCrop()
+                            .into(holder.noteAttachment);
+
+                } else if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)){
+                    holder.attachmentLayout.setVisibility(View.VISIBLE);
+                    Glide.with(mContext)
+                            .load(R.drawable.ic_action_youtube)
+                            .placeholder(R.drawable.default_image)
+                            .centerCrop()
+                            .into(holder.noteAttachment);
+
                 }
+
+
+
 
             }
 

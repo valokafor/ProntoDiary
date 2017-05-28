@@ -430,6 +430,18 @@ public class NoteEditorFragment extends Fragment implements
             }
         });
 
+        TextView recordSelection = (TextView) layout.findViewById(R.id.recording);
+        recordSelection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isStoragePermissionGrantedForSketch()) {
+                    Intent sketchIntent = new Intent(getActivity(), SketchActivity.class);
+                    startActivityForResult(sketchIntent, SKETCH_CAPTURE_REQUEST);
+                }
+                dialog.dismiss();
+            }
+        });
+
 
 
     }
