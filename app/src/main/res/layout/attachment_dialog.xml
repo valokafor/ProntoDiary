@@ -36,6 +36,20 @@
         android:gravity="start|left">
 
 
+
+        <TextView
+            android:id="@+id/picture"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/icon_selector"
+            android:drawableLeft="@drawable/ic_photo_black_24dp"
+            android:drawablePadding="@dimen/attachment_dialog_drawable_padding"
+            android:padding="6dp"
+            android:text="@string/picture"
+            android:textSize="@dimen/attachment_dialog_text_size"
+            android:textColor="@color/primary_text" />
+
+
         <TextView
             android:id="@+id/camera"
             android:layout_width="match_parent"

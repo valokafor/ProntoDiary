@@ -5,10 +5,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -115,8 +118,14 @@ public class NoteEditorFragment extends Fragment implements
     private final int SKETCH_CAPTURE_REQUEST = 4;
     private final int VIDEO_CAPTURE_REQUEST = 5;
     private final int FILE_PICK_REQUEST = 6;
+    private final int PICTURE_PICK_REQUEST = 7;
 
     private SharedPreferences prefs;
+    private MediaRecorder mRecorder = null;
+    private MediaPlayer   mPlayer = null;
+    private long audioRecordingTimeStart;
+    private long audioRecordingTime;
+
 
 
 
@@ -417,6 +426,17 @@ public class NoteEditorFragment extends Fragment implements
             }
         });
 
+        TextView pictureSelection = (TextView) layout.findViewById(R.id.picture);
+        pictureSelection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isStoragePermissionGrantedForPickingPicture()){
+                    pickPicture();
+                }
+                dialog.dismiss();
+            }
+        });
+
 
         TextView sketchSelection = (TextView) layout.findViewById(R.id.sketch);
         sketchSelection.setOnClickListener(new View.OnClickListener() {
@@ -434,9 +454,15 @@ public class NoteEditorFragment extends Fragment implements
         recordSelection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isStoragePermissionGrantedForSketch()) {
-                    Intent sketchIntent = new Intent(getActivity(), SketchActivity.class);
-                    startActivityForResult(sketchIntent, SKETCH_CAPTURE_REQUEST);
+                PackageManager packageManager = getActivity().getPackageManager();
+                if (packageManager.hasSystemFeature(PackageManager.FEATURE_MICROPHONE)) {
+                    if (isRecordPermissionGranted()) {
+                        if (isRecordPermissionGranted()) {
+                            promptToStartRecording();
+                        }
+                    }
+                } else {
+                    makeToast(getContext().getString(R.string.error_no_mic));
                 }
                 dialog.dismiss();
             }
@@ -453,6 +479,14 @@ public class NoteEditorFragment extends Fragment implements
         filesIntent.addCategory(Intent.CATEGORY_OPENABLE);
         filesIntent.setType("*/*");
         startActivityForResult(filesIntent, FILE_PICK_REQUEST);
+
+    }
+
+    private void pickPicture() {
+        Intent filesIntent;
+        filesIntent = new Intent(Intent.ACTION_PICK);
+        filesIntent.setType("image/*");
+        startActivityForResult(filesIntent, PICTURE_PICK_REQUEST);
 
     }
 
@@ -479,6 +513,24 @@ public class NoteEditorFragment extends Fragment implements
         }
     }
 
+
+    //Checks whether the user has granted the app permission to
+    //access external storage
+    private boolean isRecordPermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (getActivity().checkSelfPermission(Manifest.permission.RECORD_AUDIO)
+                    == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            } else {
+                this.requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO_PERMISSION_REQUEST);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            return true;
+        }
+    }
+
     //Checks whether the user has granted the app permission to
     //access external storage
     private boolean isStoragePermissionGrantedForPickingFile() {
@@ -490,6 +542,27 @@ public class NoteEditorFragment extends Fragment implements
             } else {
                 Log.v(LOG_TAG,"Permission is revoked");
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, FILE_PICK_REQUEST);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(LOG_TAG,"Permission is granted  API < 23");
+            return true;
+        }
+    }
+
+
+    //Checks whether the user has granted the app permission to
+    //access external storage
+    private boolean isStoragePermissionGrantedForPickingPicture() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v(LOG_TAG,"Permission is granted");
+                return true;
+            } else {
+                Log.v(LOG_TAG,"Permission is revoked");
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PICTURE_PICK_REQUEST);
                 return false;
             }
         }
@@ -541,6 +614,42 @@ public class NoteEditorFragment extends Fragment implements
         };
     }
 
+    private void startRecording() {
+        mRecorder = new MediaRecorder();
+        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        File recordFile = null;
+        try {
+            recordFile = createImageFile(Constants.MIME_TYPE_AUDIO_EXT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mLocalAudioFilePath = recordFile.getAbsolutePath();
+        if (recordFile != null) {
+            Uri fileUri = FileProvider.getUriForFile(getContext(),
+                    BuildConfig.APPLICATION_ID + ".provider",
+                    recordFile);
+            attachmentUri = fileUri;
+
+            mRecorder.setOutputFile(mLocalAudioFilePath);
+            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            mRecorder.setAudioEncodingBitRate(96000);
+            mRecorder.setAudioSamplingRate(44100);
+
+            try {
+                audioRecordingTimeStart = Calendar.getInstance().getTimeInMillis();
+                mRecorder.prepare();
+                mRecorder.start();
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "prepare() failed");
+                makeToast("Unable to record " + e.getLocalizedMessage());
+            }
+
+        };
+
+    }
+
+
     public File createImageFile(String extension) throws IOException {
         // Create an image file name
         String timeStamp = TimeUtils.getDatetimeSuffix(System.currentTimeMillis());
@@ -586,6 +695,86 @@ public class NoteEditorFragment extends Fragment implements
         startActivityForResult(takeVideoIntent, VIDEO_CAPTURE_REQUEST);
     }
 
+    private void startPlaying() {
+        mPlayer = new MediaPlayer();
+        try {
+            mPlayer.setDataSource(mLocalAudioFilePath);
+            mPlayer.prepare();
+            mPlayer.start();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "prepare() failed");
+        }
+    }
+
+
+
+
+    private void stopRecording() {
+        if (mRecorder != null) {
+            audioRecordingTime = Calendar.getInstance().getTimeInMillis() - audioRecordingTimeStart;
+            mRecorder.stop();
+            mRecorder.release();
+            mRecorder = null;
+
+            Attachment attachment = new Attachment(attachmentUri, mLocalAudioFilePath, Constants.MIME_TYPE_AUDIO);
+            mPresenter.onAttachmentAdded(attachment);
+        }
+
+        makeToast("Recording added");
+
+
+    }
+
+
+    public void promptToStartRecording(){
+        String title = getContext().getString(R.string.start_recording);
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        titleText.setText(title);
+        alertDialog.setCustomTitle(titleView);
+
+
+        alertDialog.setPositiveButton(getString(R.string.start), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                startRecording();
+                promptToStopRecording();
+            }
+        });
+        alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+
+    public void promptToStopRecording(){
+        String title = getContext().getString(R.string.stop_recording);
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        titleText.setText(title);
+        alertDialog.setCustomTitle(titleView);
+
+
+        alertDialog.setPositiveButton(getString(R.string.stop), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                stopRecording();
+                dialog.dismiss();
+            }
+        });
+
+        alertDialog.show();
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -613,6 +802,11 @@ public class NoteEditorFragment extends Fragment implements
                         makeToast(getString(R.string.error_sketch_is_empty));
                     }
                     break;
+                case PICTURE_PICK_REQUEST:
+                    handlePicturePickIntent(data);
+                    break;
+
+
 
             }
         }
@@ -620,6 +814,25 @@ public class NoteEditorFragment extends Fragment implements
 
     //Called when a file is picked
     private void handleFilePickIntent(Intent intent) {
+        List<Uri> uris = new ArrayList<>();
+
+        if (Build.VERSION.SDK_INT > 16 && intent.getClipData() != null) {
+            for (int i = 0; i < intent.getClipData().getItemCount(); i++) {
+                uris.add(intent.getClipData().getItemAt(i).getUri());
+            }
+        } else {
+            uris.add(intent.getData());
+        }
+
+
+        for (Uri uri : uris) {
+            String name = FileHelper.getNameFromUri(getActivity(), uri);
+            mPresenter.onFileAttachmentSelected(uri, name);
+        }
+    }
+
+    //Called when a picture is picked
+    private void handlePicturePickIntent(Intent intent) {
         List<Uri> uris = new ArrayList<>();
 
         if (Build.VERSION.SDK_INT > 16 && intent.getClipData() != null) {
@@ -661,7 +874,7 @@ public class NoteEditorFragment extends Fragment implements
                 break;
             case RECORD_AUDIO_PERMISSION_REQUEST:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                   // promptToStartRecording();
+                    promptToStartRecording();
                 } else {
                     //permission was denied, disable backup
                     makeToast("Mic access denied");

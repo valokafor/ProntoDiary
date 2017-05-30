@@ -19,5 +19,6 @@ public interface NoteDetailContract {
         void onDeleteNoteButtonClicked();
         void deleteNote();
         String getCurrentNoteId();
+        Note getCurrentNote();
     }
 }

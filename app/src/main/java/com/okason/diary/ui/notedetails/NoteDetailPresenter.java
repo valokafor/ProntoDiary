@@ -46,6 +46,12 @@ public class NoteDetailPresenter implements NoteDetailContract.Action {
     }
 
     @Override
+    public Note getCurrentNote() {
+        Note selectedNote = mRepository.getNoteById(noteId);
+        return selectedNote;
+    }
+
+    @Override
     public void deleteNote() {
         mRepository.deleteNote(noteId);
     }

@@ -60,7 +60,7 @@ public class GalleryPagerFragment extends Fragment {
 
         Glide.with(getActivity().getApplicationContext())
                 .load(mImagePath)
-                .centerCrop()
+                .fitCenter()
                 .crossFade()
                 .into(mImageView);
         return mRootView;
