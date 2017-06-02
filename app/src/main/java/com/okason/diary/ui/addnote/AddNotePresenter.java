@@ -31,6 +31,13 @@ public class AddNotePresenter implements AddNoteContract.Action {
     }
 
     @Override
+    public void onDeleteNoteButtonClicked() {
+        if (mCurrentNote == null){
+
+        }
+    }
+
+    @Override
     public void onTitleChange(String newTitle) {
         if (mCurrentNote == null){
             mCurrentNote = mRepository.createNewNote();
@@ -55,11 +62,16 @@ public class AddNotePresenter implements AddNoteContract.Action {
     }
 
     @Override
-    public void getCurrentNote(String noteId) {
+    public void updatedtNote(String noteId) {
         mCurrentNote = mRepository.getNoteById(noteId);
         if (mCurrentNote != null){
             mView.populateNote(mCurrentNote);
         }
+    }
+
+    @Override
+    public Note getCurrentNote() {
+        return mCurrentNote;
     }
 
     @Override
@@ -72,7 +84,7 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     @Override
     public void updatedUI() {
-        getCurrentNote(mCurrentNote.getId());
+        updatedtNote(mCurrentNote.getId());
     }
 
     /**
@@ -88,6 +100,7 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
         //Add the attachment to the Note
         mRepository.addAttachment(mCurrentNote.getId(), attachment);
+        mView.showProgressDialog();
 
 
     }
@@ -100,6 +113,7 @@ public class AddNotePresenter implements AddNoteContract.Action {
         }
 
         mRepository.addFileAttachment(fileUri, fileName, mCurrentNote.getId());
+        mView.showProgressDialog();
     }
 
 }

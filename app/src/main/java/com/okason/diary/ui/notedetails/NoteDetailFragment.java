@@ -211,16 +211,16 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
     @Override
     public void displayNote(Note note) {
         String categoryName = null;
-        try {
-            categoryName = note.getFolder().getFolderName();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            mCategory.setText(categoryName);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            categoryName = note.getFolder().getFolderName();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            mCategory.setText(categoryName);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         try {
             mContent.setText(note.getContent());
         } catch (Exception e) {
@@ -369,7 +369,8 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         } else if (note.getAttachments().size() == 1) {
             shareIntent.setAction(Intent.ACTION_SEND);
             shareIntent.setType(note.getAttachments().get(0).getMime_type());
-            shareIntent.putExtra(Intent.EXTRA_STREAM, note.getAttachments().get(0).getUri());
+            Uri singleUri = Uri.parse(note.getAttachments().get(0).getUri());
+            shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
 
             // Intent with multiple images
         } else if (note.getAttachments().size() > 1) {
@@ -378,7 +379,8 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
             // A check to decide the mime type of attachments to share is done here
             HashMap<String, Boolean> mimeTypes = new HashMap<>();
             for (Attachment attachment : note.getAttachments()) {
-                uris.add(Uri.parse(attachment.getUri()));
+                Uri uri = Uri.parse(attachment.getUri());
+                uris.add(uri);
                 mimeTypes.put(attachment.getMime_type(), true);
             }
             // If many mime types are present a general type is assigned to intent

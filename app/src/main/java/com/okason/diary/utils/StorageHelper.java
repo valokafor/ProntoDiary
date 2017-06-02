@@ -24,12 +24,15 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
+import com.okason.diary.BuildConfig;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.models.Attachment;
 
 import org.apache.commons.io.FileUtils;
@@ -105,7 +108,12 @@ public class StorageHelper {
             Toast.makeText(mContext, mContext.getString(R.string.storage_not_available), Toast.LENGTH_SHORT).show();
             return null;
         }
-        File file = createNewAttachmentFile(mContext, extension);
+        File file = null;
+        try {
+            file = FileUtility.createImageFile(extension);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         InputStream is;
         OutputStream os;
@@ -458,9 +466,13 @@ public class StorageHelper {
         } else {
             f = StorageHelper.createExternalStoragePrivateFile(mContext, uri, extension);
         }
+
         Attachment mAttachment = null;
         if (f != null) {
-            mAttachment = new Attachment(Uri.fromFile(f), f.getAbsolutePath(), StorageHelper.getMimeTypeInternal(mContext, uri));
+            Uri fileUri = FileProvider.getUriForFile(ProntoDiaryApplication.getAppContext(),
+                    BuildConfig.APPLICATION_ID + ".provider",
+                    f);
+            mAttachment = new Attachment(fileUri, f.getAbsolutePath(), StorageHelper.getMimeTypeInternal(mContext, uri));
             mAttachment.setName(name);
             mAttachment.setSize(f.length());
         }

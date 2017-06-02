@@ -92,6 +92,7 @@ dependencies {
     compile "com.android.support:support-vector-drawable:$rootProject.supportLibraryVersion"
     compile "com.android.support:recyclerview-v7:$rootProject.supportLibraryVersion"
     compile "com.android.support:support-v4:$rootProject.supportLibraryVersion"
+    compile 'com.afollestad.material-dialogs:core:0.9.4.5'
 
     compile('com.mikepenz:materialdrawer:5.9.1@aar') {
         transitive = true

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
 
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.utils.date.TimeUtils;
 
 import java.io.File;
@@ -31,6 +32,21 @@ public class FileUtility {
         return recordFile;
 
     }
+
+    public static File createImageFile(String extension) throws IOException {
+        // Create an image file name
+        String timeStamp = TimeUtils.getDatetimeSuffix(System.currentTimeMillis());
+        String imageFileName = "Image_" + timeStamp + "_";
+        File storageDir = ProntoDiaryApplication.getAppContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                extension,         /* suffix */
+                storageDir      /* directory */
+        );
+
+        return image;
+    }
+
 
 //    /**
 //     * Creates the image file to which the image must be saved.

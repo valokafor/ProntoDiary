@@ -15,7 +15,6 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -41,6 +40,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
@@ -56,8 +56,8 @@ import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.ui.sketch.SketchActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
+import com.okason.diary.utils.FileUtility;
 import com.okason.diary.utils.IntentChecker;
-import com.okason.diary.utils.date.TimeUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -67,6 +67,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
@@ -119,12 +120,14 @@ public class NoteEditorFragment extends Fragment implements
     private final int VIDEO_CAPTURE_REQUEST = 5;
     private final int FILE_PICK_REQUEST = 6;
     private final int PICTURE_PICK_REQUEST = 7;
+    private final int ACCESS_LOCATION_PERMISSION_REQUEST = 8;
 
     private SharedPreferences prefs;
     private MediaRecorder mRecorder = null;
     private MediaPlayer   mPlayer = null;
     private long audioRecordingTimeStart;
     private long audioRecordingTime;
+    private MaterialDialog mDialog;
 
 
 
@@ -217,7 +220,7 @@ public class NoteEditorFragment extends Fragment implements
     public void onResume() {
         super.onResume();
         if (!TextUtils.isEmpty(getPassedInNote())){
-            mPresenter.getCurrentNote(getPassedInNote());
+            mPresenter.updatedtNote(getPassedInNote());
         }
         EventBus.getDefault().register(this);
 
@@ -227,6 +230,11 @@ public class NoteEditorFragment extends Fragment implements
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
+
+        if (mRecorder != null) {
+            mRecorder.release();
+            mRecorder = null;
+        }
 
     }
 
@@ -242,6 +250,12 @@ public class NoteEditorFragment extends Fragment implements
         switch (id){
             case R.id.action_attachment:
                 showSelectAttachmentDialog();
+                break;
+            case R.id.action_delete:
+                mPresenter.onDeleteNoteButtonClicked();
+                break;
+            case R.id.action_share:
+                displayShareIntent(mPresenter.getCurrentNote());
                 break;
 
 
@@ -262,6 +276,7 @@ public class NoteEditorFragment extends Fragment implements
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDatabaseOperationCompleteEvent(DatabaseOperationCompletedEvent event){
+        hideProgressDialog();
         if (event.isShouldUpdateUi()){
             mPresenter.updatedUI();
         }
@@ -281,6 +296,11 @@ public class NoteEditorFragment extends Fragment implements
         snackbar.show();
     }
 
+
+    @Override
+    public void showMessage(String message) {
+        makeToast(message);
+    }
 
     @Override
     public void populateNote(Note note) {
@@ -307,6 +327,24 @@ public class NoteEditorFragment extends Fragment implements
         mContent.requestFocus();
         if (note.getAttachments() != null && note.getAttachments().size() > 0){
             initViewAttachments(note.getAttachments());
+        }
+
+    }
+
+    @Override
+    public void showProgressDialog() {
+        mDialog = new MaterialDialog.Builder(getActivity())
+                .title(R.string.please_wait)
+                .titleColorRes(R.color.primary_dark)
+                .content(R.string.processing_image)
+                .progress(true, 0)
+                .show();
+    }
+
+    @Override
+    public void hideProgressDialog() {
+        if (mDialog != null){
+            mDialog.dismiss();
         }
 
     }
@@ -468,6 +506,8 @@ public class NoteEditorFragment extends Fragment implements
             }
         });
 
+        TextView locationSelection = (TextView) layout.findViewById(R.id.location);
+
 
 
     }
@@ -523,6 +563,24 @@ public class NoteEditorFragment extends Fragment implements
                 return true;
             } else {
                 this.requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO_PERMISSION_REQUEST);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            return true;
+        }
+    }
+
+
+    //Checks whether the user has granted the app permission to
+    //access location info
+    private boolean isLocationPermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            } else {
+                this.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, ACCESS_LOCATION_PERMISSION_REQUEST);
                 return false;
             }
         }
@@ -595,7 +653,7 @@ public class NoteEditorFragment extends Fragment implements
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         File photoFile = null;
         try {
-            photoFile = createImageFile(Constants.MIME_TYPE_IMAGE_EXT);
+            photoFile = FileUtility.createImageFile(Constants.MIME_TYPE_IMAGE_EXT);
 
         } catch (IOException ex) {
             // Error occurred while creating the File
@@ -609,6 +667,7 @@ public class NoteEditorFragment extends Fragment implements
                     BuildConfig.APPLICATION_ID + ".provider",
                     photoFile);
             attachmentUri = fileUri;
+            Log.d(LOG_TAG, "takePhoto Uri: " + fileUri);
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
             startActivityForResult(takePictureIntent, IMAGE_CAPTURE_REQUEST);
         };
@@ -620,7 +679,7 @@ public class NoteEditorFragment extends Fragment implements
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         File recordFile = null;
         try {
-            recordFile = createImageFile(Constants.MIME_TYPE_AUDIO_EXT);
+            recordFile = FileUtility.createImageFile(Constants.MIME_TYPE_AUDIO_EXT);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -649,20 +708,20 @@ public class NoteEditorFragment extends Fragment implements
 
     }
 
-
-    public File createImageFile(String extension) throws IOException {
-        // Create an image file name
-        String timeStamp = TimeUtils.getDatetimeSuffix(System.currentTimeMillis());
-        String imageFileName = "Image_" + timeStamp + "_";
-        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                extension,         /* suffix */
-                storageDir      /* directory */
-        );
-
-        return image;
-    }
+//
+//    public File createImageFile(String extension) throws IOException {
+//        // Create an image file name
+//        String timeStamp = TimeUtils.getDatetimeSuffix(System.currentTimeMillis());
+//        String imageFileName = "Image_" + timeStamp + "_";
+//        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+//        File image = File.createTempFile(
+//                imageFileName,  /* prefix */
+//                extension,         /* suffix */
+//                storageDir      /* directory */
+//        );
+//
+//        return image;
+//    }
 
 
     private void takeVideo() {
@@ -670,7 +729,7 @@ public class NoteEditorFragment extends Fragment implements
 
         File videoFile = null;
         try {
-            videoFile = createImageFile(Constants.MIME_TYPE_VIDEO_EXT);
+            videoFile = FileUtility.createImageFile(Constants.MIME_TYPE_VIDEO_EXT);
 
         } catch (IOException ex) {
             // Error occurred while creating the File
@@ -684,6 +743,7 @@ public class NoteEditorFragment extends Fragment implements
                     BuildConfig.APPLICATION_ID + ".provider",
                     videoFile);
             attachmentUri = fileUri;
+            Log.d(LOG_TAG, "Video Uri: " + fileUri);
             takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
         };
 
@@ -795,8 +855,12 @@ public class NoteEditorFragment extends Fragment implements
                     break;
                 case SKETCH_CAPTURE_REQUEST:
                     String sketchFilePath = data.getData().toString();
+                    File sketchFile = new File(sketchFilePath);
+                    Uri fileUri = FileProvider.getUriForFile(getContext(),
+                            BuildConfig.APPLICATION_ID + ".provider",
+                            sketchFile);
                     if (!TextUtils.isEmpty(sketchFilePath)){
-                        attachment = new Attachment(Uri.parse(sketchFilePath), sketchFilePath, Constants.MIME_TYPE_SKETCH);
+                        attachment = new Attachment(fileUri, sketchFilePath, Constants.MIME_TYPE_SKETCH);
                         mPresenter.onAttachmentAdded(attachment);
                     }else {
                         makeToast(getString(R.string.error_sketch_is_empty));
@@ -913,6 +977,59 @@ public class NoteEditorFragment extends Fragment implements
         }
 
 
+    }
+
+
+    public void displayShareIntent(Note note) {
+        if (note == null){
+            makeToast(getString(R.string.no_notes_found));
+            return;
+        }
+
+        String titleText = note.getTitle();
+
+        String contentText = titleText
+                + System.getProperty("line.separator")
+                + note.getContent();
+
+
+        Intent shareIntent = new Intent();
+        // Prepare sharing intent with only text
+        if (note.getAttachments().size() == 0) {
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+
+            // Intent with single image attachment
+        } else if (note.getAttachments().size() == 1) {
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.setType(note.getAttachments().get(0).getMime_type());
+            Uri singleUri = Uri.parse(note.getAttachments().get(0).getUri());
+            shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
+
+            // Intent with multiple images
+        } else if (note.getAttachments().size() > 1) {
+            shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+            ArrayList<Uri> uris = new ArrayList<>();
+            // A check to decide the mime type of attachments to share is done here
+            HashMap<String, Boolean> mimeTypes = new HashMap<>();
+            for (Attachment attachment : note.getAttachments()) {
+                Uri uri = Uri.parse(attachment.getUri());
+                uris.add(uri);
+                mimeTypes.put(attachment.getMime_type(), true);
+            }
+            // If many mime types are present a general type is assigned to intent
+            if (mimeTypes.size() > 1) {
+                shareIntent.setType("*/*");
+            } else {
+                shareIntent.setType((String) mimeTypes.keySet().toArray()[0]);
+            }
+
+            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+        }
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
+
+        startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
     }
 
 }

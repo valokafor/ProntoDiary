@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.okason.diary.R;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.FileUtility;
 import com.okason.diary.utils.date.TimeUtils;
 
 import java.io.File;
@@ -77,7 +78,7 @@ public class SketchActivity extends AppCompatActivity {
 
         try {
             String imTitle = "Sketch" + "_" + TimeUtils.getDatetimeSuffix(System.currentTimeMillis())+ Constants.MIME_TYPE_SKETCH_EXT;
-            sketchFile = new File(sketchDirectory, imTitle);
+            sketchFile = FileUtility.createImageFile(Constants.MIME_TYPE_SKETCH_EXT);
             if (!sketchFile.exists()){
                 sketchFile.createNewFile();
             }

@@ -13,16 +13,21 @@ import com.okason.diary.models.Note;
 public interface AddNoteContract {
 
     interface View{
+        void showMessage(String message);
         void populateNote(Note note);
+        void showProgressDialog();
+        void hideProgressDialog();
 
     }
 
     interface Action{
         void deleteJournal();
+        void onDeleteNoteButtonClicked();
         void onTitleChange(String newTitle);
         void onFolderChange(Folder newFolder);
         void onNoteContentChange(String newContent);
-        void getCurrentNote(String noteId);
+        void updatedtNote(String noteId);
+        Note getCurrentNote();
         String getCurrentNoteId();
         void updatedUI();
         void onAttachmentAdded(Attachment attachment);
