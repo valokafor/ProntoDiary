@@ -2,16 +2,12 @@ package com.okason.diary.models;
 
 import android.net.Uri;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Attachment extends RealmObject{
+public class Attachment{
 
-    @PrimaryKey
     private String id;
     private String filePath;
     private String uri;

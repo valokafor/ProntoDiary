@@ -2,11 +2,10 @@ package com.okason.diary.ui.addnote;
 
 import android.net.Uri;
 
-import com.okason.diary.data.NoteRealmRepository;
+import com.google.firebase.database.DatabaseReference;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
-import com.okason.diary.ui.notes.NoteListContract;
 
 /**
  * Created by Valentine on 5/8/2017.
@@ -15,14 +14,15 @@ import com.okason.diary.ui.notes.NoteListContract;
 public class AddNotePresenter implements AddNoteContract.Action {
 
     private final AddNoteContract.View mView;
-    private  NoteListContract.Repository mRepository;
+    private final DatabaseReference noteCloudReference;
     private Note mCurrentNote = null;
+    private boolean dataChanged = false;
 
     private boolean isDualScreen = false;
 
-    public AddNotePresenter(AddNoteContract.View mView) {
+    public AddNotePresenter(AddNoteContract.View mView, DatabaseReference noteCloudReference) {
         this.mView = mView;
-        mRepository = new NoteRealmRepository();
+        this.noteCloudReference = noteCloudReference;
     }
 
     @Override
@@ -40,9 +40,10 @@ public class AddNotePresenter implements AddNoteContract.Action {
     @Override
     public void onTitleChange(String newTitle) {
         if (mCurrentNote == null){
-            mCurrentNote = mRepository.createNewNote();
+            mCurrentNote = new Note();
         }
-        mRepository.updatedNoteTitle(mCurrentNote.getId(), newTitle);
+        mCurrentNote.setTitle(newTitle);
+        dataChanged = true;
 
     }
 
@@ -56,18 +57,12 @@ public class AddNotePresenter implements AddNoteContract.Action {
     @Override
     public void onNoteContentChange(String newContent) {
         if (mCurrentNote == null){
-            mCurrentNote = mRepository.createNewNote();
+            mCurrentNote = new Note();
         }
-        mRepository.updatedNoteContent(mCurrentNote.getId(), newContent);
+        mCurrentNote.setContent(newContent);
     }
 
-    @Override
-    public void updatedtNote(String noteId) {
-        mCurrentNote = mRepository.getNoteById(noteId);
-        if (mCurrentNote != null){
-            mView.populateNote(mCurrentNote);
-        }
-    }
+
 
     @Override
     public Note getCurrentNote() {
@@ -81,11 +76,11 @@ public class AddNotePresenter implements AddNoteContract.Action {
         }
         return null;
     }
-
-    @Override
-    public void updatedUI() {
-        updatedtNote(mCurrentNote.getId());
-    }
+//
+//    @Override
+//    public void updatedUI() {
+//        updatetNote(mCurrentNote.getId());
+//    }
 
     /**
      * Called when an attachment is added to a Note
@@ -95,11 +90,10 @@ public class AddNotePresenter implements AddNoteContract.Action {
     public void onAttachmentAdded(Attachment attachment) {
         //First ensure a Note has been created
         if (mCurrentNote == null){
-            mCurrentNote = mRepository.createNewNote();
+            mCurrentNote = new Note();
         }
-
         //Add the attachment to the Note
-        mRepository.addAttachment(mCurrentNote.getId(), attachment);
+        mCurrentNote.getAttachments().add(attachment);
         mView.showProgressDialog();
 
 
@@ -109,8 +103,10 @@ public class AddNotePresenter implements AddNoteContract.Action {
     public void onFileAttachmentSelected(Uri fileUri, String fileName) {
         //First ensure a Note has been created
         if (mCurrentNote == null){
-            mCurrentNote = mRepository.createNewNote();
+            mCurrentNote = new Note();
         }
+
+        noteCloudReference.se
 
         mRepository.addFileAttachment(fileUri, fileName, mCurrentNote.getId());
         mView.showProgressDialog();

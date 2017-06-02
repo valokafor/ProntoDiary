@@ -171,7 +171,7 @@ public class NoteEditorFragment extends Fragment implements
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_note_editor, container, false);
         ButterKnife.bind(this, mRootView);
-        mPresenter = new AddNotePresenter(this);
+        mPresenter = new AddNotePresenter(this, noteCloudReference);
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         mTitle.addTextChangedListener(new TextWatcher() {
@@ -220,7 +220,7 @@ public class NoteEditorFragment extends Fragment implements
     public void onResume() {
         super.onResume();
         if (!TextUtils.isEmpty(getPassedInNote())){
-            mPresenter.updatedtNote(getPassedInNote());
+            mPresenter.updatetNote(getPassedInNote());
         }
         EventBus.getDefault().register(this);
 

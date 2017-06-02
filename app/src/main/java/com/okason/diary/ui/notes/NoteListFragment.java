@@ -102,7 +102,7 @@ public class NoteListFragment extends Fragment implements
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        mPresenter = new NoteListPresenter(this);
+        mPresenter = new NoteListPresenter(this, databaseReference, noteCloudReference);
 
 
         //Pull to refresh

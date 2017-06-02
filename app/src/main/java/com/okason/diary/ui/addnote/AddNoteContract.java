@@ -26,7 +26,6 @@ public interface AddNoteContract {
         void onTitleChange(String newTitle);
         void onFolderChange(Folder newFolder);
         void onNoteContentChange(String newContent);
-        void updatedtNote(String noteId);
         Note getCurrentNote();
         String getCurrentNoteId();
         void updatedUI();
