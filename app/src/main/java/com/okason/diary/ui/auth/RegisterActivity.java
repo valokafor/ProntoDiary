@@ -121,6 +121,12 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
         facebookAuth.onActivityResult(requestCode, resultCode, data);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getSupportActionBar().setTitle("Enable Private Cloud Sync");
+    }
+
     private void attemptRegister() {
         usernameView.setError(null);
         passwordView.setError(null);

@@ -962,6 +962,15 @@ public class NoteEditorFragment extends Fragment implements
                     makeToast(getString(R.string.external_access_denied));
                 }
                 break;
+            case PICTURE_PICK_REQUEST:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //permission was granted take picture
+                    pickPicture();
+                } else {
+                    //permission was denied, disable backup
+                    makeToast(getString(R.string.external_access_denied));
+                }
+                break;
             case SKETCH_CAPTURE_REQUEST:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //permission was granted perform backup

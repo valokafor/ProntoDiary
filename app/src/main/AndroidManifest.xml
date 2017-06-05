@@ -61,7 +61,7 @@
             android:name=".core.services.C"
             android:exported="false"/>
 
-        <activity android:name=".ui.auth.SignedInActivity"/>
+
         <activity
             android:name=".ui.addnote.AddNoteActivity"
             android:label="@string/title_activity_add_note"
@@ -101,6 +101,7 @@
         <activity android:name=".ui.sketch.SketchActivity">
         </activity>
         <activity android:name=".ui.auth.RegisterActivity"></activity>
+        <activity android:name=".ui.auth.SignInActivity" />
     </application>
 
 </manifest>

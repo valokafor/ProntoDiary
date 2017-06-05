@@ -32,6 +32,7 @@ public interface AddNoteContract {
         void updatedUI();
         void onAttachmentAdded(Attachment attachment);
         void onFileAttachmentSelected(Uri fileUri, String fileName);
+        
     }
 
 

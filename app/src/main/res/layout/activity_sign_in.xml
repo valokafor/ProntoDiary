@@ -69,7 +69,7 @@
 
             <Button
                 android:id="@+id/sign_in_button"
-                style="?android:textAppearanceSmall"
+                style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -89,6 +89,7 @@
                 android:paddingStart="12dp"
                 android:paddingRight="0dp"
                 android:paddingEnd="0dp"
+                android:visibility="gone"
                 android:drawablePadding="40dp"/>
 
             <com.google.android.gms.common.SignInButton
@@ -96,6 +97,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:visibility="gone"
                 app:buttonSize="wide"/>
 
         </LinearLayout>

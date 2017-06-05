@@ -43,6 +43,8 @@
     <dimen name="large_brush">40dp</dimen>
     <dimen name="profile_image_size">72dp</dimen>
     <dimen name="note_editor_icon_size">24dp</dimen>
+    <dimen name="attachment_thumnbail_height">125dp</dimen>
+    <dimen name="attachment_thumnbail_weight">125dp</dimen>
 
     <!-- Attachment dialog -->
     <dimen name="attachment_dialog_text_size">16sp</dimen>

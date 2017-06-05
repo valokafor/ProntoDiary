@@ -54,6 +54,7 @@ public class NoteRealmRepository implements NoteListContract.Repository{
         Note selectedNote;
         try (Realm realm = Realm.getDefaultInstance()){
             selectedNote = realm.where(Note.class).equalTo("id", noteId).findFirst();
+            selectedNote = realm.copyFromRealm(selectedNote);
         }catch (Exception e){
             selectedNote = null;
         }
@@ -70,6 +71,7 @@ public class NoteRealmRepository implements NoteListContract.Repository{
             note.setDateCreated(System.currentTimeMillis());
             note.setDateModified(System.currentTimeMillis());
             realm.commitTransaction();
+            note = realm.copyFromRealm(note);
         }
         return note;
     }

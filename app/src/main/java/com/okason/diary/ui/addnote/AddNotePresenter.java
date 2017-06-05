@@ -19,6 +19,8 @@ public class AddNotePresenter implements AddNoteContract.Action {
     private Note mCurrentNote = null;
 
     private boolean isDualScreen = false;
+    private String title = "";
+    private String content = "";
 
     public AddNotePresenter(AddNoteContract.View mView) {
         this.mView = mView;
@@ -39,10 +41,7 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     @Override
     public void onTitleChange(String newTitle) {
-        if (mCurrentNote == null){
-            mCurrentNote = mRepository.createNewNote();
-        }
-        mRepository.updatedNoteTitle(mCurrentNote.getId(), newTitle);
+      title = newTitle;
 
     }
 
@@ -55,10 +54,7 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     @Override
     public void onNoteContentChange(String newContent) {
-        if (mCurrentNote == null){
-            mCurrentNote = mRepository.createNewNote();
-        }
-        mRepository.updatedNoteContent(mCurrentNote.getId(), newContent);
+        content = newContent;
     }
 
     @Override
