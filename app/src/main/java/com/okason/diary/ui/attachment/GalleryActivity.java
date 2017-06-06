@@ -11,11 +11,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
-import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
-import com.okason.diary.ui.notes.NoteListContract;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
@@ -51,8 +51,6 @@ public class GalleryActivity extends AppCompatActivity {
     private List<Attachment> attachments;
 
 
-    private NoteListContract.Repository repository;
-
     //This Id is used to go back to the Note that has this attachment
     private Note parentNote;
 
@@ -62,8 +60,8 @@ public class GalleryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_gallery);
         ButterKnife.bind(this);
 
-        if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
-            repository = new NoteRealmRepository();
+        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)) {
+            getCurrentNote();
             initViews();
             initData();
         } else {
@@ -73,9 +71,17 @@ public class GalleryActivity extends AppCompatActivity {
 
     }
 
+    public void getCurrentNote(){
+        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)){
+            String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_NOTE);
+            if (!serializedNote.isEmpty()){
+                Gson gson = new Gson();
+                parentNote = gson.fromJson(serializedNote, new TypeToken<Note>(){}.getType());
+            }
+        }
+    }
+
     private void initData() {
-        String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
-        parentNote = repository.getNoteById(noteId);
         String selectAttachmentId = getIntent().getStringExtra(Constants.SELECTED_ID);
         int selectedPosition = 0;
 

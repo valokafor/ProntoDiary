@@ -26,6 +26,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.ItemDeletedEvent;
@@ -84,7 +87,10 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
     private AttachmentListAdapter attachmentListAdapter;
 
     private NoteDetailContract.Action mPresenter;
-
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+    private DatabaseReference mDatabase;
+    private DatabaseReference noteCloudReference;
 
 
     public NoteDetailFragment() {
@@ -125,7 +131,7 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         if (getArguments() != null && getArguments().containsKey(Constants.NOTE_ID)) {
             noteId = getArguments().getString(Constants.NOTE_ID);
         }
-        mPresenter = new NoteDetailPresenter(this, noteId);
+        mPresenter = new NoteDetailPresenter(this, noteCloudReference, noteId);
 
 
         //Disable Edittexts
@@ -287,6 +293,11 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
     @Override
     public void displayPreviousActivity() {
 
+    }
+
+    @Override
+    public void showMessage(String message) {
+        makeToast(message);
     }
 
     /**

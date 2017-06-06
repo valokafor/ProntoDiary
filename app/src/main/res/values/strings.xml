@@ -155,6 +155,10 @@
     <string name="start_recording">Start Recording</string>
     <string name="please_wait">Please Wait</string>
     <string name="processing_image">Processing attachment</string>
+    <string name="saving_journal">Saving Journal</string>
+    <string name="missing_title">Missing Title</string>
+    <string name="missing_content">Missing Content</string>
+    <string name="oops">Oops</string>
 
 
 </resources>

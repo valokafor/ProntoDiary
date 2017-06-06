@@ -26,6 +26,10 @@ import android.widget.TextView;
 
 import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.okason.diary.R;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.NoteItemListener;
@@ -50,10 +54,17 @@ import butterknife.ButterKnife;
 public class NoteListFragment extends Fragment implements
         NoteListContract.View, SearchView.OnQueryTextListener {
 
+    private FirebaseAnalytics mFirebaseAnalytics;
+    private DatabaseReference mDatabase;
+    private DatabaseReference noteCloudReference;
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+
+
     private View mRootView;
     private NoteListContract.Actions mPresenter;
     private NoteListAdapter mListAdapter;
-    private FirebaseAnalytics mFirebaseAnalytics;
+
     private boolean isDualScreen = false;
 
     @BindView(R.id.note_recycler_view)
@@ -87,6 +98,12 @@ public class NoteListFragment extends Fragment implements
         if (args  != null && args.containsKey(Constants.IS_DUAL_SCREEN)){
             isDualScreen = args.getBoolean(Constants.IS_DUAL_SCREEN);
         }
+
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        noteCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+
     }
 
     @Override
@@ -102,7 +119,7 @@ public class NoteListFragment extends Fragment implements
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        mPresenter = new NoteListPresenter(this, databaseReference, noteCloudReference);
+        mPresenter = new NoteListPresenter(this, noteCloudReference);
 
 
         //Pull to refresh

@@ -41,6 +41,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
@@ -49,7 +55,9 @@ import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
+import com.okason.diary.ui.attachment.AttachingFileCompleteEvent;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
+import com.okason.diary.ui.attachment.AttachmentTask;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
@@ -94,6 +102,16 @@ public class NoteEditorFragment extends Fragment implements
     private String mLocalVideoPath = null;
     private String mLocalSketchPath = null;
     private Calendar mReminderTime;
+
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+    private FirebaseStorage mFirebaseStorage;
+    private StorageReference mFirebaseStorageReference;
+    private StorageReference mAttachmentStorageReference;
+
+    private DatabaseReference mDatabase;
+    private DatabaseReference noteCloudReference;
+    private DatabaseReference categoryCloudReference;
 
     @BindView(R.id.edit_text_category)
     EditText mCategory;
@@ -171,7 +189,21 @@ public class NoteEditorFragment extends Fragment implements
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_note_editor, container, false);
         ButterKnife.bind(this, mRootView);
-        mPresenter = new AddNotePresenter(this, noteCloudReference);
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        mFirebaseStorage = FirebaseStorage.getInstance();
+        mFirebaseStorageReference = mFirebaseStorage.getReferenceFromUrl(Constants.FIREBASE_STORAGE_BUCKET);
+        mAttachmentStorageReference = mFirebaseStorageReference.child("users/" + mFirebaseUser.getUid() + "/attachments");
+
+        noteCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+        categoryCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.CATEGORY_CLOUD_END_POINT);
+
+
+
+
+        mPresenter = new AddNotePresenter(this, noteCloudReference, getPassedInNote());
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         mTitle.addTextChangedListener(new TextWatcher() {
@@ -219,9 +251,6 @@ public class NoteEditorFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        if (!TextUtils.isEmpty(getPassedInNote())){
-            mPresenter.updatetNote(getPassedInNote());
-        }
         EventBus.getDefault().register(this);
 
     }
@@ -257,6 +286,9 @@ public class NoteEditorFragment extends Fragment implements
             case R.id.action_share:
                 displayShareIntent(mPresenter.getCurrentNote());
                 break;
+            case android.R.id.home:
+                mPresenter.onSaveAndExit();
+                break;
 
 
         }
@@ -275,10 +307,19 @@ public class NoteEditorFragment extends Fragment implements
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onAttachmentAdded(AttachingFileCompleteEvent event){
+        if (event.isResultOk()){
+            //Attachment was created successully
+            hideProgressDialog();
+            mPresenter.onAttachmentAdded(event.getAttachment());
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDatabaseOperationCompleteEvent(DatabaseOperationCompletedEvent event){
         hideProgressDialog();
         if (event.isShouldUpdateUi()){
-            mPresenter.updatedUI();
+            mPresenter.updateUI();
         }
         if (!TextUtils.isEmpty(event.getMessage())){
             makeToast(event.getMessage());
@@ -891,7 +932,8 @@ public class NoteEditorFragment extends Fragment implements
 
         for (Uri uri : uris) {
             String name = FileHelper.getNameFromUri(getActivity(), uri);
-            mPresenter.onFileAttachmentSelected(uri, name);
+            showProgressDialog();
+            new AttachmentTask(this, uri, name).execute();
         }
     }
 
@@ -910,7 +952,8 @@ public class NoteEditorFragment extends Fragment implements
 
         for (Uri uri : uris) {
             String name = FileHelper.getNameFromUri(getActivity(), uri);
-            mPresenter.onFileAttachmentSelected(uri, name);
+            showProgressDialog();
+            new AttachmentTask(this, uri, name).execute();
         }
     }
 
@@ -962,6 +1005,15 @@ public class NoteEditorFragment extends Fragment implements
                     makeToast(getString(R.string.external_access_denied));
                 }
                 break;
+            case PICTURE_PICK_REQUEST:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //permission was granted take picture
+                    pickPicture();
+                } else {
+                    //permission was denied, disable backup
+                    makeToast(getString(R.string.external_access_denied));
+                }
+                break;
             case SKETCH_CAPTURE_REQUEST:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //permission was granted perform backup
@@ -972,6 +1024,7 @@ public class NoteEditorFragment extends Fragment implements
                     makeToast("External storage access denied");
                 }
                 break;
+
 
 
         }

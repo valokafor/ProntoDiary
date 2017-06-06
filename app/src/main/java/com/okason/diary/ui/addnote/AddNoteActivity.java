@@ -1,7 +1,6 @@
 package com.okason.diary.ui.addnote;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -17,7 +16,6 @@ import android.widget.TextView;
 
 import com.mikepenz.materialdrawer.Drawer;
 import com.okason.diary.R;
-import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
 
 import butterknife.BindView;
@@ -74,21 +72,7 @@ public class AddNoteActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                // app icon in action bar clicked; go home
-                int count = getFragmentManager().getBackStackEntryCount();
-                if (count == 0) {
-                    String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
-                    Intent noteListIntent = new Intent(this, NoteDetailActivity.class);
-                    noteListIntent.putExtra(Constants.NOTE_ID, noteId);
-                    startActivity(noteListIntent);
-                } else {
-                    getFragmentManager().popBackStack();
-                }
-                return true;
 
-        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -96,7 +80,7 @@ public class AddNoteActivity extends AppCompatActivity {
     public void onBackPressed() {
         int count = getFragmentManager().getBackStackEntryCount();
         if (count == 0) {
-            startActivity(new Intent());
+            super.onBackPressed();
         } else {
             getFragmentManager().popBackStack();
         }

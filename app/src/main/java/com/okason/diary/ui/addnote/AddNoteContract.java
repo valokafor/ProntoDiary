@@ -1,7 +1,5 @@
 package com.okason.diary.ui.addnote;
 
-import android.net.Uri;
-
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -18,6 +16,7 @@ public interface AddNoteContract {
         void showProgressDialog();
         void hideProgressDialog();
 
+
     }
 
     interface Action{
@@ -26,11 +25,12 @@ public interface AddNoteContract {
         void onTitleChange(String newTitle);
         void onFolderChange(Folder newFolder);
         void onNoteContentChange(String newContent);
-        Note getCurrentNote();
         String getCurrentNoteId();
-        void updatedUI();
+        Note getCurrentNote();
+        void updateUI();
         void onAttachmentAdded(Attachment attachment);
-        void onFileAttachmentSelected(Uri fileUri, String fileName);
+        void onSaveAndExit();
+
     }
 
 

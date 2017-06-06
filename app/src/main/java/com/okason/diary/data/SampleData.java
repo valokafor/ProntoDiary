@@ -8,9 +8,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.UUID;
-
-import io.realm.Realm;
 
 /**
  * Created by Valentine on 4/26/2017.
@@ -37,42 +34,42 @@ public class SampleData {
 
     public static void getSampleNotes() {
 
-        try(Realm realm = Realm.getDefaultInstance()) {
-            realm.beginTransaction();
-            Note note1 = realm.createObject(Note.class, UUID.randomUUID().toString());
+
+
+            Note note1 = new Note();
             note1.setTitle("DisneyLand Trip");
             note1.setContent("We went to Disneyland today and the kids had lots of fun!");
             Calendar calendar1 = GregorianCalendar.getInstance();
             note1.setDateModified(calendar1.getTimeInMillis());
 
 
-            Attachment attachment1 = realm.createObject(Attachment.class,UUID.randomUUID().toString() );
+            Attachment attachment1 = new Attachment();
             attachment1.setFilePath("https://wallpaperscraft.com/image/car_trees_rear_view_115473_602x339.jpg");
             attachment1.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment1);
 
-            Attachment attachment2 = realm.createObject(Attachment.class,UUID.randomUUID().toString() );
+            Attachment attachment2 = new Attachment();
             attachment2.setFilePath("https://wallpaperscraft.com/image/aston_martin_dbs_2008_gray_rear_view_car_house_trees_27721_602x339.jpg");
             attachment2.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment2);
 
-            Attachment attachment3 = realm.createObject(Attachment.class,UUID.randomUUID().toString() );
+            Attachment attachment3 = new Attachment();
             attachment3.setFilePath("http://images.all-free-download.com/images/graphicthumb/tree_meadow_nature_220408.jpg");
             attachment3.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment3);
 
-            Attachment attachment4 = realm.createObject(Attachment.class,UUID.randomUUID().toString() );
+            Attachment attachment4 = new Attachment();
             attachment4.setFilePath("https://static.pexels.com/photos/132982/pexels-photo-132982.jpeg");
             attachment4.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment4);
 
-            Attachment attachment5 = realm.createObject(Attachment.class,UUID.randomUUID().toString() );
+            Attachment attachment5 = new Attachment();
             attachment5.setFilePath("https://i1.wallpaperscraft.com/image/cups_tea_drink_tea_115303_300x188.jpg");
             attachment5.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment5);
 
 
-            Note note2 = realm.createObject(Note.class, UUID.randomUUID().toString());
+            Note note2 = new Note();
             note2.setTitle("Gym Work Out");
             note2.setContent("I went to the Gym today and I got a lot of exercises");
 
@@ -84,10 +81,10 @@ public class SampleData {
 
 
 
-            realm.commitTransaction();
 
 
-        }
+
+
 
 
 

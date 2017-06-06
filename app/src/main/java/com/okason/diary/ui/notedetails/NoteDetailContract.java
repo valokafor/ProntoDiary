@@ -11,6 +11,7 @@ public interface NoteDetailContract {
         void displayNote(Note note);
         void showDeleteConfirmation(Note note);
         void displayPreviousActivity();
+        void showMessage(String message);
     }
 
     interface Action{

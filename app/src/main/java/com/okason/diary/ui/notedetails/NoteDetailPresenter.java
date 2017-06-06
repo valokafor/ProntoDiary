@@ -1,9 +1,14 @@
 package com.okason.diary.ui.notedetails;
 
+import android.text.TextUtils;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
-import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Note;
-import com.okason.diary.ui.notes.NoteListContract;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -13,30 +18,50 @@ import org.greenrobot.eventbus.EventBus;
 
 public class NoteDetailPresenter implements NoteDetailContract.Action {
     private final NoteDetailContract.View mView;
-    private final NoteListContract.Repository mRepository;
+    private final DatabaseReference noteCloudReference;
+    private Note mCurrentNote = null;
+
+
     private final String noteId;
 
-    public NoteDetailPresenter(NoteDetailContract.View mView, String noteId) {
-        this.mView = mView;
+    public NoteDetailPresenter(final NoteDetailContract.View view, DatabaseReference noteCloudReference, String noteId) {
+        this.mView = view;
+        this.noteCloudReference = noteCloudReference;
         this.noteId = noteId;
-        mRepository = new NoteRealmRepository();
+
+        if (!TextUtils.isEmpty(noteId)){
+            Query noteQuery = noteCloudReference.orderByChild("id").equalTo(noteId);
+            noteQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot != null){
+                        mCurrentNote = dataSnapshot.getValue(Note.class);
+                        showNoteDetails();
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    mView.showMessage(databaseError.getMessage());
+                }
+            });
+        }
     }
 
     @Override
     public void onEditNoteClick() {
-        EventBus.getDefault().post(new EditNoteButtonClickedEvent(mRepository.getNoteById(noteId)));
+        EventBus.getDefault().post(new EditNoteButtonClickedEvent(mCurrentNote));
     }
 
     @Override
     public void showNoteDetails() {
-        Note selectedNote = mRepository.getNoteById(noteId);
-        mView.displayNote(selectedNote);
+        mView.displayNote(mCurrentNote);
 
     }
 
     @Override
     public void onDeleteNoteButtonClicked() {
-        mView.showDeleteConfirmation(mRepository.getNoteById(noteId));
+        mView.showDeleteConfirmation(mCurrentNote);
 
     }
 
@@ -47,12 +72,11 @@ public class NoteDetailPresenter implements NoteDetailContract.Action {
 
     @Override
     public Note getCurrentNote() {
-        Note selectedNote = mRepository.getNoteById(noteId);
-        return selectedNote;
+        return mCurrentNote;
     }
 
     @Override
     public void deleteNote() {
-        mRepository.deleteNote(noteId);
+      //  mRepository.deleteNote(noteId);
     }
 }
