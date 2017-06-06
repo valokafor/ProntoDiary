@@ -38,9 +38,10 @@ public class NoteDetailActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)) {
-            NoteDetailFragment fragment = new NoteDetailFragment();
-            fragment.setArguments(getIntent().getExtras());
+
             Note passedInNote = getCurrentNote(getIntent());
+            String noteId = passedInNote.getId();
+            NoteDetailFragment fragment = NoteDetailFragment.newInstance(noteId);
             if (passedInNote != null) {
                 openFragment(fragment, TimeUtils.getReadableModifiedDate(passedInNote.getDateModified()));
             } else {

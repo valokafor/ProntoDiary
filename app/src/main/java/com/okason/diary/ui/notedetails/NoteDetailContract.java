@@ -16,7 +16,7 @@ public interface NoteDetailContract {
 
     interface Action{
         void onEditNoteClick();
-        void showNoteDetails();
+        //void showNoteDetails(Note note);
         void onDeleteNoteButtonClicked();
         void deleteNote();
         String getCurrentNoteId();

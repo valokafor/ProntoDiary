@@ -5,7 +5,6 @@ import android.text.TextUtils;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.models.Note;
@@ -30,13 +29,13 @@ public class NoteDetailPresenter implements NoteDetailContract.Action {
         this.noteId = noteId;
 
         if (!TextUtils.isEmpty(noteId)){
-            Query noteQuery = noteCloudReference.orderByChild("id").equalTo(noteId);
-            noteQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            //Query noteQuery = noteCloudReference.child("id").child(noteId);
+            noteCloudReference.child(noteId).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot != null){
-                        mCurrentNote = dataSnapshot.getValue(Note.class);
-                        showNoteDetails();
+                        Note note = dataSnapshot.getValue(Note.class);
+                        mView.displayNote(note);
                     }
                 }
 
@@ -53,11 +52,7 @@ public class NoteDetailPresenter implements NoteDetailContract.Action {
         EventBus.getDefault().post(new EditNoteButtonClickedEvent(mCurrentNote));
     }
 
-    @Override
-    public void showNoteDetails() {
-        mView.displayNote(mCurrentNote);
 
-    }
 
     @Override
     public void onDeleteNoteButtonClicked() {
