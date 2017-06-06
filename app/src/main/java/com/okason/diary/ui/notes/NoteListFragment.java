@@ -30,6 +30,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.NoteItemListener;
@@ -279,7 +280,9 @@ public class NoteListFragment extends Fragment implements
     }
 
     public void showSingleDetailUi(Note selectedNote) {
-       startActivity(NoteDetailActivity.getStartIntent(getContext(), selectedNote.getId()));
+        Gson gson = new Gson();
+        String serializedNote = gson.toJson(selectedNote);
+       startActivity(NoteDetailActivity.getStartIntent(getContext(), serializedNote));
     }
 
 

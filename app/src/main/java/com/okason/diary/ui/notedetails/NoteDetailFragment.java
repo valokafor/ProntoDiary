@@ -239,8 +239,12 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         }
 
 
-        if (note.getAttachments() != null && note.getAttachments().size() > 0){
-            initViewAttachments(note.getAttachments());
+        try {
+            if (note.getAttachments() != null && note.getAttachments().size() > 0){
+                initViewAttachments(note.getAttachments());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         String created = null;
