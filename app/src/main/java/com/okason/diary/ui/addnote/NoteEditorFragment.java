@@ -257,6 +257,9 @@ public class NoteEditorFragment extends Fragment implements
             case R.id.action_share:
                 displayShareIntent(mPresenter.getCurrentNote());
                 break;
+            case android.R.id.home:
+                mPresenter.onSaveAndExit();
+                break;
 
 
         }

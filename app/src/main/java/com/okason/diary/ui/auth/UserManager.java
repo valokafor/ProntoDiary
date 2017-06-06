@@ -67,15 +67,15 @@ public class UserManager {
 
     // Configure Realm for the current active user
     public static void setActiveUser(SyncUser user) {
-        SyncConfiguration defaultConfig = new SyncConfiguration.Builder(user, ProntoDiaryApplication.REALM_URL).build();
-        Realm.setDefaultConfiguration(defaultConfig);
+     //   SyncConfiguration defaultConfig = new SyncConfiguration.Builder(user, ProntoDiaryApplication.REALM_URL).build();
+        Realm.setDefaultConfiguration(getSyncConfig(user));
     }
 
-//    public static RealmConfiguration getSyncConfig(SyncUser user) {
-//        String identityToken = user.getAccessToken().identity();
-//        SyncConfiguration defaultConfig = new SyncConfiguration.Builder(user, ProntoDiaryApplication.REALM_URL)
-//                .name(identityToken + ".realm")
-//                .build();
-//        return defaultConfig;
-//    }
+    public static RealmConfiguration getSyncConfig(SyncUser user) {
+        String identityToken = user.getAccessToken().identity();
+        SyncConfiguration defaultConfig = new SyncConfiguration.Builder(user, ProntoDiaryApplication.REALM_URL)
+                .name(identityToken + ".realm")
+                .build();
+        return defaultConfig;
+    }
 }

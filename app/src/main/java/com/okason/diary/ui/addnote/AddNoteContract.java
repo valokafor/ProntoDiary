@@ -22,6 +22,7 @@ public interface AddNoteContract {
 
     interface Action{
         void deleteJournal();
+        void onSaveAndExit();
         void onDeleteNoteButtonClicked();
         void onTitleChange(String newTitle);
         void onFolderChange(Folder newFolder);

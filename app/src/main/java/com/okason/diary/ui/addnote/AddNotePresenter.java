@@ -1,7 +1,10 @@
 package com.okason.diary.ui.addnote;
 
 import android.net.Uri;
+import android.text.TextUtils;
 
+import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
@@ -29,6 +32,33 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     @Override
     public void deleteJournal() {
+
+    }
+
+    @Override
+    public void onSaveAndExit() {
+        //User has clicked Save and Exit button
+        if (!TextUtils.isEmpty(title) || !TextUtils.isEmpty(content)){
+            mView.showMessage(ProntoDiaryApplication.getAppContext().getString(R.string.saving_journal));
+
+            if (mCurrentNote == null){
+                mCurrentNote = mRepository.createNewNote();
+            }
+
+
+            //Check to see if Title is empty
+            if (TextUtils.isEmpty(title)){
+                mCurrentNote.setTitle(ProntoDiaryApplication.getAppContext().getString(R.string.missing_title));
+            }
+
+            //Check to see if content is empty
+            if (TextUtils.isEmpty(content)){
+                mCurrentNote.setContent(ProntoDiaryApplication.getAppContext().getString(R.string.missing_content));
+            }
+
+            mRepository.updatedNoteContent(mCurrentNote.getId(), content);
+            mRepository.updatedNoteTitle(mCurrentNote.getId(), title);
+        }
 
     }
 
