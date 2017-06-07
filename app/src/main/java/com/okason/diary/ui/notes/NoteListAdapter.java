@@ -101,10 +101,19 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             .centerCrop()
                             .into(holder.noteAttachment);
 
+                }else {
+                    for (Attachment attachment: note.getAttachments()){
+                        if (attachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
+                            holder.attachmentLayout.setVisibility(View.VISIBLE);
+                            Glide.with(mContext)
+                                    .load(attachment.getFilePath())
+                                    .placeholder(R.drawable.default_image)
+                                    .centerCrop()
+                                    .into(holder.noteAttachment);
+                            break;
+                        }
+                    }
                 }
-
-
-
 
             }
 
