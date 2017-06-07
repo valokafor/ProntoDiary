@@ -45,7 +45,7 @@ public class TimeUtils {
     }
 
 
-    public static String getReadableModifiedDate(long date){
+    public static String getReadableModifiedDateWithTime(long date){
 
         String displayDate = new SimpleDateFormat("MMM dd, yyyy - h:mm a").format(new Date(date));
         return displayDate;
@@ -63,7 +63,7 @@ public class TimeUtils {
         return timeStamp;
     }
 
-    public static String getMonth(long date){
+    public static String getReadableDateWithoutTime(long date){
 
         String displayDate = new SimpleDateFormat("MMM dd, yyyy").format(new Date(date));
         return displayDate;

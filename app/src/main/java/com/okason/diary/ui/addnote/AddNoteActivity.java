@@ -14,9 +14,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.mikepenz.materialdrawer.Drawer;
 import com.okason.diary.R;
+import com.okason.diary.models.Note;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.date.TimeUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,9 +46,12 @@ public class AddNoteActivity extends AppCompatActivity {
         toolbar.setNavigationIcon(R.drawable.ic_check_white_24dp);
 
         if (savedInstanceState == null) {
-            if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)){
-                String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
-                openFragment(NoteEditorFragment.newInstance(noteId), getString(R.string.add_new_journal));
+            if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)){
+                String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_NOTE);
+                Gson gson = new Gson();
+                Note note = gson.fromJson(serializedNote, Note.class);
+                openFragment(NoteEditorFragment.newInstance(serializedNote),
+                        TimeUtils.getReadableDateWithoutTime(note.getDateModified()));
             }else {
                 openFragment(NoteEditorFragment.newInstance(""), getString(R.string.add_new_journal));
             }

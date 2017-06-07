@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.models.Note;
@@ -43,7 +42,7 @@ public class NoteDetailActivity extends AppCompatActivity {
             String noteId = passedInNote.getId();
             NoteDetailFragment fragment = NoteDetailFragment.newInstance(noteId);
             if (passedInNote != null) {
-                openFragment(fragment, TimeUtils.getReadableModifiedDate(passedInNote.getDateModified()));
+                openFragment(fragment, TimeUtils.getReadableDateWithoutTime(passedInNote.getDateModified()));
             } else {
                 finish();
             }
@@ -57,7 +56,7 @@ public class NoteDetailActivity extends AppCompatActivity {
             String serializedNote = intent.getStringExtra(Constants.SERIALIZED_NOTE);
             if (!serializedNote.isEmpty()){
                 Gson gson = new Gson();
-                Note note = gson.fromJson(serializedNote, new TypeToken<Note>(){}.getType());
+                Note note = gson.fromJson(serializedNote, Note.class);
                 return note;
             }
         }
@@ -79,7 +78,9 @@ public class NoteDetailActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEditNoteButtonClickedEvent(EditNoteButtonClickedEvent event){
         Intent editNoteIntent = new Intent(NoteDetailActivity.this, AddNoteActivity.class);
-        editNoteIntent.putExtra(Constants.NOTE_ID, event.getClickedNote().getId());
+        Gson gson = new Gson();
+        String serializedNote = gson.toJson(event.getClickedNote());
+        editNoteIntent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
         startActivity(editNoteIntent);
     }
 

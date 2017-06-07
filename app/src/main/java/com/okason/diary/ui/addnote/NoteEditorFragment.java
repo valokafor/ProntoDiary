@@ -47,6 +47,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.gson.Gson;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
@@ -162,20 +163,24 @@ public class NoteEditorFragment extends Fragment implements
         getPassedInNote();
     }
 
-    private String getPassedInNote() {
-        if (getArguments() != null && getArguments().containsKey(Constants.NOTE_ID)){
-            String noteId = getArguments().getString(Constants.NOTE_ID);
-            return noteId;
+    private Note getPassedInNote() {
+        if (getArguments() != null && getArguments().containsKey(Constants.SERIALIZED_NOTE)){
+            String serializedNote = getArguments().getString(Constants.SERIALIZED_NOTE);
+            if (!TextUtils.isEmpty(serializedNote)){
+                Gson gson = new Gson();
+                Note note = gson.fromJson(serializedNote, Note.class);
+                return note;
+            }
         }
-        return "";
+        return null;
 
     }
 
-    public static NoteEditorFragment newInstance(String noteId){
+    public static NoteEditorFragment newInstance(String serializedNote){
         NoteEditorFragment fragment = new NoteEditorFragment();
-        if (!TextUtils.isEmpty(noteId)){
+        if (!TextUtils.isEmpty(serializedNote)){
             Bundle args = new Bundle();
-            args.putString(Constants.NOTE_ID, noteId);
+            args.putString(Constants.SERIALIZED_NOTE, serializedNote);
             fragment.setArguments(args);
         }
 
@@ -252,6 +257,7 @@ public class NoteEditorFragment extends Fragment implements
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
+        mPresenter.updateUI();
 
     }
 

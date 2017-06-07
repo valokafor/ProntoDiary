@@ -34,8 +34,8 @@ public class NoteDetailPresenter implements NoteDetailContract.Action {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot != null){
-                        Note note = dataSnapshot.getValue(Note.class);
-                        mView.displayNote(note);
+                        mCurrentNote = dataSnapshot.getValue(Note.class);
+                        mView.displayNote(mCurrentNote);
                     }
                 }
 
