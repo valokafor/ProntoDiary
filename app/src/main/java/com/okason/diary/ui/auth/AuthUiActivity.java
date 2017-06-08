@@ -164,14 +164,19 @@ public class AuthUiActivity extends AppCompatActivity {
     @MainThread
     private void handleSignInResponse(int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            //User is logged in, set Anonmous user to false
+            //User is logged in, set Anonymous user to false so that in the NoteListActivity
+            //They are not logged in again as Anonymous user
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            preferences.edit().putBoolean(Constants.ANONYMOUS_USER, false).commit();
+
 
             String anonyhmousUserId = preferences.getString(Constants.ANONYMOUS_ACCOUNT_USER_ID, "");
-            if (!TextUtils.isEmpty(anonyhmousUserId)){
+            boolean unregisteredUser = preferences.getBoolean(Constants.ANONYMOUS_USER, true);
+            if (unregisteredUser && !TextUtils.isEmpty(anonyhmousUserId)){
+                preferences.edit().putBoolean(Constants.ANONYMOUS_USER, false).commit();
                 //Copy Anonymous User data to new user id
-                startService(new Intent(mActivity, MergeAnonymousDataIntentService.class));
+                Intent migrateIntent = new Intent(mActivity, MergeAnonymousDataIntentService.class);
+                migrateIntent.putExtra(Constants.ANONYMOUS_ACCOUNT_USER_ID, anonyhmousUserId);
+                startService(migrateIntent);
             }
 
             Intent in = new Intent(this, NoteListActivity.class);

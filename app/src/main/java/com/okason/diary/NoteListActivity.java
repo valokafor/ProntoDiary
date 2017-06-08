@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -24,6 +25,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.core.events.ShowFragmentEvent;
+import com.okason.diary.core.services.MergeAnonymousDataIntentService;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.notes.ErrorFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
@@ -152,7 +154,8 @@ public class NoteListActivity extends AppCompatActivity {
                 if (task.isSuccessful()){
                     FirebaseUser user = mAuth.getCurrentUser();
                     if (user != null){
-                        preferences.edit().putString(Constants.ANONYMOUS_ACCOUNT_USER_ID, user.getUid()).commit();
+                        String tempUserId = user.getUid();
+                        preferences.edit().putString(Constants.ANONYMOUS_ACCOUNT_USER_ID, tempUserId).commit();
                         updateUI();
                     }
 
@@ -169,6 +172,17 @@ public class NoteListActivity extends AppCompatActivity {
             //Go to sign in Activity
             startActivity(new Intent(mActivity, AuthUiActivity.class));
         }else {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            preferences.edit().putBoolean(Constants.ANONYMOUS_USER, false).commit();
+
+            String anonyhmousUserId = preferences.getString(Constants.ANONYMOUS_ACCOUNT_USER_ID, "");
+            if (!TextUtils.isEmpty(anonyhmousUserId)){
+                //Copy Anonymous User data to new user id
+                Intent migrateIntent = new Intent(mActivity, MergeAnonymousDataIntentService.class);
+                migrateIntent.putExtra(Constants.ANONYMOUS_ACCOUNT_USER_ID, anonyhmousUserId);
+                startService(migrateIntent);
+            }
+
             updateUI();
         }
 

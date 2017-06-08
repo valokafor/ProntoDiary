@@ -24,7 +24,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -72,8 +71,8 @@ public class NoteListFragment extends Fragment implements
     RecyclerView mRecyclerView;
     @BindView(R.id.empty_text)
     TextView mEmptyText;
-    @BindView(R.id.adView)
-    AdView mAdView;
+//    @BindView(R.id.adView)
+//    AdView mAdView;
     @BindView(R.id.refresh_layout)
     SwipeRefreshLayout swipeRefreshLayout;
 
@@ -238,10 +237,10 @@ public class NoteListFragment extends Fragment implements
         if (showText){
             swipeRefreshLayout.setVisibility(View.GONE);
             mEmptyText.setVisibility(View.VISIBLE);
-            mAdView.setVisibility(View.GONE);
+          //  mAdView.setVisibility(View.GONE);
 
         }else {
-            mAdView.setVisibility(View.VISIBLE);
+          //  mAdView.setVisibility(View.VISIBLE);
             swipeRefreshLayout.setVisibility(View.VISIBLE);
             mEmptyText.setVisibility(View.GONE);
         }
