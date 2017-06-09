@@ -24,8 +24,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.NoteItemListener;
@@ -50,18 +54,25 @@ import butterknife.ButterKnife;
 public class NoteListFragment extends Fragment implements
         NoteListContract.View, SearchView.OnQueryTextListener {
 
+    private FirebaseAnalytics mFirebaseAnalytics;
+    private DatabaseReference mDatabase;
+    private DatabaseReference noteCloudReference;
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+
+
     private View mRootView;
     private NoteListContract.Actions mPresenter;
     private NoteListAdapter mListAdapter;
-    private FirebaseAnalytics mFirebaseAnalytics;
+
     private boolean isDualScreen = false;
 
     @BindView(R.id.note_recycler_view)
     RecyclerView mRecyclerView;
     @BindView(R.id.empty_text)
     TextView mEmptyText;
-    @BindView(R.id.adView)
-    AdView mAdView;
+//    @BindView(R.id.adView)
+//    AdView mAdView;
     @BindView(R.id.refresh_layout)
     SwipeRefreshLayout swipeRefreshLayout;
 
@@ -87,6 +98,12 @@ public class NoteListFragment extends Fragment implements
         if (args  != null && args.containsKey(Constants.IS_DUAL_SCREEN)){
             isDualScreen = args.getBoolean(Constants.IS_DUAL_SCREEN);
         }
+
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        noteCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+
     }
 
     @Override
@@ -102,7 +119,7 @@ public class NoteListFragment extends Fragment implements
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        mPresenter = new NoteListPresenter(this);
+        mPresenter = new NoteListPresenter(this, noteCloudReference);
 
 
         //Pull to refresh
@@ -220,10 +237,10 @@ public class NoteListFragment extends Fragment implements
         if (showText){
             swipeRefreshLayout.setVisibility(View.GONE);
             mEmptyText.setVisibility(View.VISIBLE);
-            mAdView.setVisibility(View.GONE);
+          //  mAdView.setVisibility(View.GONE);
 
         }else {
-            mAdView.setVisibility(View.VISIBLE);
+          //  mAdView.setVisibility(View.VISIBLE);
             swipeRefreshLayout.setVisibility(View.VISIBLE);
             mEmptyText.setVisibility(View.GONE);
         }
@@ -262,7 +279,9 @@ public class NoteListFragment extends Fragment implements
     }
 
     public void showSingleDetailUi(Note selectedNote) {
-       startActivity(NoteDetailActivity.getStartIntent(getContext(), selectedNote.getId()));
+        Gson gson = new Gson();
+        String serializedNote = gson.toJson(selectedNote);
+       startActivity(NoteDetailActivity.getStartIntent(getContext(), serializedNote));
     }
 
 

@@ -17,7 +17,10 @@ public class Constants {
     public static final String NOTE_TITLE = "note_title";
     public static final String RESULT_OK = "ok";
     public static final String SERIALIZED_ATTACHMENT_ID = "serialized_attachment_id";
+    public static final String SERIALIZED_NOTE = "serialized_note";
     public static final String SELECTED_ID = "selected_id";
+    public static final String ERROR_MESSAGE = "error_message";
+    public static final String STORAGE_RECORD_CLOUD_END_POINT = "/storage_records";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
@@ -116,7 +119,7 @@ public class Constants {
     public static final String MIME_TYPE_CONTACT_EXT = ".vcf";
 
 
-    public static final String FIREBASE_STORAGE_BUCKET = "gs://prontonote.appspot.com";
+    public static final String FIREBASE_STORAGE_BUCKET = "gs://prontodiary-bee92.appspot.com";
     public static final String IS_DUAL_SCREEN = "is_dual_screen";
     public static final String SKETCH_PATH = "sketch_path";
     public static final String WELCOME_MESSAGE_SHOWN = "welcome_message_shown";

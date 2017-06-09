@@ -1,16 +1,13 @@
 package com.okason.diary.models;
 
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
+import java.util.List;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Task extends RealmObject{
+public class Task {
 
-    @PrimaryKey
     private String id;
     private String title;
     private String description;
@@ -26,8 +23,8 @@ public class Task extends RealmObject{
     private boolean checked;
 
     private Folder folder;
-    private RealmList<History> historyList;
-    private RealmList<Tag> tags;
+    private List<History> historyList;
+    private List<Tag> tags;
 
 
     public String getId() {
@@ -142,19 +139,19 @@ public class Task extends RealmObject{
         this.folder = folder;
     }
 
-    public RealmList<History> getHistoryList() {
+    public List<History> getHistoryList() {
         return historyList;
     }
 
-    public void setHistoryList(RealmList<History> historyList) {
+    public void setHistoryList(List<History> historyList) {
         this.historyList = historyList;
     }
 
-    public RealmList<Tag> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(RealmList<Tag> tags) {
+    public void setTags(List<Tag> tags) {
         this.tags = tags;
     }
 }

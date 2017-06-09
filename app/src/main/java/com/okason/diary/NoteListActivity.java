@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -17,11 +18,15 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.ShowFragmentEvent;
-import com.okason.diary.ui.auth.SignInActivity;
-import com.okason.diary.ui.auth.UserManager;
+import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.notes.ErrorFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
 import com.okason.diary.ui.settings.SyncFragment;
@@ -34,8 +39,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.Realm;
-import io.realm.SyncUser;
 
 public class NoteListActivity extends AppCompatActivity {
     private SharedPreferences preferences;
@@ -100,7 +103,7 @@ public class NoteListActivity extends AppCompatActivity {
     @BindView(R.id.linear_layout_login)
     LinearLayout loginLayout;
 
-    private Realm realm;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,47 +114,66 @@ public class NoteListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mActivity = this;
 
+        //Show an error message on the screen incase the user does not have internet
+        //And therefore Firebase cannot be initialized or executed
+        ErrorFragment errorFragment = ErrorFragment.newInstance(
+                "Ooops, it appears you do not have internet, internet access is required to initialize this app");
+        openFragment(errorFragment, getString(R.string.oops), "");
 
 
-//        //Check to see if the user has registered before
-//        //if yes, check to see if the user is not logged in, show login
-//        mAuth = FirebaseAuth.getInstance();
-//        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-//        unregisteredUser = preferences.getBoolean(Constants.ANONYMOUS_USER, true);
-//        if (unregisteredUser){
-//            loginAnonymously();
-//            settingsLayout.setVisibility(View.GONE);
-//            syncLayout.setVisibility(View.VISIBLE);
-//        }else {
-//            loginRegisteredUser();
-//            settingsLayout.setVisibility(View.VISIBLE);
-//            syncLayout.setVisibility(View.GONE);
-//        }
 
         //Check to see if the user has registered before
         //if yes, check to see if the user is not logged in, show login
+        mAuth = FirebaseAuth.getInstance();
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
-        if (unregisteredUser) {
-            Realm.setDefaultConfiguration(UserManager.getLocalConfig());
-            realm = Realm.getDefaultInstance();
-         //   SampleData.getSampleNotes();
-            syncLayout.setVisibility(View.VISIBLE);
+        unregisteredUser = preferences.getBoolean(Constants.ANONYMOUS_USER, true);
+        if (unregisteredUser){
+            loginAnonymously();
             settingsLayout.setVisibility(View.GONE);
-            updateUI();
+            syncLayout.setVisibility(View.VISIBLE);
         }else {
-            syncLayout.setVisibility(View.GONE);
+            loginRegisteredUser();
             settingsLayout.setVisibility(View.VISIBLE);
-            final SyncUser user = SyncUser.currentUser();
-            if (user == null) {
-                startActivity(new Intent(mActivity, SignInActivity.class));
-            }else {
-                UserManager.setActiveUser(user);
-                updateUI();
-            }
-
+            syncLayout.setVisibility(View.GONE);
         }
 
+
+    }
+
+
+    private void loginAnonymously() {
+        if (mAuth == null){
+            mAuth = FirebaseAuth.getInstance();
+        }
+
+        mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()){
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    if (user != null){
+                        String tempUserId = user.getUid();
+                        preferences.edit().putString(Constants.ANONYMOUS_ACCOUNT_USER_ID, tempUserId).commit();
+                        ProntoDiaryApplication.setCloudSyncEnabled(false);
+                        updateUI();
+                    }
+
+                }else {
+                    makeToast(getString(R.string.anonymous_account_failed_error));
+                }
+            }
+        });
+    }
+
+    private void loginRegisteredUser() {
+        mFirebaseUser = mAuth.getCurrentUser();
+        if (mFirebaseUser == null){
+            //Go to sign in Activity
+            startActivity(new Intent(mActivity, AuthUiActivity.class));
+        }else {
+            ProntoDiaryApplication.setCloudSyncEnabled(true);
+            updateUI();
+        }
 
     }
 
@@ -176,9 +198,8 @@ public class NoteListActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (realm != null) {
-            realm.close();
-        }
+
+
         super.onDestroy();
     }
 
@@ -297,18 +318,7 @@ public class NoteListActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(screenTitle);
     }
 
-    private void addSampleData(){
-//        List<Note> notes = SampleData.getSampleNotes();
-//        for (Note note: notes){
-//            realm.beginTransaction();
-//            String id = UUID.randomUUID().toString();
-//            Note savedNote = realm.createObject(Note.class, id);
-//            savedNote.setTitle(note.getTitle());
-//            savedNote.setContent(note.getContent());
-//            savedNote.setDateModified(note.getDateCreated());
-//            realm.commitTransaction();
-//        }
-    }
+
 
 
 

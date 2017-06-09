@@ -20,6 +20,7 @@ public class ProntoDiaryApplication extends Application {
     public static final String REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/~/diary";
 
     private static Context mContext;
+    private static boolean cloudSyncEnabled;
 
 
 
@@ -43,5 +44,11 @@ public class ProntoDiaryApplication extends Application {
         return ProntoDiaryApplication.mContext;
     }
 
+    public static boolean isCloudSyncEnabled() {
+        return cloudSyncEnabled;
+    }
 
+    public static void setCloudSyncEnabled(boolean cloudSyncEnabled) {
+        ProntoDiaryApplication.cloudSyncEnabled = cloudSyncEnabled;
+    }
 }

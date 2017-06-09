@@ -2,18 +2,15 @@ package com.okason.diary.models;
 
 import android.net.Uri;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Attachment extends RealmObject{
+public class Attachment{
 
-    @PrimaryKey
     private String id;
-    private String filePath;
+    private String localFilePath;
+    private String cloudFilePath;
     private String uri;
     private String name;
     private String comment;
@@ -24,7 +21,8 @@ public class Attachment extends RealmObject{
 
 
     public Attachment(){
-        filePath = "";
+        localFilePath = "";
+        cloudFilePath = "";
         name = "";
         comment = "";
         size = 0;
@@ -36,7 +34,7 @@ public class Attachment extends RealmObject{
 
     public Attachment(Uri uri, String imagePath, String mime_type) {
         this.uri = uri.toString();
-        this.filePath = imagePath;
+        this.localFilePath = imagePath;
         this.mime_type = mime_type;
         this.name = "";
         this.comment = "";
@@ -48,7 +46,7 @@ public class Attachment extends RealmObject{
 
     public Attachment(Uri uri, String imagePath, String mime_type, String name) {
         this.uri = uri.toString();
-        this.filePath = imagePath;
+        this.localFilePath = imagePath;
         this.mime_type = mime_type;
         this.name = name;
         this.comment = "";
@@ -60,7 +58,7 @@ public class Attachment extends RealmObject{
 
     public void update(Attachment attachment){
         this.uri = attachment.getUri();
-        this.filePath = attachment.getFilePath();
+        this.localFilePath = attachment.getLocalFilePath();
         this.mime_type = attachment.getMime_type();
         this.name = attachment.getName();
         this.comment = attachment.getComment();
@@ -83,12 +81,12 @@ public class Attachment extends RealmObject{
         this.id = id;
     }
 
-    public String getFilePath() {
-        return filePath;
+    public String getLocalFilePath() {
+        return localFilePath;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setLocalFilePath(String localFilePath) {
+        this.localFilePath = localFilePath;
     }
 
     public String getUri() {
@@ -145,5 +143,13 @@ public class Attachment extends RealmObject{
 
     public void setDateCreated(long dateCreated) {
         this.dateCreated = dateCreated;
+    }
+
+    public String getCloudFilePath() {
+        return cloudFilePath;
+    }
+
+    public void setCloudFilePath(String cloudFilePath) {
+        this.cloudFilePath = cloudFilePath;
     }
 }

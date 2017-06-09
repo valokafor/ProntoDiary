@@ -29,6 +29,7 @@ import com.google.android.gms.common.Scopes;
 import com.google.firebase.auth.FirebaseAuth;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.services.MergeAnonymousDataIntentService;
 import com.okason.diary.utils.Constants;
 
@@ -109,7 +110,7 @@ public class AuthUiActivity extends AppCompatActivity {
         startActivityForResult(
                 AuthUI.getInstance().createSignInIntentBuilder()
                         .setTheme(R.style.GreenTheme)
-                        .setLogo(R.drawable.ic_lock_black_24dp)
+                        .setLogo(R.mipmap.ic_launcher)
                         .setProviders(getSelectedProviders())
                         .setTosUrl(GOOGLE_TOS_URL)
                         .setIsSmartLockEnabled(true)
@@ -164,14 +165,19 @@ public class AuthUiActivity extends AppCompatActivity {
     @MainThread
     private void handleSignInResponse(int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            //User is logged in, set Anonmous user to false
+            //User is logged in, set Anonymous user to false so that in the NoteListActivity
+            //They are not logged in again as Anonymous user
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            preferences.edit().putBoolean(Constants.ANONYMOUS_USER, false).commit();
+
 
             String anonyhmousUserId = preferences.getString(Constants.ANONYMOUS_ACCOUNT_USER_ID, "");
-            if (!TextUtils.isEmpty(anonyhmousUserId)){
+            boolean unregisteredUser = preferences.getBoolean(Constants.ANONYMOUS_USER, true);
+            if (unregisteredUser && !TextUtils.isEmpty(anonyhmousUserId)){
+                preferences.edit().putBoolean(Constants.ANONYMOUS_USER, false).commit();
                 //Copy Anonymous User data to new user id
-                startService(new Intent(mActivity, MergeAnonymousDataIntentService.class));
+                Intent migrateIntent = new Intent(mActivity, MergeAnonymousDataIntentService.class);
+                migrateIntent.putExtra(Constants.ANONYMOUS_ACCOUNT_USER_ID, anonyhmousUserId);
+                startService(migrateIntent);
             }
 
             Intent in = new Intent(this, NoteListActivity.class);
@@ -180,16 +186,19 @@ public class AuthUiActivity extends AppCompatActivity {
             finish();
             return;
         } else {
+            ProntoDiaryApplication.setCloudSyncEnabled(false);
             finish();
         }
 
         if (resultCode == RESULT_CANCELED) {
             makeToast(getString(R.string.sign_in_cancelled));
+            ProntoDiaryApplication.setCloudSyncEnabled(false);
             return;
         }
 
         if (resultCode == ResultCodes.RESULT_NO_NETWORK) {
             makeToast(getString(R.string.no_internet_connection));
+            ProntoDiaryApplication.setCloudSyncEnabled(false);
             return;
         }
 

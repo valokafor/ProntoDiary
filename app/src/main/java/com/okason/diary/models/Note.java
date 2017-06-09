@@ -1,15 +1,13 @@
 package com.okason.diary.models;
 
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Note extends RealmObject {
-    @PrimaryKey
+public class Note{
     private String id;
     private String title;
     private String content;
@@ -18,19 +16,19 @@ public class Note extends RealmObject {
 
 
     public Note(){
-        attachments = new RealmList<>();
+        attachments = new ArrayList<>();
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
     }
 
 
    //Relationships
-    private RealmList<Attachment> attachments;
-    private RealmList<Task> tasks;
-    private RealmList<Tag> tags;
+    private List<Attachment> attachments;
+    private List<Task> tasks;
+    private List<Tag> tags;
     private Folder folder;
-    private RealmList<PeopleJournal> peopleJournals;
-    private RealmList<History> historyList;
+    private List<PeopleJournal> peopleJournals;
+    private List<History> historyList;
 
     public String getId() {
         return id;
@@ -72,27 +70,27 @@ public class Note extends RealmObject {
         this.dateModified = dateModified;
     }
 
-    public RealmList<Attachment> getAttachments() {
+    public List<Attachment> getAttachments() {
         return attachments;
     }
 
-    public void setAttachments(RealmList<Attachment> attachments) {
+    public void setAttachments(List<Attachment> attachments) {
         this.attachments = attachments;
     }
 
-    public RealmList<Task> getTasks() {
+    public List<Task> getTasks() {
         return tasks;
     }
 
-    public void setTasks(RealmList<Task> tasks) {
+    public void setTasks(List<Task> tasks) {
         this.tasks = tasks;
     }
 
-    public RealmList<Tag> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(RealmList<Tag> tags) {
+    public void setTags(List<Tag> tags) {
         this.tags = tags;
     }
 
@@ -104,19 +102,19 @@ public class Note extends RealmObject {
         this.folder = folder;
     }
 
-    public RealmList<PeopleJournal> getPeopleJournals() {
+    public List<PeopleJournal> getPeopleJournals() {
         return peopleJournals;
     }
 
-    public void setPeopleJournals(RealmList<PeopleJournal> peopleJournals) {
+    public void setPeopleJournals(List<PeopleJournal> peopleJournals) {
         this.peopleJournals = peopleJournals;
     }
 
-    public RealmList<History> getHistoryList() {
+    public List<History> getHistoryList() {
         return historyList;
     }
 
-    public void setHistoryList(RealmList<History> historyList) {
+    public void setHistoryList(List<History> historyList) {
         this.historyList = historyList;
     }
 }

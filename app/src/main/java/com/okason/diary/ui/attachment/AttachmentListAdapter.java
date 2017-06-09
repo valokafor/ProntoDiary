@@ -93,7 +93,7 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
 
             if (extension.equals(".png") || extension.equals(".jpg") || extension.equals(".jpeg")){
                 Glide.with(context.getApplicationContext())
-                        .load(selectedAttachment.getFilePath())
+                        .load(selectedAttachment.getLocalFilePath())
                         .centerCrop()
                         .crossFade()
                         .placeholder(R.drawable.image_broken)
@@ -116,7 +116,7 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
 
         } else {
             Glide.with(context.getApplicationContext())
-                    .load(selectedAttachment.getFilePath())
+                    .load(selectedAttachment.getLocalFilePath())
                     .centerCrop()
                     .crossFade()
                     .placeholder(R.drawable.image_broken)

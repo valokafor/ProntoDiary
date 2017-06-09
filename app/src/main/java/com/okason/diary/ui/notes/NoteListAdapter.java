@@ -60,7 +60,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
             holder.title.setText(note.getTitle());
             holder.contentSummary.setText(note.getContent().substring(0, Math.min(100, note.getContent().length())));
-            holder.date.setText(TimeUtils.getReadableModifiedDate(note.getDateModified()));
+            holder.date.setText(TimeUtils.getReadableModifiedDateWithTime(note.getDateModified()));
 
             if (note.getTasks() != null && note.getTasks().size() > 0){
                 Glide.with(mContext).load(R.drawable.appointment_reminder).into(holder.firstLetterIcon);
@@ -81,7 +81,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
                     holder.attachmentLayout.setVisibility(View.VISIBLE);
                     Glide.with(mContext)
-                            .load(lastAttachment.getFilePath())
+                            .load(lastAttachment.getLocalFilePath())
                             .placeholder(R.drawable.default_image)
                             .centerCrop()
                             .into(holder.noteAttachment);
@@ -101,10 +101,19 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             .centerCrop()
                             .into(holder.noteAttachment);
 
+                }else {
+                    for (Attachment attachment: note.getAttachments()){
+                        if (attachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
+                            holder.attachmentLayout.setVisibility(View.VISIBLE);
+                            Glide.with(mContext)
+                                    .load(attachment.getLocalFilePath())
+                                    .placeholder(R.drawable.default_image)
+                                    .centerCrop()
+                                    .into(holder.noteAttachment);
+                            break;
+                        }
+                    }
                 }
-
-
-
 
             }
 

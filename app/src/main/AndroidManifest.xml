@@ -58,7 +58,7 @@
             android:name=".core.services.AddSampleDataIntentService"
             android:exported="false"/>
         <service
-            android:name=".core.services.C"
+            android:name=".core.services.MergeAnonymousDataIntentService"
             android:exported="false"/>
 
 

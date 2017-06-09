@@ -1,23 +1,20 @@
 package com.okason.diary.models;
 
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
+import java.util.List;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Tag extends RealmObject{
+public class Tag{
 
-    @PrimaryKey
     private String id;
     private String tagName;
     private long dateCreated;
     private long dateModified;
 
-    private RealmList<Note> notes;
-    private RealmList<Task> todoLists;
+    private List<Note> notes;
+    private List<Task> todoLists;
 
     public Tag(){
 
@@ -57,19 +54,19 @@ public class Tag extends RealmObject{
         this.dateModified = dateModified;
     }
 
-    public RealmList<Note> getNotes() {
+    public List<Note> getNotes() {
         return notes;
     }
 
-    public void setNotes(RealmList<Note> notes) {
+    public void setNotes(List<Note> notes) {
         this.notes = notes;
     }
 
-    public RealmList<Task> getTodoLists() {
+    public List<Task> getTodoLists() {
         return todoLists;
     }
 
-    public void setTodoLists(RealmList<Task> todoLists) {
+    public void setTodoLists(List<Task> todoLists) {
         this.todoLists = todoLists;
     }
 }

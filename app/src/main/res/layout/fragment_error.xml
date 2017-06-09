@@ -1,0 +1,21 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context="com.okason.diary.ui.notes.ErrorFragment">
+
+    <TextView
+        android:id="@+id/error_textView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/adView"
+        android:fontFamily="sans-serif-condensed"
+        android:gravity="center"
+        android:padding="@dimen/margin_padding_normal"
+        android:text="@string/oops"
+        android:textColor="@color/primary_dark"
+        android:textSize="@dimen/text_size_huge"
+        android:textStyle="italic"
+        android:visibility="visible" />
+
+</FrameLayout>

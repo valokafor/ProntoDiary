@@ -26,6 +26,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.ItemDeletedEvent;
@@ -84,7 +88,10 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
     private AttachmentListAdapter attachmentListAdapter;
 
     private NoteDetailContract.Action mPresenter;
-
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+    private DatabaseReference mDatabase;
+    private DatabaseReference noteCloudReference;
 
 
     public NoteDetailFragment() {
@@ -113,6 +120,11 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_note_editor, container, false);
         ButterKnife.bind(this, mRootView);
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        noteCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
         return mRootView;
     }
 
@@ -125,7 +137,7 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         if (getArguments() != null && getArguments().containsKey(Constants.NOTE_ID)) {
             noteId = getArguments().getString(Constants.NOTE_ID);
         }
-        mPresenter = new NoteDetailPresenter(this, noteId);
+        mPresenter = new NoteDetailPresenter(this, noteCloudReference, noteId);
 
 
         //Disable Edittexts
@@ -136,7 +148,7 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         getActivity().getWindow().setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
         );
-        mPresenter.showNoteDetails();
+
     }
 
     @Override
@@ -233,8 +245,12 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         }
 
 
-        if (note.getAttachments() != null && note.getAttachments().size() > 0){
-            initViewAttachments(note.getAttachments());
+        try {
+            if (note.getAttachments() != null && note.getAttachments().size() > 0){
+                initViewAttachments(note.getAttachments());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         String created = null;
@@ -287,6 +303,11 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
     @Override
     public void displayPreviousActivity() {
 
+    }
+
+    @Override
+    public void showMessage(String message) {
+        makeToast(message);
     }
 
     /**

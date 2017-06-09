@@ -11,11 +11,12 @@ public interface NoteDetailContract {
         void displayNote(Note note);
         void showDeleteConfirmation(Note note);
         void displayPreviousActivity();
+        void showMessage(String message);
     }
 
     interface Action{
         void onEditNoteClick();
-        void showNoteDetails();
+        //void showNoteDetails(Note note);
         void onDeleteNoteButtonClicked();
         void deleteNote();
         String getCurrentNoteId();

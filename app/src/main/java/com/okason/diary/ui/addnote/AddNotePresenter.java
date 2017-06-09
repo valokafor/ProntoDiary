@@ -1,15 +1,13 @@
 package com.okason.diary.ui.addnote;
 
-import android.net.Uri;
 import android.text.TextUtils;
 
+import com.google.firebase.database.DatabaseReference;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
-import com.okason.diary.ui.notes.NoteListContract;
 
 /**
  * Created by Valentine on 5/8/2017.
@@ -18,16 +16,25 @@ import com.okason.diary.ui.notes.NoteListContract;
 public class AddNotePresenter implements AddNoteContract.Action {
 
     private final AddNoteContract.View mView;
-    private  NoteListContract.Repository mRepository;
+    private final DatabaseReference noteCloudReference;
     private Note mCurrentNote = null;
+    private boolean dataChanged = false;
+    private boolean isInEditMode = false;
+
 
     private boolean isDualScreen = false;
-    private String title = "";
-    private String content = "";
 
-    public AddNotePresenter(AddNoteContract.View mView) {
+    public AddNotePresenter(final AddNoteContract.View mView, DatabaseReference noteCloudReference, Note note) {
         this.mView = mView;
-        mRepository = new NoteRealmRepository();
+        this.noteCloudReference = noteCloudReference;
+        this.mCurrentNote = note;
+        if (note != null){
+            isInEditMode = true;
+        }else {
+            mCurrentNote = new Note();
+        }
+
+
     }
 
     @Override
@@ -36,42 +43,20 @@ public class AddNotePresenter implements AddNoteContract.Action {
     }
 
     @Override
-    public void onSaveAndExit() {
-        //User has clicked Save and Exit button
-        if (!TextUtils.isEmpty(title) || !TextUtils.isEmpty(content)){
-            mView.showMessage(ProntoDiaryApplication.getAppContext().getString(R.string.saving_journal));
-
-            if (mCurrentNote == null){
-                mCurrentNote = mRepository.createNewNote();
-            }
-
-
-            //Check to see if Title is empty
-            if (TextUtils.isEmpty(title)){
-                mCurrentNote.setTitle(ProntoDiaryApplication.getAppContext().getString(R.string.missing_title));
-            }
-
-            //Check to see if content is empty
-            if (TextUtils.isEmpty(content)){
-                mCurrentNote.setContent(ProntoDiaryApplication.getAppContext().getString(R.string.missing_content));
-            }
-
-            mRepository.updatedNoteContent(mCurrentNote.getId(), content);
-            mRepository.updatedNoteTitle(mCurrentNote.getId(), title);
-        }
-
-    }
-
-    @Override
     public void onDeleteNoteButtonClicked() {
         if (mCurrentNote == null){
-
+            mView.showMessage(ProntoDiaryApplication.getAppContext().getString(R.string.no_notes_found));
+            return;
         }
     }
 
     @Override
     public void onTitleChange(String newTitle) {
-      title = newTitle;
+        if (mCurrentNote == null){
+            mCurrentNote = new Note();
+        }
+        mCurrentNote.setTitle(newTitle);
+        dataChanged = true;
 
     }
 
@@ -84,16 +69,14 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     @Override
     public void onNoteContentChange(String newContent) {
-        content = newContent;
+        if (mCurrentNote == null){
+            mCurrentNote = new Note();
+        }
+        mCurrentNote.setContent(newContent);
+        dataChanged = true;
     }
 
-    @Override
-    public void updatedtNote(String noteId) {
-        mCurrentNote = mRepository.getNoteById(noteId);
-        if (mCurrentNote != null){
-            mView.populateNote(mCurrentNote);
-        }
-    }
+
 
     @Override
     public Note getCurrentNote() {
@@ -109,9 +92,17 @@ public class AddNotePresenter implements AddNoteContract.Action {
     }
 
     @Override
-    public void updatedUI() {
-        updatedtNote(mCurrentNote.getId());
+    public void updateUI() {
+        if (mCurrentNote != null){
+            mView.populateNote(mCurrentNote);
+        }
+
     }
+//
+//    @Override
+//    public void updatedUI() {
+//        updatetNote(mCurrentNote.getId());
+//    }
 
     /**
      * Called when an attachment is added to a Note
@@ -119,27 +110,58 @@ public class AddNotePresenter implements AddNoteContract.Action {
      */
     @Override
     public void onAttachmentAdded(Attachment attachment) {
-        //First ensure a Note has been created
+
         if (mCurrentNote == null){
-            mCurrentNote = mRepository.createNewNote();
+            mCurrentNote = new Note();
         }
 
         //Add the attachment to the Note
-        mRepository.addAttachment(mCurrentNote.getId(), attachment);
-        mView.showProgressDialog();
-
-
+        mCurrentNote.getAttachments().add(attachment);
+        dataChanged = true;
+        updateUI();
     }
 
     @Override
-    public void onFileAttachmentSelected(Uri fileUri, String fileName) {
-        //First ensure a Note has been created
-        if (mCurrentNote == null){
-            mCurrentNote = mRepository.createNewNote();
+    public void onSaveAndExit() {
+
+        if (dataChanged){
+            mView.showMessage(ProntoDiaryApplication.getAppContext().getString(R.string.saving_journal));
+
+            //Check to see if the Note is completely blank
+            if (TextUtils.isEmpty(mCurrentNote.getTitle())
+                    && TextUtils.isEmpty(mCurrentNote.getContent())
+                    && mCurrentNote.getAttachments().size() == 0){
+                return;
+            }
+
+            //Check to see if Title is empty
+            if (TextUtils.isEmpty(mCurrentNote.getTitle())){
+                mCurrentNote.setTitle(ProntoDiaryApplication.getAppContext().getString(R.string.missing_title));
+            }
+
+            //Check to see if content is empty
+            if (TextUtils.isEmpty(mCurrentNote.getContent())){
+                mCurrentNote.setContent(ProntoDiaryApplication.getAppContext().getString(R.string.missing_content));
+            }
+
+            //Data need to be saved
+            if (isInEditMode){
+                //Update data
+                noteCloudReference.child(mCurrentNote.getId()).setValue(mCurrentNote);
+            }else {
+                //Save new data
+                String key = noteCloudReference.push().getKey();
+                mCurrentNote.setId(key);
+                noteCloudReference.child(key).setValue(mCurrentNote);
+            }
         }
 
-        mRepository.addFileAttachment(fileUri, fileName, mCurrentNote.getId());
-        mView.showProgressDialog();
+
+
+
+
     }
+
+
 
 }
