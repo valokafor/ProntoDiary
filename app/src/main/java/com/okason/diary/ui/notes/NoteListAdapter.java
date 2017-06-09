@@ -81,7 +81,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
                     holder.attachmentLayout.setVisibility(View.VISIBLE);
                     Glide.with(mContext)
-                            .load(lastAttachment.getFilePath())
+                            .load(lastAttachment.getLocalFilePath())
                             .placeholder(R.drawable.default_image)
                             .centerCrop()
                             .into(holder.noteAttachment);
@@ -106,7 +106,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                         if (attachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
                             holder.attachmentLayout.setVisibility(View.VISIBLE);
                             Glide.with(mContext)
-                                    .load(attachment.getFilePath())
+                                    .load(attachment.getLocalFilePath())
                                     .placeholder(R.drawable.default_image)
                                     .centerCrop()
                                     .into(holder.noteAttachment);

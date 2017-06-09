@@ -20,6 +20,7 @@ public class Constants {
     public static final String SERIALIZED_NOTE = "serialized_note";
     public static final String SELECTED_ID = "selected_id";
     public static final String ERROR_MESSAGE = "error_message";
+    public static final String STORAGE_RECORD_CLOUD_END_POINT = "/storage_records";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

@@ -184,7 +184,7 @@ public class GalleryActivity extends AppCompatActivity {
     private void viewMedia() {
         Attachment attachment = attachments.get(mViewPager.getCurrentItem());
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.parse(attachment.getFilePath()), attachment.getMime_type());
+        intent.setDataAndType(Uri.parse(attachment.getLocalFilePath()), attachment.getMime_type());
         startActivity(intent);
     }
 

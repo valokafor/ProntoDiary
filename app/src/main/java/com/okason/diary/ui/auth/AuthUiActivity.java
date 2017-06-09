@@ -29,6 +29,7 @@ import com.google.android.gms.common.Scopes;
 import com.google.firebase.auth.FirebaseAuth;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.services.MergeAnonymousDataIntentService;
 import com.okason.diary.utils.Constants;
 
@@ -185,16 +186,19 @@ public class AuthUiActivity extends AppCompatActivity {
             finish();
             return;
         } else {
+            ProntoDiaryApplication.setCloudSyncEnabled(false);
             finish();
         }
 
         if (resultCode == RESULT_CANCELED) {
             makeToast(getString(R.string.sign_in_cancelled));
+            ProntoDiaryApplication.setCloudSyncEnabled(false);
             return;
         }
 
         if (resultCode == ResultCodes.RESULT_NO_NETWORK) {
             makeToast(getString(R.string.no_internet_connection));
+            ProntoDiaryApplication.setCloudSyncEnabled(false);
             return;
         }
 

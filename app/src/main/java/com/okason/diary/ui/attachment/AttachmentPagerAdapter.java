@@ -26,7 +26,7 @@ public class AttachmentPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public Fragment getItem(int position) {
         Attachment selectedAttachment = attachments.get(position);
-        return GalleryPagerFragment.newInstance(position, selectedAttachment.getFilePath() );
+        return GalleryPagerFragment.newInstance(position, selectedAttachment.getLocalFilePath() );
     }
 
     @Override

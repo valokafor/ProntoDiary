@@ -41,21 +41,27 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.DatabaseOperationCompletedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
+import com.okason.diary.models.StorageRecord;
 import com.okason.diary.ui.attachment.AttachingFileCompleteEvent;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.attachment.AttachmentTask;
@@ -112,6 +118,7 @@ public class NoteEditorFragment extends Fragment implements
 
     private DatabaseReference mDatabase;
     private DatabaseReference noteCloudReference;
+    private DatabaseReference storageRecordCloudReference;
     private DatabaseReference categoryCloudReference;
 
     @BindView(R.id.edit_text_category)
@@ -203,6 +210,7 @@ public class NoteEditorFragment extends Fragment implements
         mAttachmentStorageReference = mFirebaseStorageReference.child("users/" + mFirebaseUser.getUid() + "/attachments");
 
         noteCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+        storageRecordCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.STORAGE_RECORD_CLOUD_END_POINT);
         categoryCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.CATEGORY_CLOUD_END_POINT);
 
 
@@ -315,9 +323,13 @@ public class NoteEditorFragment extends Fragment implements
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAttachmentAdded(AttachingFileCompleteEvent event){
         if (event.isResultOk()){
-            //Attachment was created successully
+            //Attachment was created successfully
             hideProgressDialog();
-            mPresenter.onAttachmentAdded(event.getAttachment());
+            if (ProntoDiaryApplication.isCloudSyncEnabled()){
+                uploadFileToCloud(event.getAttachment());
+            }else {
+                mPresenter.onAttachmentAdded(event.getAttachment());
+            }
         }
     }
 
@@ -891,11 +903,19 @@ public class NoteEditorFragment extends Fragment implements
                 case IMAGE_CAPTURE_REQUEST:
                     attachment = new Attachment(attachmentUri, mLocalImagePath, Constants.MIME_TYPE_IMAGE);
                     addPhotoToGallery(mLocalImagePath);
-                    mPresenter.onAttachmentAdded(attachment);
+                    if (ProntoDiaryApplication.isCloudSyncEnabled()){
+                        uploadFileToCloud(attachment);
+                    }else {
+                        mPresenter.onAttachmentAdded(attachment);
+                    }
                     break;
                 case VIDEO_CAPTURE_REQUEST:
                     attachment = new Attachment(attachmentUri, mLocalVideoPath, Constants.MIME_TYPE_VIDEO);
-                    mPresenter.onAttachmentAdded(attachment);
+                    if (ProntoDiaryApplication.isCloudSyncEnabled()){
+                        uploadFileToCloud(attachment);
+                    }else {
+                        mPresenter.onAttachmentAdded(attachment);
+                    }
                     break;
                 case FILE_PICK_REQUEST:
                     handleFilePickIntent(data);
@@ -908,7 +928,11 @@ public class NoteEditorFragment extends Fragment implements
                             sketchFile);
                     if (!TextUtils.isEmpty(sketchFilePath)){
                         attachment = new Attachment(fileUri, sketchFilePath, Constants.MIME_TYPE_SKETCH);
-                        mPresenter.onAttachmentAdded(attachment);
+                        if (ProntoDiaryApplication.isCloudSyncEnabled()){
+                            uploadFileToCloud(attachment);
+                        }else {
+                            mPresenter.onAttachmentAdded(attachment);
+                        }
                     }else {
                         makeToast(getString(R.string.error_sketch_is_empty));
                     }
@@ -921,6 +945,54 @@ public class NoteEditorFragment extends Fragment implements
 
             }
         }
+    }
+
+    private void uploadFileToCloud(final Attachment attachment) {
+        String filePath = attachment.getLocalFilePath();
+        String fileType = attachment.getMime_type();
+        final long[] size = new long[1];
+
+        final StorageMetadata metadata = new StorageMetadata.Builder()
+                .setContentType(fileType)
+                .build();
+
+        Uri fileToUpload = Uri.fromFile(new File(filePath));
+
+        final String fileName = fileToUpload.getLastPathSegment();
+
+        StorageReference imageRef = mAttachmentStorageReference.child(fileName);
+
+        final UploadTask uploadTask = imageRef.putFile(fileToUpload, metadata);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                makeToast("Unable to upload file to cloud" + e.getLocalizedMessage());
+                mPresenter.onAttachmentAdded(attachment);
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @SuppressWarnings("VisibleForTests")
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                long size = taskSnapshot.getMetadata().getSizeBytes();
+                String downloadUrl = taskSnapshot.getDownloadUrl().toString();
+                attachment.setCloudFilePath(downloadUrl);
+                mPresenter.onAttachmentAdded(attachment);
+
+
+                //Create a Storage Record in Firebase
+                if (mFirebaseUser != null){
+                    //Create a StorageRecord
+                    StorageRecord record = new StorageRecord();
+                    record.setDownloadUri(downloadUrl);
+                    record.setUid(mFirebaseUser.getUid());
+                    record.setFileSizes(size);
+                    String key = storageRecordCloudReference.push().getKey();
+                    record.setId(key);
+                    storageRecordCloudReference.child(key).setValue(record);
+                }
+            }
+        });
+
     }
 
     //Called when a file is picked

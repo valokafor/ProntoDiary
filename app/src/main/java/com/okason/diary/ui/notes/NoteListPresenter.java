@@ -16,7 +16,7 @@ import java.util.List;
 public class NoteListPresenter implements NoteListContract.Actions{
     private final NoteListContract.View mView;
     private final DatabaseReference noteCloudReference;
-    private Note mCurrentNote = null;
+
 
     private boolean isDualScreen = false;
 
