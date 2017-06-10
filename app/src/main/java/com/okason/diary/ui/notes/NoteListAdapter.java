@@ -20,6 +20,7 @@ import com.okason.diary.models.Note;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
+import java.io.File;
 import java.util.List;
 
 import butterknife.BindView;
@@ -78,10 +79,19 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             if (note.getAttachments() != null && note.getAttachments().size() > 0){
                 Attachment lastAttachment = note.getAttachments().get(note.getAttachments().size() - 1);
 
+
+
                 if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
+                    String filePath;
+                    File file = new File(lastAttachment.getLocalFilePath());
+                    if (file.exists()){
+                        filePath = lastAttachment.getLocalFilePath();
+                    }else {
+                        filePath = lastAttachment.getCloudFilePath();
+                    }
                     holder.attachmentLayout.setVisibility(View.VISIBLE);
                     Glide.with(mContext)
-                            .load(lastAttachment.getLocalFilePath())
+                            .load(filePath)
                             .placeholder(R.drawable.default_image)
                             .centerCrop()
                             .into(holder.noteAttachment);
@@ -103,10 +113,17 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
                 }else {
                     for (Attachment attachment: note.getAttachments()){
+                        String filePath;
+                        File file = new File(lastAttachment.getLocalFilePath());
+                        if (file.exists()){
+                            filePath = lastAttachment.getLocalFilePath();
+                        }else {
+                            filePath = lastAttachment.getCloudFilePath();
+                        }
                         if (attachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
                             holder.attachmentLayout.setVisibility(View.VISIBLE);
                             Glide.with(mContext)
-                                    .load(attachment.getLocalFilePath())
+                                    .load(filePath)
                                     .placeholder(R.drawable.default_image)
                                     .centerCrop()
                                     .into(holder.noteAttachment);

@@ -20,6 +20,7 @@ import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
 
+import java.io.File;
 import java.util.List;
 
 import butterknife.BindView;
@@ -79,6 +80,14 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
             holder.text.setVisibility(View.GONE);
         }
 
+        String filePath;
+        File file = new File(selectedAttachment.getLocalFilePath());
+        if (file.exists()){
+            filePath = selectedAttachment.getLocalFilePath();
+        }else {
+            filePath = selectedAttachment.getCloudFilePath();
+        }
+
         // Draw name in case the type is an audio recording (or file in the future)
         if (selectedAttachment.getMime_type() != null && selectedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)) {
 
@@ -91,9 +100,12 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
             String name = FileHelper.getNameFromUri(context, uri);
             String extension = FileHelper.getFileExtension(name).toLowerCase();
 
+
+
             if (extension.equals(".png") || extension.equals(".jpg") || extension.equals(".jpeg")){
+
                 Glide.with(context.getApplicationContext())
-                        .load(selectedAttachment.getLocalFilePath())
+                        .load(filePath)
                         .centerCrop()
                         .crossFade()
                         .placeholder(R.drawable.image_broken)
@@ -116,7 +128,7 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
 
         } else {
             Glide.with(context.getApplicationContext())
-                    .load(selectedAttachment.getLocalFilePath())
+                    .load(filePath)
                     .centerCrop()
                     .crossFade()
                     .placeholder(R.drawable.image_broken)

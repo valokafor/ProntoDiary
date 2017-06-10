@@ -21,6 +21,7 @@ public class Constants {
     public static final String SELECTED_ID = "selected_id";
     public static final String ERROR_MESSAGE = "error_message";
     public static final String STORAGE_RECORD_CLOUD_END_POINT = "/storage_records";
+    public static final String FILE_PATH = "file_path";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

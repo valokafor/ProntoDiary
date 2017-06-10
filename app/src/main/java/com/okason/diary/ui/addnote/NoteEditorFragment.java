@@ -90,7 +90,7 @@ import butterknife.ButterKnife;
  * A simple {@link Fragment} subclass.
  */
 public class NoteEditorFragment extends Fragment implements
-   AddNoteContract.View{
+        AddNoteContract.View {
 
     private final static String LOG_TAG = "NoteEditorFragment";
 
@@ -122,14 +122,17 @@ public class NoteEditorFragment extends Fragment implements
     @BindView(R.id.edit_text_category)
     EditText mCategory;
 
-    @BindView(R.id.edit_text_title) EditText mTitle;
+    @BindView(R.id.edit_text_title)
+    EditText mTitle;
 
-    @BindView(R.id.edit_text_note) EditText mContent;
+    @BindView(R.id.edit_text_note)
+    EditText mContent;
 
     @BindView(R.id.image_attachment)
     ImageView mImageAttachment;
 
-    @BindView(R.id.sketch_attachment) ImageView mSketchAttachment;
+    @BindView(R.id.sketch_attachment)
+    ImageView mSketchAttachment;
 
     @BindView(R.id.attachment_container)
     FrameLayout attachmentContainer;
@@ -148,13 +151,10 @@ public class NoteEditorFragment extends Fragment implements
 
     private SharedPreferences prefs;
     private MediaRecorder mRecorder = null;
-    private MediaPlayer   mPlayer = null;
+    private MediaPlayer mPlayer = null;
     private long audioRecordingTimeStart;
     private long audioRecordingTime;
     private MaterialDialog mDialog;
-
-
-
 
 
     public NoteEditorFragment() {
@@ -169,9 +169,9 @@ public class NoteEditorFragment extends Fragment implements
     }
 
     private Note getPassedInNote() {
-        if (getArguments() != null && getArguments().containsKey(Constants.SERIALIZED_NOTE)){
+        if (getArguments() != null && getArguments().containsKey(Constants.SERIALIZED_NOTE)) {
             String serializedNote = getArguments().getString(Constants.SERIALIZED_NOTE);
-            if (!TextUtils.isEmpty(serializedNote)){
+            if (!TextUtils.isEmpty(serializedNote)) {
                 Gson gson = new Gson();
                 Note note = gson.fromJson(serializedNote, Note.class);
                 return note;
@@ -181,9 +181,9 @@ public class NoteEditorFragment extends Fragment implements
 
     }
 
-    public static NoteEditorFragment newInstance(String serializedNote){
+    public static NoteEditorFragment newInstance(String serializedNote) {
         NoteEditorFragment fragment = new NoteEditorFragment();
-        if (!TextUtils.isEmpty(serializedNote)){
+        if (!TextUtils.isEmpty(serializedNote)) {
             Bundle args = new Bundle();
             args.putString(Constants.SERIALIZED_NOTE, serializedNote);
             fragment.setArguments(args);
@@ -207,10 +207,8 @@ public class NoteEditorFragment extends Fragment implements
         mFirebaseStorageReference = mFirebaseStorage.getReferenceFromUrl(Constants.FIREBASE_STORAGE_BUCKET);
         mAttachmentStorageReference = mFirebaseStorageReference.child("users/" + mFirebaseUser.getUid() + "/attachments");
 
-        noteCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
-        categoryCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.CATEGORY_CLOUD_END_POINT);
-
-
+        noteCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+        categoryCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.CATEGORY_CLOUD_END_POINT);
 
 
         mPresenter = new AddNotePresenter(this, noteCloudReference, getPassedInNote());
@@ -257,7 +255,6 @@ public class NoteEditorFragment extends Fragment implements
     }
 
 
-
     @Override
     public void onResume() {
         super.onResume();
@@ -287,7 +284,7 @@ public class NoteEditorFragment extends Fragment implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        switch (id){
+        switch (id) {
             case R.id.action_attachment:
                 showSelectAttachmentDialog();
                 break;
@@ -307,19 +304,17 @@ public class NoteEditorFragment extends Fragment implements
     }
 
 
-
-
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onItemDeletedEvent(ItemDeletedEvent event){
-        if (event.getResult().equals(Constants.RESULT_OK)){
+    public void onItemDeletedEvent(ItemDeletedEvent event) {
+        if (event.getResult().equals(Constants.RESULT_OK)) {
             //When a Note is Deleted, go to the Note List
             startActivity(new Intent(getActivity(), NoteListActivity.class));
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onAttachmentAdded(AttachingFileCompleteEvent event){
-        if (event.isResultOk()){
+    public void onAttachmentAdded(AttachingFileCompleteEvent event) {
+        if (event.isResultOk()) {
             //Attachment was created successfully
             hideProgressDialog();
             mPresenter.onAttachmentAdded(event.getAttachment());
@@ -327,23 +322,22 @@ public class NoteEditorFragment extends Fragment implements
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDatabaseOperationCompleteEvent(DatabaseOperationCompletedEvent event){
+    public void onDatabaseOperationCompleteEvent(DatabaseOperationCompletedEvent event) {
         hideProgressDialog();
-        if (event.isShouldUpdateUi()){
+        if (event.isShouldUpdateUi()) {
             mPresenter.updateUI();
         }
-        if (!TextUtils.isEmpty(event.getMessage())){
+        if (!TextUtils.isEmpty(event.getMessage())) {
             makeToast(event.getMessage());
         }
     }
 
 
-
-    private void makeToast(String message){
+    private void makeToast(String message) {
         Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
         View snackBarView = snackbar.getView();
         snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
-        TextView tv = (TextView)snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+        TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
         tv.setTextColor(Color.WHITE);
         snackbar.show();
     }
@@ -371,13 +365,13 @@ public class NoteEditorFragment extends Fragment implements
             e.printStackTrace();
         }
 
-        if (note.getFolder() != null){
+        if (note.getFolder() != null) {
             mCategory.setText(note.getFolder().getFolderName());
-        }else {
+        } else {
             mCategory.setText(Constants.DEFAULT_CATEGORY);
         }
         mContent.requestFocus();
-        if (note.getAttachments() != null && note.getAttachments().size() > 0){
+        if (note.getAttachments() != null && note.getAttachments().size() > 0) {
             initViewAttachments(note.getAttachments());
         }
 
@@ -395,7 +389,7 @@ public class NoteEditorFragment extends Fragment implements
 
     @Override
     public void hideProgressDialog() {
-        if (mDialog != null){
+        if (mDialog != null) {
             mDialog.dismiss();
         }
 
@@ -404,9 +398,10 @@ public class NoteEditorFragment extends Fragment implements
     /**
      * Shows a horizontal layout at the top of the screen that displays
      * thunmnail of attachments
+     *
      * @param attachmentList - the list of attachments for this Note
      */
-    private void initViewAttachments(final List<Attachment> attachmentList){
+    private void initViewAttachments(final List<Attachment> attachmentList) {
 
         attachmentContainer.setVisibility(View.VISIBLE);
         attachmentRecyclerView = (RecyclerView) mRootView.findViewById(R.id.attachment_list_recyclerview);
@@ -422,18 +417,18 @@ public class NoteEditorFragment extends Fragment implements
             public void onAttachmentClicked(Attachment clickedAttachment) {
                 //If clicked Attachment is of type Document
                 //Launch an Intent to show it, otherwise start Gallery Activity
-                if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
+                if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)) {
                     //show file
                     Uri uri = Uri.parse(clickedAttachment.getUri());
                     String fileType = "";
                     String name = FileHelper.getNameFromUri(getActivity(), uri);
                     String extension = FileHelper.getFileExtension(name).toLowerCase();
 
-                    if (extension.equals(".png") || extension.equals(".jpg") || extension.equals(".jpeg")){
+                    if (extension.equals(".png") || extension.equals(".jpg") || extension.equals(".jpeg")) {
                         fileType = "image/jpeg";
-                    }else if (extension.equals(".pdf")){
+                    } else if (extension.equals(".pdf")) {
                         fileType = "application/pdf";
-                    }else {
+                    } else {
                         fileType = "plain/text";
                     }
 
@@ -448,10 +443,13 @@ public class NoteEditorFragment extends Fragment implements
                         makeToast(getString(R.string.feature_not_available_on_this_device));
                     }
 
-                }else {
+                } else {
                     Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-                    galleryIntent.putExtra(Constants.NOTE_ID, mPresenter.getCurrentNoteId());
-                    galleryIntent.putExtra(Constants.SELECTED_ID, clickedAttachment.getId());
+                    Note currentNote = mPresenter.getCurrentNote();
+                    Gson gson = new Gson();
+                    String serializedNote = gson.toJson(currentNote);
+                    galleryIntent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
+                    galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
                     startActivity(galleryIntent);
                 }
             }
@@ -471,8 +469,8 @@ public class NoteEditorFragment extends Fragment implements
         final View layout = (View) inflater.inflate(R.layout.attachment_dialog, null);
         alertDialog.setView(layout);
 
-        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
-        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        View titleView = (View) inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView) titleView.findViewById(R.id.text_view_dialog_title);
         titleText.setText(getString(R.string.select_attachment));
         alertDialog.setCustomTitle(titleView);
         final Dialog dialog = alertDialog.create();
@@ -482,11 +480,11 @@ public class NoteEditorFragment extends Fragment implements
         cameraSelection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
-                    if (isStoragePermissionGrantedForImage()){
+                if (getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                    if (isStoragePermissionGrantedForImage()) {
                         takePhoto();
                     }
-                }else {
+                } else {
                     makeToast(getString(R.string.feature_not_available_on_this_device));
                 }
                 dialog.dismiss();
@@ -494,11 +492,11 @@ public class NoteEditorFragment extends Fragment implements
         });
 
 
-        TextView  videoSelection = (TextView) layout.findViewById(R.id.video);
+        TextView videoSelection = (TextView) layout.findViewById(R.id.video);
         videoSelection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isStoragePermissionGrantedForPickingFile()){
+                if (isStoragePermissionGrantedForPickingFile()) {
                     takeVideo();
                 }
                 dialog.dismiss();
@@ -509,7 +507,7 @@ public class NoteEditorFragment extends Fragment implements
         fileSelection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isStoragePermissionGrantedForPickingFile()){
+                if (isStoragePermissionGrantedForPickingFile()) {
                     pickFile();
                 }
                 dialog.dismiss();
@@ -520,7 +518,7 @@ public class NoteEditorFragment extends Fragment implements
         pictureSelection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isStoragePermissionGrantedForPickingPicture()){
+                if (isStoragePermissionGrantedForPickingPicture()) {
                     pickPicture();
                 }
                 dialog.dismiss();
@@ -561,7 +559,6 @@ public class NoteEditorFragment extends Fragment implements
         TextView locationSelection = (TextView) layout.findViewById(R.id.location);
 
 
-
     }
 
     private void pickFile() {
@@ -583,24 +580,21 @@ public class NoteEditorFragment extends Fragment implements
     }
 
 
-
-
     //Checks whether the user has granted the app permission to
     //access external storage
     private boolean isStoragePermissionGrantedForImage() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.v(LOG_TAG,"Permission is granted");
+                Log.v(LOG_TAG, "Permission is granted");
                 return true;
             } else {
-                Log.v(LOG_TAG,"Permission is revoked");
+                Log.v(LOG_TAG, "Permission is revoked");
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, IMAGE_CAPTURE_REQUEST);
                 return false;
             }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(LOG_TAG,"Permission is granted  API < 23");
+        } else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(LOG_TAG, "Permission is granted  API < 23");
             return true;
         }
     }
@@ -617,8 +611,7 @@ public class NoteEditorFragment extends Fragment implements
                 this.requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO_PERMISSION_REQUEST);
                 return false;
             }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
+        } else { //permission is automatically granted on sdk<23 upon installation
             return true;
         }
     }
@@ -635,8 +628,7 @@ public class NoteEditorFragment extends Fragment implements
                 this.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, ACCESS_LOCATION_PERMISSION_REQUEST);
                 return false;
             }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
+        } else { //permission is automatically granted on sdk<23 upon installation
             return true;
         }
     }
@@ -647,16 +639,15 @@ public class NoteEditorFragment extends Fragment implements
         if (Build.VERSION.SDK_INT >= 23) {
             if (getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.v(LOG_TAG,"Permission is granted");
+                Log.v(LOG_TAG, "Permission is granted");
                 return true;
             } else {
-                Log.v(LOG_TAG,"Permission is revoked");
+                Log.v(LOG_TAG, "Permission is revoked");
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, FILE_PICK_REQUEST);
                 return false;
             }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(LOG_TAG,"Permission is granted  API < 23");
+        } else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(LOG_TAG, "Permission is granted  API < 23");
             return true;
         }
     }
@@ -668,16 +659,15 @@ public class NoteEditorFragment extends Fragment implements
         if (Build.VERSION.SDK_INT >= 23) {
             if (getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.v(LOG_TAG,"Permission is granted");
+                Log.v(LOG_TAG, "Permission is granted");
                 return true;
             } else {
-                Log.v(LOG_TAG,"Permission is revoked");
+                Log.v(LOG_TAG, "Permission is revoked");
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PICTURE_PICK_REQUEST);
                 return false;
             }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(LOG_TAG,"Permission is granted  API < 23");
+        } else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(LOG_TAG, "Permission is granted  API < 23");
             return true;
         }
     }
@@ -686,16 +676,15 @@ public class NoteEditorFragment extends Fragment implements
         if (Build.VERSION.SDK_INT >= 23) {
             if (getActivity().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.v(LOG_TAG,"Permission is granted");
+                Log.v(LOG_TAG, "Permission is granted");
                 return true;
             } else {
-                Log.v(LOG_TAG,"Permission is revoked");
+                Log.v(LOG_TAG, "Permission is revoked");
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, SKETCH_CAPTURE_REQUEST);
                 return false;
             }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(LOG_TAG,"Permission is granted  API < 23");
+        } else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(LOG_TAG, "Permission is granted  API < 23");
             return true;
         }
     }
@@ -722,7 +711,8 @@ public class NoteEditorFragment extends Fragment implements
             Log.d(LOG_TAG, "takePhoto Uri: " + fileUri);
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
             startActivityForResult(takePictureIntent, IMAGE_CAPTURE_REQUEST);
-        };
+        }
+        ;
     }
 
     private void startRecording() {
@@ -756,7 +746,8 @@ public class NoteEditorFragment extends Fragment implements
                 makeToast("Unable to record " + e.getLocalizedMessage());
             }
 
-        };
+        }
+        ;
 
     }
 
@@ -797,12 +788,13 @@ public class NoteEditorFragment extends Fragment implements
             attachmentUri = fileUri;
             Log.d(LOG_TAG, "Video Uri: " + fileUri);
             takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
-        };
+        }
+        ;
 
         String maxVideoSizeStr = "".equals(prefs.getString("settings_max_video_size",
                 "")) ? "0" : prefs.getString("settings_max_video_size", "");
         int maxVideoSize = Integer.parseInt(maxVideoSizeStr);
-        long limit =  Long.valueOf(maxVideoSize * 1024 * 1024);
+        long limit = Long.valueOf(maxVideoSize * 1024 * 1024);
         takeVideoIntent.putExtra(MediaStore.EXTRA_SIZE_LIMIT, limit);
         startActivityForResult(takeVideoIntent, VIDEO_CAPTURE_REQUEST);
     }
@@ -817,8 +809,6 @@ public class NoteEditorFragment extends Fragment implements
             Log.e(LOG_TAG, "prepare() failed");
         }
     }
-
-
 
 
     private void stopRecording() {
@@ -838,13 +828,13 @@ public class NoteEditorFragment extends Fragment implements
     }
 
 
-    public void promptToStartRecording(){
+    public void promptToStartRecording() {
         String title = getContext().getString(R.string.start_recording);
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
-        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        View titleView = (View) inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView) titleView.findViewById(R.id.text_view_dialog_title);
         titleText.setText(title);
         alertDialog.setCustomTitle(titleView);
 
@@ -865,13 +855,13 @@ public class NoteEditorFragment extends Fragment implements
         alertDialog.show();
     }
 
-    public void promptToStopRecording(){
+    public void promptToStopRecording() {
         String title = getContext().getString(R.string.stop_recording);
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
-        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        View titleView = (View) inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView) titleView.findViewById(R.id.text_view_dialog_title);
         titleText.setText(title);
         alertDialog.setCustomTitle(titleView);
 
@@ -891,8 +881,8 @@ public class NoteEditorFragment extends Fragment implements
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Attachment attachment;
-        if (resultCode == Activity.RESULT_OK){
-            switch (requestCode){
+        if (resultCode == Activity.RESULT_OK) {
+            switch (requestCode) {
                 case IMAGE_CAPTURE_REQUEST:
                     attachment = new Attachment(attachmentUri, mLocalImagePath, Constants.MIME_TYPE_IMAGE);
                     addPhotoToGallery(mLocalImagePath);
@@ -911,17 +901,16 @@ public class NoteEditorFragment extends Fragment implements
                     Uri fileUri = FileProvider.getUriForFile(getContext(),
                             BuildConfig.APPLICATION_ID + ".provider",
                             sketchFile);
-                    if (!TextUtils.isEmpty(sketchFilePath)){
+                    if (!TextUtils.isEmpty(sketchFilePath)) {
                         attachment = new Attachment(fileUri, sketchFilePath, Constants.MIME_TYPE_SKETCH);
                         mPresenter.onAttachmentAdded(attachment);
-                    }else {
+                    } else {
                         makeToast(getString(R.string.error_sketch_is_empty));
                     }
                     break;
                 case PICTURE_PICK_REQUEST:
                     handlePicturePickIntent(data);
                     break;
-
 
 
             }
@@ -1074,7 +1063,6 @@ public class NoteEditorFragment extends Fragment implements
                 break;
 
 
-
         }
 
 
@@ -1082,7 +1070,7 @@ public class NoteEditorFragment extends Fragment implements
 
 
     public void displayShareIntent(Note note) {
-        if (note == null){
+        if (note == null) {
             makeToast(getString(R.string.no_notes_found));
             return;
         }

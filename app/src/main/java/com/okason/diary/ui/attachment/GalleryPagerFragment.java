@@ -35,8 +35,8 @@ public class GalleryPagerFragment extends Fragment {
     public static GalleryPagerFragment newInstance(int pageNumber, String imagePath) {
         GalleryPagerFragment fragment = new GalleryPagerFragment();
         Bundle args = new Bundle();
-        args.putInt("page", pageNumber);
-        args.putString("path", imagePath);
+        args.putInt(ARG_PAGE, pageNumber);
+        args.putString(ARG_PATH, imagePath);
         fragment.setArguments(args);
         return fragment;
     }
@@ -52,10 +52,6 @@ public class GalleryPagerFragment extends Fragment {
 
         mRootView = inflater.inflate(R.layout.fragment_gallery_pager, container, false);
         ButterKnife.bind(this, mRootView);
-
-        if (mImagePath.contains("http")){
-
-        }
 
 
         Glide.with(getActivity().getApplicationContext())

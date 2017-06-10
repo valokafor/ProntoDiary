@@ -60,6 +60,10 @@ public class MergeAnonymousDataIntentService extends IntentService {
                                 for (DataSnapshot noteSnapshot : dataSnapshot.getChildren()) {
                                     Note note = noteSnapshot.getValue(Note.class);
                                     notesToBeMigrated.add(note);
+                                    Intent uploadServiceIntent = new Intent( getApplicationContext(), AttachmentUploadService.class)
+                                            .putExtra(AttachmentUploadService.NOTE_ID, note.getId())
+                                            .setAction(AttachmentUploadService.ACTION_UPLOAD);
+                                    getApplicationContext().startService(uploadServiceIntent);
 
                                 }
                                 migrateNote(notesToBeMigrated, registeredCloudReference, annonymousCloudReference);

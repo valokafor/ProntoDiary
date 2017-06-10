@@ -136,6 +136,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
                     setProgressIndicator(false);
                 }
 
+
             }
 
             @Override
@@ -157,7 +158,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             @Override
             public void onRefresh() {
                 noteCloudReference.removeEventListener(mValueEventListener);
-                noteCloudReference.addListenerForSingleValueEvent(mValueEventListener);
+                noteCloudReference.addValueEventListener(mValueEventListener);
             }
         });
 
@@ -184,7 +185,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     public void onResume() {
         super.onResume();
         setProgressIndicator(true);
-        noteCloudReference.addListenerForSingleValueEvent(mValueEventListener);
+        noteCloudReference.addValueEventListener(mValueEventListener);
     }
 
     @Override
@@ -224,9 +225,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
                     startActivity(new Intent(getActivity(), AddNoteActivity.class));
                 }
                 break;
-            case R.id.action_sort:
 
-                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -345,8 +344,32 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
 
-
-
+//    public void loadNotes(boolean forceUpdate) {
+//        setProgressIndicator(true);
+//        final List<Note> notes = new ArrayList<>();
+//        noteCloudReference.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()){
+//                    Note note = noteSnapshot.getValue(Note.class);
+//                    notes.add(note);
+//                }
+//                if (notes != null && notes.size() > 0){
+//                    showEmptyText(false);
+//                    showNotes(notes);
+//                    setProgressIndicator(false);
+//                }else {
+//                    showEmptyText(true);
+//                    setProgressIndicator(false);
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
 
 
 

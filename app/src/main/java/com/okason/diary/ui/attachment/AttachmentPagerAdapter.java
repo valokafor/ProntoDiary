@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.okason.diary.models.Attachment;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -26,7 +27,15 @@ public class AttachmentPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public Fragment getItem(int position) {
         Attachment selectedAttachment = attachments.get(position);
-        return GalleryPagerFragment.newInstance(position, selectedAttachment.getLocalFilePath() );
+
+        String filePath;
+        File file = new File(selectedAttachment.getLocalFilePath());
+        if (file.exists()){
+            filePath = selectedAttachment.getLocalFilePath();
+        }else {
+            filePath = selectedAttachment.getCloudFilePath();
+        }
+        return GalleryPagerFragment.newInstance(position, filePath);
     }
 
     @Override

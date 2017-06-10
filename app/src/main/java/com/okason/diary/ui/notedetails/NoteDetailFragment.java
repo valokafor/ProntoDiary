@@ -30,6 +30,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.ItemDeletedEvent;
@@ -359,8 +360,11 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
 
                 }else {
                     Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-                    galleryIntent.putExtra(Constants.NOTE_ID, mPresenter.getCurrentNoteId());
-                    galleryIntent.putExtra(Constants.SELECTED_ID, clickedAttachment.getId());
+                    Note currentNote = mPresenter.getCurrentNote();
+                    Gson gson = new Gson();
+                    String serializedNote = gson.toJson(currentNote);
+                    galleryIntent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
+                    galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
                     startActivity(galleryIntent);
                 }
             }

@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,7 +13,6 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
@@ -25,23 +25,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class GalleryActivity extends AppCompatActivity {
-
-    /**
-     * Whether or not the system UI should be auto-hidden after {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-     */
-    private static final boolean AUTO_HIDE = false;
-
-    /**
-     * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after user interaction before hiding the
-     * * system UI.
-     */
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
-
-    /**
-     * If set, will toggle the system UI visibility upon interaction. Otherwise, will show the system UI visibility
-     * * upon interaction.
-     */
-    private static final boolean TOGGLE_ON_CLICK = true;
 
     @BindView(R.id.gallery_root)
     LinearLayout galleryRootView;
@@ -60,6 +43,7 @@ public class GalleryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_gallery);
         ButterKnife.bind(this);
 
+        //Pass in the Note as a JSON to avoid having to query for the Note from Firebase
         if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)) {
             getCurrentNote();
             initViews();
@@ -71,24 +55,26 @@ public class GalleryActivity extends AppCompatActivity {
 
     }
 
+    //Get the Note object that was passed in
     public void getCurrentNote(){
         if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)){
             String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_NOTE);
-            if (!serializedNote.isEmpty()){
+            if (!TextUtils.isEmpty(serializedNote)){
                 Gson gson = new Gson();
-                parentNote = gson.fromJson(serializedNote, new TypeToken<Note>(){}.getType());
+                parentNote = gson.fromJson(serializedNote, Note.class);
             }
         }
     }
 
     private void initData() {
-        String selectAttachmentId = getIntent().getStringExtra(Constants.SELECTED_ID);
+        String selectAttachmentPath = getIntent().getStringExtra(Constants.FILE_PATH);
         int selectedPosition = 0;
 
         if (parentNote != null) {
             //Create an Arraylist to hold Ids of Attachments that are image or Video
             attachments = new ArrayList<Attachment>();
 
+            //Get the list of attachments in the Note
             for (Attachment attachment : parentNote.getAttachments()) {
                 if (Constants.MIME_TYPE_IMAGE.equals(attachment.getMime_type())
                         || Constants.MIME_TYPE_SKETCH.equals(attachment.getMime_type())
@@ -99,14 +85,16 @@ public class GalleryActivity extends AppCompatActivity {
             }
 
 
+            //Identify the attachment that was clicked in the list
             for (int i = 0; i < attachments.size(); i++) {
-                if (attachments.get(i).getId().equals(selectAttachmentId)) {
+                if (attachments.get(i).getLocalFilePath().equals(selectAttachmentPath)) {
                     selectedPosition = i;
                     break;
                 }
             }
 
 
+            //Create a View Pager adapter to show the attachments
             AttachmentPagerAdapter pagerAdapter = new AttachmentPagerAdapter(getSupportFragmentManager(), attachments);
             mViewPager.setOffscreenPageLimit(3);
             mViewPager.setAdapter(pagerAdapter);
