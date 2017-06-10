@@ -903,19 +903,11 @@ public class NoteEditorFragment extends Fragment implements
                 case IMAGE_CAPTURE_REQUEST:
                     attachment = new Attachment(attachmentUri, mLocalImagePath, Constants.MIME_TYPE_IMAGE);
                     addPhotoToGallery(mLocalImagePath);
-                    if (ProntoDiaryApplication.isCloudSyncEnabled()){
-                        uploadFileToCloud(attachment);
-                    }else {
-                        mPresenter.onAttachmentAdded(attachment);
-                    }
+                    mPresenter.onAttachmentAdded(attachment);
                     break;
                 case VIDEO_CAPTURE_REQUEST:
                     attachment = new Attachment(attachmentUri, mLocalVideoPath, Constants.MIME_TYPE_VIDEO);
-                    if (ProntoDiaryApplication.isCloudSyncEnabled()){
-                        uploadFileToCloud(attachment);
-                    }else {
-                        mPresenter.onAttachmentAdded(attachment);
-                    }
+                    mPresenter.onAttachmentAdded(attachment);
                     break;
                 case FILE_PICK_REQUEST:
                     handleFilePickIntent(data);
@@ -928,11 +920,7 @@ public class NoteEditorFragment extends Fragment implements
                             sketchFile);
                     if (!TextUtils.isEmpty(sketchFilePath)){
                         attachment = new Attachment(fileUri, sketchFilePath, Constants.MIME_TYPE_SKETCH);
-                        if (ProntoDiaryApplication.isCloudSyncEnabled()){
-                            uploadFileToCloud(attachment);
-                        }else {
-                            mPresenter.onAttachmentAdded(attachment);
-                        }
+                        mPresenter.onAttachmentAdded(attachment);
                     }else {
                         makeToast(getString(R.string.error_sketch_is_empty));
                     }

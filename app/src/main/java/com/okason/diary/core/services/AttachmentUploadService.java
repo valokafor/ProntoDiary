@@ -11,12 +11,15 @@ import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.utils.Constants;
 
 /**
  * Created by valokafor on 6/8/17.
@@ -36,15 +39,25 @@ public class AttachmentUploadService extends AttachmentBaseService {
     public static final String EXTRA_DOWNLOAD_URL = "extra_download_url";
 
     // [START declare_ref]
-    private StorageReference mStorageRef;
+    private FirebaseStorage mFirebaseStorage;
+    private StorageReference mFirebaseStorageReference;
+    private StorageReference mAttachmentStorageReference;
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
     // [END declare_ref]
 
     @Override
     public void onCreate() {
         super.onCreate();
 
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        mFirebaseStorage = FirebaseStorage.getInstance();
+
         // [START get_storage_ref]
-        mStorageRef = FirebaseStorage.getInstance().getReference();
+        mFirebaseStorage = FirebaseStorage.getInstance();
+        mFirebaseStorageReference = mFirebaseStorage.getReferenceFromUrl(Constants.FIREBASE_STORAGE_BUCKET);
+        mAttachmentStorageReference = mFirebaseStorageReference.child("users/" + mFirebaseUser.getUid() + "/attachments");
         // [END get_storage_ref]
     }
 
@@ -74,15 +87,11 @@ public class AttachmentUploadService extends AttachmentBaseService {
         showProgressNotification(getString(R.string.progress_uploading), 0, 0);
         // [END_EXCLUDE]
 
-        // [START get_child_ref]
-        // Get a reference to store file at photos/<FILENAME>.jpg
-        final StorageReference photoRef = mStorageRef.child("photos")
-                .child(fileUri.getLastPathSegment());
-        // [END get_child_ref]
+
 
         // Upload file to Firebase Storage
-        Log.d(TAG, "uploadFromUri:dst:" + photoRef.getPath());
-        photoRef.putFile(fileUri).
+        Log.d(TAG, "uploadFromUri:dst:" + mAttachmentStorageReference.getPath());
+        mAttachmentStorageReference.putFile(fileUri).
                 addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {

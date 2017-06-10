@@ -1,10 +1,13 @@
 package com.okason.diary.ui.addnote;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.text.TextUtils;
 
 import com.google.firebase.database.DatabaseReference;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.services.AttachmentUploadService;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -119,6 +122,15 @@ public class AddNotePresenter implements AddNoteContract.Action {
         mCurrentNote.getAttachments().add(attachment);
         dataChanged = true;
         updateUI();
+        if (ProntoDiaryApplication.isCloudSyncEnabled()){
+            // Start MyUploadService to upload the file, so that the file is uploaded
+            // even if this Activity is killed or put in the background
+            mView.showMessage(ProntoDiaryApplication.getAppContext().getString(R.string.progress_uploading));
+            ProntoDiaryApplication.getAppContext().startService(new Intent( ProntoDiaryApplication.getAppContext(), AttachmentUploadService.class)
+                    .putExtra(AttachmentUploadService.EXTRA_FILE_URI, Uri.parse(attachment.getUri()))
+                    .setAction(AttachmentUploadService.ACTION_UPLOAD));
+        }
+
     }
 
     @Override

@@ -27,20 +27,18 @@ import android.widget.TextView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.okason.diary.R;
-import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +49,7 @@ import butterknife.ButterKnife;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NoteListFragment extends Fragment implements
-        NoteListContract.View, SearchView.OnQueryTextListener {
+public class NoteListFragment extends Fragment implements SearchView.OnQueryTextListener {
 
     private FirebaseAnalytics mFirebaseAnalytics;
     private DatabaseReference mDatabase;
@@ -60,9 +57,10 @@ public class NoteListFragment extends Fragment implements
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
 
+    private ValueEventListener mValueEventListener;
+
 
     private View mRootView;
-    private NoteListContract.Actions mPresenter;
     private NoteListAdapter mListAdapter;
 
     private boolean isDualScreen = false;
@@ -119,7 +117,35 @@ public class NoteListFragment extends Fragment implements
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        mPresenter = new NoteListPresenter(this, noteCloudReference);
+
+
+        mValueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                final List<Note> notes = new ArrayList<>();
+                for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()){
+                    Note note = noteSnapshot.getValue(Note.class);
+                    notes.add(note);
+                }
+                if (notes != null && notes.size() > 0){
+                    showEmptyText(false);
+                    showNotes(notes);
+                    setProgressIndicator(false);
+                }else {
+                    showEmptyText(true);
+                    setProgressIndicator(false);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                makeToast(databaseError.getMessage());
+
+            }
+        };
+
+
 
 
         //Pull to refresh
@@ -130,7 +156,8 @@ public class NoteListFragment extends Fragment implements
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                mPresenter.loadNotes(true);
+                noteCloudReference.removeEventListener(mValueEventListener);
+                noteCloudReference.addListenerForSingleValueEvent(mValueEventListener);
             }
         });
 
@@ -156,34 +183,16 @@ public class NoteListFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        mPresenter.loadNotes(false);
+        setProgressIndicator(true);
+        noteCloudReference.addListenerForSingleValueEvent(mValueEventListener);
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
+    public void onPause() {
+        super.onPause();
+        noteCloudReference.removeEventListener(mValueEventListener);
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
-    }
-
-    /**
-     * This event will be fired when a Note is deleted
-     * If deleted successfuly, go back to the Note List
-     * @param event
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onItemDeletedEvent(ItemDeletedEvent event){
-        if (event.getResult().equals(Constants.RESULT_OK)){
-            mPresenter.loadNotes(true);
-        }else {
-            makeToast(event.getResult());
-        }
-    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -222,17 +231,14 @@ public class NoteListFragment extends Fragment implements
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onDataSetChanged() {
 
-    }
 
-    @Override
+
     public void showNotes(List<Note> notes) {
         mListAdapter.replaceData(notes);
     }
 
-    @Override
+
     public void showEmptyText(boolean showText) {
         if (showText){
             swipeRefreshLayout.setVisibility(View.GONE);
@@ -247,19 +253,25 @@ public class NoteListFragment extends Fragment implements
 
     }
 
-    @Override
+
     public void showDeleteConfirmation(Note note) {
         boolean shouldPromptForDelete = PreferenceManager
                 .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
         if (shouldPromptForDelete) {
             promptForDelete(note);
         } else {
-            mPresenter.deleteNote(note);
+            deleteNote(note);
         }
 
     }
 
-    @Override
+    private void deleteNote(Note note) {
+        if (!TextUtils.isEmpty(note.getId())) {
+            noteCloudReference.child(note.getId()).removeValue();
+        }
+    }
+
+
     public void setProgressIndicator(final boolean active) {
 
         if (getView() == null) {
@@ -311,7 +323,7 @@ public class NoteListFragment extends Fragment implements
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                mPresenter.deleteNote(note);
+                deleteNote(note);
             }
         });
         alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
@@ -331,6 +343,10 @@ public class NoteListFragment extends Fragment implements
         tv.setTextColor(Color.WHITE);
         snackbar.show();
     }
+
+
+
+
 
 
 
