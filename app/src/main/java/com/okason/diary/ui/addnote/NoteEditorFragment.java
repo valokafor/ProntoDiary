@@ -55,13 +55,11 @@ import com.google.gson.Gson;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.DatabaseOperationCompletedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
-import com.okason.diary.models.StorageRecord;
 import com.okason.diary.ui.attachment.AttachingFileCompleteEvent;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.attachment.AttachmentTask;
@@ -118,7 +116,7 @@ public class NoteEditorFragment extends Fragment implements
 
     private DatabaseReference mDatabase;
     private DatabaseReference noteCloudReference;
-    private DatabaseReference storageRecordCloudReference;
+
     private DatabaseReference categoryCloudReference;
 
     @BindView(R.id.edit_text_category)
@@ -210,7 +208,6 @@ public class NoteEditorFragment extends Fragment implements
         mAttachmentStorageReference = mFirebaseStorageReference.child("users/" + mFirebaseUser.getUid() + "/attachments");
 
         noteCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
-        storageRecordCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.STORAGE_RECORD_CLOUD_END_POINT);
         categoryCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.CATEGORY_CLOUD_END_POINT);
 
 
@@ -325,11 +322,7 @@ public class NoteEditorFragment extends Fragment implements
         if (event.isResultOk()){
             //Attachment was created successfully
             hideProgressDialog();
-            if (ProntoDiaryApplication.isCloudSyncEnabled()){
-                uploadFileToCloud(event.getAttachment());
-            }else {
-                mPresenter.onAttachmentAdded(event.getAttachment());
-            }
+            mPresenter.onAttachmentAdded(event.getAttachment());
         }
     }
 
@@ -967,17 +960,6 @@ public class NoteEditorFragment extends Fragment implements
                 mPresenter.onAttachmentAdded(attachment);
 
 
-                //Create a Storage Record in Firebase
-                if (mFirebaseUser != null){
-                    //Create a StorageRecord
-                    StorageRecord record = new StorageRecord();
-                    record.setDownloadUri(downloadUrl);
-                    record.setUid(mFirebaseUser.getUid());
-                    record.setFileSizes(size);
-                    String key = storageRecordCloudReference.push().getKey();
-                    record.setId(key);
-                    storageRecordCloudReference.child(key).setValue(record);
-                }
             }
         });
 

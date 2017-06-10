@@ -60,6 +60,8 @@
         <service
             android:name=".core.services.MergeAnonymousDataIntentService"
             android:exported="false"/>
+        <service android:name=".core.services.AttachmentUploadService"
+                 android:exported="false" />
 
 
         <activity

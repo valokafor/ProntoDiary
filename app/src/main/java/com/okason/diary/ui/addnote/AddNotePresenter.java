@@ -1,8 +1,8 @@
 package com.okason.diary.ui.addnote;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.okason.diary.R;
@@ -122,15 +122,6 @@ public class AddNotePresenter implements AddNoteContract.Action {
         mCurrentNote.getAttachments().add(attachment);
         dataChanged = true;
         updateUI();
-        if (ProntoDiaryApplication.isCloudSyncEnabled()){
-            // Start MyUploadService to upload the file, so that the file is uploaded
-            // even if this Activity is killed or put in the background
-            mView.showMessage(ProntoDiaryApplication.getAppContext().getString(R.string.progress_uploading));
-            ProntoDiaryApplication.getAppContext().startService(new Intent( ProntoDiaryApplication.getAppContext(), AttachmentUploadService.class)
-                    .putExtra(AttachmentUploadService.EXTRA_FILE_URI, Uri.parse(attachment.getUri()))
-                    .setAction(AttachmentUploadService.ACTION_UPLOAD));
-        }
-
     }
 
     @Override
@@ -165,6 +156,19 @@ public class AddNotePresenter implements AddNoteContract.Action {
                 String key = noteCloudReference.push().getKey();
                 mCurrentNote.setId(key);
                 noteCloudReference.child(key).setValue(mCurrentNote);
+            }
+
+            //Upload the attachments to cloud
+            if (ProntoDiaryApplication.isCloudSyncEnabled() && mCurrentNote != null &&
+                    !TextUtils.isEmpty(mCurrentNote.getId()) && mCurrentNote.getAttachments().size() > 0){
+                // Start MyUploadService to upload the file, so that the file is uploaded
+                // even if this Activity is killed or put in the background
+                Toast.makeText(ProntoDiaryApplication.getAppContext(),ProntoDiaryApplication.getAppContext()
+                        .getString(R.string.progress_uploading), Toast.LENGTH_SHORT );
+                Intent uploadServiceIntent = new Intent( mView.getContext(), AttachmentUploadService.class)
+                        .putExtra(AttachmentUploadService.NOTE_ID, mCurrentNote.getId())
+                        .setAction(AttachmentUploadService.ACTION_UPLOAD);
+               mView.getContext().startService(uploadServiceIntent);
             }
         }
 
