@@ -2,6 +2,8 @@ package com.okason.diary.models;
 
 import android.net.Uri;
 
+import java.io.File;
+
 /**
  * Created by Valentine on 4/10/2017.
  */
@@ -65,6 +67,17 @@ public class Attachment{
         this.size = attachment.getSize();
         this.length = attachment.getLength();
         this.dateCreated = System.currentTimeMillis();
+    }
+
+    public String getFilePath(){
+        String filePath;
+        File file = new File(this.getLocalFilePath());
+        if (file.exists()){
+            filePath = this.getLocalFilePath();
+        }else {
+            filePath = this.getCloudFilePath();
+        }
+        return filePath;
     }
 
 

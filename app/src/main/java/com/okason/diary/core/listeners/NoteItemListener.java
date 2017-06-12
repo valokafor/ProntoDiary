@@ -11,4 +11,6 @@ public interface NoteItemListener {
     void onNoteClick(Note clickedNote);
 
     void onDeleteButtonClicked(Note clickedNote);
+
+    void onAttachmentClicked(Note clickedNote, int position);
 }

@@ -273,6 +273,11 @@ public class NoteEditorFragment extends Fragment implements
             mRecorder = null;
         }
 
+        if (mPlayer != null){
+            mPlayer.release();
+            mPlayer = null;
+        }
+
     }
 
     @Override

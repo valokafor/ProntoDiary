@@ -4,6 +4,8 @@ package com.okason.diary.ui.notes;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -16,6 +18,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,11 +38,14 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
+import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
+import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,11 +65,15 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     private ValueEventListener mValueEventListener;
 
+    private MediaPlayer mPlayer = null;
+    private boolean isAudioPlaying = false;
+
 
     private View mRootView;
     private NoteListAdapter mListAdapter;
 
     private boolean isDualScreen = false;
+    private final static String LOG_TAG = "NoteListFragment";
 
     @BindView(R.id.note_recycler_view)
     RecyclerView mRecyclerView;
@@ -176,9 +186,39 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             public void onDeleteButtonClicked(Note clickedNote) {
                 showDeleteConfirmation(clickedNote);
             }
+
+            @Override
+            public void onAttachmentClicked(Note clickedNote, int position) {
+                //An attachment in the Note list has been clicked
+                Attachment clickedAttachment = clickedNote.getAttachments().get(clickedNote.getAttachments().size() - 1);
+                if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
+                    //Play Audio
+                    startPlaying(clickedAttachment, position);
+                }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)){
+                    //Play Video
+                    viewMedia(clickedAttachment);
+                }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
+                    //Show Image Gallery
+                    goToImageGallery(clickedNote, clickedAttachment);
+                }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
+                    //Show file
+
+                }else {
+                    //Show details page
+                }
+            }
         });
 
         return mRootView;
+    }
+
+    private void goToImageGallery(Note clickedNote, Attachment clickedAttachment) {
+        Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
+        Gson gson = new Gson();
+        String serializedNote = gson.toJson(clickedNote);
+        galleryIntent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
+        galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
+        startActivity(galleryIntent);
     }
 
     @Override
@@ -192,6 +232,10 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     public void onPause() {
         super.onPause();
         noteCloudReference.removeEventListener(mValueEventListener);
+        if (mPlayer != null){
+            mPlayer.release();
+            mPlayer = null;
+        }
     }
 
 
@@ -343,33 +387,44 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         snackbar.show();
     }
 
+    private void startPlaying(Attachment attachment, final int position) {
+        if (isAudioPlaying) {
+            mPlayer.stop();
+            mPlayer.release();
+            mListAdapter.setAudioPlaying(false, position);
+            isAudioPlaying = false;
 
-//    public void loadNotes(boolean forceUpdate) {
-//        setProgressIndicator(true);
-//        final List<Note> notes = new ArrayList<>();
-//        noteCloudReference.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()){
-//                    Note note = noteSnapshot.getValue(Note.class);
-//                    notes.add(note);
-//                }
-//                if (notes != null && notes.size() > 0){
-//                    showEmptyText(false);
-//                    showNotes(notes);
-//                    setProgressIndicator(false);
-//                }else {
-//                    showEmptyText(true);
-//                    setProgressIndicator(false);
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-//    }
+        } else {
+            mPlayer = new MediaPlayer();
+            try {
+                mPlayer.setDataSource(attachment.getFilePath());
+                mPlayer.prepare();
+                mPlayer.start();
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        if (!mp.isPlaying()){
+                            mListAdapter.setAudioPlaying(false, position);
+                            isAudioPlaying = false;
+                        }
+                    }
+                });
+                isAudioPlaying = true;
+                mListAdapter.setAudioPlaying(true, position);
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Play audio failed " + e.getLocalizedMessage());
+            }
+        }
+
+    }
+
+    private void viewMedia(Attachment attachment) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.parse(attachment.getFilePath()), attachment.getMime_type());
+        startActivity(intent);
+    }
+
+
 
 
 

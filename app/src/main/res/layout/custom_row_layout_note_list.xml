@@ -95,18 +95,18 @@
                 android:id="@+id/linear_layout_attachment"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_weight=".75"
                 android:layout_centerVertical="true"
-                android:layout_margin="@dimen/margin_padding_small"
                 android:visibility="gone"
                 android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/image_view_attachment"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:scaleType="centerCrop"
-                    android:layout_margin="@dimen/margin_padding_tiny"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:scaleType="centerInside"
+                    android:padding="@dimen/margin_padding_tiny"
                     android:visibility="visible" />
 
                 <TextView

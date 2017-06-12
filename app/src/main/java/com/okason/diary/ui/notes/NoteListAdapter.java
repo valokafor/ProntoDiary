@@ -20,7 +20,6 @@ import com.okason.diary.models.Note;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
-import java.io.File;
 import java.util.List;
 
 import butterknife.BindView;
@@ -35,6 +34,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     private final Context mContext;
     private NoteItemListener mItemListener;
     private View noteView;
+    private boolean isAudioPlaying = false;
 
 
     public NoteListAdapter(List<Note> notes, Context mContext){
@@ -77,61 +77,42 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             //Check to see if this Note has Attachments, if it does check if the attachment is image
             //If it is then show the thumbnail
             if (note.getAttachments() != null && note.getAttachments().size() > 0){
+                holder.attachmentLayout.setVisibility(View.VISIBLE);
+
                 Attachment lastAttachment = note.getAttachments().get(note.getAttachments().size() - 1);
 
 
-
-                if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
-                    String filePath;
-                    File file = new File(lastAttachment.getLocalFilePath());
-                    if (file.exists()){
-                        filePath = lastAttachment.getLocalFilePath();
-                    }else {
-                        filePath = lastAttachment.getCloudFilePath();
+                if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
+                    if (isAudioPlaying) {
+                        holder.noteAttachment.setImageResource(R.drawable.audio_pause);
+                    } else {
+                        holder.noteAttachment.setImageResource(R.drawable.play_button_75);
                     }
-                    holder.attachmentLayout.setVisibility(View.VISIBLE);
-                    Glide.with(mContext)
-                            .load(filePath)
-                            .placeholder(R.drawable.default_image)
-                            .centerCrop()
-                            .into(holder.noteAttachment);
-                } else if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
-                    holder.attachmentLayout.setVisibility(View.VISIBLE);
-                    Glide.with(mContext)
-                            .load(R.drawable.ic_action_playback_play)
-                            .placeholder(R.drawable.default_image)
-                            .centerCrop()
-                            .into(holder.noteAttachment);
 
+                } else if(lastAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
+                    Glide.with(mContext)
+                            .load(lastAttachment.getFilePath())
+                            .placeholder(R.drawable.default_image)
+                            .into(holder.noteAttachment);
                 } else if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)){
-                    holder.attachmentLayout.setVisibility(View.VISIBLE);
+                    holder.noteAttachment.setImageResource(R.drawable.video_icon);
+
+                } else if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
                     Glide.with(mContext)
-                            .load(R.drawable.ic_action_youtube)
+                            .load(R.drawable.ic_action_document)
                             .placeholder(R.drawable.default_image)
                             .centerCrop()
                             .into(holder.noteAttachment);
-
-                }else {
-                    for (Attachment attachment: note.getAttachments()){
-                        String filePath;
-                        File file = new File(lastAttachment.getLocalFilePath());
-                        if (file.exists()){
-                            filePath = lastAttachment.getLocalFilePath();
-                        }else {
-                            filePath = lastAttachment.getCloudFilePath();
-                        }
-                        if (attachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
-                            holder.attachmentLayout.setVisibility(View.VISIBLE);
-                            Glide.with(mContext)
-                                    .load(filePath)
-                                    .placeholder(R.drawable.default_image)
-                                    .centerCrop()
-                                    .into(holder.noteAttachment);
-                            break;
-                        }
-                    }
+                } else {
+                    Glide.with(mContext)
+                            .load(lastAttachment.getFilePath())
+                            .placeholder(R.drawable.default_image)
+                            .centerCrop()
+                            .into(holder.noteAttachment);
                 }
 
+            }else {
+                holder.attachmentLayout.setVisibility(View.GONE);
             }
 
 
@@ -164,6 +145,14 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         mItemListener = listener;
     }
 
+    public boolean isAudioPlaying() {
+        return isAudioPlaying;
+    }
+
+    public void setAudioPlaying(boolean audioPlaying, int position) {
+        isAudioPlaying = audioPlaying;
+        notifyItemChanged(position);
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
 
@@ -214,6 +203,15 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                     int position = getAdapterPosition();
                     Note note = getItem(position);
                     mItemListener.onDeleteButtonClicked(note);
+                }
+            });
+
+            noteAttachment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int postion = getAdapterPosition();
+                    Note note = getItem(postion);
+                    mItemListener.onAttachmentClicked(note, postion);
                 }
             });
         }
