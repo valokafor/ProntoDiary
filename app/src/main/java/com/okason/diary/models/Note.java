@@ -13,6 +13,8 @@ public class Note{
     private String content;
     private long dateCreated;
     private long dateModified;
+    private String folderName;
+    private String folderId;
 
 
     public Note(){
@@ -24,9 +26,9 @@ public class Note{
 
    //Relationships
     private List<Attachment> attachments;
+
     private List<Task> tasks;
     private List<Tag> tags;
-    private Folder folder;
     private List<PeopleJournal> peopleJournals;
     private List<History> historyList;
 
@@ -94,12 +96,21 @@ public class Note{
         this.tags = tags;
     }
 
-    public Folder getFolder() {
-        return folder;
+
+    public String getFolderName() {
+        return folderName;
     }
 
-    public void setFolder(Folder folder) {
-        this.folder = folder;
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
+    }
+
+    public String getFolderId() {
+        return folderId;
+    }
+
+    public void setFolderId(String folderId) {
+        this.folderId = folderId;
     }
 
     public List<PeopleJournal> getPeopleJournals() {

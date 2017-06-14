@@ -22,6 +22,8 @@ public class Constants {
     public static final String ERROR_MESSAGE = "error_message";
     public static final String STORAGE_RECORD_CLOUD_END_POINT = "/storage_records";
     public static final String FILE_PATH = "file_path";
+    public static final String SELECTED_FOLDER_ID = "selected_folder_id";
+    public static final String FIRST_RUN = "first_run";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
@@ -136,6 +138,7 @@ public class Constants {
     public static final String TODO_LIST_FRAGMENT_TAG = "todo_list_fragment";
     public static final String SYNC_FRAGMENT_TAG = "sync_fragment";
     public static final String TAG_FRAGMENT_TAG = "tag_fragment";
+    public static final String FOLDER_FRAGMENT_TAG = "folder_fragment";
 
 
     public static final String TAG = "Pronto Diary";

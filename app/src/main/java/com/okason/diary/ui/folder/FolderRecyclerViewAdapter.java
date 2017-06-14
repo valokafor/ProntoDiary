@@ -24,12 +24,12 @@ public class FolderRecyclerViewAdapter extends RecyclerView.Adapter<FolderRecycl
     private final static String LOG_CAT = FolderRecyclerViewAdapter.class.getSimpleName();
     private final static boolean DEBUG = true;
 
-    private List<Folder> mCategories;
+    private List<Folder> mFolders;
     private final OnFolderSelectedListener mListener;
     private final Context mContext;
 
-    public FolderRecyclerViewAdapter(Context mContext, List<Folder> mCategories, OnFolderSelectedListener mListener) {
-        this.mCategories = mCategories;
+    public FolderRecyclerViewAdapter(Context mContext, List<Folder> mFolders, OnFolderSelectedListener mListener) {
+        this.mFolders = mFolders;
         this.mContext = mContext;
         this.mListener = mListener;
     }
@@ -44,10 +44,10 @@ public class FolderRecyclerViewAdapter extends RecyclerView.Adapter<FolderRecycl
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        Folder category = mCategories.get(position);
+        Folder category = mFolders.get(position);
         holder.categoryName.setText(category.getFolderName());
-        int numNote = category.getNotes().size();
-        String notes = numNote > 1 ? "Notes" : "Note";
+        int numNote = category.getListOfNoteIds().size();
+        String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
         holder.noteCountTextView.setText(numNote + " " + notes);
     }
 
@@ -59,14 +59,14 @@ public class FolderRecyclerViewAdapter extends RecyclerView.Adapter<FolderRecycl
 
     @Override
     public int getItemCount() {
-        return mCategories.size();
+        return mFolders.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.image_button_edit_category) ImageButton editCategory;
         @BindView(R.id.image_button_delete_category) ImageButton deleteCategory;
-        @BindView(R.id.text_view_category_name)  TextView categoryName;
+        @BindView(R.id.text_view_folder_name)  TextView categoryName;
         @BindView(R.id.text_view_note_count) TextView noteCountTextView;
 
         public ViewHolder(View itemView) {
@@ -75,14 +75,14 @@ public class FolderRecyclerViewAdapter extends RecyclerView.Adapter<FolderRecycl
             editCategory.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Folder categoryToBeEdited = mCategories.get(getLayoutPosition());
+                    Folder categoryToBeEdited = mFolders.get(getLayoutPosition());
                     mListener.onEditCategoryButtonClicked(categoryToBeEdited);
                 }
             });
             deleteCategory.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Folder categoryToBeEdited = mCategories.get(getLayoutPosition());
+                    Folder categoryToBeEdited = mFolders.get(getLayoutPosition());
                     mListener.onDeleteCategoryButtonClicked(categoryToBeEdited);
                 }
             });

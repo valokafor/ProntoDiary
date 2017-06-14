@@ -370,8 +370,8 @@ public class NoteEditorFragment extends Fragment implements
             e.printStackTrace();
         }
 
-        if (note.getFolder() != null) {
-            mCategory.setText(note.getFolder().getFolderName());
+        if (note.getFolderName() != null) {
+            mCategory.setText(note.getFolderName());
         } else {
             mCategory.setText(Constants.DEFAULT_CATEGORY);
         }

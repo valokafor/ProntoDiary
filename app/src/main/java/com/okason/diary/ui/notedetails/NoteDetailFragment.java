@@ -7,12 +7,16 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,13 +30,20 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.gson.Gson;
+import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.models.Attachment;
@@ -41,6 +52,7 @@ import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
+import com.okason.diary.utils.FileUtility;
 import com.okason.diary.utils.IntentChecker;
 import com.okason.diary.utils.date.TimeUtils;
 
@@ -48,6 +60,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,9 +72,11 @@ import butterknife.ButterKnife;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NoteDetailFragment extends Fragment implements NoteDetailContract.View{
+public class NoteDetailFragment extends Fragment{
+    private final static String TAG = "NoteDetailFragment";
 
     private View mRootView;
+
     @BindView(R.id.edit_text_title)
     EditText mTitle;
 
@@ -88,25 +104,43 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
 
     private AttachmentListAdapter attachmentListAdapter;
 
-    private NoteDetailContract.Action mPresenter;
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
     private DatabaseReference mDatabase;
     private DatabaseReference noteCloudReference;
+    private FirebaseStorage mFirebaseStorage;
+
+
+    private Note mCurrentNote = null;
+
 
 
     public NoteDetailFragment() {
         // Required empty public constructor
     }
 
-    public static NoteDetailFragment newInstance(String noteId){
+    private Note getPassedInNote() {
+        if (getArguments() != null && getArguments().containsKey(Constants.SERIALIZED_NOTE)) {
+            String serializedNote = getArguments().getString(Constants.SERIALIZED_NOTE);
+            if (!TextUtils.isEmpty(serializedNote)) {
+                Gson gson = new Gson();
+                Note note = gson.fromJson(serializedNote, Note.class);
+                return note;
+            }
+        }
+        return null;
+
+    }
+
+    public static NoteDetailFragment newInstance(String serializedNote) {
         NoteDetailFragment fragment = new NoteDetailFragment();
+        if (!TextUtils.isEmpty(serializedNote)) {
+            Bundle args = new Bundle();
+            args.putString(Constants.SERIALIZED_NOTE, serializedNote);
+            fragment.setArguments(args);
+        }
 
-        Bundle args = new Bundle();
-        args.putString(Constants.NOTE_ID, noteId);
-        fragment.setArguments(args);
         return fragment;
-
     }
 
     @Override
@@ -126,20 +160,15 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         noteCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+        mFirebaseStorage = FirebaseStorage.getInstance();
+        mCurrentNote = getPassedInNote();
+        displayNote(mCurrentNote);
         return mRootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
-        //Get the Note id that was passed in and use it to create the presenter
-        String noteId = "";
-        if (getArguments() != null && getArguments().containsKey(Constants.NOTE_ID)) {
-            noteId = getArguments().getString(Constants.NOTE_ID);
-        }
-        mPresenter = new NoteDetailPresenter(this, noteCloudReference, noteId);
-
 
         //Disable Edittexts
         displayReadOnlyViews();
@@ -190,13 +219,13 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         int id = item.getItemId();
         switch (id){
             case R.id.action_edit:
-                mPresenter.onEditNoteClick();
+                EventBus.getDefault().post(new EditNoteButtonClickedEvent(mCurrentNote));
                 break;
             case R.id.action_delete:
-                mPresenter.onDeleteNoteButtonClicked();
+                showDeleteConfirmation(mCurrentNote);
                 break;
             case R.id.action_share:
-                displayShareIntent(mPresenter.getCurrentNote());
+                displayShareIntent(mCurrentNote);
                 break;
             case R.id.action_play:
                // onPlayAudioButtonClicked();
@@ -221,7 +250,7 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         snackbar.show();
     }
 
-    @Override
+
     public void displayNote(Note note) {
         String categoryName = null;
 //        try {
@@ -271,7 +300,7 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
 
     }
 
-    @Override
+
     public void showDeleteConfirmation(Note note) {
         final String titleOfNoteTobeDeleted = note.getTitle();
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
@@ -287,7 +316,7 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                mPresenter.deleteNote();
+                deleteNote(mCurrentNote);
                 displayPreviousActivity();
             }
         });
@@ -301,12 +330,13 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
 
     }
 
-    @Override
+
     public void displayPreviousActivity() {
+        getActivity().onBackPressed();
 
     }
 
-    @Override
+
     public void showMessage(String message) {
         makeToast(message);
     }
@@ -360,9 +390,8 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
 
                 }else {
                     Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-                    Note currentNote = mPresenter.getCurrentNote();
                     Gson gson = new Gson();
-                    String serializedNote = gson.toJson(currentNote);
+                    String serializedNote = gson.toJson(mCurrentNote);
                     galleryIntent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
                     galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
                     startActivity(galleryIntent);
@@ -376,50 +405,105 @@ public class NoteDetailFragment extends Fragment implements NoteDetailContract.V
 
     }
 
-    public void displayShareIntent(Note note) {
-        String titleText = note.getTitle();
+    public void displayShareIntent(final Note note) {
+        final String titleText = note.getTitle();
 
-        String contentText = titleText
+        final String contentText = titleText
                 + System.getProperty("line.separator")
                 + note.getContent();
 
+        if (note.getAttachments().size() == 0){
+            shareTextOnly(titleText, contentText);
+        } else if (note.getAttachments().size() == 1) {
+            shareTextAndOneAttachment(titleText, contentText, note);
+        } else if (note.getAttachments().size() > 1) {
+            shareTextAndMultipleAttachment(titleText, contentText, note);
+        }
+
+    }
+
+    private void shareTextAndMultipleAttachment(String titleText, String contentText, Note note) {
+        final Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+        ArrayList<Uri> uris = new ArrayList<>();
+
+
+
+        // A check to decide the mime type of attachments to share is done here
+        HashMap<String, Boolean> mimeTypes = new HashMap<>();
+        for (Attachment attachment : note.getAttachments()) {
+            if (attachment.getFilePath().contains("http")){
+                continue;
+            }
+            Uri uri = Uri.parse(attachment.getUri());
+            uris.add(uri);
+            mimeTypes.put(attachment.getMime_type(), true);
+        }
+        // If many mime types are present a general type is assigned to intent
+        if (mimeTypes.size() > 1) {
+            shareIntent.setType("*/*");
+        } else {
+            shareIntent.setType((String) mimeTypes.keySet().toArray()[0]);
+        }
+
+        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+
+    }
+
+    private void shareTextAndOneAttachment(final String titleText, final String contentText, Note note) {
+        final Intent shareIntent = new Intent();
+
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.setType(note.getAttachments().get(0).getMime_type());
+        Uri singleUri = Uri.parse(note.getAttachments().get(0).getUri());
+        shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
+
+        String cloudString = note.getAttachments().get(0).getCloudFilePath();
+        StorageReference storageReference = mFirebaseStorage.getReferenceFromUrl(cloudString);
+        try {
+            final File localFile = FileUtility.createImageFile(Constants.MIME_TYPE_IMAGE_EXT);
+            storageReference.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    Uri singleUri  = FileProvider.getUriForFile(getContext(),
+                            BuildConfig.APPLICATION_ID + ".provider",
+                            localFile);
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
+                    shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
+
+                    startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d(TAG, "File Download failed: " + e.getLocalizedMessage());
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private void shareTextOnly(String titleText, String contentText) {
 
         Intent shareIntent = new Intent();
-        // Prepare sharing intent with only text
-        if (note.getAttachments().size() == 0) {
-            shareIntent.setAction(Intent.ACTION_SEND);
-            shareIntent.setType("text/plain");
-
-            // Intent with single image attachment
-        } else if (note.getAttachments().size() == 1) {
-            shareIntent.setAction(Intent.ACTION_SEND);
-            shareIntent.setType(note.getAttachments().get(0).getMime_type());
-            Uri singleUri = Uri.parse(note.getAttachments().get(0).getUri());
-            shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
-
-            // Intent with multiple images
-        } else if (note.getAttachments().size() > 1) {
-            shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
-            ArrayList<Uri> uris = new ArrayList<>();
-            // A check to decide the mime type of attachments to share is done here
-            HashMap<String, Boolean> mimeTypes = new HashMap<>();
-            for (Attachment attachment : note.getAttachments()) {
-                Uri uri = Uri.parse(attachment.getUri());
-                uris.add(uri);
-                mimeTypes.put(attachment.getMime_type(), true);
-            }
-            // If many mime types are present a general type is assigned to intent
-            if (mimeTypes.size() > 1) {
-                shareIntent.setType("*/*");
-            } else {
-                shareIntent.setType((String) mimeTypes.keySet().toArray()[0]);
-            }
-
-            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-        }
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
         shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
-
         startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+
     }
+
+    private void deleteNote(Note note) {
+        if (!TextUtils.isEmpty(note.getId())) {
+            noteCloudReference.child(note.getId()).removeValue();
+        }
+        displayPreviousActivity();
+    }
+
 }

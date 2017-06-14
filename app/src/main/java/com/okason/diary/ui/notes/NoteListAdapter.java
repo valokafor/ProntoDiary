@@ -1,6 +1,7 @@
 package com.okason.diary.ui.notes;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.date.TimeUtils;
 
 import java.util.List;
@@ -98,11 +100,25 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                     holder.noteAttachment.setImageResource(R.drawable.video_icon);
 
                 } else if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
-                    Glide.with(mContext)
-                            .load(R.drawable.ic_action_document)
-                            .placeholder(R.drawable.default_image)
-                            .centerCrop()
-                            .into(holder.noteAttachment);
+                    //Attachment is file, show a PDF icon, if the attachment is a PDF else
+                    //Show a document icon
+                    String name = FileHelper.getNameFromUri(mContext, Uri.parse(lastAttachment.getUri()));
+                    String extension = FileHelper.getFileExtension(name).toLowerCase();
+                    if (extension.equals(".pdf")){
+                        Glide.with(mContext)
+                                .load(R.drawable.pdf_icon_2)
+                                .placeholder(R.drawable.default_image)
+                                .centerCrop()
+                                .into(holder.noteAttachment);
+                    } else {
+                        Glide.with(mContext)
+                                .load(R.drawable.ic_action_document)
+                                .placeholder(R.drawable.default_image)
+                                .centerCrop()
+                                .into(holder.noteAttachment);
+                    }
+
+
                 } else {
                     Glide.with(mContext)
                             .load(lastAttachment.getFilePath())

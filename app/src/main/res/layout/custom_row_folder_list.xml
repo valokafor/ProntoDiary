@@ -26,7 +26,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/text_view_category_name"
+            android:id="@+id/text_view_folder_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Category"

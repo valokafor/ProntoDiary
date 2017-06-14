@@ -20,6 +20,7 @@
 
     <!--Errors and Warning-->
     <string name="no_todo_list_found">No Todo List Item found, use + button to start</string>
+    <string name="no_folder_found">No Folder found, use + button to start</string>
     <string name="no_notes_found">No Journal entry found, use the + button to start</string>
     <string name="error_message_account_does_not_exist">Account does not exists.</string>
     <string name="error_message_invalid_credentials">The provided credentials are invalid!</string>
@@ -169,6 +170,25 @@
 
     <string name="download_success">Download finished</string>
     <string name="download_failure">Download failure</string>
+    <string name="error">Error</string>
+    <string name="noNetwork">Ooops, it appears you do not have internet, internet access is required to initialize this app</string>
+    <string name="fixNetworking">Network Settings</string>
+    <string name="playServicesError">Google Play Services Error</string>
+    <string name="label_journal">Journal</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="label_folders">Folders</string>
+
+
+    <string-array name="sampleFolderNames">
+        <item>Personal</item>
+        <item>Work</item>
+        <item>Family</item>
+        <item>Fitness</item>
+        <item>Kids</item>
+        <item>Shopping List</item>
+        <item>Home Improvement</item>
+        <item>Productivity</item>
+    </string-array>
 
 
 </resources>

@@ -36,29 +36,27 @@ public class NoteDetailActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)) {
-
-            Note passedInNote = getCurrentNote(getIntent());
-            String noteId = passedInNote.getId();
-            NoteDetailFragment fragment = NoteDetailFragment.newInstance(noteId);
-            if (passedInNote != null) {
-                openFragment(fragment, TimeUtils.getReadableDateWithoutTime(passedInNote.getDateModified()));
+        if (savedInstanceState == null) {
+            if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)) {
+                String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_NOTE);
+                Note passedInNote = getCurrentNote(serializedNote);
+                NoteDetailFragment fragment = NoteDetailFragment.newInstance(serializedNote);
+                if (passedInNote != null) {
+                    openFragment(fragment, TimeUtils.getReadableDateWithoutTime(passedInNote.getDateModified()));
+                } else {
+                    finish();
+                }
             } else {
                 finish();
             }
-        } else {
-            finish();
         }
     }
 
-    public Note getCurrentNote(Intent intent){
-        if (intent != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)){
-            String serializedNote = intent.getStringExtra(Constants.SERIALIZED_NOTE);
-            if (!serializedNote.isEmpty()){
-                Gson gson = new Gson();
-                Note note = gson.fromJson(serializedNote, Note.class);
-                return note;
-            }
+    public Note getCurrentNote(String serializedNote){
+        if (!serializedNote.isEmpty()){
+            Gson gson = new Gson();
+            Note note = gson.fromJson(serializedNote, Note.class);
+            return note;
         }
         return null;
     }

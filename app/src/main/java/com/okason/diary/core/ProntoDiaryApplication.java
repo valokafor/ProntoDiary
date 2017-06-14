@@ -2,14 +2,14 @@ package com.okason.diary.core;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
-import com.facebook.FacebookSdk;
 import com.okason.diary.BuildConfig;
+import com.okason.diary.core.services.AddSampleDataIntentService;
+import com.okason.diary.utils.Constants;
 import com.squareup.leakcanary.LeakCanary;
-
-import io.realm.Realm;
-import io.realm.log.LogLevel;
-import io.realm.log.RealmLog;
 
 /**
  * Created by Valentine on 4/20/2017.
@@ -20,6 +20,8 @@ public class ProntoDiaryApplication extends Application {
     public static final String REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/~/diary";
 
     private static Context mContext;
+    private SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
     private static boolean cloudSyncEnabled;
 
 
@@ -34,9 +36,7 @@ public class ProntoDiaryApplication extends Application {
         }
         mContext = getApplicationContext();
         LeakCanary.install(this);
-        Realm.init(this);
-        FacebookSdk.sdkInitialize(this);
-        RealmLog.setLevel(LogLevel.TRACE);
+        addDefaultData();
 
     }
 
@@ -50,5 +50,18 @@ public class ProntoDiaryApplication extends Application {
 
     public static void setCloudSyncEnabled(boolean cloudSyncEnabled) {
         ProntoDiaryApplication.cloudSyncEnabled = cloudSyncEnabled;
+    }
+
+    //Checks if this is the first time this app is running and then
+    //starts an Intent Services that adds some default data
+    private void addDefaultData() {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        editor = sharedPreferences.edit();
+        if (sharedPreferences.getBoolean(Constants.FIRST_RUN, true)) {
+               startService(new Intent(this, AddSampleDataIntentService.class));
+            editor.putBoolean(Constants.FIRST_RUN, false).commit();
+        }
+
     }
 }

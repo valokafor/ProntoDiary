@@ -25,10 +25,10 @@
             android:id="@+id/note_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingBottom="@dimen/margin_padding_small"
-            android:paddingLeft="@dimen/margin_padding_small"
-            android:paddingRight="@dimen/margin_padding_small"
-            android:paddingTop="@dimen/margin_padding_small" />
+            android:paddingBottom="@dimen/margin_padding_xtiny"
+            android:paddingLeft="@dimen/margin_padding_xtiny"
+            android:paddingRight="@dimen/margin_padding_xtiny"
+            android:paddingTop="@dimen/margin_padding_xtiny" />
 
 
     </android.support.v4.widget.SwipeRefreshLayout>

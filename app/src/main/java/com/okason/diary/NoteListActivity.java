@@ -1,11 +1,18 @@
 package com.okason.diary;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -18,6 +25,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -26,7 +34,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.ui.auth.AuthUiActivity;
-import com.okason.diary.ui.notes.ErrorFragment;
+import com.okason.diary.ui.folder.FolderListFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
 import com.okason.diary.ui.settings.SyncFragment;
@@ -46,6 +54,7 @@ public class NoteListActivity extends AppCompatActivity {
     private Activity mActivity;
     private FirebaseAuth mAuth;
     private FirebaseUser mFirebaseUser;
+    private ConnectivityManager connectivityManager;
 
 
     public static final String ACTION_IGNORE_CURRENT_USER = "action.ignoreCurrentUser";
@@ -112,15 +121,15 @@ public class NoteListActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         mActivity = this;
 
-        //Show an error message on the screen incase the user does not have internet
-        //And therefore Firebase cannot be initialized or executed
-        ErrorFragment errorFragment = ErrorFragment.newInstance(
-                "Ooops, it appears you do not have internet, internet access is required to initialize this app");
-        openFragment(errorFragment, getString(R.string.oops), "");
+        checkNetworkConnected();
 
 
+    }
+
+    private void checkLoginStatus() {
 
         //Check to see if the user has registered before
         //if yes, check to see if the user is not logged in, show login
@@ -136,8 +145,6 @@ public class NoteListActivity extends AppCompatActivity {
             settingsLayout.setVisibility(View.VISIBLE);
             syncLayout.setVisibility(View.GONE);
         }
-
-
     }
 
 
@@ -262,6 +269,7 @@ public class NoteListActivity extends AppCompatActivity {
                 resetBottomNavigationIcons();
                 folderButton.setImageResource(R.drawable.ic_action_folder_tabs_light_red);
                 folderTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
+                openFragment(new FolderListFragment(), getString(R.string.label_folders), Constants.FOLDER_FRAGMENT_TAG);
 
 
             }
@@ -316,6 +324,74 @@ public class NoteListActivity extends AppCompatActivity {
                 .addToBackStack(screenTitle)
                 .commit();
         getSupportActionBar().setTitle(screenTitle);
+    }
+
+
+    /**
+     * Check network conenctivity and direct user to settings if no network.
+     */
+    private void checkNetworkConnected() {
+        if (!isActiveNetworkConnected()) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.error)
+                    .setMessage(R.string.noNetwork)
+                    .setPositiveButton(R.string.fixNetworking, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                        }
+                    })
+                    .setNeutralButton(R.string.label_cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    })
+                    .setCancelable(false)
+                    .create()
+                    .show();
+        } else {
+            // next check google play
+            checkPlayServices();
+        }
+    }
+
+
+    private boolean isActiveNetworkConnected() {
+        NetworkInfo info = connectivityManager.getActiveNetworkInfo();
+        return (info != null && info.isConnected());
+    }
+
+    /**
+     * Check Google Play services and provide a fix-it dialog if not up to date.
+     */
+    private void checkPlayServices() {
+        GoogleApiAvailability api = GoogleApiAvailability.getInstance();
+        int result = api.isGooglePlayServicesAvailable(this);
+        if (result == 0) {
+            // next step start service
+            checkLoginStatus();
+            return;
+        }
+
+        if (api.isUserResolvableError(result)) {
+            // show the fix-it dialog
+            Dialog dialog = api.getErrorDialog(this, result, 0);
+            dialog.show();
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.error)
+                    .setMessage(R.string.playServicesError)
+                    .setNeutralButton(R.string.label_cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    })
+                    .setCancelable(false)
+                    .create()
+                    .show();
+        }
     }
 
 
