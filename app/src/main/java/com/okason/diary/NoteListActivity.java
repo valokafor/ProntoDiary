@@ -32,7 +32,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
+import com.okason.diary.core.services.AddSampleDataIntentService;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.folder.FolderListFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
@@ -50,6 +52,7 @@ import butterknife.ButterKnife;
 
 public class NoteListActivity extends AppCompatActivity {
     private SharedPreferences preferences;
+    SharedPreferences.Editor editor;
     private boolean unregisteredUser = false;
     private Activity mActivity;
     private FirebaseAuth mAuth;
@@ -127,6 +130,16 @@ public class NoteListActivity extends AppCompatActivity {
         checkNetworkConnected();
 
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        int count = getFragmentManager().getBackStackEntryCount();
+        if (count == 0) {
+            super.onBackPressed();
+        } else {
+            getFragmentManager().popBackStack();
+        }
     }
 
     private void checkLoginStatus() {
@@ -216,6 +229,8 @@ public class NoteListActivity extends AppCompatActivity {
 //        if (user == null){
 //            return;
 //        }
+
+        addDefaultData();
         noteButton.setImageResource(R.drawable.ic_action_book_red_light);
         noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
         openFragment(new NoteListFragment(), getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
@@ -285,6 +300,11 @@ public class NoteListActivity extends AppCompatActivity {
         }else {
             openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list), Constants.NOTE_LIST_FRAGMENT_TAG);
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onAddDefaultDataEvent(AddDefaultDataEvent event){
+        addDefaultData();
     }
 
     private void resetBottomNavigationIcons() {
@@ -392,6 +412,20 @@ public class NoteListActivity extends AppCompatActivity {
                     .create()
                     .show();
         }
+    }
+
+
+    //Checks if this is the first time this app is running and then
+    //starts an Intent Services that adds some default data
+    private void addDefaultData() {
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        editor = preferences.edit();
+        if (preferences.getBoolean(Constants.FIRST_RUN, true)) {
+            startService(new Intent(this, AddSampleDataIntentService.class));
+            editor.putBoolean(Constants.FIRST_RUN, false).commit();
+        }
+
     }
 
 

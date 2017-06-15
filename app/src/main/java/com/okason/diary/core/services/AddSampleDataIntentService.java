@@ -64,20 +64,21 @@ public class AddSampleDataIntentService extends IntentService {
     }
 
     private void addNonDuplicateFolders(List<Folder> existingFolders) {
-        if (existingFolders.size() == 0){
-            return;
-        }
-
-        //Void creating Folders that may already exist in the cloud
-        //Because the user have more than one device
-        for (String folderName: sampleFolderNames){
-            for (Folder folder: existingFolders){
-                if (folder.getFolderName().equals(folderName)){
-                    sampleFolderNames.remove(folderName);
-                    break;
+        if (existingFolders.size() > 0){
+            //Void creating Folders that may already exist in the cloud
+            //Because the user have more than one device
+            for ( int i = 0;  i < sampleFolderNames.size(); i++){
+                for (Folder folder: existingFolders){
+                    String tempName = sampleFolderNames.get(i);
+                    if (folder.getFolderName().equals(tempName)){
+                        sampleFolderNames.remove(i);
+                        break;
+                    }
                 }
             }
         }
+
+
 
         //Now add distinct Folders
         if (sampleFolderNames.size() > 0){

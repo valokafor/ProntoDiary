@@ -17,6 +17,7 @@ public interface AddNoteContract {
         void populateNote(Note note);
         void showProgressDialog();
         void hideProgressDialog();
+        void goBackToParent();
         Context getContext();
 
 

@@ -14,16 +14,17 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
-import com.okason.diary.core.events.OnFolderUpdatedEvent;
 import com.okason.diary.models.Folder;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
-
-import io.realm.Realm;
 
 
 /**
@@ -32,10 +33,15 @@ import io.realm.Realm;
 public class AddFolderDialogFragment extends DialogFragment {
     private EditText mFolderEditText;
     private boolean mInEditMode = false;
-    private Realm realm;
+
     private String categoryId = "";
 
     private Folder mFolder = null;
+    private DatabaseReference mDatabase;
+    private DatabaseReference categoryCloudReference;
+
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
 
 
 
@@ -47,6 +53,11 @@ public class AddFolderDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        categoryCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.CATEGORY_CLOUD_END_POINT);
 
     }
 
@@ -81,7 +92,7 @@ public class AddFolderDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final AlertDialog.Builder addCategoryDialog = new AlertDialog.Builder(getActivity());
-        realm = Realm.getDefaultInstance();
+
         getCurrentCategory();
         if (savedInstanceState == null){
 
@@ -163,28 +174,22 @@ public class AddFolderDialogFragment extends DialogFragment {
         }
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        realm.close();
-    }
+
 
     private void saveCategory() {
         final String categoryName = mFolderEditText.getText().toString().trim();
-        realm.executeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                if (mInEditMode){
-                    mFolder.setFolderName(categoryName);
-                    EventBus.getDefault().post(new OnFolderUpdatedEvent(mFolder));
-                } else {
-                    mFolder = new Folder();
-                    mFolder.setFolderName(categoryName);
-                    EventBus.getDefault().post(new FolderAddedEvent(mFolder));
-                }
-            }
-        });
-
+        if (mInEditMode){
+            mFolder.setFolderName(categoryName);
+            mFolder.setDateModified(System.currentTimeMillis());
+            categoryCloudReference.child(mFolder.getId()).setValue(mFolder);
+            EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+        } else {
+            mFolder = new Folder();
+            mFolder.setFolderName(categoryName);
+            mFolder.setId(categoryCloudReference.push().getKey());
+            categoryCloudReference.child(mFolder.getId()).setValue(mFolder);
+            EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+        }
 
     }
 

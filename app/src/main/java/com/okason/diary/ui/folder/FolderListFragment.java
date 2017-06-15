@@ -4,11 +4,15 @@ package com.okason.diary.ui.folder;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -22,7 +26,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.okason.diary.R;
-import com.okason.diary.core.events.AddFolderEvent;
+import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.services.DeleteCategoryIntentService;
 import com.okason.diary.models.Folder;
@@ -70,6 +74,11 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -99,14 +108,6 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
             }
         };
 
-
-//        mFab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
-//        mFab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                showAddNewFolderDialog();
-//            }
-//        });
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mAdapter = new FolderRecyclerViewAdapter(getContext(),mFolders, this);
@@ -139,8 +140,32 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         }
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_folder_list, menu);
+        MenuItem search = menu.findItem(R.id.action_search);
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+        int id = item.getItemId();
+        switch (id){
+            case R.id.action_add:
+                showAddNewFolderDialog();
+                break;
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onAddNewCategory(AddFolderEvent event){
+    public void onAddNewCategory(FolderAddedEvent event){
         addCategoryDialog.dismiss();
     }
 

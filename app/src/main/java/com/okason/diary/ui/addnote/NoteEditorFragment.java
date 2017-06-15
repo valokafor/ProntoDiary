@@ -45,8 +45,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
@@ -56,9 +59,12 @@ import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.DatabaseOperationCompletedEvent;
+import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
+import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.models.Attachment;
+import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.attachment.AttachingFileCompleteEvent;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
@@ -85,6 +91,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -100,6 +107,8 @@ public class NoteEditorFragment extends Fragment implements
     private AddFolderDialogFragment addFolderDialogFragment;
 
     private AttachmentListAdapter attachmentListAdapter;
+    private ValueEventListener folderValueEventListener;
+    private List<Folder> mFolders;
 
     private Uri attachmentUri;
     private String mLocalAudioFilePath = null;
@@ -117,7 +126,7 @@ public class NoteEditorFragment extends Fragment implements
     private DatabaseReference mDatabase;
     private DatabaseReference noteCloudReference;
 
-    private DatabaseReference categoryCloudReference;
+    private DatabaseReference folderCloudReference;
 
     @BindView(R.id.edit_text_category)
     EditText mCategory;
@@ -208,9 +217,10 @@ public class NoteEditorFragment extends Fragment implements
         mAttachmentStorageReference = mFirebaseStorageReference.child("users/" + mFirebaseUser.getUid() + "/attachments");
 
         noteCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
-        categoryCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.CATEGORY_CLOUD_END_POINT);
+        folderCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.CATEGORY_CLOUD_END_POINT);
 
 
+        mFolders = new ArrayList<>();
         mPresenter = new AddNotePresenter(this, noteCloudReference, getPassedInNote());
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
@@ -251,6 +261,26 @@ public class NoteEditorFragment extends Fragment implements
 
             }
         });
+
+        folderValueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot != null){
+                    for (DataSnapshot categorySnapshot: dataSnapshot.getChildren()){
+                        Folder folder = categorySnapshot.getValue(Folder.class);
+                        mFolders.add(folder);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+
         return mRootView;
     }
 
@@ -260,6 +290,7 @@ public class NoteEditorFragment extends Fragment implements
         super.onResume();
         EventBus.getDefault().register(this);
         mPresenter.updateUI();
+        folderCloudReference.addValueEventListener(folderValueEventListener);
 
     }
 
@@ -267,6 +298,10 @@ public class NoteEditorFragment extends Fragment implements
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
+        if (folderCloudReference != null && folderValueEventListener != null){
+            folderCloudReference.removeEventListener(folderValueEventListener);
+            folderValueEventListener = null;
+        }
 
         if (mRecorder != null) {
             mRecorder.release();
@@ -305,7 +340,7 @@ public class NoteEditorFragment extends Fragment implements
 
 
         }
-        return super.onOptionsItemSelected(item);
+        return true;
     }
 
 
@@ -335,6 +370,61 @@ public class NoteEditorFragment extends Fragment implements
         if (!TextUtils.isEmpty(event.getMessage())) {
             makeToast(event.getMessage());
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onAddNewCategory(FolderAddedEvent event){
+        addFolderDialogFragment.dismiss();
+        mCategory.setText(event.getAddedFolder().getFolderName());
+        mPresenter.onFolderChange(event.getAddedFolder());
+
+    }
+
+
+    @OnClick(R.id.edit_text_category)
+    public void showSelectFolder(){
+        showChooseFolderDialog(mFolders);
+    }
+
+    private void showChooseFolderDialog(List<Folder> folders) {
+        selectFolderDialogFragment = selectFolderDialogFragment.newInstance();
+        selectFolderDialogFragment.setCategories(folders);
+
+        selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
+            @Override
+            public void onCategorySelected(Folder selectedCategory) {
+                selectFolderDialogFragment.dismiss();
+                mCategory.setText(selectedCategory.getFolderName());
+                mCategory.setText(selectedCategory.getFolderName());
+                mPresenter.onFolderChange(selectedCategory);
+            }
+
+            @Override
+            public void onEditCategoryButtonClicked(Folder selectedCategory) {
+
+            }
+
+            @Override
+            public void onDeleteCategoryButtonClicked(Folder selectedCategory) {
+
+            }
+
+            @Override
+            public void onAddCategoryButtonClicked() {
+                showAddNewFolderDialog();
+            }
+        });
+        selectFolderDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
+    }
+
+
+    public void showAddNewFolderDialog() {
+        if (selectFolderDialogFragment != null) {
+            selectFolderDialogFragment.dismiss();
+        }
+        addFolderDialogFragment = AddFolderDialogFragment.newInstance("");
+        addFolderDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
+
     }
 
 
@@ -398,6 +488,11 @@ public class NoteEditorFragment extends Fragment implements
             mDialog.dismiss();
         }
 
+    }
+
+    @Override
+    public void goBackToParent() {
+        startActivity(new Intent(getActivity(), NoteListActivity.class));
     }
 
     /**

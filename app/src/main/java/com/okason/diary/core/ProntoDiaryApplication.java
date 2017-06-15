@@ -2,13 +2,8 @@ package com.okason.diary.core;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 import com.okason.diary.BuildConfig;
-import com.okason.diary.core.services.AddSampleDataIntentService;
-import com.okason.diary.utils.Constants;
 import com.squareup.leakcanary.LeakCanary;
 
 /**
@@ -20,8 +15,7 @@ public class ProntoDiaryApplication extends Application {
     public static final String REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/~/diary";
 
     private static Context mContext;
-    private SharedPreferences sharedPreferences;
-    SharedPreferences.Editor editor;
+
     private static boolean cloudSyncEnabled;
 
 
@@ -36,8 +30,6 @@ public class ProntoDiaryApplication extends Application {
         }
         mContext = getApplicationContext();
         LeakCanary.install(this);
-        addDefaultData();
-
     }
 
     public static Context getAppContext() {
@@ -52,16 +44,5 @@ public class ProntoDiaryApplication extends Application {
         ProntoDiaryApplication.cloudSyncEnabled = cloudSyncEnabled;
     }
 
-    //Checks if this is the first time this app is running and then
-    //starts an Intent Services that adds some default data
-    private void addDefaultData() {
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        editor = sharedPreferences.edit();
-        if (sharedPreferences.getBoolean(Constants.FIRST_RUN, true)) {
-               startService(new Intent(this, AddSampleDataIntentService.class));
-            editor.putBoolean(Constants.FIRST_RUN, false).commit();
-        }
-
-    }
 }

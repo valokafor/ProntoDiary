@@ -67,6 +67,12 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     @Override
     public void onFolderChange(Folder newFolder) {
+        if (mCurrentNote == null){
+            mCurrentNote = new Note();
+        }
+        mCurrentNote.setFolderId(newFolder.getId());
+        mCurrentNote.setFolderName(newFolder.getFolderName());
+        dataChanged = true;
 
     }
 
@@ -134,6 +140,7 @@ public class AddNotePresenter implements AddNoteContract.Action {
             if (TextUtils.isEmpty(mCurrentNote.getTitle())
                     && TextUtils.isEmpty(mCurrentNote.getContent())
                     && mCurrentNote.getAttachments().size() == 0){
+                mView.goBackToParent();
                 return;
             }
 
@@ -150,6 +157,7 @@ public class AddNotePresenter implements AddNoteContract.Action {
             //Data need to be saved
             if (isInEditMode){
                 //Update data
+                mCurrentNote.setDateModified(System.currentTimeMillis());
                 noteCloudReference.child(mCurrentNote.getId()).setValue(mCurrentNote);
             }else {
                 //Save new data
@@ -171,6 +179,8 @@ public class AddNotePresenter implements AddNoteContract.Action {
                mView.getContext().startService(uploadServiceIntent);
             }
         }
+
+        mView.goBackToParent();
 
 
 

@@ -209,6 +209,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             }
         });
 
+        noteCloudReference.addValueEventListener(mValueEventListener);
+
         return mRootView;
     }
 
@@ -225,13 +227,16 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     public void onResume() {
         super.onResume();
         setProgressIndicator(true);
-        noteCloudReference.addValueEventListener(mValueEventListener);
+
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        noteCloudReference.removeEventListener(mValueEventListener);
+        if (noteCloudReference != null && mValueEventListener != null) {
+            noteCloudReference.removeEventListener(mValueEventListener);
+            mValueEventListener = null;
+        }
         if (mPlayer != null){
             mPlayer.release();
             mPlayer = null;

@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.models.Attachment;
@@ -95,6 +96,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                     Glide.with(mContext)
                             .load(lastAttachment.getFilePath())
                             .placeholder(R.drawable.default_image)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .into(holder.noteAttachment);
                 } else if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)){
                     holder.noteAttachment.setImageResource(R.drawable.video_icon);
@@ -109,11 +111,13 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                                 .load(R.drawable.pdf_icon_2)
                                 .placeholder(R.drawable.default_image)
                                 .centerCrop()
+                                .diskCacheStrategy(DiskCacheStrategy.ALL)
                                 .into(holder.noteAttachment);
                     } else {
                         Glide.with(mContext)
                                 .load(R.drawable.ic_action_document)
                                 .placeholder(R.drawable.default_image)
+                                .diskCacheStrategy(DiskCacheStrategy.ALL)
                                 .centerCrop()
                                 .into(holder.noteAttachment);
                     }
@@ -124,6 +128,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             .load(lastAttachment.getFilePath())
                             .placeholder(R.drawable.default_image)
                             .centerCrop()
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .into(holder.noteAttachment);
                 }
 
