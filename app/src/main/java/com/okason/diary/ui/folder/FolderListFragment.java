@@ -91,7 +91,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        folderCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.CATEGORY_CLOUD_END_POINT);
+        folderCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
 
 
         mFolders = new ArrayList<>();

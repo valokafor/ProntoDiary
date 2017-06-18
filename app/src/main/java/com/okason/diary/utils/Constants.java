@@ -95,13 +95,14 @@ public class Constants {
 
 
     public static final String ANONYMOUS_USER = "anonymous_user";
-    public static final String SERIALIZED_CATEGORY = "serialized_category";
+    public static final String SERIALIZED_FOLDER = "serialized_folder";
+    public static final String SERIALIZED_TAG = "serialized_tag";
     public static final String DEFAULT_CATEGORY = "General";
 
     public static final String NOTE_CLOUD_END_POINT = "/notes";
-    public static final String CATEGORY_CLOUD_END_POINT = "/categories";
+    public static final String FOLDER_CLOUD_END_POINT = "/folders";
+    public static final String TAG_CLOUD_END_POINT = "/tags";
     public static final String ATTACHMENT_CLOUD_END_POINT = "/attachments";
-    public static final String NOTE_ATTACHMENT_CLOUD_END_POINT = "/note_attachments";
     public static final String USERS_CLOUD_END_POINT = "/users/";
 
 

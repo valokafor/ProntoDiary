@@ -177,6 +177,8 @@
     <string name="label_journal">Journal</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="label_folders">Folders</string>
+    <string name="edit_tag">Edit Tag</string>
+    <string name="add_tag">Add Tag</string>
 
 
     <string-array name="sampleFolderNames">

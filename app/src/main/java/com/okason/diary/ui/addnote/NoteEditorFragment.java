@@ -217,7 +217,7 @@ public class NoteEditorFragment extends Fragment implements
         mAttachmentStorageReference = mFirebaseStorageReference.child("users/" + mFirebaseUser.getUid() + "/attachments");
 
         noteCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
-        folderCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.CATEGORY_CLOUD_END_POINT);
+        folderCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
 
 
         mFolders = new ArrayList<>();
@@ -290,7 +290,9 @@ public class NoteEditorFragment extends Fragment implements
         super.onResume();
         EventBus.getDefault().register(this);
         mPresenter.updateUI();
-        folderCloudReference.addValueEventListener(folderValueEventListener);
+        if (folderCloudReference != null && folderValueEventListener != null){
+            folderCloudReference.addValueEventListener(folderValueEventListener);
+        }
 
     }
 
@@ -298,10 +300,7 @@ public class NoteEditorFragment extends Fragment implements
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
-        if (folderCloudReference != null && folderValueEventListener != null){
-            folderCloudReference.removeEventListener(folderValueEventListener);
-            folderValueEventListener = null;
-        }
+
 
         if (mRecorder != null) {
             mRecorder.release();

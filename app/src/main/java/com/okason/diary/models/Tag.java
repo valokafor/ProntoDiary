@@ -1,5 +1,6 @@
 package com.okason.diary.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,10 +14,13 @@ public class Tag{
     private long dateCreated;
     private long dateModified;
 
-    private List<Note> notes;
+    private List<String> listOfNoteIds;
     private List<Task> todoLists;
 
     public Tag(){
+        listOfNoteIds = new ArrayList<>();
+        dateCreated = System.currentTimeMillis();
+        dateModified = System.currentTimeMillis();
 
     }
 
@@ -54,12 +58,12 @@ public class Tag{
         this.dateModified = dateModified;
     }
 
-    public List<Note> getNotes() {
-        return notes;
+    public List<String> getListOfNoteIds() {
+        return listOfNoteIds;
     }
 
-    public void setNotes(List<Note> notes) {
-        this.notes = notes;
+    public void setListOfNoteIds(List<String> listOfNoteIds) {
+        this.listOfNoteIds = listOfNoteIds;
     }
 
     public List<Task> getTodoLists() {

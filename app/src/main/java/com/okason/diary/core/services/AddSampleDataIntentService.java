@@ -41,7 +41,7 @@ public class AddSampleDataIntentService extends IntentService {
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        folderCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.CATEGORY_CLOUD_END_POINT);
+        folderCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
         folderCloudReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -71,7 +71,11 @@ public class AddSampleDataIntentService extends IntentService {
                 for (Folder folder: existingFolders){
                     String tempName = sampleFolderNames.get(i);
                     if (folder.getFolderName().equals(tempName)){
-                        sampleFolderNames.remove(i);
+                        try {
+                            sampleFolderNames.remove(i);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         break;
                     }
                 }

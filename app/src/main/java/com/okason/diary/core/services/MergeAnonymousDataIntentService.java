@@ -63,9 +63,9 @@ public class MergeAnonymousDataIntentService extends IntentService {
                                 + Constants.NOTE_CLOUD_END_POINT);
 
                         annonymousFolderCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + annonymousUserId
-                                + Constants.CATEGORY_CLOUD_END_POINT);
+                                + Constants.FOLDER_CLOUD_END_POINT);
                         registeredFolderCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + currentUserId
-                                + Constants.CATEGORY_CLOUD_END_POINT);
+                                + Constants.FOLDER_CLOUD_END_POINT);
 
                         annonymousNoteCloudReference.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override

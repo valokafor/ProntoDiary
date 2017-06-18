@@ -1,4 +1,4 @@
-package com.okason.diary.ui.folder;
+package com.okason.diary.ui.tag;
 
 
 import android.app.AlertDialog;
@@ -20,33 +20,31 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 import com.okason.diary.R;
-import com.okason.diary.core.events.FolderAddedEvent;
-import com.okason.diary.models.Folder;
+import com.okason.diary.core.events.TagAddedEvent;
+import com.okason.diary.models.Tag;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
 
-
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AddFolderDialogFragment extends DialogFragment {
-    private EditText mFolderEditText;
+public class AddTagDialogFragment extends DialogFragment {
+
+    private EditText tagEditText;
     private boolean mInEditMode = false;
 
     private String categoryId = "";
 
-    private Folder mFolder = null;
+    private Tag mTag = null;
     private DatabaseReference mDatabase;
-    private DatabaseReference folderCloudReference;
+    private DatabaseReference tagCloudReference;
 
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
 
 
-
-
-    public AddFolderDialogFragment() {
+    public AddTagDialogFragment() {
         // Required empty public constructor
     }
 
@@ -57,33 +55,32 @@ public class AddFolderDialogFragment extends DialogFragment {
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        folderCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+        tagCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
 
     }
 
-
-
-
-    public static AddFolderDialogFragment newInstance(String jsonFolder){
-        AddFolderDialogFragment dialogFragment = new AddFolderDialogFragment();
+    public static AddTagDialogFragment newInstance(String serializedTag){
+        AddTagDialogFragment dialogFragment = new AddTagDialogFragment();
         Bundle args = new Bundle();
-        args.putString(Constants.SERIALIZED_FOLDER, jsonFolder);
+        args.putString(Constants.SERIALIZED_TAG, serializedTag);
         dialogFragment.setArguments(args);
         return dialogFragment;
     }
 
+
+
     /**
-     * The method gets the Folder that was passed in, in the form of serialized String
+     * The method gets the Tag that was passed in, in the form of serialized String
      */
-    public void getCurrentFolder(){
+    public void getCurrentTag(){
         Bundle args = getArguments();
-        if (args != null && args.containsKey(Constants.SERIALIZED_FOLDER)){
-            String jsonFolder = args.getString(Constants.SERIALIZED_FOLDER);
-            if (!TextUtils.isEmpty(jsonFolder)){
+        if (args != null && args.containsKey(Constants.SERIALIZED_TAG)){
+            String jsonTag = args.getString(Constants.SERIALIZED_TAG);
+            if (!TextUtils.isEmpty(jsonTag)){
                 Gson gson = new Gson();
-                mFolder = gson.fromJson(jsonFolder, Folder.class);
+                mTag = gson.fromJson(jsonTag, Tag.class);
             }
-            if (mFolder != null){
+            if (mTag != null){
                 mInEditMode = true;
             }
         }
@@ -91,33 +88,33 @@ public class AddFolderDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final AlertDialog.Builder addFolderDialog = new AlertDialog.Builder(getActivity());
+        final AlertDialog.Builder addTagDialog = new AlertDialog.Builder(getActivity());
 
-        getCurrentFolder();
+        getCurrentTag();
         if (savedInstanceState == null){
 
 
             LayoutInflater inflater = getActivity().getLayoutInflater();
 
-            View convertView = inflater.inflate(R.layout.fragment_add_folder_dialog, null);
-            addFolderDialog.setView(convertView);
+            View convertView = inflater.inflate(R.layout.fragment_add_tag_dialog, null);
+            addTagDialog.setView(convertView);
 
             View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
             TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
-            titleText.setText(mInEditMode == true ? getString(R.string.edit_folder) : getString(R.string.add_folder));
-            addFolderDialog.setCustomTitle(titleView);
+            titleText.setText(mInEditMode == true ? getString(R.string.edit_tag) : getString(R.string.add_tag));
+            addTagDialog.setCustomTitle(titleView);
 
-            mFolderEditText = (EditText)convertView.findViewById(R.id.edit_text_add_category);
+            tagEditText = (EditText)convertView.findViewById(R.id.edit_text_add_category);
 
 
-            addFolderDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            addTagDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
 
                 }
             });
-            addFolderDialog.setPositiveButton(mInEditMode == true ? "Update" : "Add", new DialogInterface.OnClickListener() {
+            addTagDialog.setPositiveButton(mInEditMode == true ? "Update" : "Add", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
@@ -125,26 +122,26 @@ public class AddFolderDialogFragment extends DialogFragment {
                 }
             });
 
-            if (mFolder != null && !TextUtils.isEmpty(mFolder.getFolderName())){
-                populateFields(mFolder);
-                addFolderDialog.setTitle(mFolder.getFolderName());
+            if (mTag != null && !TextUtils.isEmpty(mTag.getTagName())){
+                populateFields(mTag);
+                addTagDialog.setTitle(mTag.getTagName());
             }
 
 
         }
 
-        return addFolderDialog.create();
+        return addTagDialog.create();
     }
 
-    private void populateFields(Folder category) {
-        mFolderEditText.setText(category.getFolderName());
+    private void populateFields(Tag category) {
+        tagEditText.setText(category.getTagName());
     }
 
     private boolean requiredFieldCompleted(){
-        if (mFolderEditText.getText().toString().isEmpty())
+        if (tagEditText.getText().toString().isEmpty())
         {
-            mFolderEditText.setError(getString(R.string.required));
-            mFolderEditText.requestFocus();
+            tagEditText.setError(getString(R.string.required));
+            tagEditText.requestFocus();
             return false;
         }
 
@@ -164,7 +161,7 @@ public class AddFolderDialogFragment extends DialogFragment {
                 public void onClick(View v) {
                     boolean readyToCloseDialog = false;
                     if (requiredFieldCompleted()) {
-                        saveFolder();
+                        saveTag();
                         readyToCloseDialog = true;
                     }
                     if (readyToCloseDialog)
@@ -176,20 +173,19 @@ public class AddFolderDialogFragment extends DialogFragment {
 
 
 
-    private void saveFolder() {
-        final String categoryName = mFolderEditText.getText().toString().trim();
+    private void saveTag() {
+        final String categoryName = tagEditText.getText().toString().trim();
         if (mInEditMode){
-            mFolder.setFolderName(categoryName);
-            mFolder.setDateModified(System.currentTimeMillis());
-            folderCloudReference.child(mFolder.getId()).setValue(mFolder);
-            EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+            mTag.setTagName(categoryName);
         } else {
-            mFolder = new Folder();
-            mFolder.setFolderName(categoryName);
-            mFolder.setId(folderCloudReference.push().getKey());
-            folderCloudReference.child(mFolder.getId()).setValue(mFolder);
-            EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+            mTag = new Tag();
+            mTag.setTagName(categoryName);
+            mTag.setId(tagCloudReference.push().getKey());
         }
+
+        mTag.setDateModified(System.currentTimeMillis());
+        tagCloudReference.child(mTag.getId()).setValue(mTag);
+        EventBus.getDefault().post(new TagAddedEvent(mTag));
 
     }
 

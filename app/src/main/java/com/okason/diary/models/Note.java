@@ -19,6 +19,7 @@ public class Note{
 
     public Note(){
         attachments = new ArrayList<>();
+        tags = new ArrayList<>();
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
     }
@@ -26,9 +27,10 @@ public class Note{
 
    //Relationships
     private List<Attachment> attachments;
+    private List<Tag> tags;
+
 
     private List<Task> tasks;
-    private List<Tag> tags;
     private List<PeopleJournal> peopleJournals;
     private List<History> historyList;
 

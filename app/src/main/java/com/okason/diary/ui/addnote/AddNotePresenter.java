@@ -11,6 +11,7 @@ import com.okason.diary.core.services.AttachmentUploadService;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
+import com.okason.diary.models.Tag;
 
 /**
  * Created by Valentine on 5/8/2017.
@@ -73,6 +74,23 @@ public class AddNotePresenter implements AddNoteContract.Action {
         mCurrentNote.setFolderId(newFolder.getId());
         mCurrentNote.setFolderName(newFolder.getFolderName());
         dataChanged = true;
+
+    }
+
+    @Override
+    public void onTagAdded(Tag tag) {
+        mCurrentNote.getTags().add(tag);
+    }
+
+    @Override
+    public void onTagRemoved(Tag tag) {
+        for (int i = 0; i<mCurrentNote.getTags().size(); i++){
+            Tag tempTag = mCurrentNote.getTags().get(i);
+            if (tempTag.getId().equals(tag)){
+                mCurrentNote.getTags().remove(i);
+                break;
+            }
+        }
 
     }
 
