@@ -61,7 +61,9 @@ public class SelectFolderDialogFragment extends DialogFragment {
         View convertView = (View) inflater.inflate(R.layout.folder_dialog_list, null);
         builder.setView(convertView);
 
-        View titleView = (View)inflater.inflate(R.layout.choose_folder_dialog_title, null);
+        View titleView = (View)inflater.inflate(R.layout.dialog_title_layout, null);
+        TextView addFolderTitle = (TextView) titleView.findViewById(R.id.text_view_dialog_title);
+        addFolderTitle.setText(getString(R.string.select_folder));
         builder.setCustomTitle(titleView);
 
 
@@ -69,7 +71,7 @@ public class SelectFolderDialogFragment extends DialogFragment {
         TextView emptyText = (TextView) convertView.findViewById(R.id.category_list_empty);
         dialogList.setEmptyView(emptyText);
 
-        final ImageButton addCategoryButton = (ImageButton)titleView.findViewById(R.id.image_button_add_category);
+        final ImageButton addCategoryButton = (ImageButton)titleView.findViewById(R.id.image_button_add);
         addCategoryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

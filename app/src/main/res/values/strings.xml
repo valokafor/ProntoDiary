@@ -128,6 +128,7 @@
     <string name="add_folder">Add Folder</string>
     <string name="required">Required</string>
     <string name="no_folder">No folder found</string>
+    <string name="no_tag">No Tag found</string>
     <string name="title_activity_note_detail">Journal Entry</string>
 
     <string name="creation">Created:</string>
@@ -179,6 +180,9 @@
     <string name="label_folders">Folders</string>
     <string name="edit_tag">Edit Tag</string>
     <string name="add_tag">Add Tag</string>
+    <string name="hint_enter_tag">Enter Tag Name</string>
+    <string name="select_tag">Select Tag</string>
+    <string name="label_close">Close</string>
 
 
     <string-array name="sampleFolderNames">

@@ -2,6 +2,7 @@ package com.okason.diary.data;
 
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
+import com.okason.diary.models.Tag;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
@@ -28,6 +29,23 @@ public class SampleData {
 
 
         return categoryNames;
+
+    }
+
+    public static List<Tag> getSampleTag() {
+        List<Tag> tags = new ArrayList<>();
+
+        tags.add(new Tag("Funny"));
+        tags.add(new Tag("Word"));
+        tags.add(new Tag("Product"));
+        tags.add(new Tag("Friend"));
+        tags.add(new Tag("Finance"));
+        tags.add(new Tag("Health"));
+        tags.add(new Tag("Faith"));
+        tags.add(new Tag("Twitter"));
+
+
+        return tags;
 
     }
 

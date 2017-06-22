@@ -63,9 +63,12 @@ import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
+import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.data.SampleData;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
+import com.okason.diary.models.Tag;
 import com.okason.diary.ui.attachment.AttachingFileCompleteEvent;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.attachment.AttachmentTask;
@@ -73,6 +76,7 @@ import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.ui.sketch.SketchActivity;
+import com.okason.diary.ui.tag.SelectTagDialogFragment;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.FileUtility;
@@ -104,6 +108,7 @@ public class NoteEditorFragment extends Fragment implements
     private View mRootView;
     private AddNoteContract.Action mPresenter;
     private SelectFolderDialogFragment selectFolderDialogFragment;
+    private SelectTagDialogFragment selectTagDialogFragment;
     private AddFolderDialogFragment addFolderDialogFragment;
 
     private AttachmentListAdapter attachmentListAdapter;
@@ -127,6 +132,7 @@ public class NoteEditorFragment extends Fragment implements
     private DatabaseReference noteCloudReference;
 
     private DatabaseReference folderCloudReference;
+    private DatabaseReference tagCloudReference;
 
     @BindView(R.id.edit_text_category)
     EditText mCategory;
@@ -164,6 +170,7 @@ public class NoteEditorFragment extends Fragment implements
     private long audioRecordingTimeStart;
     private long audioRecordingTime;
     private MaterialDialog mDialog;
+    private ValueEventListener tagEventListener;
 
 
     public NoteEditorFragment() {
@@ -218,6 +225,7 @@ public class NoteEditorFragment extends Fragment implements
 
         noteCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
         folderCloudReference = mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+        tagCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
 
 
         mFolders = new ArrayList<>();
@@ -300,6 +308,9 @@ public class NoteEditorFragment extends Fragment implements
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
+        if (tagCloudReference != null && tagEventListener != null){
+            tagCloudReference.removeEventListener(tagEventListener);
+        }
 
 
         if (mRecorder != null) {
@@ -336,10 +347,61 @@ public class NoteEditorFragment extends Fragment implements
             case android.R.id.home:
                 mPresenter.onSaveAndExit();
                 break;
+            case R.id.action_tag:
+                showSelectTag();
+                break;
 
 
         }
         return true;
+    }
+
+    private void showSelectTag() {
+        selectTagDialogFragment = SelectTagDialogFragment.newInstance();
+        selectTagDialogFragment.setTags(SampleData.getSampleTag());
+
+        selectTagDialogFragment.setListener(new OnTagSelectedListener() {
+            @Override
+            public void onTagSelected(Tag selectedTag) {
+                mPresenter.onTagAdded(selectedTag);
+            }
+
+            @Override
+            public void onTagUnSelected(Tag unSelectedTag) {
+                mPresenter.onTagRemoved(unSelectedTag);
+                removeNoteFromTag(unSelectedTag);
+            }
+        });
+        selectTagDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
+    }
+
+    private void removeNoteFromTag(final Tag unSelectedTag) {
+        //Remove this Note Id from the list of Note Ids assigned to this
+        //In the cloud
+
+        tagEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Tag tag = dataSnapshot.getValue(Tag.class);
+                for (int i = 0; i<tag.getListOfNoteIds().size(); i++){
+                    String noteId = tag.getListOfNoteIds().get(i);
+                    if (tag.getId().equals(noteId)){
+                        tag.getListOfNoteIds().remove(i);
+                        break;
+                    }
+                }
+                tagCloudReference.child(unSelectedTag.getId()).setValue(unSelectedTag);
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        tagCloudReference.child(unSelectedTag.getId()).addListenerForSingleValueEvent(tagEventListener);
     }
 
 

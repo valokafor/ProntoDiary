@@ -24,6 +24,14 @@ public class Tag{
 
     }
 
+    public Tag(String name){
+        tagName = name;
+        listOfNoteIds = new ArrayList<>();
+        dateCreated = System.currentTimeMillis();
+        dateModified = System.currentTimeMillis();
+
+    }
+
 
 
     public String getId() {

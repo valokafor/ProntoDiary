@@ -6,6 +6,7 @@
               android:layout_height="match_parent">
 
     <TextView
+        android:id="@+id/text_view_dialog_title"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="wrap_content"
@@ -17,7 +18,7 @@
         android:textStyle="bold"/>
 
     <ImageButton
-        android:id="@+id/image_button_add_category"
+        android:id="@+id/image_button_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:scaleType="fitEnd"

@@ -79,14 +79,18 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     @Override
     public void onTagAdded(Tag tag) {
+        if (mCurrentNote == null){
+            mCurrentNote = new Note();
+        }
         mCurrentNote.getTags().add(tag);
     }
 
     @Override
     public void onTagRemoved(Tag tag) {
+        //Remove this tag from the list of Tags for the Note
         for (int i = 0; i<mCurrentNote.getTags().size(); i++){
             Tag tempTag = mCurrentNote.getTags().get(i);
-            if (tempTag.getId().equals(tag)){
+            if (tempTag.getId().equals(tag.getId())){
                 mCurrentNote.getTags().remove(i);
                 break;
             }

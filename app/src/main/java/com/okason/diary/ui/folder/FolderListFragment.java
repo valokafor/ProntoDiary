@@ -112,16 +112,14 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mAdapter = new FolderRecyclerViewAdapter(getContext(),mFolders, this);
         mRecyclerView.setAdapter(mAdapter);
-
+        folderCloudReference.addValueEventListener(folderEventListener);
         return  mRootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (folderCloudReference != null && folderEventListener != null){
-            folderCloudReference.addValueEventListener(folderEventListener);
-        }
+
     }
 
     @Override

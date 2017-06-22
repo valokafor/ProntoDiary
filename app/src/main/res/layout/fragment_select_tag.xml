@@ -2,12 +2,25 @@
              xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
-             tools:context="com.okason.diary.ui.tag.SelectTagFragment">
+             tools:context="com.okason.diary.ui.tag.SelectTagDialogFragment">
 
-    <!-- TODO: Update blank fragment layout -->
+
+    <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+                                            android:id="@+id/tag_recyclerview"
+                                            android:layout_width="fill_parent"
+                                            android:layout_height="fill_parent"/>
+
     <TextView
+        android:id="@+id/tag_list_empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment"/>
+        android:visibility="gone"
+        android:gravity="center"
+        android:padding="@dimen/margin_padding_normal"
+        android:text="@string/no_tag"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="@dimen/text_size_large"
+        android:textStyle="italic"/>
+
 
 </FrameLayout>
