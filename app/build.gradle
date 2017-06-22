@@ -15,7 +15,7 @@ android {
     }
 
     buildTypes {
-        def host = "45.55.184.184"
+        def host = "138.197.217.118"
         debug {
             // This will automatically detect the IP address of the machine building RealmTasks.
             // It is assumed that this machine is also running the Object Server.

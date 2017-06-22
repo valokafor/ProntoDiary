@@ -35,7 +35,10 @@ import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
+import com.okason.diary.data.SampleData;
 import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.auth.SignInActivity;
+import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
@@ -49,6 +52,8 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Realm;
+import io.realm.SyncUser;
 
 public class NoteListActivity extends AppCompatActivity {
     private SharedPreferences preferences;
@@ -115,6 +120,8 @@ public class NoteListActivity extends AppCompatActivity {
     @BindView(R.id.linear_layout_login)
     LinearLayout loginLayout;
 
+    private Realm realm;
+
 
 
     @Override
@@ -143,21 +150,47 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
     private void checkLoginStatus() {
+        mAuth = FirebaseAuth.getInstance();
 
         //Check to see if the user has registered before
         //if yes, check to see if the user is not logged in, show login
-        mAuth = FirebaseAuth.getInstance();
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        unregisteredUser = preferences.getBoolean(Constants.ANONYMOUS_USER, true);
-        if (unregisteredUser){
-            loginAnonymously();
-            settingsLayout.setVisibility(View.GONE);
+        boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
+        if (unregisteredUser) {
+            Realm.setDefaultConfiguration(UserManager.getLocalConfig());
+            realm = Realm.getDefaultInstance();
+            SampleData.getSampleNotes();
             syncLayout.setVisibility(View.VISIBLE);
+            settingsLayout.setVisibility(View.GONE);
+            updateUI();
         }else {
-            loginRegisteredUser();
-            settingsLayout.setVisibility(View.VISIBLE);
             syncLayout.setVisibility(View.GONE);
+            settingsLayout.setVisibility(View.VISIBLE);
+            final SyncUser user = SyncUser.currentUser();
+            if (user == null) {
+                startActivity(new Intent(mActivity, SignInActivity.class));
+            }else {
+                UserManager.setActiveUser(user);
+                updateUI();
+            }
+
         }
+
+
+//        //Check to see if the user has registered before
+//        //if yes, check to see if the user is not logged in, show login
+//        mAuth = FirebaseAuth.getInstance();
+//        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+//        unregisteredUser = preferences.getBoolean(Constants.ANONYMOUS_USER, true);
+//        if (unregisteredUser){
+//            loginAnonymously();
+//            settingsLayout.setVisibility(View.GONE);
+//            syncLayout.setVisibility(View.VISIBLE);
+//        }else {
+//            loginRegisteredUser();
+//            settingsLayout.setVisibility(View.VISIBLE);
+//            syncLayout.setVisibility(View.GONE);
+//        }
     }
 
 

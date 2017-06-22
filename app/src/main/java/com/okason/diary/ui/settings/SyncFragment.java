@@ -17,6 +17,7 @@ import android.widget.Button;
 import com.okason.diary.R;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.auth.RegisterActivity;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
@@ -97,7 +98,7 @@ public class SyncFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_settings){
-            startActivity(new Intent(getActivity(), SettingsActivity.class));
+            startActivity(new Intent(getActivity(), RegisterActivity.class));
         }
         return true;
     }
