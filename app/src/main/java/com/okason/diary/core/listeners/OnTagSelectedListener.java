@@ -9,4 +9,5 @@ import com.okason.diary.models.Tag;
 public interface OnTagSelectedListener {
     void onTagSelected(Tag selectedTag);
     void onTagUnSelected(Tag unSelectedTag);
+    void onAddCategoryButtonClicked();
 }

@@ -64,7 +64,6 @@ import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.data.SampleData;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -76,6 +75,7 @@ import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.ui.sketch.SketchActivity;
+import com.okason.diary.ui.tag.AddTagDialogFragment;
 import com.okason.diary.ui.tag.SelectTagDialogFragment;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
@@ -110,10 +110,15 @@ public class NoteEditorFragment extends Fragment implements
     private SelectFolderDialogFragment selectFolderDialogFragment;
     private SelectTagDialogFragment selectTagDialogFragment;
     private AddFolderDialogFragment addFolderDialogFragment;
+    private AddTagDialogFragment addTagDialogFragment;
 
     private AttachmentListAdapter attachmentListAdapter;
     private ValueEventListener folderValueEventListener;
+
+    //Listener for getting all Tags
+    private ValueEventListener tagValueEventListener;
     private List<Folder> mFolders;
+    private List<Tag> mTags;
 
     private Uri attachmentUri;
     private String mLocalAudioFilePath = null;
@@ -170,6 +175,8 @@ public class NoteEditorFragment extends Fragment implements
     private long audioRecordingTimeStart;
     private long audioRecordingTime;
     private MaterialDialog mDialog;
+
+    //for removing Note from Tag
     private ValueEventListener tagEventListener;
 
 
@@ -229,6 +236,7 @@ public class NoteEditorFragment extends Fragment implements
 
 
         mFolders = new ArrayList<>();
+        mTags = new ArrayList<>();
         mPresenter = new AddNotePresenter(this, noteCloudReference, getPassedInNote());
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
@@ -270,6 +278,7 @@ public class NoteEditorFragment extends Fragment implements
             }
         });
 
+        //Listener for fetching the List of Categories from Firebase
         folderValueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -277,6 +286,25 @@ public class NoteEditorFragment extends Fragment implements
                     for (DataSnapshot categorySnapshot: dataSnapshot.getChildren()){
                         Folder folder = categorySnapshot.getValue(Folder.class);
                         mFolders.add(folder);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        //Listener for fetching the List of Tags from Firebase
+        tagValueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot != null){
+                    for (DataSnapshot tagSnapshot: dataSnapshot.getChildren()){
+                        Tag tag = tagSnapshot.getValue(Tag.class);
+                        mTags.add(tag);
                     }
                 }
 
@@ -302,6 +330,10 @@ public class NoteEditorFragment extends Fragment implements
             folderCloudReference.addValueEventListener(folderValueEventListener);
         }
 
+        if (tagCloudReference != null && tagValueEventListener != null){
+            tagCloudReference.addValueEventListener(tagValueEventListener);
+        }
+
     }
 
     @Override
@@ -310,6 +342,14 @@ public class NoteEditorFragment extends Fragment implements
         EventBus.getDefault().unregister(this);
         if (tagCloudReference != null && tagEventListener != null){
             tagCloudReference.removeEventListener(tagEventListener);
+        }
+
+        if (folderCloudReference != null && folderValueEventListener != null){
+            folderCloudReference.removeEventListener(folderValueEventListener);
+        }
+
+        if (tagCloudReference != null && tagValueEventListener != null){
+            tagCloudReference.removeEventListener(tagValueEventListener);
         }
 
 
@@ -348,7 +388,7 @@ public class NoteEditorFragment extends Fragment implements
                 mPresenter.onSaveAndExit();
                 break;
             case R.id.action_tag:
-                showSelectTag();
+                showSelectTag(mTags);
                 break;
 
 
@@ -356,9 +396,9 @@ public class NoteEditorFragment extends Fragment implements
         return true;
     }
 
-    private void showSelectTag() {
+    private void showSelectTag(List<Tag> tags) {
         selectTagDialogFragment = SelectTagDialogFragment.newInstance();
-        selectTagDialogFragment.setTags(SampleData.getSampleTag());
+        selectTagDialogFragment.setTags(tags);
 
         selectTagDialogFragment.setListener(new OnTagSelectedListener() {
             @Override
@@ -370,6 +410,11 @@ public class NoteEditorFragment extends Fragment implements
             public void onTagUnSelected(Tag unSelectedTag) {
                 mPresenter.onTagRemoved(unSelectedTag);
                 removeNoteFromTag(unSelectedTag);
+            }
+
+            @Override
+            public void onAddCategoryButtonClicked() {
+                showAddNewTagDialog();
             }
         });
         selectTagDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
@@ -485,6 +530,15 @@ public class NoteEditorFragment extends Fragment implements
         }
         addFolderDialogFragment = AddFolderDialogFragment.newInstance("");
         addFolderDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
+
+    }
+
+    public void showAddNewTagDialog() {
+        if (selectTagDialogFragment != null) {
+            selectTagDialogFragment.dismiss();
+        }
+        addTagDialogFragment = AddTagDialogFragment.newInstance("");
+        addTagDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
 
     }
 

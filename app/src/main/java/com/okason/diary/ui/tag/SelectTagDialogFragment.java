@@ -86,7 +86,7 @@ public class SelectTagDialogFragment extends DialogFragment {
         addTagButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //mCategorySelectedListener.onAddCategoryButtonClicked();
+                mListener.onAddCategoryButtonClicked();
             }
         });
 

@@ -7,8 +7,8 @@
               android:layout_height="wrap_content">
 
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_weight="3"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
         android:orientation="vertical"
         android:padding="@dimen/margin_padding_small"
         android:layout_height="wrap_content">
@@ -28,9 +28,9 @@
 
     <ImageView
         android:id="@+id/image_view_note_count"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/icon_width_height"
+        android:layout_height="@dimen/icon_width_height"
         android:layout_gravity="center_vertical|right"
+        android:layout_margin="@dimen/margin_padding_tiny"
         android:scaleType="center"/>
 </LinearLayout>
