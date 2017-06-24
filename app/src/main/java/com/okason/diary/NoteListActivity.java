@@ -35,7 +35,6 @@ import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
-import com.okason.diary.data.SampleData;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
@@ -150,32 +149,27 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
     private void checkLoginStatus() {
-        mAuth = FirebaseAuth.getInstance();
 
-        //Check to see if the user has registered before
-        //if yes, check to see if the user is not logged in, show login
-        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
-        if (unregisteredUser) {
-            Realm.setDefaultConfiguration(UserManager.getLocalConfig());
-            realm = Realm.getDefaultInstance();
-            SampleData.getSampleNotes();
-            syncLayout.setVisibility(View.VISIBLE);
-            settingsLayout.setVisibility(View.GONE);
-            updateUI();
-        }else {
-            syncLayout.setVisibility(View.GONE);
-            settingsLayout.setVisibility(View.VISIBLE);
-            final SyncUser user = SyncUser.currentUser();
-            if (user == null) {
-                startActivity(new Intent(mActivity, SignInActivity.class));
-            }else {
-                UserManager.setActiveUser(user);
+        final SyncUser user = SyncUser.currentUser();
+        if (user == null) {
+            //Check to see if the user has registered before
+            //if yes, check to see if the user is not logged in, show login
+            preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
+            if (unregisteredUser){
+                //Show Anonymous Login
+                Realm.setDefaultConfiguration(UserManager.getLocalConfig());
+                realm = Realm.getDefaultInstance();
+                syncLayout.setVisibility(View.VISIBLE);
+                settingsLayout.setVisibility(View.GONE);
                 updateUI();
-            }
-
+            }else {
+                //User has registered before, show login page
+                startActivity(new Intent(this, SignInActivity.class));}
+        }else {
+            UserManager.setActiveUser(user);
+            updateUI();
         }
-
 
 //        //Check to see if the user has registered before
 //        //if yes, check to see if the user is not logged in, show login

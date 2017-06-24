@@ -1,11 +1,14 @@
 package com.okason.diary.ui.addnote;
 
 import android.content.Context;
+import android.net.Uri;
 
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 import com.okason.diary.models.Tag;
+
+import java.util.List;
 
 /**
  * Created by Valentine on 5/8/2017.
@@ -20,24 +23,55 @@ public interface AddNoteContract {
         void hideProgressDialog();
         void goBackToParent();
         Context getContext();
-
-
     }
 
     interface Action{
         void deleteJournal();
         void onDeleteNoteButtonClicked();
         void onTitleChange(String newTitle);
-        void onFolderChange(Folder newFolder);
+        void onFolderChange(String folderId);
         void onTagAdded(Tag tag);
         void onTagRemoved(Tag tag);
         void onNoteContentChange(String newContent);
         String getCurrentNoteId();
         Note getCurrentNote();
         void updateUI();
+        List<Tag> getAllTags();
+        List<Folder> getAllFolders();
         void onAttachmentAdded(Attachment attachment);
+        void onFileAttachmentSelected(Uri fileUri, String fileName);
         void onSaveAndExit();
+        Folder getFolderById(String id);
 
+
+    }
+
+    interface Repository{
+        List<Note> getAllNotes();
+        List<Tag> getAllTags();
+        int getNotePosition(String noteId);
+        Note getNoteById(String noteId);
+        Note createNewNote();
+        void updatedNoteTitle(String noteId, String title);
+        void updatedNoteContent(String noteId, String content);
+        void setFolder(String folderId, String noteId);
+        void addTag(String noteId, String tagId);
+        void removeTag(String noteId, String tagId);
+        void deleteNote(String noteId);
+        void saveNote(Note note);
+        Attachment getAttachmentbyId(String id);
+        void addAttachment(String noteId, Attachment attachment);
+        void addFileAttachment(Uri uri, String filename, String noteId);
+
+
+    }
+
+    interface FolderRepository{
+        List<Folder> getAllFolders();
+        Folder getFolderById(String id);
+        Folder createNewFolder();
+        void updatedFolderTitle(String id, String title);
+        void deleteFolder(String folderId);
     }
 
 

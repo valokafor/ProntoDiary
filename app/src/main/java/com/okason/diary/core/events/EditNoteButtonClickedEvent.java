@@ -1,19 +1,17 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.Note;
-
 /**
  * Created by Valentine on 5/13/2017.
  */
 
 public class EditNoteButtonClickedEvent {
-    private final Note clickedNote;
+    private String noteId;
 
-    public EditNoteButtonClickedEvent(Note clickedNote) {
-        this.clickedNote = clickedNote;
+    public EditNoteButtonClickedEvent(String noteId) {
+        this.noteId = noteId;
     }
 
-    public Note getClickedNote() {
-        return clickedNote;
+    public String getClickedNoteId() {
+        return noteId;
     }
 }

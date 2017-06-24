@@ -14,17 +14,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.gson.Gson;
 import com.okason.diary.R;
-import com.okason.diary.core.events.FolderAddedEvent;
+import com.okason.diary.data.FolderRealmRepository;
 import com.okason.diary.models.Folder;
 import com.okason.diary.utils.Constants;
-
-import org.greenrobot.eventbus.EventBus;
 
 
 /**
@@ -32,16 +25,7 @@ import org.greenrobot.eventbus.EventBus;
  */
 public class AddFolderDialogFragment extends DialogFragment {
     private EditText mFolderEditText;
-    private boolean mInEditMode = false;
-
-    private String categoryId = "";
-
     private Folder mFolder = null;
-    private DatabaseReference mDatabase;
-    private DatabaseReference folderCloudReference;
-
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
 
 
 
@@ -53,22 +37,19 @@ public class AddFolderDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-
-        folderCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
 
     }
 
 
 
 
-    public static AddFolderDialogFragment newInstance(String jsonFolder){
+    public static AddFolderDialogFragment newInstance(String folderId){
         AddFolderDialogFragment dialogFragment = new AddFolderDialogFragment();
-        Bundle args = new Bundle();
-        args.putString(Constants.SERIALIZED_FOLDER, jsonFolder);
-        dialogFragment.setArguments(args);
+        if (!TextUtils.isEmpty(folderId)) {
+            Bundle args = new Bundle();
+            args.putString(Constants.FOLDER_ID, folderId);
+            dialogFragment.setArguments(args);
+        }
         return dialogFragment;
     }
 
@@ -76,17 +57,14 @@ public class AddFolderDialogFragment extends DialogFragment {
      * The method gets the Folder that was passed in, in the form of serialized String
      */
     public void getCurrentFolder(){
-        Bundle args = getArguments();
-        if (args != null && args.containsKey(Constants.SERIALIZED_FOLDER)){
-            String jsonFolder = args.getString(Constants.SERIALIZED_FOLDER);
-            if (!TextUtils.isEmpty(jsonFolder)){
-                Gson gson = new Gson();
-                mFolder = gson.fromJson(jsonFolder, Folder.class);
-            }
-            if (mFolder != null){
-                mInEditMode = true;
+        if (getArguments() != null && getArguments().containsKey(Constants.FOLDER_ID)){
+            String folderId = getArguments().getString(Constants.NOTE_ID);
+            if (!TextUtils.isEmpty(folderId)){
+                mFolder = new FolderRealmRepository().getFolderById(folderId);
+
             }
         }
+
     }
 
     @Override
@@ -104,7 +82,7 @@ public class AddFolderDialogFragment extends DialogFragment {
 
             View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
             TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
-            titleText.setText(mInEditMode == true ? getString(R.string.edit_folder) : getString(R.string.add_folder));
+            titleText.setText(mFolder != null ? getString(R.string.edit_folder) : getString(R.string.add_folder));
             addFolderDialog.setCustomTitle(titleView);
 
             mFolderEditText = (EditText)convertView.findViewById(R.id.edit_text_add_category);
@@ -117,7 +95,7 @@ public class AddFolderDialogFragment extends DialogFragment {
 
                 }
             });
-            addFolderDialog.setPositiveButton(mInEditMode == true ? "Update" : "Add", new DialogInterface.OnClickListener() {
+            addFolderDialog.setPositiveButton(mFolder != null ? "Update" : "Add", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
@@ -178,19 +156,10 @@ public class AddFolderDialogFragment extends DialogFragment {
 
     private void saveFolder() {
         final String categoryName = mFolderEditText.getText().toString().trim();
-        if (mInEditMode){
-            mFolder.setFolderName(categoryName);
-            mFolder.setDateModified(System.currentTimeMillis());
-            folderCloudReference.child(mFolder.getId()).setValue(mFolder);
-            EventBus.getDefault().post(new FolderAddedEvent(mFolder));
-        } else {
-            mFolder = new Folder();
-            mFolder.setFolderName(categoryName);
-            mFolder.setId(folderCloudReference.push().getKey());
-            folderCloudReference.child(mFolder.getId()).setValue(mFolder);
-            EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+        if (mFolder == null){
+            mFolder = new FolderRealmRepository().createNewFolder();
         }
-
+        new FolderRealmRepository().updatedFolderTitle(mFolder.getId(), categoryName);
     }
 
 

@@ -30,14 +30,9 @@ import android.widget.TextView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
+import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
@@ -58,12 +53,10 @@ import butterknife.ButterKnife;
 public class NoteListFragment extends Fragment implements SearchView.OnQueryTextListener {
 
     private FirebaseAnalytics mFirebaseAnalytics;
-    private DatabaseReference mDatabase;
-    private DatabaseReference noteCloudReference;
+
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
 
-    private ValueEventListener mValueEventListener;
 
     private MediaPlayer mPlayer = null;
     private boolean isAudioPlaying = false;
@@ -109,8 +102,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        noteCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+
+
 
     }
 
@@ -128,49 +121,6 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
 
-
-        mValueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                final List<Note> notes = new ArrayList<>();
-                for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()){
-                    Note note = noteSnapshot.getValue(Note.class);
-                    notes.add(note);
-                }
-                if (notes != null && notes.size() > 0){
-                    showEmptyText(false);
-                    showNotes(notes);
-                    setProgressIndicator(false);
-                }else {
-                    showEmptyText(true);
-                    setProgressIndicator(false);
-                }
-
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                makeToast(databaseError.getMessage());
-
-            }
-        };
-
-
-
-
-        //Pull to refresh
-        swipeRefreshLayout.setColorSchemeColors(
-                ContextCompat.getColor(getActivity(), R.color.primary),
-                ContextCompat.getColor(getActivity(), R.color.accent),
-                ContextCompat.getColor(getActivity(), R.color.primary_dark));
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                noteCloudReference.removeEventListener(mValueEventListener);
-                noteCloudReference.addValueEventListener(mValueEventListener);
-            }
-        });
 
         mListAdapter.setNoteItemListener(new NoteItemListener() {
             @Override
@@ -209,16 +159,14 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             }
         });
 
-        noteCloudReference.addValueEventListener(mValueEventListener);
+
 
         return mRootView;
     }
 
     private void goToImageGallery(Note clickedNote, Attachment clickedAttachment) {
         Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-        Gson gson = new Gson();
-        String serializedNote = gson.toJson(clickedNote);
-        galleryIntent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
+        galleryIntent.putExtra(Constants.NOTE_ID, clickedNote.getId());
         galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
         startActivity(galleryIntent);
     }
@@ -226,17 +174,13 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public void onResume() {
         super.onResume();
-        setProgressIndicator(true);
+        showNotes();
 
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (noteCloudReference != null && mValueEventListener != null) {
-            noteCloudReference.removeEventListener(mValueEventListener);
-            mValueEventListener = null;
-        }
         if (mPlayer != null){
             mPlayer.release();
             mPlayer = null;
@@ -282,8 +226,15 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
 
 
-    public void showNotes(List<Note> notes) {
-        mListAdapter.replaceData(notes);
+    public void showNotes() {
+        final List<Note> notes = new NoteRealmRepository().getAllNotes();
+
+        if (notes != null && notes.size() > 0){
+            showEmptyText(false);
+            mListAdapter.replaceData(notes);
+        }else {
+            showEmptyText(true);
+        }
     }
 
 
@@ -315,7 +266,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     private void deleteNote(Note note) {
         if (!TextUtils.isEmpty(note.getId())) {
-            noteCloudReference.child(note.getId()).removeValue();
+            new NoteRealmRepository().deleteNote(note.getId());
         }
     }
 
@@ -339,9 +290,9 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
     public void showSingleDetailUi(Note selectedNote) {
-        Gson gson = new Gson();
-        String serializedNote = gson.toJson(selectedNote);
-       startActivity(NoteDetailActivity.getStartIntent(getContext(), serializedNote));
+
+        String id = selectedNote.getId();
+       startActivity(NoteDetailActivity.getStartIntent(getContext(), id));
     }
 
 

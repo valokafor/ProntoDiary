@@ -15,6 +15,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.models.Note;
 import com.okason.diary.models.Tag;
 
 import java.util.List;
@@ -58,7 +59,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
         if (!TextUtils.isEmpty(selectedTag.getTagName())){
             holder.tagCheckbox.setText(selectedTag.getTagName());
 
-            int count = selectedTag.getListOfNoteIds().size();
+            int count = selectedTag.getNotes().size();
             ColorGenerator generator = ColorGenerator.MATERIAL;
             int color = generator.getRandomColor();
             TextDrawable drawable = TextDrawable.builder()
@@ -66,9 +67,9 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
             holder.tagCountImage.setImageDrawable(drawable);
         }
 
-        if (selectedTag.getListOfNoteIds().size() > 0){
-            for (String id : selectedTag.getListOfNoteIds()){
-                if (id.equals(noteId)){
+        if (selectedTag.getNotes().size() > 0){
+            for (Note note : selectedTag.getNotes()){
+                if (note.getId().equals(noteId)){
                     holder.tagCheckbox.setChecked(true);
                 }
             }

@@ -1,19 +1,17 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.Folder;
-
 /**
  * Created by Valentine on 5/8/2017.
  */
 
 public class FolderAddedEvent {
-    private final Folder addedFolder;
+    private final String folderId;
 
-    public FolderAddedEvent(Folder addedFolder) {
-        this.addedFolder = addedFolder;
+    public FolderAddedEvent(String folderId) {
+        this.folderId = folderId;
     }
 
-    public Folder getAddedFolder() {
-        return addedFolder;
+    public String getAddedFolderId() {
+        return folderId;
     }
 }

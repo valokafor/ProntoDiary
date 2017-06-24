@@ -1,7 +1,6 @@
 package com.okason.diary.data;
 
-import com.okason.diary.models.NoteRealmModel;
-import com.okason.diary.models.Tag;
+import com.okason.diary.models.Note;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,22 +32,7 @@ public class SampleData {
 
     }
 
-    public static List<Tag> getSampleTag() {
-        List<Tag> tags = new ArrayList<>();
 
-        tags.add(new Tag("Funny"));
-        tags.add(new Tag("Word"));
-        tags.add(new Tag("Product"));
-        tags.add(new Tag("Friend"));
-        tags.add(new Tag("Finance"));
-        tags.add(new Tag("Health"));
-        tags.add(new Tag("Faith"));
-        tags.add(new Tag("Twitter"));
-
-
-        return tags;
-
-    }
 
 
     public static void getSampleNotes() {
@@ -56,14 +40,14 @@ public class SampleData {
 
         try (Realm realm = Realm.getDefaultInstance()) {
             realm.beginTransaction();
-            NoteRealmModel note1 = realm.createObject(NoteRealmModel.class, UUID.randomUUID().toString());
+            Note note1 = realm.createObject(Note.class, UUID.randomUUID().toString());
             note1.setTitle("DisneyLand Trip");
             note1.setContent("We went to Disneyland today and the kids had lots of fun!");
             Calendar calendar1 = GregorianCalendar.getInstance();
             note1.setDateModified(calendar1.getTimeInMillis());
 
 
-            NoteRealmModel note2 = realm.createObject(NoteRealmModel.class, UUID.randomUUID().toString());
+            Note note2 = realm.createObject(Note.class, UUID.randomUUID().toString());
             note2.setTitle("Gym Work Out");
             note2.setContent("I went to the Gym today and I got a lot of exercises");
 

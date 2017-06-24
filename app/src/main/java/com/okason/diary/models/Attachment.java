@@ -4,12 +4,17 @@ import android.net.Uri;
 
 import java.io.File;
 
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Attachment{
+public class Attachment extends RealmObject{
 
+
+    @PrimaryKey
     private String id;
     private String localFilePath;
     private String cloudFilePath;

@@ -17,13 +17,13 @@ public class Constants {
     public static final String NOTE_TITLE = "note_title";
     public static final String RESULT_OK = "ok";
     public static final String SERIALIZED_ATTACHMENT_ID = "serialized_attachment_id";
-    public static final String SERIALIZED_NOTE = "serialized_note";
     public static final String SELECTED_ID = "selected_id";
     public static final String ERROR_MESSAGE = "error_message";
     public static final String STORAGE_RECORD_CLOUD_END_POINT = "/storage_records";
     public static final String FILE_PATH = "file_path";
     public static final String SELECTED_FOLDER_ID = "selected_folder_id";
     public static final String FIRST_RUN = "first_run";
+    public static final String FOLDER_ID = "folder_id";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
