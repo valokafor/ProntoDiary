@@ -74,6 +74,16 @@ public class NoteDetailActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
+    @Override
+    public void onBackPressed() {
+        int count = getFragmentManager().getBackStackEntryCount();
+        if (count == 0) {
+            super.onBackPressed();
+        } else {
+            getFragmentManager().popBackStack();
+        }
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEditNoteButtonClickedEvent(EditNoteButtonClickedEvent event){
         Intent editNoteIntent = new Intent(NoteDetailActivity.this, AddNoteActivity.class);

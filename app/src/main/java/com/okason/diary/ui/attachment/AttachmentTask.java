@@ -23,6 +23,7 @@ import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.events.AttachingFileCompleteEvent;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.utils.StorageHelper;
 

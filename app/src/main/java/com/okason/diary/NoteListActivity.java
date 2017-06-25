@@ -13,7 +13,6 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -26,16 +25,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
-import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListFragment;
@@ -171,58 +165,9 @@ public class NoteListActivity extends AppCompatActivity {
             updateUI();
         }
 
-//        //Check to see if the user has registered before
-//        //if yes, check to see if the user is not logged in, show login
-//        mAuth = FirebaseAuth.getInstance();
-//        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-//        unregisteredUser = preferences.getBoolean(Constants.ANONYMOUS_USER, true);
-//        if (unregisteredUser){
-//            loginAnonymously();
-//            settingsLayout.setVisibility(View.GONE);
-//            syncLayout.setVisibility(View.VISIBLE);
-//        }else {
-//            loginRegisteredUser();
-//            settingsLayout.setVisibility(View.VISIBLE);
-//            syncLayout.setVisibility(View.GONE);
-//        }
     }
 
 
-    private void loginAnonymously() {
-        if (mAuth == null){
-            mAuth = FirebaseAuth.getInstance();
-        }
-
-        mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()){
-                    FirebaseUser user = mAuth.getCurrentUser();
-                    if (user != null){
-                        String tempUserId = user.getUid();
-                        preferences.edit().putString(Constants.ANONYMOUS_ACCOUNT_USER_ID, tempUserId).commit();
-                        ProntoDiaryApplication.setCloudSyncEnabled(false);
-                        updateUI();
-                    }
-
-                }else {
-                    makeToast(getString(R.string.anonymous_account_failed_error));
-                }
-            }
-        });
-    }
-
-    private void loginRegisteredUser() {
-        mFirebaseUser = mAuth.getCurrentUser();
-        if (mFirebaseUser == null){
-            //Go to sign in Activity
-            startActivity(new Intent(mActivity, AuthUiActivity.class));
-        }else {
-            ProntoDiaryApplication.setCloudSyncEnabled(true);
-            updateUI();
-        }
-
-    }
 
 
     @Override

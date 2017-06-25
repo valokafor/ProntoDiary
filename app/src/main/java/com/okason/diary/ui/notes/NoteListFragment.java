@@ -44,8 +44,9 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.OrderedCollectionChangeSet;
+import io.realm.OrderedRealmCollectionChangeListener;
 import io.realm.Realm;
-import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 
 /**
@@ -122,17 +123,40 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         mRootView = inflater.inflate(R.layout.fragment_note_list, container, false);
         ButterKnife.bind(this, mRootView);
 
-        mRealm = Realm.getDefaultInstance();
-        mNotes = mRealm.where(Note.class).findAll();
-        mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
-            @Override
-            public void onChange(RealmResults<Note> notes) {
-                showNotes(notes);
-            }
-        });
+
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
         return mRootView;
     }
+
+    private final OrderedRealmCollectionChangeListener<RealmResults<Note>> noteChangeListener = new OrderedRealmCollectionChangeListener<RealmResults<Note>>() {
+        @Override
+        public void onChange(RealmResults<Note> notes, OrderedCollectionChangeSet changeSet) {
+
+            if (changeSet == null){
+                showNotes(mNotes);
+            }
+
+            OrderedCollectionChangeSet.Range[] deletions = changeSet.getDeletionRanges();
+            for (int i = deletions.length - 1; i >= 0; i--) {
+                OrderedCollectionChangeSet.Range range = deletions[i];
+                mListAdapter.notifyItemRangeRemoved(range.startIndex, range.length);
+            }
+
+            OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
+            for (OrderedCollectionChangeSet.Range range : insertions) {
+                mListAdapter.notifyItemRangeInserted(range.startIndex, range.length);
+            }
+
+            OrderedCollectionChangeSet.Range[] modifications = changeSet.getChangeRanges();
+            for (OrderedCollectionChangeSet.Range range : modifications) {
+                mListAdapter.notifyItemRangeChanged(range.startIndex, range.length);
+            }
+
+
+
+
+        }
+    };
 
     private void goToImageGallery(Note clickedNote, Attachment clickedAttachment) {
         Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
@@ -144,16 +168,14 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public void onResume() {
         super.onResume();
-        mRealm = Realm.getDefaultInstance();
-        mNotes = mRealm.where(Note.class).findAll();
-        mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
-            @Override
-            public void onChange(RealmResults<Note> notes) {
-                showNotes(notes);
-            }
-        });
-        showNotes(mNotes);
-
+        try {
+            mRealm = Realm.getDefaultInstance();
+            mNotes = mRealm.where(Note.class).findAll();
+            mNotes.addChangeListener(noteChangeListener);
+            showNotes(mNotes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -53,7 +53,6 @@ import com.google.firebase.storage.UploadTask;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.core.events.DatabaseOperationCompletedEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.events.OnAttachmentAddedToNoteEvent;
@@ -65,7 +64,7 @@ import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 import com.okason.diary.models.Tag;
-import com.okason.diary.ui.attachment.AttachingFileCompleteEvent;
+import com.okason.diary.core.events.AttachingFileCompleteEvent;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.attachment.AttachmentTask;
 import com.okason.diary.ui.attachment.GalleryActivity;
@@ -259,7 +258,7 @@ public class NoteEditorFragment extends Fragment implements
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
-        mPresenter.updateUI();
+       // mPresenter.updateUI();
     }
 
     @Override
@@ -298,7 +297,7 @@ public class NoteEditorFragment extends Fragment implements
                 displayShareIntent(mPresenter.getCurrentNote());
                 break;
             case android.R.id.home:
-                mPresenter.onSaveAndExit(true);
+                mPresenter.onSaveAndExit();
                 break;
             case R.id.action_tag:
                 showSelectTag();
@@ -347,16 +346,7 @@ public class NoteEditorFragment extends Fragment implements
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDatabaseOperationCompleteEvent(DatabaseOperationCompletedEvent event) {
-        hideProgressDialog();
-        if (event.isShouldUpdateUi()) {
-            mPresenter.updateUI();
-        }
-        if (!TextUtils.isEmpty(event.getMessage())) {
-            makeToast(event.getMessage());
-        }
-    }
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAttachmentAddedToNote(OnAttachmentAddedToNoteEvent event) {
@@ -464,9 +454,8 @@ public class NoteEditorFragment extends Fragment implements
             mCategory.setText(Constants.DEFAULT_CATEGORY);
         }
         mContent.requestFocus();
-        if (note.getAttachments() != null && note.getAttachments().size() > 0) {
-            initViewAttachments(note.getAttachments());
-        }
+        initViewAttachments(note.getAttachments());
+       
 
     }
 

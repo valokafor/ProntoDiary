@@ -1,4 +1,4 @@
-package com.okason.diary.ui.attachment;
+package com.okason.diary.core.events;
 
 import com.okason.diary.models.Attachment;
 

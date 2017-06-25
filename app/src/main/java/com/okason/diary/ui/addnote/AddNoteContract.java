@@ -1,7 +1,6 @@
 package com.okason.diary.ui.addnote;
 
 import android.content.Context;
-import android.net.Uri;
 
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
@@ -41,8 +40,7 @@ public interface AddNoteContract {
         List<Tag> getAllTags();
         List<Folder> getAllFolders();
         void onAttachmentAdded(Attachment attachment);
-        void onFileAttachmentSelected(Uri fileUri, String fileName);
-        void onSaveAndExit(boolean shouldExit);
+        void onSaveAndExit();
         Folder getFolderById(String id);
 
 
@@ -63,7 +61,7 @@ public interface AddNoteContract {
         void saveNote(Note note);
         Attachment getAttachmentbyId(String id);
         void addAttachment(String noteId, Attachment attachment);
-        void addFileAttachment(Uri uri, String filename, String noteId);
+
 
 
     }

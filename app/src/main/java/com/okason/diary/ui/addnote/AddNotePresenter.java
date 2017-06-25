@@ -1,6 +1,5 @@
 package com.okason.diary.ui.addnote;
 
-import android.net.Uri;
 import android.text.TextUtils;
 
 import com.okason.diary.R;
@@ -41,6 +40,7 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
         if (!TextUtils.isEmpty(noteid)){
             mCurrentNote = mRepository.getNoteById(noteid);
+            mView.populateNote(mCurrentNote);
         }
     }
 
@@ -144,33 +144,20 @@ public class AddNotePresenter implements AddNoteContract.Action {
     public void onAttachmentAdded(Attachment attachment) {
         //First ensure a Note has been created
         if (mCurrentNote == null){
-            //This is a new Note that has not been saved
-            dataChanged = true;
-            onSaveAndExit(false);
-        }
-
-        if (mCurrentNote == null){
             mCurrentNote = mRepository.createNewNote();
         }
 
+        mRepository.updatedNoteContent(mCurrentNote.getId(), mView.getContent());
+        mRepository.updatedNoteTitle(mCurrentNote.getId(), mView.getTitle());
         //Add the attachment to the Note
         mRepository.addAttachment(mCurrentNote.getId(), attachment);
     }
 
-    @Override
-    public void onFileAttachmentSelected(Uri fileUri, String fileName) {
-        //First ensure a Note has been created
-        if (mCurrentNote == null){
-            mCurrentNote = mRepository.createNewNote();
-        }
 
-        mRepository.addFileAttachment(fileUri, fileName, mCurrentNote.getId());
-        mView.showProgressDialog();
-    }
 
 
     @Override
-    public void onSaveAndExit(boolean shouldExit) {
+    public void onSaveAndExit() {
 
         if (!dataChanged){
             return;
@@ -215,9 +202,7 @@ public class AddNotePresenter implements AddNoteContract.Action {
 //            }
 
 
-        if (shouldExit) {
-            mView.goBackToParent();
-        }
+        mView.goBackToParent();
 
 
     }
