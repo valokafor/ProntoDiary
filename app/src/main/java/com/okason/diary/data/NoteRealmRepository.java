@@ -5,6 +5,7 @@ import android.net.Uri;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.DatabaseOperationCompletedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
+import com.okason.diary.core.events.OnAttachmentAddedToNoteEvent;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -261,12 +262,13 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
 
                     Note parentNote = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
                     parentNote.getAttachments().add(savedAttachment);
+                    EventBus.getDefault().post(new OnAttachmentAddedToNoteEvent(backgroundRealm.copyFromRealm(parentNote)));
 
                 }
             }, new Realm.Transaction.OnSuccess() {
                 @Override
                 public void onSuccess() {
-                    EventBus.getDefault().post(new DatabaseOperationCompletedEvent(true, ""));
+                   // EventBus.getDefault().post(new DatabaseOperationCompletedEvent(true, ""));
                 }
             }, new Realm.Transaction.OnError() {
                 @Override

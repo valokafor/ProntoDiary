@@ -160,6 +160,7 @@ public class AddFolderDialogFragment extends DialogFragment {
             mFolder = new FolderRealmRepository().createNewFolder();
         }
         new FolderRealmRepository().updatedFolderTitle(mFolder.getId(), categoryName);
+
     }
 
 

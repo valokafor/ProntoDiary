@@ -59,7 +59,6 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     @Override
     public void onTitleChange(String newTitle) {
-        title = newTitle;
         dataChanged = true;
 
     }
@@ -93,7 +92,6 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     @Override
     public void onNoteContentChange(String newContent) {
-        content = newContent;
         dataChanged = true;
     }
 
@@ -146,12 +144,17 @@ public class AddNotePresenter implements AddNoteContract.Action {
     public void onAttachmentAdded(Attachment attachment) {
         //First ensure a Note has been created
         if (mCurrentNote == null){
+            //This is a new Note that has not been saved
+            dataChanged = true;
+            onSaveAndExit(false);
+        }
+
+        if (mCurrentNote == null){
             mCurrentNote = mRepository.createNewNote();
         }
 
         //Add the attachment to the Note
         mRepository.addAttachment(mCurrentNote.getId(), attachment);
-        mView.showProgressDialog();
     }
 
     @Override
@@ -167,30 +170,35 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
 
     @Override
-    public void onSaveAndExit() {
+    public void onSaveAndExit(boolean shouldExit) {
 
-        //User has clicked Save and Exit button
-        if (!TextUtils.isEmpty(title) || !TextUtils.isEmpty(content)){
-            mView.showMessage(getAppContext().getString(R.string.saving_journal));
-
-            if (mCurrentNote == null){
-                mCurrentNote = mRepository.createNewNote();
-            }
-
-
-            //Check to see if Title is empty
-            if (TextUtils.isEmpty(title)){
-                title = ProntoDiaryApplication.getAppContext().getString(R.string.missing_title);
-            }
-
-            //Check to see if content is empty
-            if (TextUtils.isEmpty(content)){
-                content = ProntoDiaryApplication.getAppContext().getString(R.string.missing_content);
-            }
-
-            mRepository.updatedNoteContent(mCurrentNote.getId(), content);
-            mRepository.updatedNoteTitle(mCurrentNote.getId(), title);
+        if (!dataChanged){
+            return;
         }
+
+        mView.showMessage(getAppContext().getString(R.string.saving_journal));
+
+        if (mCurrentNote == null){
+            mCurrentNote = mRepository.createNewNote();
+        }
+
+
+        //Check to see if Title is empty
+        if (TextUtils.isEmpty(mView.getTitle())){
+            title = ProntoDiaryApplication.getAppContext().getString(R.string.missing_title);
+        }else {
+            title = mView.getTitle();
+        }
+
+        //Check to see if content is empty
+        if (TextUtils.isEmpty(mView.getContent())){
+            content = ProntoDiaryApplication.getAppContext().getString(R.string.missing_content);
+        }else {
+            content = mView.getContent();
+        }
+
+        mRepository.updatedNoteContent(mCurrentNote.getId(), content);
+        mRepository.updatedNoteTitle(mCurrentNote.getId(), title);
 
 
             //Upload the attachments to cloud
@@ -207,10 +215,9 @@ public class AddNotePresenter implements AddNoteContract.Action {
 //            }
 
 
-        mView.goBackToParent();
-
-
-
+        if (shouldExit) {
+            mView.goBackToParent();
+        }
 
 
     }

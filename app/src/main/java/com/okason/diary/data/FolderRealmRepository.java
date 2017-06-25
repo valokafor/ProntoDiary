@@ -1,7 +1,10 @@
 package com.okason.diary.data;
 
+import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.models.Folder;
 import com.okason.diary.ui.addnote.AddNoteContract;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,10 +64,15 @@ public class FolderRealmRepository implements AddNoteContract.FolderRepository {
                 @Override
                 public void execute(Realm backgroundRealm) {
                     Folder selectedFolder = backgroundRealm.where(Folder.class).equalTo("id", id).findFirst();
-                    if (selectedFolder != null){
+                    if (selectedFolder != null) {
                         selectedFolder.setFolderName(title);
                         selectedFolder.setDateModified(System.currentTimeMillis());
                     }
+                }
+            }, new Realm.Transaction.OnSuccess() {
+                @Override
+                public void onSuccess() {
+                    EventBus.getDefault().post(new FolderAddedEvent(id));
                 }
             });
         }

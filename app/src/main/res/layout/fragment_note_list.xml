@@ -14,25 +14,15 @@
         ads:adUnitId="@string/banner_ad_unit_id"></com.google.android.gms.ads.AdView>
 
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/refresh_layout"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/note_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/adView"
-        android:visibility="visible">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/note_recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingBottom="@dimen/margin_padding_xtiny"
-            android:paddingLeft="@dimen/margin_padding_xtiny"
-            android:paddingRight="@dimen/margin_padding_xtiny"
-            android:paddingTop="@dimen/margin_padding_xtiny" />
-
-
-    </android.support.v4.widget.SwipeRefreshLayout>
-
+        android:paddingBottom="@dimen/margin_padding_xtiny"
+        android:paddingLeft="@dimen/margin_padding_xtiny"
+        android:paddingRight="@dimen/margin_padding_xtiny"
+        android:paddingTop="@dimen/margin_padding_xtiny" />
 
     <TextView
         android:id="@+id/empty_text"

@@ -56,9 +56,11 @@ import com.okason.diary.R;
 import com.okason.diary.core.events.DatabaseOperationCompletedEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
+import com.okason.diary.core.events.OnAttachmentAddedToNoteEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.data.FolderRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -106,6 +108,7 @@ public class NoteEditorFragment extends Fragment implements
     private AddFolderDialogFragment addFolderDialogFragment;
 
     private AttachmentListAdapter attachmentListAdapter;
+    private Note mCurrentNote;
 
 
 
@@ -295,7 +298,7 @@ public class NoteEditorFragment extends Fragment implements
                 displayShareIntent(mPresenter.getCurrentNote());
                 break;
             case android.R.id.home:
-                mPresenter.onSaveAndExit();
+                mPresenter.onSaveAndExit(true);
                 break;
             case R.id.action_tag:
                 showSelectTag();
@@ -339,7 +342,7 @@ public class NoteEditorFragment extends Fragment implements
     public void onAttachmentAdded(AttachingFileCompleteEvent event) {
         if (event.isResultOk()) {
             //Attachment was created successfully
-            hideProgressDialog();
+            //hideProgressDialog();
             mPresenter.onAttachmentAdded(event.getAttachment());
         }
     }
@@ -356,9 +359,21 @@ public class NoteEditorFragment extends Fragment implements
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onAttachmentAddedToNote(OnAttachmentAddedToNoteEvent event) {
+        hideProgressDialog();
+        populateNote(event.getUpdatedNote());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAddNewCategory(FolderAddedEvent event){
         addFolderDialogFragment.dismiss();
-        mCategory.setText(mPresenter.getFolderById(event.getAddedFolderId()).getFolderName());
+        String folderId = event.getAddedFolderId();
+        Folder selectedFolder = new FolderRealmRepository().getFolderById(folderId);
+
+        if (selectedFolder != null){
+            String folderName = selectedFolder.getFolderName();
+            mCategory.setText(folderName);
+        }
         mPresenter.onFolderChange(event.getAddedFolderId());
 
     }
@@ -476,6 +491,16 @@ public class NoteEditorFragment extends Fragment implements
     @Override
     public void goBackToParent() {
         startActivity(new Intent(getActivity(), NoteListActivity.class));
+    }
+
+    @Override
+    public String getTitle() {
+        return mTitle.getText().toString();
+    }
+
+    @Override
+    public String getContent() {
+        return mContent.getText().toString();
     }
 
     /**

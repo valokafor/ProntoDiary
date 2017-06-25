@@ -23,6 +23,8 @@ public interface AddNoteContract {
         void hideProgressDialog();
         void goBackToParent();
         Context getContext();
+        String getTitle();
+        String getContent();
     }
 
     interface Action{
@@ -40,7 +42,7 @@ public interface AddNoteContract {
         List<Folder> getAllFolders();
         void onAttachmentAdded(Attachment attachment);
         void onFileAttachmentSelected(Uri fileUri, String fileName);
-        void onSaveAndExit();
+        void onSaveAndExit(boolean shouldExit);
         Folder getFolderById(String id);
 
 

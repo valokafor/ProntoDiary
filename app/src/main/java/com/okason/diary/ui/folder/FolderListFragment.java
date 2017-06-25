@@ -55,7 +55,6 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
     private Realm mRealm;
-    private RealmChangeListener<Folder> folderChangeListener;
     private RealmResults<Folder> mFolders;
 
 
