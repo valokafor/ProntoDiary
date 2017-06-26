@@ -33,6 +33,8 @@
     <string name="sync_reason_4">Peace of mind, if something happens to your device, be rest assured that your data will be waiting for you on your next device.</string>
     <string name="sync_reason_5">Your app will continue to work 100% offline. Only syncs when you have internet access.</string>
 
+    <string name="sync_reason">  Welcome to Pronto Diary \n \nCreate an account to save your Diaries and Journal Entries. You can access them from any Android device. It\'s free. Always!.</string>
+
 
     <!--Account Register and Login Related-->
     <string name="prompt_username">Email Address</string>

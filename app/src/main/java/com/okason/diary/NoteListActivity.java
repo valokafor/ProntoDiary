@@ -30,12 +30,13 @@ import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
+import com.okason.diary.core.services.HandleRealmLoginService;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
-import com.okason.diary.ui.settings.SyncFragment;
 import com.okason.diary.ui.todolist.TodoListFragment;
 import com.okason.diary.utils.Constants;
 
@@ -162,6 +163,12 @@ public class NoteListActivity extends AppCompatActivity {
                 startActivity(new Intent(this, SignInActivity.class));}
         }else {
             UserManager.setActiveUser(user);
+            syncLayout.setVisibility(View.GONE);
+            settingsLayout.setVisibility(View.VISIBLE);
+            Intent completeLoginService = new Intent(mActivity, HandleRealmLoginService.class);
+            completeLoginService.putExtra(Constants.PASSWORD, "sample");
+            completeLoginService.putExtra(Constants.REALM_USER_JSON, user.toJson());
+            startService(completeLoginService);
             updateUI();
         }
 
@@ -234,7 +241,7 @@ public class NoteListActivity extends AppCompatActivity {
                 resetBottomNavigationIcons();
                 syncButton.setImageResource(R.drawable.ic_action_reload_light_red);
                 syncTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
-                openFragment(new SyncFragment(), getString(R.string.title_cloud_sync), Constants.SYNC_FRAGMENT_TAG);
+                startActivity(new Intent(mActivity, AuthUiActivity.class));
 
             }
         });

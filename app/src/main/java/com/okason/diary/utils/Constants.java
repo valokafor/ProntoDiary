@@ -24,6 +24,10 @@ public class Constants {
     public static final String SELECTED_FOLDER_ID = "selected_folder_id";
     public static final String FIRST_RUN = "first_run";
     public static final String FOLDER_ID = "folder_id";
+    public static final String EMAIL_ADDRESSS = "email_address";
+    public static final String PASSWORD = "password";
+    public static final String PRONTO_DIARY_USER_CLOUD_REFERENCE = "pronto_diary_users";
+    public static final String REALM_USER_JSON = "realmJson";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

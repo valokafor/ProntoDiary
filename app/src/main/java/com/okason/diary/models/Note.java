@@ -1,7 +1,5 @@
 package com.okason.diary.models;
 
-import java.util.List;
-
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
@@ -34,6 +32,19 @@ public class Note extends RealmObject{
     private RealmList<Task> tasks;
     private RealmList<PeopleJournal> peopleJournals;
     private RealmList<History> historyList;
+
+    public void update(Note note){
+        this.title = note.getTitle();
+        this.content = note.getContent();
+        this.dateCreated = note.getDateCreated();
+        this.dateModified = note.getDateModified();
+        this.attachments = note.getAttachments();
+        this.tags = note.getTags();
+        this.folder = note.getFolder();
+        this.tasks = note.getTasks();
+        this.peopleJournals = note.getPeopleJournals();
+        this.historyList = note.getHistoryList();
+    }
 
 
     public String getId() {
@@ -100,7 +111,7 @@ public class Note extends RealmObject{
         this.folder = folder;
     }
 
-    public List<Task> getTasks() {
+    public RealmList<Task> getTasks() {
         return tasks;
     }
 
@@ -108,7 +119,7 @@ public class Note extends RealmObject{
         this.tasks = tasks;
     }
 
-    public List<PeopleJournal> getPeopleJournals() {
+    public RealmList<PeopleJournal> getPeopleJournals() {
         return peopleJournals;
     }
 
@@ -116,7 +127,7 @@ public class Note extends RealmObject{
         this.peopleJournals = peopleJournals;
     }
 
-    public List<History> getHistoryList() {
+    public RealmList<History> getHistoryList() {
         return historyList;
     }
 
