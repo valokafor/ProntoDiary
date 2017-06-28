@@ -45,6 +45,7 @@
     <dimen name="note_editor_icon_size">24dp</dimen>
     <dimen name="attachment_thumnbail_height">125dp</dimen>
     <dimen name="attachment_thumnbail_weight">125dp</dimen>
+    <dimen name="vector_icon_size">25dp</dimen>
 
     <!-- Attachment dialog -->
     <dimen name="attachment_dialog_text_size">16sp</dimen>

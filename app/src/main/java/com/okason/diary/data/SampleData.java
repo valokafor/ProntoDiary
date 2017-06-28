@@ -1,6 +1,7 @@
 package com.okason.diary.data;
 
 import com.okason.diary.models.Note;
+import com.okason.diary.models.TodoList;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,6 +31,25 @@ public class SampleData {
 
         return categoryNames;
 
+    }
+
+
+    public static List<TodoList> getSampleTodoListItems(){
+        List<TodoList> sampleTodos = new ArrayList<TodoList>();
+
+        TodoList todoList1 = new TodoList();
+        todoList1.setTitle("Personal");
+        sampleTodos.add(todoList1);
+
+        TodoList todoList2 = new TodoList();
+        todoList2.setTitle("Work Related");
+        sampleTodos.add(todoList2);
+
+        TodoList todoList3 = new TodoList();
+        todoList3.setTitle("Kitchen Remodelling Project");
+        sampleTodos.add(todoList3);
+
+        return sampleTodos;
     }
 
 

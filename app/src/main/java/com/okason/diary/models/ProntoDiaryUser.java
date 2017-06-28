@@ -16,6 +16,7 @@ public class ProntoDiaryUser {
     private String realmJson;
     private String realmPassword;
 
+
     public String getId() {
         return id;
     }

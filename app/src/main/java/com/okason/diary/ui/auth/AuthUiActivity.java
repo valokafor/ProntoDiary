@@ -79,10 +79,6 @@ public class AuthUiActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
 
-        //If user is already logged in, return
-//        if (mFirebaseUser != null){
-//            finish();
-//        }
 
         try {
             PackageInfo info = getPackageManager().getPackageInfo(
@@ -99,14 +95,8 @@ public class AuthUiActivity extends AppCompatActivity {
 
         }
 
+        showSignInScreen();
 
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        if (auth.getCurrentUser() != null && !TextUtils.isEmpty(auth.getCurrentUser().getEmail())) {
-            startActivity(new Intent(this, NoteListActivity.class));
-            finish();
-        }else {
-            showSignInScreen();
-        }
     }
 
 
@@ -214,14 +204,14 @@ public class AuthUiActivity extends AppCompatActivity {
                             //Get the Sync User
                             SyncUser syncUser = SyncUser.fromJson(user.getRealmJson());
                             if (syncUser == null){
-                                //If Realm user cannot be retrieve, try logging in
+                                //If Realm user cannot be retrieved, try logging in
                                 Intent loginIntent = new Intent(AuthUiActivity.this, SignInActivity.class);
                                 loginIntent.putExtra(Constants.EMAIL_ADDRESSS, user.getEmailAddress());
                                 loginIntent.putExtra(Constants.PASSWORD, user.getRealmPassword());
                                 startActivity(loginIntent);
                             }else {
-                                //We have a valid Realm User, to to app
-                                Intent in = new Intent(AuthUiActivity.this, RegisterActivity.class);
+                                //We have a valid Realm User, go to app
+                                Intent in = new Intent(AuthUiActivity.this, NoteListActivity.class);
                                 in.putExtra(EXTRA_IDP_RESPONSE, IdpResponse.fromResultIntent(data));
                                 startActivity(in);
                                 finish();

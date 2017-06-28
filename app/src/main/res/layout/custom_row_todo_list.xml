@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/margin_padding_xnormal"
+        android:paddingRight="@dimen/margin_padding_xnormal"
+        android:paddingTop="@dimen/margin_padding_xnormal"
+        android:paddingBottom="@dimen/margin_padding_xnormal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginLeft="@dimen/margin_padding_small"
+            android:layout_gravity="center">
+
+            <TextView
+                android:id="@+id/text_view_todo_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Design Review"
+                android:textSize="@dimen/text_size_xnormal"
+                android:maxLines="1"/>
+
+            <TextView
+                android:id="@+id/text_view_todo_task_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_padding_tiny"
+                android:text="4 Tasks (2 done, 2 pending)"
+                android:textSize="@dimen/text_size_small"
+                android:maxLines="1"/>
+
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/image_view_detail"
+            android:layout_width="@dimen/vector_icon_size"
+            android:layout_height="@dimen/vector_icon_size"
+            app:srcCompat="@drawable/ic_right_arrow_white"
+            android:background="@drawable/red_circle"
+            android:layout_marginLeft="@dimen/margin_padding_small"
+            android:padding="@dimen/margin_padding_tiny" />
+    </LinearLayout>
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorGreenExtraLight"
+        android:layout_gravity="bottom"
+        android:layout_marginLeft="@dimen/margin_padding_xnormal"
+        android:layout_marginRight="@dimen/margin_padding_xnormal"
+        >
+    </View>
+
+
+
+</FrameLayout>

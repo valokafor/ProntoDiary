@@ -12,9 +12,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.okason.diary.data.NoteRealmRepository;
+import com.okason.diary.models.Note;
 import com.okason.diary.models.ProntoDiaryUser;
+import com.okason.diary.ui.addnote.AddNoteContract;
+import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.utils.Constants;
 
+import io.realm.Realm;
+import io.realm.RealmResults;
 import io.realm.SyncUser;
 
 
@@ -71,21 +77,21 @@ public class HandleRealmLoginService extends IntentService {
             }
         });
 
-//        Realm localRealm = Realm.getInstance(UserManager.getLocalConfig());
-//        Realm syncRealm = Realm.getInstance(UserManager.getSyncConfig(mSyncUser));
-//        AddNoteContract.Repository noteRepository = new NoteRealmRepository();
-//
-//        RealmResults<Note> localNotes = localRealm.where(Note.class).findAll();
-//        if (localNotes != null && localNotes.size() >0 ){
-//            //There are local Notes that need to be copied over to Synced Realm
-//            syncRealm.beginTransaction();
-//            for (Note note: localNotes){
-//                Note syncNote = noteRepository.createNewNote();
-//                syncNote.update(note);
-//            }
-//            syncRealm.commitTransaction();
-//
-//        }
+        Realm localRealm = Realm.getInstance(UserManager.getLocalConfig());
+        Realm syncRealm = Realm.getInstance(UserManager.getSyncConfig(mSyncUser));
+        AddNoteContract.Repository noteRepository = new NoteRealmRepository();
+
+        RealmResults<Note> localNotes = localRealm.where(Note.class).findAll();
+        if (localNotes != null && localNotes.size() >0 ){
+            //There are local Notes that need to be copied over to Synced Realm
+            syncRealm.beginTransaction();
+            for (Note note: localNotes){
+                Note syncNote = noteRepository.createNewNote();
+                syncNote.update(note);
+            }
+            syncRealm.commitTransaction();
+
+        }
 
 
 

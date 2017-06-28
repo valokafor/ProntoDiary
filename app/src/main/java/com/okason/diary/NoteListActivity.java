@@ -30,9 +30,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
-import com.okason.diary.core.services.HandleRealmLoginService;
 import com.okason.diary.ui.auth.AuthUiActivity;
-import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
@@ -160,15 +158,11 @@ public class NoteListActivity extends AppCompatActivity {
                 updateUI();
             }else {
                 //User has registered before, show login page
-                startActivity(new Intent(this, SignInActivity.class));}
+                startActivity(new Intent(this, AuthUiActivity.class));}
         }else {
             UserManager.setActiveUser(user);
             syncLayout.setVisibility(View.GONE);
             settingsLayout.setVisibility(View.VISIBLE);
-            Intent completeLoginService = new Intent(mActivity, HandleRealmLoginService.class);
-            completeLoginService.putExtra(Constants.PASSWORD, "sample");
-            completeLoginService.putExtra(Constants.REALM_USER_JSON, user.toJson());
-            startService(completeLoginService);
             updateUI();
         }
 

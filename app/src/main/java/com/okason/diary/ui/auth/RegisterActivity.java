@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crash.FirebaseCrash;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.services.HandleRealmLoginService;
@@ -149,11 +150,10 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
 
             @Override
             public void onError(ObjectServerError error) {
+                FirebaseCrash.log(emailAddress + ": Realm register failed");
+                FirebaseCrash.log(emailAddress + ": generated password: " + generatedPassword);
                 showProgress(false);
-                Intent intent = new Intent(mActivity, SignInActivity.class);
-                intent.putExtra(Constants.EMAIL_ADDRESSS, emailAddress);
-                intent.putExtra(Constants.PASSWORD, generatedPassword);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                Intent intent = new Intent(mActivity, NoteListActivity.class);
                 startActivity(intent);
 
 
@@ -172,7 +172,7 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
 
 
         showProgress(false);
-        Intent intent = new Intent(this, NoteListActivity.class);
+        Intent intent = new Intent(mActivity, NoteListActivity.class);
         startActivity(intent);
     }
 
