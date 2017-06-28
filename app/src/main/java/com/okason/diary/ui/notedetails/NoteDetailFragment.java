@@ -34,18 +34,16 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.gson.Gson;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
+import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
@@ -106,8 +104,6 @@ public class NoteDetailFragment extends Fragment{
 
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
-    private DatabaseReference mDatabase;
-    private DatabaseReference noteCloudReference;
     private FirebaseStorage mFirebaseStorage;
 
 
@@ -119,24 +115,20 @@ public class NoteDetailFragment extends Fragment{
         // Required empty public constructor
     }
 
-    private Note getPassedInNote() {
-        if (getArguments() != null && getArguments().containsKey(Constants.SERIALIZED_NOTE)) {
-            String serializedNote = getArguments().getString(Constants.SERIALIZED_NOTE);
-            if (!TextUtils.isEmpty(serializedNote)) {
-                Gson gson = new Gson();
-                Note note = gson.fromJson(serializedNote, Note.class);
-                return note;
-            }
+    private String getPassedInNoteId() {
+        if (getArguments() != null && getArguments().containsKey(Constants.NOTE_ID)){
+            String noteId = getArguments().getString(Constants.NOTE_ID);
+            return noteId;
         }
-        return null;
+        return "";
 
     }
 
-    public static NoteDetailFragment newInstance(String serializedNote) {
+    public static NoteDetailFragment newInstance(String noteId){
         NoteDetailFragment fragment = new NoteDetailFragment();
-        if (!TextUtils.isEmpty(serializedNote)) {
+        if (!TextUtils.isEmpty(noteId)){
             Bundle args = new Bundle();
-            args.putString(Constants.SERIALIZED_NOTE, serializedNote);
+            args.putString(Constants.NOTE_ID, noteId);
             fragment.setArguments(args);
         }
 
@@ -156,13 +148,15 @@ public class NoteDetailFragment extends Fragment{
         mRootView = inflater.inflate(R.layout.fragment_note_editor, container, false);
         ButterKnife.bind(this, mRootView);
 
-        mDatabase = FirebaseDatabase.getInstance().getReference();
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        noteCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
         mFirebaseStorage = FirebaseStorage.getInstance();
-        mCurrentNote = getPassedInNote();
-        displayNote(mCurrentNote);
+
+        String noteId = getPassedInNoteId();
+        mCurrentNote = new NoteRealmRepository().getNoteById(noteId);
+        if (mCurrentNote != null) {
+            displayNote(mCurrentNote);
+        }
         return mRootView;
     }
 
@@ -219,7 +213,7 @@ public class NoteDetailFragment extends Fragment{
         int id = item.getItemId();
         switch (id){
             case R.id.action_edit:
-                EventBus.getDefault().post(new EditNoteButtonClickedEvent(mCurrentNote));
+                EventBus.getDefault().post(new EditNoteButtonClickedEvent(mCurrentNote.getId()));
                 break;
             case R.id.action_delete:
                 showDeleteConfirmation(mCurrentNote);
@@ -253,7 +247,7 @@ public class NoteDetailFragment extends Fragment{
 
     public void displayNote(Note note) {
         try {
-            mCategory.setText(note.getFolderName());
+            mCategory.setText(note.getFolder().getFolderName());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -384,9 +378,7 @@ public class NoteDetailFragment extends Fragment{
 
                 }else {
                     Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-                    Gson gson = new Gson();
-                    String serializedNote = gson.toJson(mCurrentNote);
-                    galleryIntent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
+                    galleryIntent.putExtra(Constants.NOTE_ID, mCurrentNote.getId());
                     galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
                     startActivity(galleryIntent);
                 }
@@ -465,7 +457,6 @@ public class NoteDetailFragment extends Fragment{
                     shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
                     shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
                     shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
-
                     startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
 
                 }
@@ -495,7 +486,7 @@ public class NoteDetailFragment extends Fragment{
 
     private void deleteNote(Note note) {
         if (!TextUtils.isEmpty(note.getId())) {
-            noteCloudReference.child(note.getId()).removeValue();
+            new NoteRealmRepository().deleteNote(note.getId());
         }
         displayPreviousActivity();
     }

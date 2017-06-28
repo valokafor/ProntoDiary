@@ -3,13 +3,11 @@ package com.okason.diary.ui.auth;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -27,10 +25,16 @@ import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.ui.ResultCodes;
 import com.google.android.gms.common.Scopes;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.core.services.MergeAnonymousDataIntentService;
+import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.utils.Constants;
 
 import java.security.MessageDigest;
@@ -40,6 +44,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.SyncUser;
 
 import static com.firebase.ui.auth.ui.ExtraConstants.EXTRA_IDP_RESPONSE;
 
@@ -48,6 +53,12 @@ public class AuthUiActivity extends AppCompatActivity {
     private static final String GOOGLE_TOS_URL = "https://www.google.com/policies/terms/";
     private static final int RC_SIGN_IN = 100;
     private Activity mActivity;
+
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+
+    private DatabaseReference mDatabase;
+    private DatabaseReference mProntoDiaryUserRef;
 
     @BindView(android.R.id.content)
     View mRootView;
@@ -61,6 +72,13 @@ public class AuthUiActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
+
 
         try {
             PackageInfo info = getPackageManager().getPackageInfo(
@@ -77,14 +95,8 @@ public class AuthUiActivity extends AppCompatActivity {
 
         }
 
+        showSignInScreen();
 
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        if (auth.getCurrentUser() != null && !TextUtils.isEmpty(auth.getCurrentUser().getEmail())) {
-            startActivity(new Intent(this, NoteListActivity.class));
-            finish();
-        }else {
-            showSignInScreen();
-        }
     }
 
 
@@ -163,28 +175,58 @@ public class AuthUiActivity extends AppCompatActivity {
     }
 
     @MainThread
-    private void handleSignInResponse(int resultCode, Intent data) {
+    private void handleSignInResponse(int resultCode, final Intent data) {
         if (resultCode == RESULT_OK) {
-            //User is logged in, set Anonymous user to false so that in the NoteListActivity
-            //They are not logged in again as Anonymous user
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            //Get Firebase User
+            mFirebaseAuth = FirebaseAuth.getInstance();
+            mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
+            //Get Pronto Diary User
+            if (mFirebaseUser != null){
+                mProntoDiaryUserRef.orderByChild("firebaseUid").equalTo(mFirebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
+                        ProntoDiaryUser user = snapshot.getValue(ProntoDiaryUser.class);
+                        if (user == null){
+                            //If user does not exist, create one
+                            user = new ProntoDiaryUser();
+                            user.setEmailAddress(mFirebaseUser.getEmail());
+                            user.setFirebaseUid(mFirebaseUser.getUid());
+                            user.setId(mProntoDiaryUserRef.push().getKey());
+                            mProntoDiaryUserRef.child(user.getId()).setValue(user);
+                        }
+                        if (TextUtils.isEmpty(user.getRealmJson())){
+                            //If Realm account has not been created for this user
+                            //Go to Realm Register Activity
+                            startActivity(new Intent(AuthUiActivity.this, RegisterActivity.class));
+                        } else {
+                            //Get the Sync User
+                            SyncUser syncUser = SyncUser.fromJson(user.getRealmJson());
+                            if (syncUser == null){
+                                //If Realm user cannot be retrieved, try logging in
+                                Intent loginIntent = new Intent(AuthUiActivity.this, SignInActivity.class);
+                                loginIntent.putExtra(Constants.EMAIL_ADDRESSS, user.getEmailAddress());
+                                loginIntent.putExtra(Constants.PASSWORD, user.getRealmPassword());
+                                startActivity(loginIntent);
+                            }else {
+                                //We have a valid Realm User, go to app
+                                Intent in = new Intent(AuthUiActivity.this, NoteListActivity.class);
+                                in.putExtra(EXTRA_IDP_RESPONSE, IdpResponse.fromResultIntent(data));
+                                startActivity(in);
+                                finish();
+                                return;
+                            }
+                        }
+                    }
 
-            String anonyhmousUserId = preferences.getString(Constants.ANONYMOUS_ACCOUNT_USER_ID, "");
-            boolean unregisteredUser = preferences.getBoolean(Constants.ANONYMOUS_USER, true);
-            if (unregisteredUser && !TextUtils.isEmpty(anonyhmousUserId)){
-                preferences.edit().putBoolean(Constants.ANONYMOUS_USER, false).commit();
-                //Copy Anonymous User data to new user id
-                Intent migrateIntent = new Intent(mActivity, MergeAnonymousDataIntentService.class);
-                migrateIntent.putExtra(Constants.ANONYMOUS_ACCOUNT_USER_ID, anonyhmousUserId);
-                startService(migrateIntent);
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
             }
 
-            Intent in = new Intent(this, NoteListActivity.class);
-            in.putExtra(EXTRA_IDP_RESPONSE, IdpResponse.fromResultIntent(data));
-            startActivity(in);
-            finish();
-            return;
         } else {
             ProntoDiaryApplication.setCloudSyncEnabled(false);
             finish();

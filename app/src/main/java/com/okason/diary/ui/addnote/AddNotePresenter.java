@@ -1,17 +1,19 @@
 package com.okason.diary.ui.addnote;
 
-import android.content.Intent;
 import android.text.TextUtils;
-import android.widget.Toast;
 
-import com.google.firebase.database.DatabaseReference;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.core.services.AttachmentUploadService;
+import com.okason.diary.data.FolderRealmRepository;
+import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 import com.okason.diary.models.Tag;
+
+import java.util.List;
+
+import static com.okason.diary.core.ProntoDiaryApplication.getAppContext;
 
 /**
  * Created by Valentine on 5/8/2017.
@@ -20,25 +22,26 @@ import com.okason.diary.models.Tag;
 public class AddNotePresenter implements AddNoteContract.Action {
 
     private final AddNoteContract.View mView;
-    private final DatabaseReference noteCloudReference;
+    private  AddNoteContract.Repository mRepository;
     private Note mCurrentNote = null;
+
     private boolean dataChanged = false;
     private boolean isInEditMode = false;
+
+    private String title;
+    private String content;
 
 
     private boolean isDualScreen = false;
 
-    public AddNotePresenter(final AddNoteContract.View mView, DatabaseReference noteCloudReference, Note note) {
+    public AddNotePresenter(final AddNoteContract.View mView, String noteid) {
         this.mView = mView;
-        this.noteCloudReference = noteCloudReference;
-        this.mCurrentNote = note;
-        if (note != null){
-            isInEditMode = true;
-        }else {
-            mCurrentNote = new Note();
+        mRepository = new NoteRealmRepository();
+
+        if (!TextUtils.isEmpty(noteid)){
+            mCurrentNote = mRepository.getNoteById(noteid);
+            mView.populateNote(mCurrentNote);
         }
-
-
     }
 
     @Override
@@ -49,17 +52,13 @@ public class AddNotePresenter implements AddNoteContract.Action {
     @Override
     public void onDeleteNoteButtonClicked() {
         if (mCurrentNote == null){
-            mView.showMessage(ProntoDiaryApplication.getAppContext().getString(R.string.no_notes_found));
+            mView.showMessage(getAppContext().getString(R.string.no_notes_found));
             return;
         }
     }
 
     @Override
     public void onTitleChange(String newTitle) {
-        if (mCurrentNote == null){
-            mCurrentNote = new Note();
-        }
-        mCurrentNote.setTitle(newTitle);
         dataChanged = true;
 
     }
@@ -67,12 +66,11 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
 
     @Override
-    public void onFolderChange(Folder newFolder) {
+    public void onFolderChange(String folderId) {
         if (mCurrentNote == null){
-            mCurrentNote = new Note();
+            mCurrentNote = mRepository.createNewNote();
         }
-        mCurrentNote.setFolderId(newFolder.getId());
-        mCurrentNote.setFolderName(newFolder.getFolderName());
+        mRepository.setFolder(folderId, mCurrentNote.getId());
         dataChanged = true;
 
     }
@@ -80,30 +78,20 @@ public class AddNotePresenter implements AddNoteContract.Action {
     @Override
     public void onTagAdded(Tag tag) {
         if (mCurrentNote == null){
-            mCurrentNote = new Note();
+            mCurrentNote = mRepository.createNewNote();
         }
         mCurrentNote.getTags().add(tag);
     }
 
     @Override
     public void onTagRemoved(Tag tag) {
-        //Remove this tag from the list of Tags for the Note
-        for (int i = 0; i<mCurrentNote.getTags().size(); i++){
-            Tag tempTag = mCurrentNote.getTags().get(i);
-            if (tempTag.getId().equals(tag.getId())){
-                mCurrentNote.getTags().remove(i);
-                break;
-            }
+        if (mCurrentNote != null){
+            mRepository.removeTag(mCurrentNote.getId(), tag.getId());
         }
-
     }
 
     @Override
     public void onNoteContentChange(String newContent) {
-        if (mCurrentNote == null){
-            mCurrentNote = new Note();
-        }
-        mCurrentNote.setContent(newContent);
         dataChanged = true;
     }
 
@@ -111,6 +99,9 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     @Override
     public Note getCurrentNote() {
+        if (mCurrentNote == null){
+            mCurrentNote = mRepository.createNewNote();
+        }
         return mCurrentNote;
     }
 
@@ -129,6 +120,16 @@ public class AddNotePresenter implements AddNoteContract.Action {
         }
 
     }
+
+    @Override
+    public List<Tag> getAllTags() {
+        return mRepository.getAllTags();
+    }
+
+    @Override
+    public List<Folder> getAllFolders() {
+        return new FolderRealmRepository().getAllFolders();
+    }
 //
 //    @Override
 //    public void updatedUI() {
@@ -141,75 +142,75 @@ public class AddNotePresenter implements AddNoteContract.Action {
      */
     @Override
     public void onAttachmentAdded(Attachment attachment) {
-
+        //First ensure a Note has been created
         if (mCurrentNote == null){
-            mCurrentNote = new Note();
+            mCurrentNote = mRepository.createNewNote();
         }
 
+        mRepository.updatedNoteContent(mCurrentNote.getId(), mView.getContent());
+        mRepository.updatedNoteTitle(mCurrentNote.getId(), mView.getTitle());
         //Add the attachment to the Note
-        mCurrentNote.getAttachments().add(attachment);
-        dataChanged = true;
-        updateUI();
+        mRepository.addAttachment(mCurrentNote.getId(), attachment);
     }
+
+
+
 
     @Override
     public void onSaveAndExit() {
 
-        if (dataChanged){
-            mView.showMessage(ProntoDiaryApplication.getAppContext().getString(R.string.saving_journal));
+        if (!dataChanged){
+            return;
+        }
 
-            //Check to see if the Note is completely blank
-            if (TextUtils.isEmpty(mCurrentNote.getTitle())
-                    && TextUtils.isEmpty(mCurrentNote.getContent())
-                    && mCurrentNote.getAttachments().size() == 0){
-                mView.goBackToParent();
-                return;
-            }
+        mView.showMessage(getAppContext().getString(R.string.saving_journal));
 
-            //Check to see if Title is empty
-            if (TextUtils.isEmpty(mCurrentNote.getTitle())){
-                mCurrentNote.setTitle(ProntoDiaryApplication.getAppContext().getString(R.string.missing_title));
-            }
+        if (mCurrentNote == null){
+            mCurrentNote = mRepository.createNewNote();
+        }
 
-            //Check to see if content is empty
-            if (TextUtils.isEmpty(mCurrentNote.getContent())){
-                mCurrentNote.setContent(ProntoDiaryApplication.getAppContext().getString(R.string.missing_content));
-            }
 
-            //Data need to be saved
-            if (isInEditMode){
-                //Update data
-                mCurrentNote.setDateModified(System.currentTimeMillis());
-                noteCloudReference.child(mCurrentNote.getId()).setValue(mCurrentNote);
-            }else {
-                //Save new data
-                String key = noteCloudReference.push().getKey();
-                mCurrentNote.setId(key);
-                noteCloudReference.child(key).setValue(mCurrentNote);
-            }
+        //Check to see if Title is empty
+        if (TextUtils.isEmpty(mView.getTitle())){
+            title = ProntoDiaryApplication.getAppContext().getString(R.string.missing_title);
+        }else {
+            title = mView.getTitle();
+        }
+
+        //Check to see if content is empty
+        if (TextUtils.isEmpty(mView.getContent())){
+            content = ProntoDiaryApplication.getAppContext().getString(R.string.missing_content);
+        }else {
+            content = mView.getContent();
+        }
+
+        mRepository.updatedNoteContent(mCurrentNote.getId(), content);
+        mRepository.updatedNoteTitle(mCurrentNote.getId(), title);
+
 
             //Upload the attachments to cloud
-            if (ProntoDiaryApplication.isCloudSyncEnabled() && mCurrentNote != null &&
-                    !TextUtils.isEmpty(mCurrentNote.getId()) && mCurrentNote.getAttachments().size() > 0){
-                // Start MyUploadService to upload the file, so that the file is uploaded
-                // even if this Activity is killed or put in the background
-                Toast.makeText(ProntoDiaryApplication.getAppContext(),ProntoDiaryApplication.getAppContext()
-                        .getString(R.string.progress_uploading), Toast.LENGTH_SHORT );
-                Intent uploadServiceIntent = new Intent( mView.getContext(), AttachmentUploadService.class)
-                        .putExtra(AttachmentUploadService.NOTE_ID, mCurrentNote.getId())
-                        .setAction(AttachmentUploadService.ACTION_UPLOAD);
-               mView.getContext().startService(uploadServiceIntent);
-            }
-        }
+//            if (ProntoDiaryApplication.isCloudSyncEnabled() && mCurrentNote != null &&
+//                    !TextUtils.isEmpty(mCurrentNote.getId()) && mCurrentNote.getAttachments().size() > 0){
+//                // Start MyUploadService to upload the file, so that the file is uploaded
+//                // even if this Activity is killed or put in the background
+//                Toast.makeText(ProntoDiaryApplication.getAppContext(),ProntoDiaryApplication.getAppContext()
+//                        .getString(R.string.progress_uploading), Toast.LENGTH_SHORT );
+//                Intent uploadServiceIntent = new Intent( mView.getContext(), AttachmentUploadService.class)
+//                        .putExtra(AttachmentUploadService.NOTE_ID, mCurrentNote.getId())
+//                        .setAction(AttachmentUploadService.ACTION_UPLOAD);
+//               mView.getContext().startService(uploadServiceIntent);
+//            }
+
 
         mView.goBackToParent();
 
 
-
-
-
     }
 
+    @Override
+    public Folder getFolderById(String id) {
+        return new FolderRealmRepository().getFolderById(id);
+    }
 
 
 }

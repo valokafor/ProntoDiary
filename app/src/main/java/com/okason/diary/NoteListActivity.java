@@ -13,7 +13,6 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -26,20 +25,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
 import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
-import com.okason.diary.ui.settings.SyncFragment;
 import com.okason.diary.ui.todolist.TodoListFragment;
 import com.okason.diary.utils.Constants;
 
@@ -49,6 +44,8 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Realm;
+import io.realm.SyncUser;
 
 public class NoteListActivity extends AppCompatActivity {
     private SharedPreferences preferences;
@@ -115,6 +112,8 @@ public class NoteListActivity extends AppCompatActivity {
     @BindView(R.id.linear_layout_login)
     LinearLayout loginLayout;
 
+    private Realm realm;
+
 
 
     @Override
@@ -144,58 +143,32 @@ public class NoteListActivity extends AppCompatActivity {
 
     private void checkLoginStatus() {
 
-        //Check to see if the user has registered before
-        //if yes, check to see if the user is not logged in, show login
-        mAuth = FirebaseAuth.getInstance();
-        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        unregisteredUser = preferences.getBoolean(Constants.ANONYMOUS_USER, true);
-        if (unregisteredUser){
-            loginAnonymously();
-            settingsLayout.setVisibility(View.GONE);
-            syncLayout.setVisibility(View.VISIBLE);
+        final SyncUser user = SyncUser.currentUser();
+        if (user == null) {
+            //Check to see if the user has registered before
+            //if yes, check to see if the user is not logged in, show login
+            preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
+            if (unregisteredUser){
+                //Show Anonymous Login
+                Realm.setDefaultConfiguration(UserManager.getLocalConfig());
+                realm = Realm.getDefaultInstance();
+                syncLayout.setVisibility(View.VISIBLE);
+                settingsLayout.setVisibility(View.GONE);
+                updateUI();
+            }else {
+                //User has registered before, show login page
+                startActivity(new Intent(this, AuthUiActivity.class));}
         }else {
-            loginRegisteredUser();
-            settingsLayout.setVisibility(View.VISIBLE);
+            UserManager.setActiveUser(user);
             syncLayout.setVisibility(View.GONE);
-        }
-    }
-
-
-    private void loginAnonymously() {
-        if (mAuth == null){
-            mAuth = FirebaseAuth.getInstance();
-        }
-
-        mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()){
-                    FirebaseUser user = mAuth.getCurrentUser();
-                    if (user != null){
-                        String tempUserId = user.getUid();
-                        preferences.edit().putString(Constants.ANONYMOUS_ACCOUNT_USER_ID, tempUserId).commit();
-                        ProntoDiaryApplication.setCloudSyncEnabled(false);
-                        updateUI();
-                    }
-
-                }else {
-                    makeToast(getString(R.string.anonymous_account_failed_error));
-                }
-            }
-        });
-    }
-
-    private void loginRegisteredUser() {
-        mFirebaseUser = mAuth.getCurrentUser();
-        if (mFirebaseUser == null){
-            //Go to sign in Activity
-            startActivity(new Intent(mActivity, AuthUiActivity.class));
-        }else {
-            ProntoDiaryApplication.setCloudSyncEnabled(true);
+            settingsLayout.setVisibility(View.VISIBLE);
             updateUI();
         }
 
     }
+
+
 
 
     @Override
@@ -262,7 +235,7 @@ public class NoteListActivity extends AppCompatActivity {
                 resetBottomNavigationIcons();
                 syncButton.setImageResource(R.drawable.ic_action_reload_light_red);
                 syncTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
-                openFragment(new SyncFragment(), getString(R.string.title_cloud_sync), Constants.SYNC_FRAGMENT_TAG);
+                startActivity(new Intent(mActivity, AuthUiActivity.class));
 
             }
         });

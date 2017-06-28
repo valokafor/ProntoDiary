@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#f44336</color>
-    <color name="primary_dark">#b71c1c</color>
+    <color name="primary">#5CCC00</color>
+    <color name="primary_dark">#4EAB00</color>
     <color name="primary_light">#FFCDD2</color>
     <color name="accent">#03A9F4</color>
     <color name="primary_text">#212121</color>
@@ -31,4 +31,11 @@
     <color name="selected">#8833B5E5</color>
     <color name="kitkat_gray_dark">#25000000</color>
     <color name="kitkat_gray_light">#19000000</color>
+
+    <color name="colorGreen">#4EAB00</color>
+    <color name="colorGreenLight">#5CCC00</color>
+    <color name="colorGreenExtraLight">#B2E876</color>
+
+    <color name="colorTextWhite">#ffffffff</color>
+    <color name="colorMonthText">#ffcccccc</color>
 </resources>

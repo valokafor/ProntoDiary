@@ -6,6 +6,8 @@ import android.content.Context;
 import com.okason.diary.BuildConfig;
 import com.squareup.leakcanary.LeakCanary;
 
+import io.realm.Realm;
+
 /**
  * Created by Valentine on 4/20/2017.
  */
@@ -30,6 +32,7 @@ public class ProntoDiaryApplication extends Application {
         }
         mContext = getApplicationContext();
         LeakCanary.install(this);
+        Realm.init(this);
     }
 
     public static Context getAppContext() {

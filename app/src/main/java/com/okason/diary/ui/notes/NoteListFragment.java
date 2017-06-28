@@ -13,7 +13,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -30,14 +29,9 @@ import android.widget.TextView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
+import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
@@ -46,11 +40,14 @@ import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.OrderedCollectionChangeSet;
+import io.realm.OrderedRealmCollectionChangeListener;
+import io.realm.Realm;
+import io.realm.RealmResults;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -58,12 +55,12 @@ import butterknife.ButterKnife;
 public class NoteListFragment extends Fragment implements SearchView.OnQueryTextListener {
 
     private FirebaseAnalytics mFirebaseAnalytics;
-    private DatabaseReference mDatabase;
-    private DatabaseReference noteCloudReference;
+
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
+    private Realm mRealm;
+    private RealmResults<Note> mNotes;
 
-    private ValueEventListener mValueEventListener;
 
     private MediaPlayer mPlayer = null;
     private boolean isAudioPlaying = false;
@@ -81,8 +78,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     TextView mEmptyText;
 //    @BindView(R.id.adView)
 //    AdView mAdView;
-    @BindView(R.id.refresh_layout)
-    SwipeRefreshLayout swipeRefreshLayout;
+
+
 
 
 
@@ -90,6 +87,11 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         // Required empty public constructor
     }
 
+    /**
+     * Factory method to create a Note List Fragment
+     * @param dualScreen - indicates if this Fragment is participating in dual screen
+     * @return - returns the created Fragment
+     */
     public static NoteListFragment newInstance(boolean dualScreen){
         NoteListFragment fragment = new NoteListFragment();
         Bundle args = new Bundle();
@@ -109,8 +111,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        noteCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+
+
 
     }
 
@@ -121,104 +123,44 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         mRootView = inflater.inflate(R.layout.fragment_note_list, container, false);
         ButterKnife.bind(this, mRootView);
 
+
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
-        mListAdapter = new NoteListAdapter(new ArrayList<Note>(), getContext());
-        mRecyclerView.setAdapter(mListAdapter);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-
-
-        mValueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                final List<Note> notes = new ArrayList<>();
-                for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()){
-                    Note note = noteSnapshot.getValue(Note.class);
-                    notes.add(note);
-                }
-                if (notes != null && notes.size() > 0){
-                    showEmptyText(false);
-                    showNotes(notes);
-                    setProgressIndicator(false);
-                }else {
-                    showEmptyText(true);
-                    setProgressIndicator(false);
-                }
-
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                makeToast(databaseError.getMessage());
-
-            }
-        };
-
-
-
-
-        //Pull to refresh
-        swipeRefreshLayout.setColorSchemeColors(
-                ContextCompat.getColor(getActivity(), R.color.primary),
-                ContextCompat.getColor(getActivity(), R.color.accent),
-                ContextCompat.getColor(getActivity(), R.color.primary_dark));
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                noteCloudReference.removeEventListener(mValueEventListener);
-                noteCloudReference.addValueEventListener(mValueEventListener);
-            }
-        });
-
-        mListAdapter.setNoteItemListener(new NoteItemListener() {
-            @Override
-            public void onNoteClick(Note clickedNote) {
-                if (isDualScreen) {
-                    showDualDetailUi(clickedNote);
-                } else {
-                    showSingleDetailUi(clickedNote);
-                }
-            }
-
-            @Override
-            public void onDeleteButtonClicked(Note clickedNote) {
-                showDeleteConfirmation(clickedNote);
-            }
-
-            @Override
-            public void onAttachmentClicked(Note clickedNote, int position) {
-                //An attachment in the Note list has been clicked
-                Attachment clickedAttachment = clickedNote.getAttachments().get(clickedNote.getAttachments().size() - 1);
-                if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
-                    //Play Audio
-                    startPlaying(clickedAttachment, position);
-                }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)){
-                    //Play Video
-                    viewMedia(clickedAttachment);
-                }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
-                    //Show Image Gallery
-                    goToImageGallery(clickedNote, clickedAttachment);
-                }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
-                    //Show file
-
-                }else {
-                    //Show details page
-                }
-            }
-        });
-
-        noteCloudReference.addValueEventListener(mValueEventListener);
-
         return mRootView;
     }
 
+    private final OrderedRealmCollectionChangeListener<RealmResults<Note>> noteChangeListener = new OrderedRealmCollectionChangeListener<RealmResults<Note>>() {
+        @Override
+        public void onChange(RealmResults<Note> notes, OrderedCollectionChangeSet changeSet) {
+
+            if (changeSet == null){
+                showNotes(mNotes);
+            }
+
+            OrderedCollectionChangeSet.Range[] deletions = changeSet.getDeletionRanges();
+            for (int i = deletions.length - 1; i >= 0; i--) {
+                OrderedCollectionChangeSet.Range range = deletions[i];
+                mListAdapter.notifyItemRangeRemoved(range.startIndex, range.length);
+            }
+
+            OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
+            for (OrderedCollectionChangeSet.Range range : insertions) {
+                mListAdapter.notifyItemRangeInserted(range.startIndex, range.length);
+            }
+
+            OrderedCollectionChangeSet.Range[] modifications = changeSet.getChangeRanges();
+            for (OrderedCollectionChangeSet.Range range : modifications) {
+                mListAdapter.notifyItemRangeChanged(range.startIndex, range.length);
+            }
+
+
+
+
+        }
+    };
+
     private void goToImageGallery(Note clickedNote, Attachment clickedAttachment) {
         Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-        Gson gson = new Gson();
-        String serializedNote = gson.toJson(clickedNote);
-        galleryIntent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
+        galleryIntent.putExtra(Constants.NOTE_ID, clickedNote.getId());
         galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
         startActivity(galleryIntent);
     }
@@ -226,17 +168,20 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public void onResume() {
         super.onResume();
-        setProgressIndicator(true);
-
+        try {
+            mRealm = Realm.getDefaultInstance();
+            mNotes = mRealm.where(Note.class).findAll();
+            mNotes.addChangeListener(noteChangeListener);
+            showNotes(mNotes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (noteCloudReference != null && mValueEventListener != null) {
-            noteCloudReference.removeEventListener(mValueEventListener);
-            mValueEventListener = null;
-        }
+        mRealm.close();
         if (mPlayer != null){
             mPlayer.release();
             mPlayer = null;
@@ -283,19 +228,68 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
 
     public void showNotes(List<Note> notes) {
-        mListAdapter.replaceData(notes);
+        if (notes != null && notes.size() > 0){
+            showEmptyText(false);
+            mListAdapter = new NoteListAdapter(notes, getContext());
+            mRecyclerView.setAdapter(mListAdapter);
+            mRecyclerView.setHasFixedSize(true);
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+
+
+            mListAdapter.setNoteItemListener(new NoteItemListener() {
+                @Override
+                public void onNoteClick(Note clickedNote) {
+                    if (isDualScreen) {
+                        showDualDetailUi(clickedNote);
+                    } else {
+                        showSingleDetailUi(clickedNote);
+                    }
+                }
+
+                @Override
+                public void onDeleteButtonClicked(Note clickedNote) {
+                    showDeleteConfirmation(clickedNote);
+                }
+
+                @Override
+                public void onAttachmentClicked(Note clickedNote, int position) {
+                    //An attachment in the Note list has been clicked
+                    Attachment clickedAttachment = clickedNote.getAttachments().get(clickedNote.getAttachments().size() - 1);
+                    if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
+                        //Play Audio
+                        startPlaying(clickedAttachment, position);
+                    }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)){
+                        //Play Video
+                        viewMedia(clickedAttachment);
+                    }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
+                        //Show Image Gallery
+                        goToImageGallery(clickedNote, clickedAttachment);
+                    }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
+                        //Show file
+
+                    }else {
+                        //Show details page
+                    }
+                }
+            });
+
+        }else {
+            showEmptyText(true);
+        }
+
+
     }
 
 
     public void showEmptyText(boolean showText) {
         if (showText){
-            swipeRefreshLayout.setVisibility(View.GONE);
+
             mEmptyText.setVisibility(View.VISIBLE);
           //  mAdView.setVisibility(View.GONE);
 
         }else {
           //  mAdView.setVisibility(View.VISIBLE);
-            swipeRefreshLayout.setVisibility(View.VISIBLE);
             mEmptyText.setVisibility(View.GONE);
         }
 
@@ -315,33 +309,15 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     private void deleteNote(Note note) {
         if (!TextUtils.isEmpty(note.getId())) {
-            noteCloudReference.child(note.getId()).removeValue();
+            new NoteRealmRepository().deleteNote(note.getId());
         }
     }
 
 
-    public void setProgressIndicator(final boolean active) {
-
-        if (getView() == null) {
-            return;
-        }
-        final SwipeRefreshLayout srl =
-                (SwipeRefreshLayout) getView().findViewById(R.id.refresh_layout);
-
-        // Make sure setRefreshing() is called after the layout is done with everything else.
-        srl.post(new Runnable() {
-            @Override
-            public void run() {
-                srl.setRefreshing(active);
-            }
-        });
-
-    }
 
     public void showSingleDetailUi(Note selectedNote) {
-        Gson gson = new Gson();
-        String serializedNote = gson.toJson(selectedNote);
-       startActivity(NoteDetailActivity.getStartIntent(getContext(), serializedNote));
+        String id = selectedNote.getId();
+        startActivity(NoteDetailActivity.getStartIntent(getContext(), id));
     }
 
 

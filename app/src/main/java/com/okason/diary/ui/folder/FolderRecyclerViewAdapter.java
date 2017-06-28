@@ -45,13 +45,16 @@ public class FolderRecyclerViewAdapter extends RecyclerView.Adapter<FolderRecycl
     public void onBindViewHolder(ViewHolder holder, int position) {
 
         Folder category = mFolders.get(position);
-        holder.categoryName.setText(category.getFolderName());
-        int numNote = category.getListOfNoteIds().size();
+        String categoryName = category.getFolderName();
+        holder.categoryName.setText(categoryName);
+        int numNote = category.getNotes().size();
         String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
         holder.noteCountTextView.setText(numNote + " " + notes);
     }
 
     public void replaceData(List<Folder> categories){
+        this.mFolders.clear();
+        mFolders = categories;
         notifyDataSetChanged();
     }
 

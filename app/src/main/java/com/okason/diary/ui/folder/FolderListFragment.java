@@ -2,10 +2,8 @@ package com.okason.diary.ui.folder;
 
 
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,28 +17,24 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
-import com.okason.diary.core.services.DeleteCategoryIntentService;
+import com.okason.diary.data.FolderRealmRepository;
 import com.okason.diary.models.Folder;
-import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Realm;
+import io.realm.RealmChangeListener;
+import io.realm.RealmResults;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -48,7 +42,6 @@ import butterknife.ButterKnife;
 public class FolderListFragment extends Fragment implements OnFolderSelectedListener{
 
    // private List<Note> mNotes;
-    private List<Folder> mFolders;
     private FolderRecyclerViewAdapter mAdapter;
     private View mRootView;
 
@@ -59,14 +52,12 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     private AddFolderDialogFragment addCategoryDialog;
 
-    private DatabaseReference mDatabase;
-    private DatabaseReference folderCloudReference;
-
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
-    private FloatingActionButton mFab;
+    private Realm mRealm;
+    private RealmResults<Folder> mFolders;
 
-    private ValueEventListener folderEventListener;
+
 
 
 
@@ -89,37 +80,28 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mRealm = Realm.getDefaultInstance();
+        mFolders = mRealm.where(Folder.class).findAll();
 
-        folderCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
 
-
-        mFolders = new ArrayList<>();
-
-        folderEventListener = new ValueEventListener() {
+        mFolders.addChangeListener(new RealmChangeListener<RealmResults<Folder>>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                loadFolders(dataSnapshot);
+            public void onChange(RealmResults<Folder> folders) {
+                for (Folder folder: folders){
+                    String name = folder.getFolderName();
+                    String id = folder.getId();
+                //    Log.d(NoteListActivity.TAG, name);
+                }
+                showFolders(mFolders);
             }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
-
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mAdapter = new FolderRecyclerViewAdapter(getContext(),mFolders, this);
-        mRecyclerView.setAdapter(mAdapter);
-        folderCloudReference.addValueEventListener(folderEventListener);
+        });
         return  mRootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
+        showFolders(mFolders);
     }
 
     @Override
@@ -132,9 +114,10 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     public void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
-        if (folderCloudReference != null && folderEventListener != null){
-            folderCloudReference.removeEventListener(folderEventListener);
-            folderEventListener = null;
+        try {
+            mRealm.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -176,31 +159,18 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     }
 
 
-    private void loadFolders(DataSnapshot dataSnapshot) {
-        if (dataSnapshot != null){
-            mFolders.clear();
-            for (DataSnapshot categorySnapshot: dataSnapshot.getChildren()){
-                Folder folder = null;
-                try {
-                    folder = categorySnapshot.getValue(Folder.class);
-                    mFolders.add(folder);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
 
-        if (mFolders.size() > 0){
+
+    public void showFolders(List<Folder> folders) {
+        if (folders.size() > 0){
             hideEmptyText();
-            showFolders(mFolders);
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            mAdapter = new FolderRecyclerViewAdapter(getContext(),folders, this);
+            mRecyclerView.setAdapter(mAdapter);
         }else {
             showEmptyText();
         }
 
-    }
-
-    public void showFolders(List<Folder> folders) {
-        mAdapter.replaceData(folders);
     }
 
     @Override
@@ -261,14 +231,15 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //Delete Category
-                int noteCount = folder.getListOfNoteIds().size();
-                if (noteCount > 0){
-                    Intent intent = new Intent(getContext(), DeleteCategoryIntentService.class);
-                    intent.putExtra(Constants.SELECTED_FOLDER_ID, folder.getId());
-                    getActivity().startService(intent);
-                }else {
-                    folderCloudReference.child(folder.getId()).removeValue();
-                }
+                new FolderRealmRepository().deleteFolder(folder.getId());
+//                int noteCount = folder.getNotes().size();
+//                if (noteCount > 0){
+//                    Intent intent = new Intent(getContext(), DeleteCategoryIntentService.class);
+//                    intent.putExtra(Constants.SELECTED_FOLDER_ID, folder.getId());
+//                    getActivity().startService(intent);
+//                }else {
+//                    new FolderRealmRepository().deleteFolder(folder.getId());
+//                }
 
             }
         });

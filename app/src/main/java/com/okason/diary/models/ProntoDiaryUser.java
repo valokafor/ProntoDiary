@@ -13,6 +13,9 @@ public class ProntoDiaryUser {
     private long totalFileSize;
     private boolean isPremium;
     private String upgradeMethod;
+    private String realmJson;
+    private String realmPassword;
+
 
     public String getId() {
         return id;
@@ -76,5 +79,21 @@ public class ProntoDiaryUser {
 
     public void setUpgradeMethod(String upgradeMethod) {
         this.upgradeMethod = upgradeMethod;
+    }
+
+    public String getRealmJson() {
+        return realmJson;
+    }
+
+    public void setRealmJson(String realmJson) {
+        this.realmJson = realmJson;
+    }
+
+    public String getRealmPassword() {
+        return realmPassword;
+    }
+
+    public void setRealmPassword(String realmPassword) {
+        this.realmPassword = realmPassword;
     }
 }

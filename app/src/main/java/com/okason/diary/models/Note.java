@@ -1,38 +1,51 @@
 package com.okason.diary.models;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Note{
+public class Note extends RealmObject{
+    @PrimaryKey
     private String id;
     private String title;
     private String content;
     private long dateCreated;
     private long dateModified;
-    private String folderName;
-    private String folderId;
 
 
     public Note(){
-        attachments = new ArrayList<>();
-        tags = new ArrayList<>();
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
     }
 
 
    //Relationships
-    private List<Attachment> attachments;
-    private List<Tag> tags;
+    private RealmList<Attachment> attachments;
+    private RealmList<Tag> tags;
+    private Folder folder;
 
 
-    private List<Task> tasks;
-    private List<PeopleJournal> peopleJournals;
-    private List<History> historyList;
+    private RealmList<Task> tasks;
+    private RealmList<PeopleJournal> peopleJournals;
+    private RealmList<History> historyList;
+
+    public void update(Note note){
+        this.title = note.getTitle();
+        this.content = note.getContent();
+        this.dateCreated = note.getDateCreated();
+        this.dateModified = note.getDateModified();
+        this.attachments = note.getAttachments();
+        this.tags = note.getTags();
+        this.folder = note.getFolder();
+        this.tasks = note.getTasks();
+        this.peopleJournals = note.getPeopleJournals();
+        this.historyList = note.getHistoryList();
+    }
+
 
     public String getId() {
         return id;
@@ -74,60 +87,51 @@ public class Note{
         this.dateModified = dateModified;
     }
 
-    public List<Attachment> getAttachments() {
+    public RealmList<Attachment> getAttachments() {
         return attachments;
     }
 
-    public void setAttachments(List<Attachment> attachments) {
+    public void setAttachments(RealmList<Attachment> attachments) {
         this.attachments = attachments;
     }
 
-    public List<Task> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;
-    }
-
-    public List<Tag> getTags() {
+    public RealmList<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(List<Tag> tags) {
+    public void setTags(RealmList<Tag> tags) {
         this.tags = tags;
     }
 
-
-    public String getFolderName() {
-        return folderName;
+    public Folder getFolder() {
+        return folder;
     }
 
-    public void setFolderName(String folderName) {
-        this.folderName = folderName;
+    public void setFolder(Folder folder) {
+        this.folder = folder;
     }
 
-    public String getFolderId() {
-        return folderId;
+    public RealmList<Task> getTasks() {
+        return tasks;
     }
 
-    public void setFolderId(String folderId) {
-        this.folderId = folderId;
+    public void setTasks(RealmList<Task> tasks) {
+        this.tasks = tasks;
     }
 
-    public List<PeopleJournal> getPeopleJournals() {
+    public RealmList<PeopleJournal> getPeopleJournals() {
         return peopleJournals;
     }
 
-    public void setPeopleJournals(List<PeopleJournal> peopleJournals) {
+    public void setPeopleJournals(RealmList<PeopleJournal> peopleJournals) {
         this.peopleJournals = peopleJournals;
     }
 
-    public List<History> getHistoryList() {
+    public RealmList<History> getHistoryList() {
         return historyList;
     }
 
-    public void setHistoryList(List<History> historyList) {
+    public void setHistoryList(RealmList<History> historyList) {
         this.historyList = historyList;
     }
 }

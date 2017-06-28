@@ -17,11 +17,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.facebook.login.LoginResult;
-import com.facebook.login.widget.LoginButton;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.SignInButton;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
@@ -33,7 +28,6 @@ import io.realm.SyncCredentials;
 import io.realm.SyncUser;
 
 import static com.okason.diary.NoteListActivity.ACTION_IGNORE_CURRENT_USER;
-import static com.okason.diary.core.ProntoDiaryApplication.AUTH_URL;
 
 public class SignInActivity extends AppCompatActivity implements SyncUser.Callback{
 
@@ -90,33 +84,6 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
             }
         }
 
-        // Setup Facebook Authentication
-        facebookAuth = new FacebookAuth((LoginButton) findViewById(R.id.login_button)) {
-            @Override
-            public void onRegistrationComplete(final LoginResult loginResult) {
-                UserManager.setAuthMode(UserManager.AUTH_MODE.FACEBOOK);
-                signMethod = Constants.AUTH_METHOD_FACEBOOK;
-                SyncCredentials credentials = SyncCredentials.facebook(loginResult.getAccessToken().getToken());
-                SyncUser.loginAsync(credentials, AUTH_URL, SignInActivity.this);
-            }
-        };
-
-        // Setup Google Authentication
-        googleAuth = new GoogleAuth((SignInButton) findViewById(R.id.google_sign_in_button), this) {
-            @Override
-            public void onRegistrationComplete(GoogleSignInResult result) {
-                UserManager.setAuthMode(UserManager.AUTH_MODE.GOOGLE);
-                signMethod = Constants.AUTH_METHOD_GOOGLE;
-                GoogleSignInAccount acct = result.getSignInAccount();
-                SyncCredentials credentials = SyncCredentials.google(acct.getIdToken());
-                SyncUser.loginAsync(credentials, AUTH_URL, SignInActivity.this);
-            }
-
-            @Override
-            public void onError(String s) {
-                super.onError(s);
-            }
-        };
     }
 
     @Override

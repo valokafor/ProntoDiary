@@ -5,15 +5,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 
-import com.google.gson.Gson;
 import com.okason.diary.R;
+import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.utils.Constants;
@@ -44,8 +43,8 @@ public class GalleryActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         //Pass in the Note as a JSON to avoid having to query for the Note from Firebase
-        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)) {
-            getCurrentNote();
+        if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
+            getPassedInNote();
             initViews();
             initData();
         } else {
@@ -56,14 +55,12 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     //Get the Note object that was passed in
-    public void getCurrentNote(){
-        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)){
-            String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_NOTE);
-            if (!TextUtils.isEmpty(serializedNote)){
-                Gson gson = new Gson();
-                parentNote = gson.fromJson(serializedNote, Note.class);
-            }
+    private void getPassedInNote() {
+        if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)){
+            String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
+            parentNote = new NoteRealmRepository().getNoteById(noteId);
         }
+
     }
 
     private void initData() {

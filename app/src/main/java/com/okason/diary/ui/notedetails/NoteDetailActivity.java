@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
+import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.utils.Constants;
@@ -37,10 +38,10 @@ public class NoteDetailActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (savedInstanceState == null) {
-            if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)) {
-                String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_NOTE);
-                Note passedInNote = getCurrentNote(serializedNote);
-                NoteDetailFragment fragment = NoteDetailFragment.newInstance(serializedNote);
+            if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
+                String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
+                Note passedInNote = new NoteRealmRepository().getNoteById(noteId);
+                NoteDetailFragment fragment = NoteDetailFragment.newInstance(noteId);
                 if (passedInNote != null) {
                     openFragment(fragment, TimeUtils.getReadableDateWithoutTime(passedInNote.getDateModified()));
                 } else {
@@ -73,12 +74,20 @@ public class NoteDetailActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
+    @Override
+    public void onBackPressed() {
+        int count = getFragmentManager().getBackStackEntryCount();
+        if (count == 0) {
+            super.onBackPressed();
+        } else {
+            getFragmentManager().popBackStack();
+        }
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEditNoteButtonClickedEvent(EditNoteButtonClickedEvent event){
         Intent editNoteIntent = new Intent(NoteDetailActivity.this, AddNoteActivity.class);
-        Gson gson = new Gson();
-        String serializedNote = gson.toJson(event.getClickedNote());
-        editNoteIntent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
+        editNoteIntent.putExtra(Constants.NOTE_ID, event.getClickedNoteId());
         startActivity(editNoteIntent);
     }
 
@@ -87,12 +96,12 @@ public class NoteDetailActivity extends AppCompatActivity {
     /**
      * Creates an Intent that is used to start this Activity
      * @param context - this context
-     * @param serializedNote - Serialized Note that will be show first
+     * @param noteId - Note id
      * @return
      */
-    public static Intent getStartIntent(final Context context, final String serializedNote) {
+    public static Intent getStartIntent(final Context context, final String noteId) {
         Intent intent = new Intent(context, NoteDetailActivity.class);
-        intent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
+        intent.putExtra(Constants.NOTE_ID, noteId);
         return intent;
     }
 
