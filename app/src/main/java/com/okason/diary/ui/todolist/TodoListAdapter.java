@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.listeners.OnTodoListSelectedListener;
 import com.okason.diary.models.Task;
 import com.okason.diary.models.TodoList;
 
@@ -26,9 +27,11 @@ import butterknife.ButterKnife;
 public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.ViewHolder> {
 
     private final List<TodoList> mTodoLists;
+    private final OnTodoListSelectedListener mListener;
 
-    public TodoListAdapter(List<TodoList> todoLists) {
+    public TodoListAdapter(List<TodoList> todoLists, OnTodoListSelectedListener listener) {
         mTodoLists = todoLists;
+        mListener = listener;
     }
 
 
@@ -120,9 +123,8 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.ViewHo
 
         @Override
         public void onClick(View v) {
-            int position = getAdapterPosition();
-
-
+            TodoList selectedTodoList = mTodoLists.get(getLayoutPosition());
+            mListener.onTodoListClick(selectedTodoList);
         }
     }
 

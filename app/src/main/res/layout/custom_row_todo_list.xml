@@ -7,10 +7,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/margin_padding_xnormal"
-        android:paddingRight="@dimen/margin_padding_xnormal"
-        android:paddingTop="@dimen/margin_padding_xnormal"
-        android:paddingBottom="@dimen/margin_padding_xnormal">
+        android:padding="@dimen/margin_padding_small">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -32,7 +29,7 @@
                 android:id="@+id/text_view_todo_task_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/margin_padding_tiny"
+                android:layout_marginTop="@dimen/margin_padding_xtiny"
                 android:text="4 Tasks (2 done, 2 pending)"
                 android:textSize="@dimen/text_size_small"
                 android:maxLines="1"/>
@@ -54,10 +51,10 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/colorGreenExtraLight"
+        android:background="@color/primary"
         android:layout_gravity="bottom"
-        android:layout_marginLeft="@dimen/margin_padding_xnormal"
-        android:layout_marginRight="@dimen/margin_padding_xnormal"
+        android:layout_marginLeft="@dimen/margin_padding_small"
+        android:layout_marginRight="@dimen/margin_padding_small"
         >
     </View>
 

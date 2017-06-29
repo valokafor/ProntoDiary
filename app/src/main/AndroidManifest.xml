@@ -118,6 +118,12 @@
             android:name=".core.services.HandleRealmLoginService"
             android:exported="false">
         </service>
+
+        <activity
+            android:name=".ui.todolist.TodoListActivity"
+            android:label="@string/title_activity_todo_list"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>

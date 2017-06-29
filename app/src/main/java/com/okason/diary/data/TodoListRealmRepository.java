@@ -52,9 +52,20 @@ public class TodoListRealmRepository implements TodoListContract.Repository {
     }
 
     @Override
-    public void updateTodoListItemAsync(TodoList todoList) {
+    public void updateTodoListItemName(String todoListId, String todoListName) {
+        try (Realm realm = Realm.getDefaultInstance()){
+            realm.beginTransaction();
+            TodoList selectedTodoList = realm.where(TodoList.class).equalTo("id", todoListId).findFirst();
+            if (selectedTodoList != null){
+                selectedTodoList.setTitle(todoListName);
+                selectedTodoList.setDateModified(System.currentTimeMillis());
+            }
+            realm.commitTransaction();
+        }
 
     }
+
+
 
     @Override
     public void deleteTodoListItem(String id) {
@@ -78,6 +89,13 @@ public class TodoListRealmRepository implements TodoListContract.Repository {
 
     @Override
     public TodoList getTodoListById(String id) {
-        return null;
+        TodoList selectedTodoList;
+        try (Realm realm = Realm.getDefaultInstance()){
+            selectedTodoList = realm.where(TodoList.class).equalTo("id", id).findFirst();
+            selectedTodoList = realm.copyFromRealm(selectedTodoList);
+        }catch (Exception e){
+            selectedTodoList = null;
+        }
+        return selectedTodoList;
     }
 }

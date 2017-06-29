@@ -1,4 +1,4 @@
-package com.okason.diary.ui.folder;
+package com.okason.diary.ui.todolist;
 
 
 import android.app.AlertDialog;
@@ -15,22 +15,22 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.data.FolderRealmRepository;
-import com.okason.diary.models.Folder;
+import com.okason.diary.data.TodoListRealmRepository;
+import com.okason.diary.models.TodoList;
 import com.okason.diary.utils.Constants;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AddFolderDialogFragment extends DialogFragment {
-    private EditText mFolderEditText;
-    private Folder mFolder = null;
+public class AddTodoListDialogFragment extends DialogFragment {
+    private EditText mTodoListEditText;
+    private TodoList mTodoList = null;
 
 
 
 
-    public AddFolderDialogFragment() {
+    public AddTodoListDialogFragment() {
         // Required empty public constructor
     }
 
@@ -43,11 +43,11 @@ public class AddFolderDialogFragment extends DialogFragment {
 
 
 
-    public static AddFolderDialogFragment newInstance(String folderId){
-        AddFolderDialogFragment dialogFragment = new AddFolderDialogFragment();
-        if (!TextUtils.isEmpty(folderId)) {
+    public static AddTodoListDialogFragment newInstance(String todoListId){
+        AddTodoListDialogFragment dialogFragment = new AddTodoListDialogFragment();
+        if (!TextUtils.isEmpty(todoListId)) {
             Bundle args = new Bundle();
-            args.putString(Constants.FOLDER_ID, folderId);
+            args.putString(Constants.TODO_LIST_ID, todoListId);
             dialogFragment.setArguments(args);
         }
         return dialogFragment;
@@ -56,11 +56,11 @@ public class AddFolderDialogFragment extends DialogFragment {
     /**
      * The method gets the Folder that was passed in, in the form of serialized String
      */
-    public void getCurrentFolder(){
-        if (getArguments() != null && getArguments().containsKey(Constants.FOLDER_ID)){
-            String folderId = getArguments().getString(Constants.FOLDER_ID);
-            if (!TextUtils.isEmpty(folderId)){
-                mFolder = new FolderRealmRepository().getFolderById(folderId);
+    public void getPassedInTodoListItem(){
+        if (getArguments() != null && getArguments().containsKey(Constants.TODO_LIST_ID)){
+            String todoListId = getArguments().getString(Constants.TODO_LIST_ID);
+            if (!TextUtils.isEmpty(todoListId)){
+                mTodoList = new TodoListRealmRepository().getTodoListById(todoListId);
 
             }
         }
@@ -71,31 +71,31 @@ public class AddFolderDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final AlertDialog.Builder addFolderDialog = new AlertDialog.Builder(getActivity(), R.style.dialog);
 
-        getCurrentFolder();
+        getPassedInTodoListItem();
         if (savedInstanceState == null){
 
 
             LayoutInflater inflater = getActivity().getLayoutInflater();
 
-            View convertView = inflater.inflate(R.layout.fragment_add_folder_dialog, null);
+            View convertView = inflater.inflate(R.layout.fragment_add_todo_list_dialog, null);
             addFolderDialog.setView(convertView);
 
             View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
             TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
-            titleText.setText(mFolder != null ? getString(R.string.title_edit_folder) : getString(R.string.title_add_folder));
+            titleText.setText(mTodoList != null ? getString(R.string.title_edit_todo_list) : getString(R.string.title_add_todo_list));
             addFolderDialog.setCustomTitle(titleView);
 
-            mFolderEditText = (EditText)convertView.findViewById(R.id.edit_text_add_category);
+            mTodoListEditText = (EditText)convertView.findViewById(R.id.edit_text_add_todo_list);
 
 
-            addFolderDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            addFolderDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
 
                 }
             });
-            addFolderDialog.setPositiveButton(mFolder != null ? getString(R.string.label_update) : getString(R.string.label_add), new DialogInterface.OnClickListener() {
+            addFolderDialog.setPositiveButton(mTodoList != null ? getString(R.string.label_update) : getString(R.string.label_add), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
@@ -105,9 +105,9 @@ public class AddFolderDialogFragment extends DialogFragment {
 
 
 
-            if (mFolder != null && !TextUtils.isEmpty(mFolder.getFolderName())){
-                populateFields(mFolder);
-                addFolderDialog.setTitle(mFolder.getFolderName());
+            if (mTodoList != null && !TextUtils.isEmpty(mTodoList.getTitle())){
+                populateFields(mTodoList);
+                addFolderDialog.setTitle(mTodoList.getTitle());
             }
 
 
@@ -116,15 +116,15 @@ public class AddFolderDialogFragment extends DialogFragment {
         return addFolderDialog.create();
     }
 
-    private void populateFields(Folder category) {
-        mFolderEditText.setText(category.getFolderName());
+    private void populateFields(TodoList todoList) {
+        mTodoListEditText.setText(todoList.getTitle());
     }
 
     private boolean requiredFieldCompleted(){
-        if (mFolderEditText.getText().toString().isEmpty())
+        if (mTodoListEditText.getText().toString().isEmpty())
         {
-            mFolderEditText.setError(getString(R.string.required));
-            mFolderEditText.requestFocus();
+            mTodoListEditText.setError(getString(R.string.required));
+            mTodoListEditText.requestFocus();
             return false;
         }
 
@@ -157,11 +157,11 @@ public class AddFolderDialogFragment extends DialogFragment {
 
 
     private void saveFolder() {
-        final String categoryName = mFolderEditText.getText().toString().trim();
-        if (mFolder == null){
-            mFolder = new FolderRealmRepository().createNewFolder();
+        final String todoListName = mTodoListEditText.getText().toString().trim();
+        if (mTodoList == null){
+            mTodoList = new TodoListRealmRepository().createNewTodoListItem(todoListName);
         }
-        new FolderRealmRepository().updatedFolderTitle(mFolder.getId(), categoryName);
+        new TodoListRealmRepository().updateTodoListItemName(mTodoList.getId(), todoListName);
 
     }
 

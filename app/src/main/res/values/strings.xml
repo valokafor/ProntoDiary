@@ -110,7 +110,7 @@
     <string name="label_yes">Yes</string>
     <string name="warning_are_you_sure">Are you sure ?</string>
     <string name="title_activity_add_note">AddNoteActivity</string>
-    <string name="add_new_journal">New Journal Entry</string>
+    <string name="add_new_journal">New Journal</string>
     <string name="select_folder">Select Folder</string>
     <string name="placeholder_journal_title">Journal Title</string>
     <string name="placeholder_journal_text">Journal Entry</string>
@@ -126,8 +126,8 @@
     <string name="action_share">Share</string>
     <string name="action_tag">Tag</string>
     <string name="hint_enter_folder">Enter folder name</string>
-    <string name="edit_folder">Edit Folder</string>
-    <string name="add_folder">Add Folder</string>
+    <string name="title_edit_folder">Edit Folder</string>
+    <string name="title_add_folder">Add Folder</string>
     <string name="required">Required</string>
     <string name="no_folder">No folder found</string>
     <string name="no_tag">No Tag found</string>
@@ -180,14 +180,20 @@
     <string name="label_journal">Journal</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="label_folders">Folders</string>
-    <string name="edit_tag">Edit Tag</string>
-    <string name="add_tag">Add Tag</string>
     <string name="hint_enter_tag">Enter Tag Name</string>
     <string name="select_tag">Select Tag</string>
     <string name="label_close">Close</string>
     <string name="label_task">Task</string>
     <string name="label_done">Done</string>
     <string name="label_pending">Pending</string>
+    <string name="hint_enter_todo_list_name">Add Todo List Item - e.g Shopping List</string>
+    <string name="label_add">Add</string>
+    <string name="label_edit">Edit</string>
+    <string name="label_update">Update</string>
+    <string name="title_edit_todo_list">Edit Todo List</string>
+    <string name="title_add_todo_list">Add Todo List</string>
+    <string name="title_edit_tag">Edit Tag</string>
+    <string name="title_add_tag">Add Tag</string>
 
 
     <string-array name="sampleFolderNames">
@@ -200,6 +206,7 @@
         <item>Home Improvement</item>
         <item>Productivity</item>
     </string-array>
+    <string name="title_activity_todo_list">TodoListActivity</string>
 
 
 </resources>

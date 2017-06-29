@@ -59,10 +59,7 @@ import com.okason.diary.core.events.OnAttachmentAddedToNoteEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-<<<<<<< HEAD
-=======
 import com.okason.diary.data.FolderRealmRepository;
->>>>>>> try_realm
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -74,7 +71,6 @@ import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.ui.sketch.SketchActivity;
-import com.okason.diary.ui.tag.AddTagDialogFragment;
 import com.okason.diary.ui.tag.SelectTagDialogFragment;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
@@ -109,21 +105,11 @@ public class NoteEditorFragment extends Fragment implements
     private SelectFolderDialogFragment selectFolderDialogFragment;
     private SelectTagDialogFragment selectTagDialogFragment;
     private AddFolderDialogFragment addFolderDialogFragment;
-    private AddTagDialogFragment addTagDialogFragment;
 
     private AttachmentListAdapter attachmentListAdapter;
-<<<<<<< HEAD
-    private ValueEventListener folderValueEventListener;
-
-    //Listener for getting all Tags
-    private ValueEventListener tagValueEventListener;
-    private List<Folder> mFolders;
-    private List<Tag> mTags;
-=======
     private Note mCurrentNote;
 
 
->>>>>>> try_realm
 
     private Uri attachmentUri;
     private String mLocalAudioFilePath = null;
@@ -175,8 +161,6 @@ public class NoteEditorFragment extends Fragment implements
     private long audioRecordingTimeStart;
     private long audioRecordingTime;
     private MaterialDialog mDialog;
-
-    //for removing Note from Tag
     private ValueEventListener tagEventListener;
 
 
@@ -226,13 +210,7 @@ public class NoteEditorFragment extends Fragment implements
 //        mAttachmentStorageReference = mFirebaseStorageReference.child("users/" + mFirebaseUser.getUid() + "/attachments");
 
 
-<<<<<<< HEAD
-        mFolders = new ArrayList<>();
-        mTags = new ArrayList<>();
-        mPresenter = new AddNotePresenter(this, noteCloudReference, getPassedInNote());
-=======
         mPresenter = new AddNotePresenter(this, getPassedInNoteId());
->>>>>>> try_realm
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         mTitle.addTextChangedListener(new TextWatcher() {
@@ -272,49 +250,6 @@ public class NoteEditorFragment extends Fragment implements
 
             }
         });
-<<<<<<< HEAD
-
-        //Listener for fetching the List of Categories from Firebase
-        folderValueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot != null){
-                    for (DataSnapshot categorySnapshot: dataSnapshot.getChildren()){
-                        Folder folder = categorySnapshot.getValue(Folder.class);
-                        mFolders.add(folder);
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
-        //Listener for fetching the List of Tags from Firebase
-        tagValueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot != null){
-                    for (DataSnapshot tagSnapshot: dataSnapshot.getChildren()){
-                        Tag tag = tagSnapshot.getValue(Tag.class);
-                        mTags.add(tag);
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
-
-=======
->>>>>>> try_realm
         return mRootView;
     }
 
@@ -323,41 +258,13 @@ public class NoteEditorFragment extends Fragment implements
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
-<<<<<<< HEAD
-        mPresenter.updateUI();
-        if (folderCloudReference != null && folderValueEventListener != null){
-            folderCloudReference.addValueEventListener(folderValueEventListener);
-        }
-
-        if (tagCloudReference != null && tagValueEventListener != null){
-            tagCloudReference.addValueEventListener(tagValueEventListener);
-        }
-
-=======
        // mPresenter.updateUI();
->>>>>>> try_realm
     }
 
     @Override
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
-<<<<<<< HEAD
-        if (tagCloudReference != null && tagEventListener != null){
-            tagCloudReference.removeEventListener(tagEventListener);
-        }
-
-        if (folderCloudReference != null && folderValueEventListener != null){
-            folderCloudReference.removeEventListener(folderValueEventListener);
-        }
-
-        if (tagCloudReference != null && tagValueEventListener != null){
-            tagCloudReference.removeEventListener(tagValueEventListener);
-        }
-
-
-=======
->>>>>>> try_realm
         if (mRecorder != null) {
             mRecorder.release();
             mRecorder = null;
@@ -393,7 +300,7 @@ public class NoteEditorFragment extends Fragment implements
                 mPresenter.onSaveAndExit();
                 break;
             case R.id.action_tag:
-                showSelectTag(mTags);
+                showSelectTag();
                 break;
 
 
@@ -401,13 +308,9 @@ public class NoteEditorFragment extends Fragment implements
         return true;
     }
 
-    private void showSelectTag(List<Tag> tags) {
+    private void showSelectTag() {
         selectTagDialogFragment = SelectTagDialogFragment.newInstance();
-<<<<<<< HEAD
-        selectTagDialogFragment.setTags(tags);
-=======
         selectTagDialogFragment.setTags(mPresenter.getAllTags());
->>>>>>> try_realm
 
         selectTagDialogFragment.setListener(new OnTagSelectedListener() {
             @Override
@@ -422,7 +325,7 @@ public class NoteEditorFragment extends Fragment implements
 
             @Override
             public void onAddCategoryButtonClicked() {
-                showAddNewTagDialog();
+
             }
         });
         selectTagDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
@@ -514,15 +417,6 @@ public class NoteEditorFragment extends Fragment implements
         }
         addFolderDialogFragment = AddFolderDialogFragment.newInstance("");
         addFolderDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
-
-    }
-
-    public void showAddNewTagDialog() {
-        if (selectTagDialogFragment != null) {
-            selectTagDialogFragment.dismiss();
-        }
-        addTagDialogFragment = AddTagDialogFragment.newInstance("");
-        addTagDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
 
     }
 

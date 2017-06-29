@@ -1,5 +1,6 @@
 package com.okason.diary.ui.todolist;
 
+import com.okason.diary.data.TodoListRealmRepository;
 import com.okason.diary.models.Task;
 import com.okason.diary.models.TodoList;
 
@@ -15,7 +16,7 @@ public class TodoListPresenter implements TodoListContract.Actions {
 
     public TodoListPresenter(TodoListContract.View view) {
         mView = view;
-     //   mRepository = new TodoListRealmRepository();
+        mRepository = new TodoListRealmRepository();
     }
 
 

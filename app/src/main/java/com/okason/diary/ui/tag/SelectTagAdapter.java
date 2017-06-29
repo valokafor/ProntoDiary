@@ -1,7 +1,6 @@
 package com.okason.diary.ui.tag;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -60,13 +59,9 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
         if (!TextUtils.isEmpty(selectedTag.getTagName())){
             holder.tagCheckbox.setText(selectedTag.getTagName());
 
-<<<<<<< HEAD
-            int count = 2;
-=======
             int count = selectedTag.getNotes().size();
->>>>>>> try_realm
             ColorGenerator generator = ColorGenerator.MATERIAL;
-            int color = Color.GRAY;
+            int color = generator.getRandomColor();
             TextDrawable drawable = TextDrawable.builder()
                     .buildRound(String.valueOf(count), color);
             holder.tagCountImage.setImageDrawable(drawable);

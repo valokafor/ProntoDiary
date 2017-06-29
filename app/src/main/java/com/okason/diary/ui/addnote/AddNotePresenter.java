@@ -159,33 +159,34 @@ public class AddNotePresenter implements AddNoteContract.Action {
     @Override
     public void onSaveAndExit() {
 
-        if (!dataChanged){
-            return;
+        if (dataChanged){
+            mView.showMessage(getAppContext().getString(R.string.saving_journal));
+
+            if (mCurrentNote == null){
+                mCurrentNote = mRepository.createNewNote();
+            }
+
+
+            //Check to see if Title is empty
+            if (TextUtils.isEmpty(mView.getTitle())){
+                title = ProntoDiaryApplication.getAppContext().getString(R.string.missing_title);
+            }else {
+                title = mView.getTitle();
+            }
+
+            //Check to see if content is empty
+            if (TextUtils.isEmpty(mView.getContent())){
+                content = ProntoDiaryApplication.getAppContext().getString(R.string.missing_content);
+            }else {
+                content = mView.getContent();
+            }
+
+            mRepository.updatedNoteContent(mCurrentNote.getId(), content);
+            mRepository.updatedNoteTitle(mCurrentNote.getId(), title);
+
         }
 
-        mView.showMessage(getAppContext().getString(R.string.saving_journal));
 
-        if (mCurrentNote == null){
-            mCurrentNote = mRepository.createNewNote();
-        }
-
-
-        //Check to see if Title is empty
-        if (TextUtils.isEmpty(mView.getTitle())){
-            title = ProntoDiaryApplication.getAppContext().getString(R.string.missing_title);
-        }else {
-            title = mView.getTitle();
-        }
-
-        //Check to see if content is empty
-        if (TextUtils.isEmpty(mView.getContent())){
-            content = ProntoDiaryApplication.getAppContext().getString(R.string.missing_content);
-        }else {
-            content = mView.getContent();
-        }
-
-        mRepository.updatedNoteContent(mCurrentNote.getId(), content);
-        mRepository.updatedNoteTitle(mCurrentNote.getId(), title);
 
 
             //Upload the attachments to cloud

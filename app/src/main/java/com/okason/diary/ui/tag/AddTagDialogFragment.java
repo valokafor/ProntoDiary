@@ -101,7 +101,7 @@ public class AddTagDialogFragment extends DialogFragment {
 
             View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
             TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
-            titleText.setText(mInEditMode == true ? getString(R.string.edit_tag) : getString(R.string.add_tag));
+            titleText.setText(mInEditMode == true ? getString(R.string.title_edit_tag) : getString(R.string.title_add_tag));
             addTagDialog.setCustomTitle(titleView);
 
             tagEditText = (EditText)convertView.findViewById(R.id.edit_text_add_category);

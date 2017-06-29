@@ -47,6 +47,7 @@ import butterknife.ButterKnife;
 import io.realm.OrderedCollectionChangeSet;
 import io.realm.OrderedRealmCollectionChangeListener;
 import io.realm.Realm;
+import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 
 /**
@@ -123,6 +124,9 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         mRootView = inflater.inflate(R.layout.fragment_note_list, container, false);
         ButterKnife.bind(this, mRootView);
 
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
         return mRootView;
@@ -168,10 +172,17 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public void onResume() {
         super.onResume();
+        mListAdapter = null;
         try {
+
             mRealm = Realm.getDefaultInstance();
             mNotes = mRealm.where(Note.class).findAll();
-            mNotes.addChangeListener(noteChangeListener);
+            mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
+                @Override
+                public void onChange(RealmResults<Note> notes) {
+                    showNotes(mNotes);
+                }
+            });
             showNotes(mNotes);
         } catch (Exception e) {
             e.printStackTrace();
@@ -232,10 +243,6 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             showEmptyText(false);
             mListAdapter = new NoteListAdapter(notes, getContext());
             mRecyclerView.setAdapter(mListAdapter);
-            mRecyclerView.setHasFixedSize(true);
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-
 
             mListAdapter.setNoteItemListener(new NoteItemListener() {
                 @Override
@@ -336,7 +343,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         String message =  getString(R.string.label_delete)  + " " + content.substring(0, Math.min(content.length(), 50)) + "  ... ?";
 
 
-        android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext());
+        android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext(), R.style.dialog);
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
         TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);

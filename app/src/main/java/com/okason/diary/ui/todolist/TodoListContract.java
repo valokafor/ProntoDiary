@@ -12,14 +12,11 @@ import java.util.List;
 public class TodoListContract {
 
     public interface View{
-        void showTodoList(List<TodoList> todoLists);
         void showAddTodoListItem();
         void showTaskDetail(Task task);
         void showEditToDoListItem(TodoList todoList);
         void markTaskAsComplete(Task task);
         void showMoveTaskToNewListDialog(Task task);
-        void showDatabaseError(String error);
-        void showDatabaseSuccessMessage(String message);
         void showEmptyText(boolean showText);
     }
 
@@ -47,7 +44,7 @@ public class TodoListContract {
         void addTaskAsync(Task task, TodoList parent);
         void updateTaskStatus(Task task, boolean completed);
         void removeTaskFromTodoList(Task task, TodoList todoList);
-        void updateTodoListItemAsync(TodoList todoList);
+        void updateTodoListItemName(String todoListId, String todoListName);
         void deleteTodoListItem(String id);
         List<TodoList> getAllTodoListItems();
         void getAllTodoListAsync();
