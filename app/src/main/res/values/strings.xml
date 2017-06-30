@@ -207,6 +207,9 @@
         <item>Productivity</item>
     </string-array>
     <string name="title_activity_todo_list">TodoListActivity</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_sample">SampleActivity</string>
+    <string name="title_activity_bottom_nav">BottomNavActivity</string>
 
 
 </resources>

@@ -44,6 +44,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.realm.Realm;
 import io.realm.SyncUser;
 
@@ -75,9 +76,6 @@ public class NoteListActivity extends AppCompatActivity {
     @BindView(R.id.image_button_folder)
     ImageButton folderButton;
 
-    @BindView(R.id.image_button_sync)
-    ImageButton syncButton;
-
     @BindView(R.id.image_button_settings)
     ImageButton settingsButton;
 
@@ -93,9 +91,6 @@ public class NoteListActivity extends AppCompatActivity {
     @BindView(R.id.folder_text_view)
     TextView  folderTextView;
 
-    @BindView(R.id.sync_text_view)
-    TextView syncTextView;
-
     @BindView(R.id.settings_text_view)
     TextView settingsTextView;
 
@@ -106,11 +101,17 @@ public class NoteListActivity extends AppCompatActivity {
     @BindView(R.id.linear_layout_settings)
     LinearLayout settingsLayout;
 
-    @BindView(R.id.linear_layout_sync)
-    LinearLayout syncLayout;
-
     @BindView(R.id.linear_layout_login)
     LinearLayout loginLayout;
+
+    @BindView(R.id.linear_layout_todo_list)
+    LinearLayout todoListLayout;
+
+    @BindView(R.id.linear_layout_notes)
+    LinearLayout notesLayout;
+
+    @BindView(R.id.linear_layout_folder)
+    LinearLayout folderLayout;
 
     private Realm realm;
 
@@ -153,7 +154,7 @@ public class NoteListActivity extends AppCompatActivity {
                 //Show Anonymous Login
                 Realm.setDefaultConfiguration(UserManager.getLocalConfig());
                 realm = Realm.getDefaultInstance();
-                syncLayout.setVisibility(View.VISIBLE);
+                loginLayout.setVisibility(View.VISIBLE);
                 settingsLayout.setVisibility(View.GONE);
                 updateUI();
             }else {
@@ -161,7 +162,7 @@ public class NoteListActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AuthUiActivity.class));}
         }else {
             UserManager.setActiveUser(user);
-            syncLayout.setVisibility(View.GONE);
+            loginLayout.setVisibility(View.GONE);
             settingsLayout.setVisibility(View.VISIBLE);
             updateUI();
         }
@@ -196,73 +197,102 @@ public class NoteListActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    @OnClick(R.id.image_button_notes)
+    public void onNoteIconClicked(View view){
+        handleNoteButtonClicked();
+    }
+
+    @OnClick(R.id.notes_text_view)
+    public void onNoteTextClicked(View view){
+        handleNoteButtonClicked();
+    }
+
+    @OnClick(R.id.image_button_todo_list)
+    public void onTodoListIconClicked(View view){
+        handleTodoListButtonClicked();
+    }
+
+    @OnClick(R.id.todo_list_text_view)
+    public void onTodoListTextClicked(View view){
+        handleTodoListButtonClicked();
+    }
+
+    @OnClick(R.id.image_button_folder)
+    public void onFolderIconClicked(View view){
+        handleFolderButtonClicked();
+    }
+
+    @OnClick(R.id.folder_text_view)
+    public void onFolderTextClicked(View view){
+        handleFolderButtonClicked();
+    }
+
+    @OnClick(R.id.image_button_settings)
+    public void onSettingsIconClicked(View view){
+        handleSettingsButtonClicked();
+    }
+
+    @OnClick(R.id.settings_text_view)
+    public void onSettingsTextClicked(View view){
+        handleSettingsButtonClicked();
+    }
+
+    @OnClick(R.id.image_button_login)
+    public void onLoginIconClicked(View view){
+        handleLoginButtonClicked();
+    }
+
+    @OnClick(R.id.login_text_view)
+    public void onLoginTextClicked(View view){
+        handleLoginButtonClicked();
+    }
+
+
+    private void handleTodoListButtonClicked() {
+        resetBottomNavigationIcons();
+        todoListButton.setImageResource(R.drawable.ic_task_list_dark_green);
+        todoListTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
+        openFragment(new TodoListFragment(), getString(R.string.label_todo_list), Constants.TODO_LIST_FRAGMENT_TAG);
+
+    }
+
+    private void handleFolderButtonClicked() {
+        resetBottomNavigationIcons();
+        folderButton.setImageResource(R.drawable.ic_folder_dark_green);
+        folderTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
+        openFragment(new FolderListFragment(), getString(R.string.label_folders), Constants.FOLDER_FRAGMENT_TAG);
+    }
+
+
+    private void handleSettingsButtonClicked() {
+        resetBottomNavigationIcons();
+        settingsButton.setImageResource(R.drawable.ic_settings_dark_green);
+        settingsTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
+        startActivity(new Intent(mActivity, SettingsActivity.class));
+    }
+
+    private void handleLoginButtonClicked(){
+        resetBottomNavigationIcons();
+        loginButton.setImageResource(R.drawable.ic_login_gray);
+        loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
+        startActivity(new Intent(mActivity, AuthUiActivity.class));
+    }
+
+    private void handleNoteButtonClicked() {
+        resetBottomNavigationIcons();
+        noteButton.setImageResource(R.drawable.ic_post_it_dark_green);
+        noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
+        openFragment(new NoteListFragment(), getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
+    }
 
 
     private void updateUI() {
-//        if (user == null){
-//            return;
-//        }
-
         addDefaultData();
-        noteButton.setImageResource(R.drawable.ic_action_book_red_light);
-        noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
-        openFragment(new NoteListFragment(), getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
+        handleNoteButtonClicked();
 
-        noteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                resetBottomNavigationIcons();
-                noteButton.setImageResource(R.drawable.ic_action_book_red_light);
-                noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
-                openFragment(new NoteListFragment(), getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
-            }
-        });
-
-        todoListButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                resetBottomNavigationIcons();
-                todoListButton.setImageResource(R.drawable.ic_action_tick_light_red);
-                todoListTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
-                openFragment(new TodoListFragment(), getString(R.string.label_todo_list), Constants.TODO_LIST_FRAGMENT_TAG);
-
-            }
-        });
-
-        syncButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                resetBottomNavigationIcons();
-                syncButton.setImageResource(R.drawable.ic_action_reload_light_red);
-                syncTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
-                startActivity(new Intent(mActivity, AuthUiActivity.class));
-
-            }
-        });
-
-
-        settingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                resetBottomNavigationIcons();
-                settingsButton.setImageResource(R.drawable.ic_action_settings_light_red);
-                settingsTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
-                startActivity(new Intent(mActivity, SettingsActivity.class));
-            }
-        });
-
-        folderButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                resetBottomNavigationIcons();
-                folderButton.setImageResource(R.drawable.ic_action_folder_tabs_light_red);
-                folderTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary));
-                openFragment(new FolderListFragment(), getString(R.string.label_folders), Constants.FOLDER_FRAGMENT_TAG);
-
-
-            }
-        });
     }
+
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onShowFragmentEvent(ShowFragmentEvent event){
@@ -281,22 +311,19 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
     private void resetBottomNavigationIcons() {
-        noteButton.setImageResource(R.drawable.ic_action_book_holo_light);
+        noteButton.setImageResource(R.drawable.ic_post_it_gray);
         noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
 
-        folderButton.setImageResource(R.drawable.ic_action_folder_tabs_holo_light);
+        folderButton.setImageResource(R.drawable.ic_folder_gray);
         folderTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
 
-        todoListButton.setImageResource(R.drawable.ic_action_tick_holo_light);
+        todoListButton.setImageResource(R.drawable.ic_task_gray);
         todoListTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
 
-        syncButton.setImageResource(R.drawable.ic_action_reload_holo_light);
-        syncTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
-
-        loginButton.setImageResource(R.drawable.ic_action_lock_open_holo_light);
+        loginButton.setImageResource(R.drawable.ic_login_gray);
         loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
 
-        settingsButton.setImageResource(R.drawable.ic_action_settings_holo_light);
+        settingsButton.setImageResource(R.drawable.ic_settings_gray);
         settingsTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
     }
 

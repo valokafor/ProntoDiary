@@ -29,6 +29,7 @@
             android:paddingBottom="5dp">
 
             <LinearLayout
+                android:id="@+id/linear_layout_notes"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -41,18 +42,20 @@
                     android:layout_gravity="center_horizontal"
                     android:background="@null"
                     android:layout_weight="1"
-                    android:src="@drawable/ic_action_book_holo_light"/>
+                    app:srcCompat="@drawable/ic_post_it_gray"/>
 
                 <TextView
                     android:id="@+id/notes_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
+                    android:clickable="true"
                     android:text="@string/label_journals"/>
 
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/linear_layout_todo_list"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -65,18 +68,20 @@
                     android:layout_gravity="center_horizontal"
                     android:background="@null"
                     android:layout_weight="1"
-                    android:src="@drawable/ic_action_tick_holo_light"/>
+                    app:srcCompat="@drawable/ic_task_gray"/>
 
                 <TextView
                     android:id="@+id/todo_list_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
+                    android:clickable="true"
                     android:text="@string/label_todo_list"/>
 
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/linear_layout_folder"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -90,40 +95,19 @@
                     android:layout_gravity="center_horizontal"
                     android:background="@null"
                     android:layout_weight="1"
-                    android:src="@drawable/ic_action_folder_tabs_holo_light"/>
+                    app:srcCompat="@drawable/ic_folder_gray"/>
 
                 <TextView
                     android:id="@+id/folder_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
+                    android:clickable="true"
                     android:text="@string/label_folder"/>
 
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/linear_layout_sync"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical">
 
-                <ImageButton
-                    android:id="@+id/image_button_sync"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@null"
-                    android:layout_weight="1"
-                    android:src="@drawable/ic_action_reload_holo_light"/>
-
-                <TextView
-                    android:id="@+id/sync_text_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="@string/label_sync"/>
-            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/linear_layout_login"
@@ -140,13 +124,15 @@
                     android:layout_gravity="center_horizontal"
                     android:background="@null"
                     android:layout_weight="1"
-                    android:src="@drawable/ic_action_lock_open_holo_light"/>
+                    app:srcCompat="@drawable/ic_login_gray"/>
 
                 <TextView
                     android:id="@+id/login_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
+
+
                     android:text="@string/action_sign_in"/>
             </LinearLayout>
 
@@ -164,13 +150,14 @@
                     android:layout_gravity="center_horizontal"
                     android:background="@null"
                     android:layout_weight="1"
-                    android:src="@drawable/ic_action_settings_holo_light"/>
+                    app:srcCompat="@drawable/ic_settings_gray"/>
 
                 <TextView
                     android:id="@+id/settings_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
+                    android:clickable="true"
                     android:text="@string/label_settings"/>
             </LinearLayout>
 

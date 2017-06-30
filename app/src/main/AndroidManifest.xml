@@ -119,10 +119,13 @@
             android:exported="false">
         </service>
 
+
         <activity
-            android:name=".ui.todolist.TodoListActivity"
-            android:label="@string/title_activity_todo_list"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:name=".ui.todolist.BottomNavActivity"
+            android:label="@string/title_activity_bottom_nav">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.okason.diary.NoteListActivity"/>
         </activity>
     </application>
 

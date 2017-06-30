@@ -78,30 +78,32 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         mRootView = inflater.inflate(R.layout.fragment_folder_list, container, false);
         ButterKnife.bind(this, mRootView);
 
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        mRealm = Realm.getDefaultInstance();
-        mFolders = mRealm.where(Folder.class).findAll();
-
-
-        mFolders.addChangeListener(new RealmChangeListener<RealmResults<Folder>>() {
-            @Override
-            public void onChange(RealmResults<Folder> folders) {
-                for (Folder folder: folders){
-                    String name = folder.getFolderName();
-                    String id = folder.getId();
-                //    Log.d(NoteListActivity.TAG, name);
-                }
-                showFolders(mFolders);
-            }
-        });
         return  mRootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        showFolders(mFolders);
+        mAdapter = null;
+        try {
+            mRealm = Realm.getDefaultInstance();
+            mFolders = mRealm.where(Folder.class).findAll();
+            mFolders.addChangeListener(new RealmChangeListener<RealmResults<Folder>>() {
+                @Override
+                public void onChange(RealmResults<Folder> folders) {
+                    showFolders(folders);
+                }
+            });
+            showFolders(mFolders);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -164,7 +166,6 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     public void showFolders(List<Folder> folders) {
         if (folders.size() > 0){
             hideEmptyText();
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             mAdapter = new FolderRecyclerViewAdapter(getContext(),folders, this);
             mRecyclerView.setAdapter(mAdapter);
         }else {

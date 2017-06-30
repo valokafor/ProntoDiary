@@ -117,6 +117,8 @@ dependencies {
     compile 'com.github.fiskurgit:ChipCloud:3.0.3'
     compile 'com.github.adroitandroid:ChipCloud:2.2.1'
     compile 'com.google.firebase:firebase-crash:10.0.1'
+    compile 'com.android.support:design:25.3.1'
+    compile 'com.android.support:support-vector-drawable:25.3.1'
     testCompile 'junit:junit:4.12'
     testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
