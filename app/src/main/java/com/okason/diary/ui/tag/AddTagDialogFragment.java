@@ -14,17 +14,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.gson.Gson;
 import com.okason.diary.R;
-import com.okason.diary.core.events.TagAddedEvent;
+import com.okason.diary.data.TagRealmRepository;
 import com.okason.diary.models.Tag;
 import com.okason.diary.utils.Constants;
-
-import org.greenrobot.eventbus.EventBus;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -32,16 +25,8 @@ import org.greenrobot.eventbus.EventBus;
 public class AddTagDialogFragment extends DialogFragment {
 
     private EditText tagEditText;
-    private boolean mInEditMode = false;
-
-    private String categoryId = "";
-
     private Tag mTag = null;
-    private DatabaseReference mDatabase;
-    private DatabaseReference tagCloudReference;
 
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
 
 
     public AddTagDialogFragment() {
@@ -51,39 +36,31 @@ public class AddTagDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-
-        tagCloudReference =  mDatabase.child(Constants.USERS_CLOUD_END_POINT + mFirebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
 
     }
 
-    public static AddTagDialogFragment newInstance(String serializedTag){
+    public static AddTagDialogFragment newInstance(String tagId){
         AddTagDialogFragment dialogFragment = new AddTagDialogFragment();
-        Bundle args = new Bundle();
-        args.putString(Constants.SERIALIZED_TAG, serializedTag);
-        dialogFragment.setArguments(args);
+        if (!TextUtils.isEmpty(tagId)) {
+            Bundle args = new Bundle();
+            args.putString(Constants.TAG_ID, tagId);
+            dialogFragment.setArguments(args);
+        }
         return dialogFragment;
     }
 
-
-
     /**
-     * The method gets the Tag that was passed in, in the form of serialized String
+     * The method gets the Folder that was passed in, in the form of serialized String
      */
     public void getCurrentTag(){
-        Bundle args = getArguments();
-        if (args != null && args.containsKey(Constants.SERIALIZED_TAG)){
-            String jsonTag = args.getString(Constants.SERIALIZED_TAG);
-            if (!TextUtils.isEmpty(jsonTag)){
-                Gson gson = new Gson();
-                mTag = gson.fromJson(jsonTag, Tag.class);
-            }
-            if (mTag != null){
-                mInEditMode = true;
+        if (getArguments() != null && getArguments().containsKey(Constants.TAG_ID)){
+            String tagId = getArguments().getString(Constants.TAG_ID);
+            if (!TextUtils.isEmpty(tagId)){
+                mTag = new TagRealmRepository().getTagById(tagId);
+
             }
         }
+
     }
 
     @Override
@@ -101,20 +78,20 @@ public class AddTagDialogFragment extends DialogFragment {
 
             View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
             TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
-            titleText.setText(mInEditMode == true ? getString(R.string.title_edit_tag) : getString(R.string.title_add_tag));
+            titleText.setText(mTag != null ? getString(R.string.title_edit_tag) : getString(R.string.title_add_tag));
             addTagDialog.setCustomTitle(titleView);
 
             tagEditText = (EditText)convertView.findViewById(R.id.edit_text_add_category);
 
 
-            addTagDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            addTagDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
 
                 }
             });
-            addTagDialog.setPositiveButton(mInEditMode == true ? "Update" : "Add", new DialogInterface.OnClickListener() {
+            addTagDialog.setPositiveButton(mTag != null ? getString(R.string.label_update) : getString(R.string.label_add), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
@@ -174,20 +151,13 @@ public class AddTagDialogFragment extends DialogFragment {
 
 
     private void saveTag() {
-        final String categoryName = tagEditText.getText().toString().trim();
-        if (mInEditMode){
-            mTag.setTagName(categoryName);
-        } else {
-            mTag = new Tag();
-            mTag.setTagName(categoryName);
-            mTag.setId(tagCloudReference.push().getKey());
+        final String tagName = tagEditText.getText().toString().trim();
+        if (mTag == null){
+            mTag = new TagRealmRepository().createNewTag();
         }
-
-        mTag.setDateModified(System.currentTimeMillis());
-        tagCloudReference.child(mTag.getId()).setValue(mTag);
-        EventBus.getDefault().post(new TagAddedEvent(mTag));
-
+        new TagRealmRepository().updatedTagTitle(mTag.getId(), tagName);
     }
+
 
 
 }

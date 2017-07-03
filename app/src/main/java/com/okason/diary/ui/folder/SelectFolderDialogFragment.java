@@ -25,7 +25,7 @@ import java.util.List;
 public class SelectFolderDialogFragment extends DialogFragment {
 
     private List<Folder> mCategories;
-    private FolderListViewAdapter mCategoryAdapter;
+    private SelectFolderAdapter mCategoryAdapter;
     private OnFolderSelectedListener mCategorySelectedListener;
 
 
@@ -79,7 +79,7 @@ public class SelectFolderDialogFragment extends DialogFragment {
             }
         });
 
-        mCategoryAdapter = new FolderListViewAdapter(getActivity(), mCategories);
+        mCategoryAdapter = new SelectFolderAdapter(getActivity(), mCategories);
         dialogList.setAdapter(mCategoryAdapter);
 
         dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {

@@ -20,15 +20,15 @@ import butterknife.ButterKnife;
 /**
  * Created by Valentine on 5/26/2016.
  */
-public class FolderRecyclerViewAdapter extends RecyclerView.Adapter<FolderRecyclerViewAdapter.ViewHolder>{
-    private final static String LOG_CAT = FolderRecyclerViewAdapter.class.getSimpleName();
+public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.ViewHolder>{
+    private final static String LOG_CAT = FolderListAdapter.class.getSimpleName();
     private final static boolean DEBUG = true;
 
     private List<Folder> mFolders;
     private final OnFolderSelectedListener mListener;
     private final Context mContext;
 
-    public FolderRecyclerViewAdapter(Context mContext, List<Folder> mFolders, OnFolderSelectedListener mListener) {
+    public FolderListAdapter(Context mContext, List<Folder> mFolders, OnFolderSelectedListener mListener) {
         this.mFolders = mFolders;
         this.mContext = mContext;
         this.mListener = mListener;

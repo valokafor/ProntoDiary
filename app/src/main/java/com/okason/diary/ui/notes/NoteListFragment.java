@@ -162,7 +162,11 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public void onPause() {
         super.onPause();
-        mRealm.close();
+        try {
+            mRealm.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (mPlayer != null){
             mPlayer.release();
             mPlayer = null;

@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -38,6 +39,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -53,9 +55,11 @@ import com.google.firebase.storage.UploadTask;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.events.AttachingFileCompleteEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.events.OnAttachmentAddedToNoteEvent;
+import com.okason.diary.core.events.UpdateTagLayoutEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
@@ -64,13 +68,13 @@ import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 import com.okason.diary.models.Tag;
-import com.okason.diary.core.events.AttachingFileCompleteEvent;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.attachment.AttachmentTask;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.ui.sketch.SketchActivity;
+import com.okason.diary.ui.tag.AddTagDialogFragment;
 import com.okason.diary.ui.tag.SelectTagDialogFragment;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
@@ -105,6 +109,7 @@ public class NoteEditorFragment extends Fragment implements
     private SelectFolderDialogFragment selectFolderDialogFragment;
     private SelectTagDialogFragment selectTagDialogFragment;
     private AddFolderDialogFragment addFolderDialogFragment;
+    private AddTagDialogFragment addTagDialogFragment;
 
     private AttachmentListAdapter attachmentListAdapter;
     private Note mCurrentNote;
@@ -145,6 +150,14 @@ public class NoteEditorFragment extends Fragment implements
 
     @BindView(R.id.attachment_list_recyclerview)
     RecyclerView attachmentRecyclerView;
+
+    @BindView(R.id.creation)
+    TextView dateCreated;
+
+    @BindView(R.id.last_modification) TextView dateModified;
+
+    @BindView(R.id.timestap_layout)
+    LinearLayout mTimeStampLayout;
 
     private final int EXTERNAL_PERMISSION_REQUEST = 1;
     private final int RECORD_AUDIO_PERMISSION_REQUEST = 2;
@@ -277,6 +290,7 @@ public class NoteEditorFragment extends Fragment implements
 
     }
 
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_add_note, menu);
@@ -314,17 +328,32 @@ public class NoteEditorFragment extends Fragment implements
 
         selectTagDialogFragment.setListener(new OnTagSelectedListener() {
             @Override
-            public void onTagSelected(Tag selectedTag) {
+            public void onTagChecked(Tag selectedTag) {
                 mPresenter.onTagAdded(selectedTag);
             }
 
             @Override
-            public void onTagUnSelected(Tag unSelectedTag) {
+            public void onTagUnChecked(Tag unSelectedTag) {
                 mPresenter.onTagRemoved(unSelectedTag);
             }
 
             @Override
-            public void onAddCategoryButtonClicked() {
+            public void onAddTagButtonClicked() {
+                showAddNewTagDialog();
+            }
+
+            @Override
+            public void onTagClicked(Tag clickedTag) {
+
+            }
+
+            @Override
+            public void onEditTagButtonClicked(Tag clickedTag) {
+
+            }
+
+            @Override
+            public void onDeleteTagButtonClicked(Tag clickedTag) {
 
             }
         });
@@ -371,6 +400,12 @@ public class NoteEditorFragment extends Fragment implements
         }
         mPresenter.onFolderChange(event.getAddedFolderId());
 
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUpdatedTagLayout(UpdateTagLayoutEvent event){
+        List<Tag> tags = event.getTags();
+        initTagLayout(tags);
     }
 
 
@@ -420,6 +455,15 @@ public class NoteEditorFragment extends Fragment implements
 
     }
 
+    public void showAddNewTagDialog() {
+        if (selectTagDialogFragment != null) {
+            selectTagDialogFragment.dismiss();
+        }
+        addTagDialogFragment = AddTagDialogFragment.newInstance("");
+        addTagDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
+
+    }
+
 
     private void makeToast(String message) {
         Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
@@ -460,8 +504,28 @@ public class NoteEditorFragment extends Fragment implements
         }
         mContent.requestFocus();
         initViewAttachments(note.getAttachments());
+
+
+        initTagLayout(note.getTags());
        
 
+    }
+
+    private void initTagLayout(List<Tag> tags) {
+        if (tags != null && tags.size() > 0){
+            mTimeStampLayout.setVisibility(View.VISIBLE);
+            dateCreated.setVisibility(View.VISIBLE);
+            String tagText = "";
+            for (Tag tag: tags){
+                tagText = tagText + ", #" + tag.getTagName();
+            }
+            dateCreated.setText(tagText);
+            dateCreated.setTextColor(ContextCompat.getColor(getActivity(), R.color.primary_dark));
+            dateCreated.setTypeface(dateCreated.getTypeface(), Typeface.BOLD);
+        }else {
+            mTimeStampLayout.setVisibility(View.GONE);
+            dateCreated.setVisibility(View.GONE);
+        }
     }
 
     @Override

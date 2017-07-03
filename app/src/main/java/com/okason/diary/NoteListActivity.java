@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -24,17 +25,25 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.core.events.AddDefaultDataEvent;
+import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
+import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
-import com.okason.diary.ui.settings.SettingsActivity;
+import com.okason.diary.ui.settings.AccountFragment;
 import com.okason.diary.ui.todolist.TodoListFragment;
 import com.okason.diary.utils.Constants;
 
@@ -55,6 +64,9 @@ public class NoteListActivity extends AppCompatActivity {
     private Activity mActivity;
     private FirebaseAuth mAuth;
     private FirebaseUser mFirebaseUser;
+    private DatabaseReference mDatabase;
+    private DatabaseReference mProntoDiaryUserRef;
+
     private ConnectivityManager connectivityManager;
 
 
@@ -113,7 +125,11 @@ public class NoteListActivity extends AppCompatActivity {
     @BindView(R.id.linear_layout_folder)
     LinearLayout folderLayout;
 
-    private Realm realm;
+    @BindView(R.id.toolbar_title) TextView toolbarTitle;
+
+    private MaterialDialog progressDialog;
+
+
 
 
 
@@ -126,6 +142,7 @@ public class NoteListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         mActivity = this;
+
 
         checkNetworkConnected();
 
@@ -143,33 +160,58 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
     private void checkLoginStatus() {
-
-        final SyncUser user = SyncUser.currentUser();
-        if (user == null) {
-            //Check to see if the user has registered before
-            //if yes, check to see if the user is not logged in, show login
+        //Check Firebase User status,
+        mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (mFirebaseUser == null){
+            //Check if user has logged in for the first time
             preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
-            if (unregisteredUser){
-                //Show Anonymous Login
-                Realm.setDefaultConfiguration(UserManager.getLocalConfig());
-                realm = Realm.getDefaultInstance();
-                loginLayout.setVisibility(View.VISIBLE);
-                settingsLayout.setVisibility(View.GONE);
-                updateUI();
-            }else {
-                //User has registered before, show login page
-                startActivity(new Intent(this, AuthUiActivity.class));}
-        }else {
-            UserManager.setActiveUser(user);
-            loginLayout.setVisibility(View.GONE);
-            settingsLayout.setVisibility(View.VISIBLE);
-            updateUI();
-        }
 
+            //If user has logged in for the first time, then send to the Login page for them to re-login
+            if (unregisteredUser){
+                //If user has never logged in before, initialize local Realm to save data locally
+                Realm.setDefaultConfiguration(UserManager.getLocalConfig());
+            } else {
+                //Send to Login page which will trigger an initialization of sync Realm after successful login
+                //User has registered before, show login page
+                startActivity(new Intent(this, AuthUiActivity.class));
+            }
+        }else {
+            //We have a valid Firebase User, then initialize sync Realm using save JSON data
+            getRealmUser(mFirebaseUser);
+        }
+        updateUI();
     }
 
+    //This methods takes a Firebase User object and gets Pronto Diary User
+    //Then get saved Realm Synch User JSON and recreates the Realm User Object
+    private void getRealmUser(FirebaseUser firebaseUser) {
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
 
+
+        mProntoDiaryUserRef.orderByChild("firebaseUid").equalTo(mFirebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
+                    ProntoDiaryUser user = snapshot.getValue(ProntoDiaryUser.class);
+                    if (user != null){
+                        SyncUser syncUser = SyncUser.fromJson(user.getRealmJson());
+                        if (syncUser != null){
+                            UserManager.setActiveUser(syncUser);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
 
 
     @Override
@@ -192,8 +234,6 @@ public class NoteListActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-
-
         super.onDestroy();
     }
 
@@ -252,6 +292,7 @@ public class NoteListActivity extends AppCompatActivity {
         resetBottomNavigationIcons();
         todoListButton.setImageResource(R.drawable.ic_task_list_dark_green);
         todoListTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
+        todoListTextView.setTypeface(todoListTextView.getTypeface(), Typeface.BOLD);
         openFragment(new TodoListFragment(), getString(R.string.label_todo_list), Constants.TODO_LIST_FRAGMENT_TAG);
 
     }
@@ -260,21 +301,24 @@ public class NoteListActivity extends AppCompatActivity {
         resetBottomNavigationIcons();
         folderButton.setImageResource(R.drawable.ic_folder_dark_green);
         folderTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
+        folderTextView.setTypeface(folderTextView.getTypeface(), Typeface.BOLD);
         openFragment(new FolderListFragment(), getString(R.string.label_folders), Constants.FOLDER_FRAGMENT_TAG);
     }
 
 
     private void handleSettingsButtonClicked() {
         resetBottomNavigationIcons();
-        settingsButton.setImageResource(R.drawable.ic_settings_dark_green);
+        settingsButton.setImageResource(R.drawable.ic_account_passkey_dark_green);
         settingsTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
-        startActivity(new Intent(mActivity, SettingsActivity.class));
+        settingsTextView.setTypeface(settingsTextView.getTypeface(), Typeface.BOLD);
+        openFragment(new AccountFragment(), getString(R.string.label_account), Constants.ACCOUNT_TAG);
     }
 
     private void handleLoginButtonClicked(){
         resetBottomNavigationIcons();
         loginButton.setImageResource(R.drawable.ic_login_gray);
         loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
+        loginTextView.setTypeface(loginTextView.getTypeface(), Typeface.BOLD);
         startActivity(new Intent(mActivity, AuthUiActivity.class));
     }
 
@@ -282,6 +326,7 @@ public class NoteListActivity extends AppCompatActivity {
         resetBottomNavigationIcons();
         noteButton.setImageResource(R.drawable.ic_post_it_dark_green);
         noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
+        noteTextView.setTypeface(noteTextView.getTypeface(), Typeface.BOLD);
         openFragment(new NoteListFragment(), getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
     }
 
@@ -306,6 +351,21 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRealmDatabaseRegistrationComplete(RealmDatabaseRegistrationCompletedEvent event){
+        if (event.isInProgress()){
+            progressDialog = new MaterialDialog.Builder(mActivity)
+                    .title(getString(R.string.please_wait))
+                    .content(getString(R.string.syncing_data))
+                    .positiveText(getString(R.string.label_yes))
+                    .show();
+        }else {
+            progressDialog.dismiss();
+            checkLoginStatus();
+        }
+
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAddDefaultDataEvent(AddDefaultDataEvent event){
         addDefaultData();
     }
@@ -313,18 +373,23 @@ public class NoteListActivity extends AppCompatActivity {
     private void resetBottomNavigationIcons() {
         noteButton.setImageResource(R.drawable.ic_post_it_gray);
         noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
+        noteTextView.setTypeface(noteTextView.getTypeface(), Typeface.NORMAL);
 
         folderButton.setImageResource(R.drawable.ic_folder_gray);
         folderTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
+        folderTextView.setTypeface(folderTextView.getTypeface(), Typeface.NORMAL);
 
         todoListButton.setImageResource(R.drawable.ic_task_gray);
         todoListTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
+        todoListTextView.setTypeface(todoListTextView.getTypeface(), Typeface.NORMAL);
 
         loginButton.setImageResource(R.drawable.ic_login_gray);
         loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
+        loginTextView.setTypeface(loginTextView.getTypeface(), Typeface.NORMAL);
 
-        settingsButton.setImageResource(R.drawable.ic_settings_gray);
+        settingsButton.setImageResource(R.drawable.ic_account_passkey_gray);
         settingsTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
+        settingsTextView.setTypeface(settingsTextView.getTypeface(), Typeface.NORMAL);
     }
 
     private void makeToast(String message){
@@ -343,7 +408,8 @@ public class NoteListActivity extends AppCompatActivity {
                 .replace(R.id.container, fragment, tag)
                 .addToBackStack(screenTitle)
                 .commit();
-        getSupportActionBar().setTitle(screenTitle);
+        //getSupportActionBar().setTitle(screenTitle);
+        toolbarTitle.setText(screenTitle);
     }
 
 

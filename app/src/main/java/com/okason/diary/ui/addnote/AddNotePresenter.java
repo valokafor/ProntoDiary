@@ -80,13 +80,17 @@ public class AddNotePresenter implements AddNoteContract.Action {
         if (mCurrentNote == null){
             mCurrentNote = mRepository.createNewNote();
         }
-        mCurrentNote.getTags().add(tag);
+        mRepository.addTag(mCurrentNote.getId(), tag.getId());
+        dataChanged = true;
+
     }
 
     @Override
     public void onTagRemoved(Tag tag) {
         if (mCurrentNote != null){
             mRepository.removeTag(mCurrentNote.getId(), tag.getId());
+            dataChanged = true;
+
         }
     }
 

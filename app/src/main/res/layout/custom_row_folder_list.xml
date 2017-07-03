@@ -18,11 +18,19 @@
     android:orientation="horizontal"
     android:padding="@dimen/margin_padding_tiny">
 
+    <ImageButton
+        android:id="@+id/image_button_folder_icon"
+        android:layout_width="@dimen/icon_width_height"
+        android:layout_height="@dimen/icon_width_height"
+        android:layout_gravity="center_vertical"
+        android:background="@null"
+        android:layout_margin="@dimen/margin_padding_tiny"
+        card_view:srcCompat="@drawable/ic_folder_green"/>
+
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="3"
-
         android:orientation="vertical">
 
         <TextView
@@ -62,9 +70,9 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:background="@null"
+            android:background="@drawable/red_circle"
             android:layout_margin="@dimen/margin_padding_tiny"
-            android:src="@drawable/delete_button"/>
+            card_view:srcCompat="@drawable/delete"/>
 
         <ImageButton
             android:id="@+id/image_button_edit_category"
@@ -73,8 +81,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_margin="@dimen/margin_padding_tiny"
-            android:background="@null"
-            android:src="@drawable/edit_button"/>
+            android:background="@drawable/red_circle"
+            card_view:srcCompat="@drawable/ic_edit_white_24dp"/>
     </LinearLayout>
 
 </LinearLayout>

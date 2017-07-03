@@ -15,14 +15,14 @@ import java.util.List;
 /**
  * Created by Valentine on 2/17/2016.
  */
-public class FolderListViewAdapter extends ArrayAdapter<Folder> {
+public class SelectFolderAdapter extends ArrayAdapter<Folder> {
     private List<Folder> mCategories;
     private Context mContext;
 
 
 
 
-    public FolderListViewAdapter(Context context, List<Folder> categories){
+    public SelectFolderAdapter(Context context, List<Folder> categories){
         super(context, android.R.layout.simple_list_item_1, categories);
         mCategories = categories;
         mContext = context;

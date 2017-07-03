@@ -2,6 +2,7 @@ package com.okason.diary.data;
 
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.events.OnAttachmentAddedToNoteEvent;
+import com.okason.diary.core.events.UpdateTagLayoutEvent;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -151,6 +152,8 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
                         //Add Tag to Note
                         selectedNote.getTags().add(selectedTag);
                         selectedTag.getNotes().add(selectedNote);
+                        List<Tag> tags = backgroundRealm.copyFromRealm(selectedNote).getTags();
+                        EventBus.getDefault().post(new UpdateTagLayoutEvent(tags));
                     }
 
                 }
@@ -256,6 +259,13 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
             });
 
         }
+    }
+
+    @Override
+    public boolean noteExists(Realm realm, String noteId) {
+        Note selectedNote;
+        selectedNote = realm.where(Note.class).equalTo("id", noteId).findFirst();
+        return selectedNote != null;
     }
 
 

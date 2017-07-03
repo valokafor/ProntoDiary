@@ -9,13 +9,14 @@ import android.content.pm.Signature;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
+import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -24,18 +25,10 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.ui.ResultCodes;
 import com.google.android.gms.common.Scopes;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.models.ProntoDiaryUser;
-import com.okason.diary.utils.Constants;
+import com.okason.diary.core.services.CreateRealmDatabaseAccountService;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -44,9 +37,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.SyncUser;
-
-import static com.firebase.ui.auth.ui.ExtraConstants.EXTRA_IDP_RESPONSE;
 
 public class AuthUiActivity extends AppCompatActivity {
 
@@ -54,11 +44,6 @@ public class AuthUiActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 100;
     private Activity mActivity;
 
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
-
-    private DatabaseReference mDatabase;
-    private DatabaseReference mProntoDiaryUserRef;
 
     @BindView(android.R.id.content)
     View mRootView;
@@ -73,11 +58,7 @@ public class AuthUiActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
 
 
         try {
@@ -99,12 +80,17 @@ public class AuthUiActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_settings, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                // app icon in action bar clicked; go home
+                // app launcher in action bar clicked; go home
                 int count = getFragmentManager().getBackStackEntryCount();
                 if (count == 0) {
                     onBackPressed();
@@ -127,6 +113,7 @@ public class AuthUiActivity extends AppCompatActivity {
                         .setTosUrl(GOOGLE_TOS_URL)
                         .setIsSmartLockEnabled(true)
                         .setTosUrl(GOOGLE_TOS_URL)
+                        .setAllowNewEmailAccounts(true)
                         .build(),
                 RC_SIGN_IN);
     }
@@ -176,60 +163,26 @@ public class AuthUiActivity extends AppCompatActivity {
 
     @MainThread
     private void handleSignInResponse(int resultCode, final Intent data) {
+        IdpResponse response = IdpResponse.fromResultIntent(data);
+
         if (resultCode == RESULT_OK) {
-            //Get Firebase User
-            mFirebaseAuth = FirebaseAuth.getInstance();
-            mFirebaseUser = mFirebaseAuth.getCurrentUser();
-
-            //Get Pronto Diary User
-            if (mFirebaseUser != null){
-                mProntoDiaryUserRef.orderByChild("firebaseUid").equalTo(mFirebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
-                        ProntoDiaryUser user = snapshot.getValue(ProntoDiaryUser.class);
-                        if (user == null){
-                            //If user does not exist, create one
-                            user = new ProntoDiaryUser();
-                            user.setEmailAddress(mFirebaseUser.getEmail());
-                            user.setFirebaseUid(mFirebaseUser.getUid());
-                            user.setId(mProntoDiaryUserRef.push().getKey());
-                            mProntoDiaryUserRef.child(user.getId()).setValue(user);
-                        }
-                        if (TextUtils.isEmpty(user.getRealmJson())){
-                            //If Realm account has not been created for this user
-                            //Go to Realm Register Activity
-                            startActivity(new Intent(AuthUiActivity.this, RegisterActivity.class));
-                        } else {
-                            //Get the Sync User
-                            SyncUser syncUser = SyncUser.fromJson(user.getRealmJson());
-                            if (syncUser == null){
-                                //If Realm user cannot be retrieved, try logging in
-                                Intent loginIntent = new Intent(AuthUiActivity.this, SignInActivity.class);
-                                loginIntent.putExtra(Constants.EMAIL_ADDRESSS, user.getEmailAddress());
-                                loginIntent.putExtra(Constants.PASSWORD, user.getRealmPassword());
-                                startActivity(loginIntent);
-                            }else {
-                                //We have a valid Realm User, go to app
-                                Intent in = new Intent(AuthUiActivity.this, NoteListActivity.class);
-                                in.putExtra(EXTRA_IDP_RESPONSE, IdpResponse.fromResultIntent(data));
-                                startActivity(in);
-                                finish();
-                                return;
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
+            ProntoDiaryApplication.setCloudSyncEnabled(true);
+            startService(new Intent(mActivity, CreateRealmDatabaseAccountService.class));
+            //Restart
+            Intent restartIntent = new Intent(mActivity, NoteListActivity.class);
+            restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(restartIntent);
+            return;
+        } else {
+            if (response == null){
+                ProntoDiaryApplication.setCloudSyncEnabled(false);
+                // User pressed back button
+                showSnackbar(R.string.sign_in_cancelled);
+                finish();
+                return;
             }
 
-        } else {
-            ProntoDiaryApplication.setCloudSyncEnabled(false);
-            finish();
         }
 
         if (resultCode == RESULT_CANCELED) {
@@ -271,6 +224,13 @@ public class AuthUiActivity extends AppCompatActivity {
         Intent in = new Intent();
         in.setClass(context, AuthUiActivity.class);
         return in;
+    }
+
+
+
+    @MainThread
+    private void showSnackbar(@StringRes int errorMessageRes) {
+        Snackbar.make(mRootView, errorMessageRes, Snackbar.LENGTH_LONG).show();
     }
 
 

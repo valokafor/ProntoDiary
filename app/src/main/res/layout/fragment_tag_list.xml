@@ -1,13 +1,56 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             tools:context="com.okason.diary.ui.tag.TagListFragment">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                xmlns:ads="http://schemas.android.com/apk/res-auto"
+                tools:context="com.okason.diary.ui.tag.TagListFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+        ads:adSize="BANNER"
+        ads:adUnitId="@string/banner_ad_unit_id"></com.google.android.gms.ads.AdView>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/tag_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment"/>
+        android:layout_below="@+id/adView"
+        android:descendantFocusability="beforeDescendants"
+        android:paddingBottom="@dimen/margin_padding_tiny"
+        android:paddingLeft="@dimen/margin_padding_tiny"
+        android:paddingRight="@dimen/margin_padding_tiny"
+        android:paddingTop="@dimen/margin_padding_tiny"
+        android:visibility="gone" />
 
-</FrameLayout>
+
+    <TextView
+        android:id="@+id/empty_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/adView"
+        android:fontFamily="sans-serif-condensed"
+        android:gravity="center"
+        android:padding="@dimen/margin_padding_normal"
+        android:text="@string/no_tag"
+        android:textColor="@color/primary_dark"
+        android:textSize="@dimen/text_size_huge"
+        android:textStyle="italic"
+        android:visibility="visible" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/add_tag_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:backgroundTint="@color/primary"
+        android:layout_margin="@dimen/fab_margin"
+        app:srcCompat="@drawable/ic_add_white_24dp"/>
+
+</RelativeLayout>

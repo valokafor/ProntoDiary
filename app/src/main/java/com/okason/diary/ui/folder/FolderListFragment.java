@@ -42,7 +42,7 @@ import io.realm.RealmResults;
 public class FolderListFragment extends Fragment implements OnFolderSelectedListener{
 
    // private List<Note> mNotes;
-    private FolderRecyclerViewAdapter mAdapter;
+    private FolderListAdapter mAdapter;
     private View mRootView;
 
     @BindView(R.id.category_recycler_view)
@@ -166,7 +166,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     public void showFolders(List<Folder> folders) {
         if (folders.size() > 0){
             hideEmptyText();
-            mAdapter = new FolderRecyclerViewAdapter(getContext(),folders, this);
+            mAdapter = new FolderListAdapter(getContext(),folders, this);
             mRecyclerView.setAdapter(mAdapter);
         }else {
             showEmptyText();

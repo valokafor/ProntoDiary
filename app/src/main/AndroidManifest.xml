@@ -40,15 +40,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.okason.diary.NoteListActivity"/>
         </activity>
-        <activity
-            android:name=".ui.settings.SettingsActivity"
-            android:label="@string/title_settings"
-            android:parentActivityName=".NoteListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.okason.diary.NoteListActivity"/>
-        </activity>
 
         <service
             android:name=".core.services.AddSampleDataIntentService"
@@ -118,11 +109,15 @@
             android:name=".core.services.HandleRealmLoginService"
             android:exported="false">
         </service>
-
+        <service
+            android:name=".core.services.CreateRealmDatabaseAccountService"
+            android:exported="false">
+        </service>
 
         <activity
-            android:name=".ui.todolist.BottomNavActivity"
-            android:label="@string/title_activity_bottom_nav">
+            android:name=".ui.settings.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".NoteListActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.okason.diary.NoteListActivity"/>

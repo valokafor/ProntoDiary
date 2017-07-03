@@ -48,7 +48,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
-        View todoListView = inflater.inflate(R.layout.custom_layout_tag_list, parent, false);
+        View todoListView = inflater.inflate(R.layout.custom_layout_select_tag_list, parent, false);
         return new ViewHolder((LinearLayout)todoListView);
     }
 
@@ -111,10 +111,10 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked){
                         Tag checkedTag = mTags.get(getLayoutPosition());
-                        mListener.onTagSelected(checkedTag);
+                        mListener.onTagChecked(checkedTag);
                     }else {
                         Tag unCheckedTag = mTags.get(getLayoutPosition());
-                        mListener.onTagSelected(unCheckedTag);
+                        mListener.onTagChecked(unCheckedTag);
                     }
                 }
             });

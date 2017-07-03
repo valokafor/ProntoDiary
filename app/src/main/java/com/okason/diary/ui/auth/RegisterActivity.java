@@ -155,8 +155,6 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
                 showProgress(false);
                 Intent intent = new Intent(mActivity, NoteListActivity.class);
                 startActivity(intent);
-
-
             }
         });
     }

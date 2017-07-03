@@ -283,6 +283,8 @@ public class NoteDetailFragment extends Fragment{
         } catch (Exception e) {
             modified = getString(R.string.last_update) + " "  + TimeUtils.getTimeAgo(System.currentTimeMillis());
         }
+        dateCreated.setVisibility(View.VISIBLE);
+        dateModified.setVisibility(View.VISIBLE);
         dateCreated.setText(created);
         dateModified.setText(modified);
 

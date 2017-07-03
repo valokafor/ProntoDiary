@@ -137,7 +137,7 @@ public class TodoListFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_folder_list, menu);
+        inflater.inflate(R.menu.menu_todo_list, menu);
         MenuItem search = menu.findItem(R.id.action_search);
 
         super.onCreateOptionsMenu(menu, inflater);
