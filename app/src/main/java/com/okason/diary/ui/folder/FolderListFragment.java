@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
@@ -197,10 +196,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
 
     public void showEditCategoryForm(Folder folder) {
-        Gson gson = new Gson();
-        String serializedCategory = gson.toJson(folder);
-
-        addCategoryDialog = AddFolderDialogFragment.newInstance(serializedCategory);
+        addCategoryDialog = AddFolderDialogFragment.newInstance(folder.getId());
         addCategoryDialog.show(getActivity().getFragmentManager(), "Dialog");
     }
 

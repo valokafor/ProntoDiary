@@ -107,7 +107,7 @@ public class AddFolderDialogFragment extends DialogFragment {
 
             if (mFolder != null && !TextUtils.isEmpty(mFolder.getFolderName())){
                 populateFields(mFolder);
-                addFolderDialog.setTitle(mFolder.getFolderName());
+                mFolderEditText.setSelection(mFolderEditText.getText().length());
             }
 
 

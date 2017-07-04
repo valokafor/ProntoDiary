@@ -107,7 +107,7 @@ public class AddTodoListDialogFragment extends DialogFragment {
 
             if (mTodoList != null && !TextUtils.isEmpty(mTodoList.getTitle())){
                 populateFields(mTodoList);
-                addFolderDialog.setTitle(mTodoList.getTitle());
+                mTodoListEditText.setSelection(mTodoListEditText.getText().length());
             }
 
 

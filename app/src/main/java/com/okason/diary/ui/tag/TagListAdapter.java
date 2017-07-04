@@ -79,7 +79,7 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
                 @Override
                 public void onClick(View v) {
                     Tag categoryToBeEdited = mTags.get(getLayoutPosition());
-                    mListener.onDeleteTagButtonClicked(categoryToBeEdited);
+                    mListener.onEditTagButtonClicked(categoryToBeEdited);
                 }
             });
             deleteTag.setOnClickListener(new View.OnClickListener() {

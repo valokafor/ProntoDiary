@@ -101,7 +101,8 @@ public class AddTagDialogFragment extends DialogFragment {
 
             if (mTag != null && !TextUtils.isEmpty(mTag.getTagName())){
                 populateFields(mTag);
-                addTagDialog.setTitle(mTag.getTagName());
+                //addTagDialog.setTitle(mTag.getTagName());
+                tagEditText.setSelection(tagEditText.getText().length());
             }
 
 

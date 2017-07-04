@@ -1,6 +1,7 @@
 package com.okason.diary.ui.tag;
 
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.data.TagRealmRepository;
 import com.okason.diary.models.Tag;
 
 import org.greenrobot.eventbus.EventBus;
@@ -203,11 +205,46 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
     @Override
     public void onEditTagButtonClicked(Tag clickedTag) {
+        showEditTagForm(clickedTag);
 
+    }
+
+    private void showEditTagForm(Tag clickedTag) {
+        addTagDialog = AddTagDialogFragment.newInstance(clickedTag.getId());
+        addTagDialog.show(getActivity().getFragmentManager(), "Dialog");
     }
 
     @Override
     public void onDeleteTagButtonClicked(Tag clickedTag) {
+        showConfirmDeleteTagPrompt(clickedTag);
+    }
 
+    private void showConfirmDeleteTagPrompt(final Tag clickedTag) {
+        String title = getString(R.string.are_you_sure);
+        String message =  getString(R.string.action_delete) + " " + clickedTag.getTagName();
+
+
+        android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        titleText.setText(title);
+        alertDialog.setCustomTitle(titleView);
+
+        alertDialog.setMessage(message);
+        alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                new TagRealmRepository().deleteTag(clickedTag.getId());
+
+            }
+        });
+        alertDialog.setNegativeButton(R.string.label_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialog.show();
     }
 }
