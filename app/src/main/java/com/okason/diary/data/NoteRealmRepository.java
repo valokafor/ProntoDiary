@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import io.realm.Realm;
+import io.realm.RealmList;
 import io.realm.RealmResults;
 
 /**
@@ -148,6 +149,10 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
                     Note selectedNote = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
                     Tag selectedTag = backgroundRealm.where(Tag.class).equalTo("id", tagId).findFirst();
 
+                    if (noteContainsTag(selectedNote, selectedTag)){
+                        return;
+                    }
+
                     if (selectedNote != null && selectedTag != null){
                         //Add Tag to Note
                         selectedNote.getTags().add(selectedTag);
@@ -163,6 +168,18 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
 
     }
 
+    //Preventds adding duplicate tag to Note
+    private boolean noteContainsTag(Note selectedNote, Tag selectedTag) {
+        List<Tag> tags = selectedNote.getTags();
+        for (Tag t: tags){
+            if (t.getId().equals(selectedTag.getId())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     @Override
     public void removeTag(final String noteId, final String tagId) {
         try (Realm realm = Realm.getDefaultInstance()){
@@ -172,9 +189,11 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
                     Note selectedNote = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
                     Tag selectedTag = backgroundRealm.where(Tag.class).equalTo("id", tagId).findFirst();
 
+
                     if (selectedNote != null && selectedTag != null){
                         //Remove Tag from Note
-                        for (int i = 0; i<selectedNote.getTags().size(); i++){
+                        RealmList<Tag> tagsInNote = selectedNote.getTags();
+                        for (int i = 0; i<tagsInNote.size(); i++){
                             Tag tempTag = selectedNote.getTags().get(i);
                             if (tempTag.getId().equals(tagId)){
                                 selectedNote.getTags().remove(i);
@@ -182,14 +201,17 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
                             }
                         }
                         //Now Remove Note Id from Tag List of Note Ids
-                        selectedNote.getTags().add(selectedTag);
                         for (int i = 0; i<selectedTag.getNotes().size(); i++){
-                            String noteId = selectedTag.getNotes().get(i).getId();
-                            if (noteId.equals(noteId)){
+                            String selectedNoteId = selectedTag.getNotes().get(i).getId();
+                            if (selectedNoteId.equals(noteId)){
                                 selectedTag.getNotes().remove(i);
                                 break;
                             }
                         }
+
+                        List<Tag> tags = backgroundRealm.copyFromRealm(selectedNote).getTags();
+                        EventBus.getDefault().post(new UpdateTagLayoutEvent(tags));
+
                     }
 
                 }

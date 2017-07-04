@@ -134,4 +134,6 @@ public class Note extends RealmObject{
     public void setHistoryList(RealmList<History> historyList) {
         this.historyList = historyList;
     }
+
+
 }

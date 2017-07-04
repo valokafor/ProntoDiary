@@ -1,6 +1,7 @@
 package com.okason.diary.ui.tag;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -12,7 +13,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.amulyakhare.textdrawable.TextDrawable;
-import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.models.Note;
@@ -60,9 +60,11 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
             holder.tagCheckbox.setText(selectedTag.getTagName());
 
             int count = selectedTag.getNotes().size();
-            ColorGenerator generator = ColorGenerator.MATERIAL;
-            int color = generator.getRandomColor();
+            int color = ContextCompat.getColor(mContext, R.color.primary_text);
             TextDrawable drawable = TextDrawable.builder()
+                    .beginConfig()
+                    .bold()
+                    .endConfig()
                     .buildRound(String.valueOf(count), color);
             holder.tagCountImage.setImageDrawable(drawable);
         }
@@ -71,6 +73,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
             for (Note note : selectedTag.getNotes()){
                 if (note.getId().equals(noteId)){
                     holder.tagCheckbox.setChecked(true);
+                    break;
                 }
             }
         }
@@ -114,7 +117,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
                         mListener.onTagChecked(checkedTag);
                     }else {
                         Tag unCheckedTag = mTags.get(getLayoutPosition());
-                        mListener.onTagChecked(unCheckedTag);
+                        mListener.onTagUnChecked(unCheckedTag);
                     }
                 }
             });

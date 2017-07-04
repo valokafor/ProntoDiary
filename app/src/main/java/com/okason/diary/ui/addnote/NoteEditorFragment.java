@@ -43,15 +43,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageMetadata;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
@@ -122,12 +114,6 @@ public class NoteEditorFragment extends Fragment implements
     private String mLocalVideoPath = null;
     private String mLocalSketchPath = null;
     private Calendar mReminderTime;
-
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
-    private FirebaseStorage mFirebaseStorage;
-    private StorageReference mFirebaseStorageReference;
-    private StorageReference mAttachmentStorageReference;
 
 
     @BindView(R.id.edit_text_category)
@@ -326,6 +312,14 @@ public class NoteEditorFragment extends Fragment implements
         selectTagDialogFragment = SelectTagDialogFragment.newInstance();
         selectTagDialogFragment.setTags(mPresenter.getAllTags());
 
+        //Pass the current Note Id to the SelectTagDialog Fragment
+        //This Id will be passed to the Adapter, so that if there is a Tag that
+        //Has already been added to this Note, that Tag checkbox will be checked
+        if (!TextUtils.isEmpty(mPresenter.getCurrentNoteId())){
+            selectTagDialogFragment.setNoteId(mPresenter.getCurrentNoteId());
+        }
+
+
         selectTagDialogFragment.setListener(new OnTagSelectedListener() {
             @Override
             public void onTagChecked(Tag selectedTag) {
@@ -517,7 +511,7 @@ public class NoteEditorFragment extends Fragment implements
             dateCreated.setVisibility(View.VISIBLE);
             String tagText = "";
             for (Tag tag: tags){
-                tagText = tagText + ", #" + tag.getTagName();
+                tagText = tagText + "#" + tag.getTagName() + ", ";
             }
             dateCreated.setText(tagText);
             dateCreated.setTextColor(ContextCompat.getColor(getActivity(), R.color.primary_dark));
@@ -1081,39 +1075,39 @@ public class NoteEditorFragment extends Fragment implements
     }
 
     private void uploadFileToCloud(final Attachment attachment) {
-        String filePath = attachment.getLocalFilePath();
-        String fileType = attachment.getMime_type();
-        final long[] size = new long[1];
-
-        final StorageMetadata metadata = new StorageMetadata.Builder()
-                .setContentType(fileType)
-                .build();
-
-        Uri fileToUpload = Uri.fromFile(new File(filePath));
-
-        final String fileName = fileToUpload.getLastPathSegment();
-
-        StorageReference imageRef = mAttachmentStorageReference.child(fileName);
-
-        final UploadTask uploadTask = imageRef.putFile(fileToUpload, metadata);
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                makeToast("Unable to upload file to cloud" + e.getLocalizedMessage());
-                mPresenter.onAttachmentAdded(attachment);
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @SuppressWarnings("VisibleForTests")
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                long size = taskSnapshot.getMetadata().getSizeBytes();
-                String downloadUrl = taskSnapshot.getDownloadUrl().toString();
-                attachment.setCloudFilePath(downloadUrl);
-                mPresenter.onAttachmentAdded(attachment);
-
-
-            }
-        });
+//        String filePath = attachment.getLocalFilePath();
+//        String fileType = attachment.getMime_type();
+//        final long[] size = new long[1];
+//
+//        final StorageMetadata metadata = new StorageMetadata.Builder()
+//                .setContentType(fileType)
+//                .build();
+//
+//        Uri fileToUpload = Uri.fromFile(new File(filePath));
+//
+//        final String fileName = fileToUpload.getLastPathSegment();
+//
+//        StorageReference imageRef = mAttachmentStorageReference.child(fileName);
+//
+//        final UploadTask uploadTask = imageRef.putFile(fileToUpload, metadata);
+//        uploadTask.addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                makeToast("Unable to upload file to cloud" + e.getLocalizedMessage());
+//                mPresenter.onAttachmentAdded(attachment);
+//            }
+//        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//            @SuppressWarnings("VisibleForTests")
+//            @Override
+//            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                long size = taskSnapshot.getMetadata().getSizeBytes();
+//                String downloadUrl = taskSnapshot.getDownloadUrl().toString();
+//                attachment.setCloudFilePath(downloadUrl);
+//                mPresenter.onAttachmentAdded(attachment);
+//
+//
+//            }
+//        });
 
     }
 

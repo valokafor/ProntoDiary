@@ -64,9 +64,6 @@ public interface AddNoteContract {
         Attachment getAttachmentbyId(String id);
         void addAttachment(String noteId, Attachment attachment);
         boolean noteExists(Realm realm, String noteId);
-
-
-
     }
 
     interface FolderRepository{

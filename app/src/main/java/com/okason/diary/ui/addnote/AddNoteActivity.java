@@ -14,7 +14,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.mikepenz.materialdrawer.Drawer;
 import com.okason.diary.R;
 import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Note;
@@ -26,7 +25,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class AddNoteActivity extends AppCompatActivity {
-    private Drawer result = null;
+
 
     private final static String LOG_TAG = AddNoteActivity.class.getSimpleName();
     private Activity mActivity;
