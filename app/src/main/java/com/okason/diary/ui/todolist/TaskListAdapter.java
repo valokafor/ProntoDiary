@@ -6,14 +6,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.core.listeners.OnTodoListSelectedListener;
+import com.okason.diary.core.listeners.TaskItemListener;
+import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
-import com.okason.diary.models.TodoList;
+import com.okason.diary.utils.date.DateHelper;
 
 import java.util.List;
 
@@ -24,14 +24,15 @@ import butterknife.ButterKnife;
  * Created by valokafor on 6/26/17.
  */
 
-public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.ViewHolder> {
+public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
-    private final List<TodoList> mTodoLists;
-    private final OnTodoListSelectedListener mListener;
+    private final List<Task> mTasks;
+    private final Context mContext;
+    private TaskItemListener mTaskItemListener;
 
-    public TodoListAdapter(List<TodoList> todoLists, OnTodoListSelectedListener listener) {
-        mTodoLists = todoLists;
-        mListener = listener;
+    public TaskListAdapter(List<Task> todoLists, Context context) {
+        mTasks = todoLists;
+        mContext = context;
     }
 
 
@@ -39,23 +40,23 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.ViewHo
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
-        View todoListView = inflater.inflate(R.layout.custom_row_todo_list, parent, false);
+        View todoListView = inflater.inflate(R.layout.custom_row_layout_task_list, parent, false);
         return new ViewHolder((FrameLayout) todoListView);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final TodoList todoList = mTodoLists.get(position);
+        final Task task = mTasks.get(position);
 
-        String title = todoList.getTitle();
+        String title = task.getTitle();
 
         holder.titleTextView.setText(title);
 
         StringBuilder stringBuilder = new StringBuilder(40);
 
         int numberOfTasks = 0;
-        String tasksLabel = ProntoDiaryApplication.getAppContext().getString(R.string.label_task);
-        numberOfTasks = todoList.getTaskList().size();
+        String tasksLabel = ProntoDiaryApplication.getAppContext().getString(R.string.label_sub_task);
+        numberOfTasks = task.getSubTask().size();
 
         if (numberOfTasks > 1){
             tasksLabel = tasksLabel + "s";
@@ -67,9 +68,9 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.ViewHo
         int completedTasks = 0;
         int pendingTasks = 0;
 
-        if (todoList.getTaskList().size() > 0){
-            for (Task task: todoList.getTaskList()){
-                if (task.isChecked()){
+        if (task.getSubTask().size() > 0){
+            for (SubTask subTask: task.getSubTask()){
+                if (subTask.isChecked()){
                     completedTasks++;
                 }else {
                     pendingTasks++;
@@ -89,6 +90,8 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.ViewHo
 
         String statusText = stringBuilder.toString();
         holder.taskCountTextView.setText(statusText);
+        String time = DateHelper.getTimeShort(mContext, task.getDueDateAndTime());
+        holder.dueTimeTextView.setText(time);
 
 
 
@@ -96,36 +99,36 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        if (mTodoLists != null){
-            return mTodoLists.size();
+        if (mTasks != null){
+            return mTasks.size();
         }else {
             return 0;
         }
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ViewHolder extends RecyclerView.ViewHolder{
         public FrameLayout container;
 
-        @BindView(R.id.text_view_todo_title)
+        @BindView(R.id.text_view_title)
         TextView titleTextView;
 
-        @BindView(R.id.text_view_todo_task_count)
+        @BindView(R.id.text_view_task_count)
         TextView taskCountTextView;
-        @BindView(R.id.image_view_detail)
-        ImageView showMore;
+
+        @BindView(R.id.text_view_time)
+        TextView dueTimeTextView;
+
+        @BindView(R.id.text_view_options)
+        TextView showMore;
 
 
         public ViewHolder(FrameLayout container) {
             super(container);
             ButterKnife.bind(this, container);
-            container.setOnClickListener(this);
+
         }
 
-        @Override
-        public void onClick(View v) {
-            TodoList selectedTodoList = mTodoLists.get(getLayoutPosition());
-            mListener.onTodoListClick(selectedTodoList);
-        }
+
     }
 
 

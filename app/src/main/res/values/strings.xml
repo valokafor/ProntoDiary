@@ -33,7 +33,7 @@
     <string name="sync_reason_4">Peace of mind, if something happens to your device, be rest assured that your data will be waiting for you on your next device.</string>
     <string name="sync_reason_5">Your app will continue to work 100% offline. Only syncs when you have internet access.</string>
 
-    <string name="sync_reason">  Welcome to Pronto Diary \n \nCreate an account to save your Diaries and Journal Entries. You can access them from any Android device. It\'s free. Always!.</string>
+    <string name="sync_reason">  Welcome to Pronto Diary \n \nCreate an account to save your Diaries, Journal and Todo List. You can access them from any Android device. It\'s free. Always!.</string>
 
 
     <!--Account Register and Login Related-->
@@ -128,7 +128,7 @@
     <string name="hint_enter_folder">Enter folder name</string>
     <string name="title_edit_folder">Edit Folder</string>
     <string name="title_add_folder">Add Folder</string>
-    <string name="required">Required</string>
+    <string name="required">Required field</string>
     <string name="no_folder">No folder found</string>
     <string name="no_tag">No Tag found, use the + button to start</string>
     <string name="title_activity_note_detail">Journal Entry</string>
@@ -289,6 +289,26 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+    <string name="add_task">Add Task</string>
+    <string name="label_sub_task">Sub Tasks</string>
+    <string name="label_priority">Priority</string>
+    <string name="label_low_priotity">Low</string>
+    <string name="label_medium_priority">Medium</string>
+    <string name="label_high_priority">High</string>
+    <string name="hint_enter_task_name">Name of Task</string>
+    <string name="label_task_name">Task Name</string>
+    <string name="title_add_new_task">Add New Task</string>
+    <string name="label_due_date">Due Date</string>
+    <string name="label_due_time">Due Time</string>
+    <string name="label_repeat">Repeat</string>
+    <string name="reminder_label_one_time_event">One Time Event</string>
+    <string name="reminder_label_hourly">Hourly</string>
+    <string name="reminder_label_daily">Daily</string>
+    <string name="reminder_label_weekly">Weekly</string>
+    <string name="reminder_label_yearly">Yearly</string>
+    <string name="label_add_sub_task">Add SubTasks</string>
+    <string name="general">General</string>
+    <string name="add_task_hint">Example: Buy milk</string>
 
 
 </resources>

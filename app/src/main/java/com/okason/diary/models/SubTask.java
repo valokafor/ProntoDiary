@@ -1,24 +1,21 @@
 package com.okason.diary.models;
 
-import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
 /**
- * Created by valokafor on 6/26/17.
+ * Created by valokafor on 7/4/17.
  */
 
-public class TodoList extends RealmObject {
+public class SubTask extends RealmObject {
 
     @PrimaryKey
     private String id;
     private String title;
-    private String description;
     private long dateCreated;
     private long dateModified;
-
-    private RealmList<Task> taskList;
-    private RealmList<History> historyList;
+    private boolean checked;
+    private Task task;
 
     public String getId() {
         return id;
@@ -34,14 +31,6 @@ public class TodoList extends RealmObject {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public long getDateCreated() {
@@ -60,19 +49,19 @@ public class TodoList extends RealmObject {
         this.dateModified = dateModified;
     }
 
-    public RealmList<Task> getTaskList() {
-        return taskList;
+    public boolean isChecked() {
+        return checked;
     }
 
-    public void setTaskList(RealmList<Task> taskList) {
-        this.taskList = taskList;
+    public void setChecked(boolean checked) {
+        this.checked = checked;
     }
 
-    public RealmList<History> getHistoryList() {
-        return historyList;
+    public Task getTask() {
+        return task;
     }
 
-    public void setHistoryList(RealmList<History> historyList) {
-        this.historyList = historyList;
+    public void setTask(Task task) {
+        this.task = task;
     }
 }

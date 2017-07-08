@@ -35,6 +35,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.core.events.AddDefaultDataEvent;
+import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
@@ -44,7 +45,7 @@ import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.AccountFragment;
-import com.okason.diary.ui.todolist.TodoListFragment;
+import com.okason.diary.ui.todolist.TaskListFragment;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
@@ -151,12 +152,7 @@ public class NoteListActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        int count = getFragmentManager().getBackStackEntryCount();
-        if (count == 0) {
-            super.onBackPressed();
-        } else {
-            getFragmentManager().popBackStack();
-        }
+        finish();
     }
 
     private void checkLoginStatus() {
@@ -170,6 +166,9 @@ public class NoteListActivity extends AppCompatActivity {
             //If user has logged in for the first time, then send to the Login page for them to re-login
             if (unregisteredUser){
                 //If user has never logged in before, initialize local Realm to save data locally
+                loginLayout.setVisibility(View.VISIBLE);
+                settingsLayout.setVisibility(View.GONE);
+
                 Realm.setDefaultConfiguration(UserManager.getLocalConfig());
             } else {
                 //Send to Login page which will trigger an initialization of sync Realm after successful login
@@ -179,9 +178,13 @@ public class NoteListActivity extends AppCompatActivity {
         }else {
             //We have a valid Firebase User, then initialize sync Realm using save JSON data
             getRealmUser(mFirebaseUser);
+            loginLayout.setVisibility(View.GONE);
+            settingsLayout.setVisibility(View.VISIBLE);
         }
         updateUI();
     }
+
+
 
     //This methods takes a Firebase User object and gets Pronto Diary User
     //Then get saved Realm Synch User JSON and recreates the Realm User Object
@@ -293,7 +296,7 @@ public class NoteListActivity extends AppCompatActivity {
         todoListButton.setImageResource(R.drawable.ic_task_list_dark_green);
         todoListTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
         todoListTextView.setTypeface(todoListTextView.getTypeface(), Typeface.BOLD);
-        openFragment(new TodoListFragment(), getString(R.string.label_todo_list), Constants.TODO_LIST_FRAGMENT_TAG);
+        openFragment(new TaskListFragment(), getString(R.string.title_todo_list), Constants.TODO_LIST_FRAGMENT_TAG);
 
     }
 
@@ -345,6 +348,18 @@ public class NoteListActivity extends AppCompatActivity {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(event.getTag());
         if (fragment != null){
             openFragment(fragment, event.getTitle(), event.getTag());
+        }else {
+            openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list), Constants.NOTE_LIST_FRAGMENT_TAG);
+        }
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDisplayFragmentEvent(DisplayFragmentEvent event){
+
+        Fragment fragment = event.getFragment();
+        if (fragment != null){
+            openFragment(fragment, event.getTitle(), event.getTitle());
         }else {
             openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list), Constants.NOTE_LIST_FRAGMENT_TAG);
         }
@@ -493,6 +508,8 @@ public class NoteListActivity extends AppCompatActivity {
         }
 
     }
+
+
 
 
 

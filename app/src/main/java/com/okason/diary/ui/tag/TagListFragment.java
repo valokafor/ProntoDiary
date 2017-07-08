@@ -76,12 +76,12 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        addTagbutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAddNewTagDialog();
-            }
-        });
+//        addTagbutton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                showAddNewTagDialog();
+//            }
+//        });
         return mRootView;
     }
 

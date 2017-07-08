@@ -20,7 +20,7 @@ public class Task extends RealmObject {
     private int priority;
 
 
-    private long duetime;
+    private long dueDateAndTime;
     private boolean remind;
     private String alarm;
     private Boolean reminderFired;
@@ -28,8 +28,10 @@ public class Task extends RealmObject {
     private Double latitude;
     private Double longitude;
 
-    private TodoList todoList;
+
     private RealmList<History> historyList;
+    private Folder folder;
+    private RealmList<SubTask> subTask;
 
 
     public String getId() {
@@ -88,12 +90,12 @@ public class Task extends RealmObject {
         this.priority = priority;
     }
 
-    public long getDuetime() {
-        return duetime;
+    public long getDueDateAndTime() {
+        return dueDateAndTime;
     }
 
-    public void setDuetime(long duetime) {
-        this.duetime = duetime;
+    public void setDueDateAndTime(long dueDateAndTime) {
+        this.dueDateAndTime = dueDateAndTime;
     }
 
     public boolean isRemind() {
@@ -144,13 +146,6 @@ public class Task extends RealmObject {
         this.longitude = longitude;
     }
 
-    public TodoList getTodoList() {
-        return todoList;
-    }
-
-    public void setTodoList(TodoList todoList) {
-        this.todoList = todoList;
-    }
 
     public RealmList<History> getHistoryList() {
         return historyList;
@@ -158,5 +153,21 @@ public class Task extends RealmObject {
 
     public void setHistoryList(RealmList<History> historyList) {
         this.historyList = historyList;
+    }
+
+    public RealmList<SubTask> getSubTask() {
+        return subTask;
+    }
+
+    public void setSubTask(RealmList<SubTask> subTask) {
+        this.subTask = subTask;
+    }
+
+    public Folder getFolder() {
+        return folder;
+    }
+
+    public void setFolder(Folder folder) {
+        this.folder = folder;
     }
 }

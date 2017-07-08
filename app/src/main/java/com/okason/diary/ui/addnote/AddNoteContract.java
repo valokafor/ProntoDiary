@@ -70,6 +70,7 @@ public interface AddNoteContract {
         List<Folder> getAllFolders();
         Folder getFolderById(String id);
         Folder createNewFolder();
+        Folder getOrCreateFolder(String foldername);
         void updatedFolderTitle(String id, String title);
         void deleteFolder(String folderId);
     }

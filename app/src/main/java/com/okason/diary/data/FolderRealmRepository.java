@@ -42,6 +42,17 @@ public class FolderRealmRepository implements AddNoteContract.FolderRepository {
         return selectedFolder;
     }
 
+    public Folder getFolderByName(String folderName) {
+        Folder selectedFolder;
+        try (Realm realm = Realm.getDefaultInstance()){
+            selectedFolder = realm.where(Folder.class).equalTo("folderName", folderName).findFirst();
+            selectedFolder = realm.copyFromRealm(selectedFolder);
+        }catch (Exception e){
+            selectedFolder = null;
+        }
+        return selectedFolder;
+    }
+
     @Override
     public Folder createNewFolder() {
         String id = UUID.randomUUID().toString();
@@ -53,6 +64,16 @@ public class FolderRealmRepository implements AddNoteContract.FolderRepository {
             folder.setDateModified(System.currentTimeMillis());
             realm.commitTransaction();
             folder = realm.copyFromRealm(folder);
+        }
+        return folder;
+    }
+
+    @Override
+    public Folder getOrCreateFolder(String foldername) {
+        Folder folder;
+        folder = getFolderByName(foldername);
+        if (folder == null){
+            folder = createNewFolder();
         }
         return folder;
     }
