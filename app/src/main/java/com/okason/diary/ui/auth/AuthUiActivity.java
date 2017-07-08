@@ -3,11 +3,13 @@ package com.okason.diary.ui.auth;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
@@ -29,6 +31,7 @@ import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.services.CreateRealmDatabaseAccountService;
+import com.okason.diary.utils.Constants;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -112,7 +115,6 @@ public class AuthUiActivity extends AppCompatActivity {
                         .setProviders(getSelectedProviders())
                         .setTosUrl(GOOGLE_TOS_URL)
                         .setIsSmartLockEnabled(true)
-                        .setTosUrl(GOOGLE_TOS_URL)
                         .setAllowNewEmailAccounts(true)
                         .build(),
                 RC_SIGN_IN);
@@ -166,6 +168,11 @@ public class AuthUiActivity extends AppCompatActivity {
         IdpResponse response = IdpResponse.fromResultIntent(data);
 
         if (resultCode == RESULT_OK) {
+            //Update Shared Preference to mark user as registered
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            preferences.edit().putBoolean(Constants.UNREGISTERED_USER, false).commit();
+
+
             ProntoDiaryApplication.setCloudSyncEnabled(true);
             startService(new Intent(mActivity, CreateRealmDatabaseAccountService.class));
             //Restart

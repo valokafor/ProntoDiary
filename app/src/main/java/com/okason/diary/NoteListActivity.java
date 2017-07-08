@@ -157,6 +157,7 @@ public class NoteListActivity extends AppCompatActivity {
 
     private void checkLoginStatus() {
         //Check Firebase User status,
+
         mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (mFirebaseUser == null){
             //Check if user has logged in for the first time
@@ -200,9 +201,15 @@ public class NoteListActivity extends AppCompatActivity {
                     DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
                     ProntoDiaryUser user = snapshot.getValue(ProntoDiaryUser.class);
                     if (user != null){
-                        SyncUser syncUser = SyncUser.fromJson(user.getRealmJson());
+                        SyncUser syncUser = null;
+                        try {
+                            syncUser = SyncUser.fromJson(user.getRealmJson());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         if (syncUser != null){
                             UserManager.setActiveUser(syncUser);
+                            openFragment(new NoteListFragment(), getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
                         }
                     }
                 }
