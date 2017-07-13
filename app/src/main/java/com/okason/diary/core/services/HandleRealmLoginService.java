@@ -2,9 +2,12 @@ package com.okason.diary.core.services;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -12,15 +15,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.okason.diary.data.NoteRealmRepository;
-import com.okason.diary.models.Note;
 import com.okason.diary.models.ProntoDiaryUser;
-import com.okason.diary.ui.addnote.AddNoteContract;
-import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.utils.Constants;
 
-import io.realm.Realm;
-import io.realm.RealmResults;
 import io.realm.SyncUser;
 
 
@@ -33,8 +30,11 @@ public class HandleRealmLoginService extends IntentService {
     private FirebaseUser mFirebaseUser;
     private SyncUser mSyncUser;
 
+    private String displayName;
+    private String emailAddress;
+    private String signInMethod;
 
-
+    private ProntoDiaryUser prontoDiaryUser;
 
 
     public HandleRealmLoginService() {
@@ -44,29 +44,60 @@ public class HandleRealmLoginService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (intent != null && intent.hasExtra(Constants.DISPLAY_NAME) &&
+                intent.hasExtra(Constants.EMAIL_ADDRESSS) &&
+                intent.hasExtra(Constants.SIGN_IN_METHOD)) {
 
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        preferences.edit().putBoolean(Constants.UNREGISTERED_USER, false).commit();
+            displayName = intent.getStringExtra(Constants.DISPLAY_NAME);
+            emailAddress = intent.getStringExtra(Constants.EMAIL_ADDRESSS);
+            signInMethod = intent.getStringExtra(Constants.SIGN_IN_METHOD);
 
-        final String realmJson = intent.getStringExtra(Constants.REALM_USER_JSON);
-        final String generatedPassword = intent.getStringExtra(Constants.PASSWORD);
-        mSyncUser = SyncUser.fromJson(realmJson);
+            //If there is no email do not proceed
+            if (TextUtils.isEmpty(emailAddress)) {
+                return;
+            }
 
-        mProntoDiaryUserRef.orderByChild("firebaseUid").equalTo(mFirebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+
+            mFirebaseAuth = FirebaseAuth.getInstance();
+            mFirebaseUser = mFirebaseAuth.getCurrentUser();
+
+            mDatabase = FirebaseDatabase.getInstance().getReference();
+            mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
+
+            if (mFirebaseUser == null) {
+                //If Firebase user is null, create one anonymously
+                mFirebaseAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            registerOrUpdateUserInfo();
+                        }
+
+                    }
+                });
+            } else {
+                registerOrUpdateUserInfo();
+            }
+        }
+    }
+
+    private void registerOrUpdateUserInfo() {
+        mProntoDiaryUserRef.orderByChild("emailAddress").equalTo(emailAddress).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                //Get Pronto User Id from Firebase
-                DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
-                ProntoDiaryUser prontoDiaryUser = snapshot.getValue(ProntoDiaryUser.class);
-                if (prontoDiaryUser != null){
-                    //Update
-                    prontoDiaryUser.setRealmJson(realmJson);
-                    prontoDiaryUser.setRealmPassword(generatedPassword);
+                if (dataSnapshot.exists()) {
+                    DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
+                    prontoDiaryUser = snapshot.getValue(ProntoDiaryUser.class);
+                }
+
+                if (prontoDiaryUser == null) {
+                    //If user does not exist, create one
+                    prontoDiaryUser = new ProntoDiaryUser();
+                    prontoDiaryUser.setEmailAddress(emailAddress);
+                    prontoDiaryUser.setDisplayName(displayName);
+                    prontoDiaryUser.setLoginProvider(signInMethod);
+                    prontoDiaryUser.setId(mProntoDiaryUserRef.push().getKey());
                     mProntoDiaryUserRef.child(prontoDiaryUser.getId()).setValue(prontoDiaryUser);
                 }
             }
@@ -76,26 +107,6 @@ public class HandleRealmLoginService extends IntentService {
 
             }
         });
-
-        Realm localRealm = Realm.getInstance(UserManager.getLocalConfig());
-        Realm syncRealm = Realm.getInstance(UserManager.getSyncConfig(mSyncUser));
-        AddNoteContract.Repository noteRepository = new NoteRealmRepository();
-
-        RealmResults<Note> localNotes = localRealm.where(Note.class).findAll();
-        if (localNotes != null && localNotes.size() >0 ){
-            //There are local Notes that need to be copied over to Synced Realm
-            syncRealm.beginTransaction();
-            for (Note note: localNotes){
-                Note syncNote = noteRepository.createNewNote();
-                syncNote.update(note);
-            }
-            syncRealm.commitTransaction();
-
-        }
-
-
-
-
     }
 
 

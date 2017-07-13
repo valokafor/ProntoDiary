@@ -103,13 +103,23 @@ public class ProfileFragment extends Fragment {
         userName.setText(
                 TextUtils.isEmpty(mFirebaseUser.getDisplayName()) ? "No display name" : mFirebaseUser.getDisplayName());
 
-        int numNote = new NoteRealmRepository().getAllNotes().size();
+        int numNote = 0;
+        try {
+            numNote = new NoteRealmRepository().getAllNotes().size();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         String notes = numNote > 1 ? getString(R.string.label_journals) : getString(R.string.label_journal);
         journalCountTextView.setText(numNote + " " + notes);
 
 
         String taskLabel = ProntoDiaryApplication.getAppContext().getString(R.string.zero_task);
-        int taskCount = new TaskRealmRepository().getAllTaskAndSubTaskCount();
+        int taskCount = 0;
+        try {
+            taskCount = new TaskRealmRepository().getAllTaskAndSubTaskCount();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (taskCount > 0) {
             taskLabel = taskCount > 1 ? taskCount
                     + " " + getString(R.string.label_tasks) : taskCount

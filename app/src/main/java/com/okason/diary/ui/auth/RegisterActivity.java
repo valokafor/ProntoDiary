@@ -2,14 +2,9 @@ package com.okason.diary.ui.auth;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -17,23 +12,25 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.SignInButton;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.crash.FirebaseCrash;
-import com.okason.diary.NoteListActivity;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.okason.diary.R;
 import com.okason.diary.core.services.HandleRealmLoginService;
 import com.okason.diary.utils.Constants;
 
-import java.util.UUID;
-
-import butterknife.BindView;
 import io.realm.ObjectServerError;
 import io.realm.SyncCredentials;
 import io.realm.SyncUser;
 
+import static android.text.TextUtils.isEmpty;
 import static com.okason.diary.core.ProntoDiaryApplication.AUTH_URL;
 
 
@@ -45,54 +42,17 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
     private EditText passwordConfirmationView;
     private View progressView;
     private View registerFormView;
-    private Activity mActivity;
-    private String emailAddress;
-    private String generatedPassword;
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
+    private FacebookAuth facebookAuth;
+    private GoogleAuth googleAuth;
 
-
-
-
-    @BindView(R.id.root)
-    View mRootView;
-
-    private FirebaseAnalytics mFirebaseAnalytics;
-    private String signMethod = Constants.AUTH_METHOD_EMAIL;
+    private FirebaseAnalytics firebaseAnalytics;
+    private DatabaseReference mDatabase;
+    private DatabaseReference mProntoDiaryUserRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-
-
-        mActivity = this;
-
-        if (mFirebaseUser == null){
-            finish();
-        }
-
-        try {
-            emailAddress = mFirebaseUser.getEmail();
-        } catch (Exception e) {
-            e.printStackTrace();
-            finish();
-        }
-
-        if (TextUtils.isEmpty(emailAddress)){
-            finish();
-        }
-
-        generatedPassword = getRandomPassword();
-        progressView = findViewById(R.id.register_progress);
-
-
-
-
-
         usernameView = (AutoCompleteTextView) findViewById(R.id.username);
         passwordView = (EditText) findViewById(R.id.password);
         passwordConfirmationView = (EditText) findViewById(R.id.password_confirmation);
@@ -107,6 +67,11 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             }
         });
 
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this);
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
+
 
         final Button mailRegisterButton = (Button) findViewById(R.id.email_register_button);
         mailRegisterButton.setOnClickListener(new View.OnClickListener() {
@@ -117,60 +82,119 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
         });
 
         registerFormView = findViewById(R.id.register_form);
-        attemptRegister();
+        progressView = findViewById(R.id.register_progress);
 
+        // Setup Facebook Authentication
+        facebookAuth = new FacebookAuth((LoginButton) findViewById(R.id.login_button)) {
+            @Override
+            public void onRegistrationComplete(final LoginResult loginResult) {
+                UserManager.setAuthMode(UserManager.AUTH_MODE.FACEBOOK);
+                SyncCredentials credentials = SyncCredentials.facebook(loginResult.getAccessToken().getToken());
+                SyncUser.loginAsync(credentials, AUTH_URL, RegisterActivity.this);
+            }
+        };
 
+        // Setup Google Authentication
+        googleAuth = new GoogleAuth((SignInButton) findViewById(R.id.sign_in_button), this) {
+            @Override
+            public void onRegistrationComplete(GoogleSignInResult result) {
+                UserManager.setAuthMode(UserManager.AUTH_MODE.GOOGLE);
+                GoogleSignInAccount acct = result.getSignInAccount();
 
-    }
+                Bundle bundle = new Bundle();
+                bundle.putString(FirebaseAnalytics.Param.SIGN_UP_METHOD, Constants.AUTH_METHOD_GOOGLE);
+                firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
 
-    private String getRandomPassword() {
-        return UUID.randomUUID().toString();
+                try {
+                    String name = acct.getDisplayName();
+                    String email = acct.getEmail();
+                    Intent loginService = new Intent(RegisterActivity.this, HandleRealmLoginService.class);
+                    loginService.putExtra(Constants.DISPLAY_NAME, name);
+                    loginService.putExtra(Constants.EMAIL_ADDRESSS, email);
+                    loginService.putExtra(Constants.SIGN_IN_METHOD, Constants.AUTH_METHOD_GOOGLE);
+                    startService(loginService);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                SyncCredentials credentials = SyncCredentials.google(acct.getIdToken());
+                SyncUser.loginAsync(credentials, AUTH_URL, RegisterActivity.this);
+            }
+        };
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        getSupportActionBar().setTitle("Enable Private Cloud Sync");
+        googleAuth.onActivityResult(requestCode, resultCode, data);
+        facebookAuth.onActivityResult(requestCode, resultCode, data);
     }
 
     private void attemptRegister() {
+        usernameView.setError(null);
+        passwordView.setError(null);
+        passwordConfirmationView.setError(null);
 
-        showProgress(true);
+        final String username = usernameView.getText().toString();
+        final String password = passwordView.getText().toString();
+        final String passwordConfirmation = passwordConfirmationView.getText().toString();
 
-        SyncUser.loginAsync(SyncCredentials.usernamePassword(emailAddress, generatedPassword, true), AUTH_URL, new SyncUser.Callback() {
-            @Override
-            public void onSuccess(SyncUser user) {
-                registrationComplete(user);
-            }
+        boolean cancel = false;
+        View focusView = null;
 
-            @Override
-            public void onError(ObjectServerError error) {
-                FirebaseCrash.log(emailAddress + ": Realm register failed");
-                FirebaseCrash.log(emailAddress + ": generated password: " + generatedPassword);
-                showProgress(false);
-                Intent intent = new Intent(mActivity, NoteListActivity.class);
-                startActivity(intent);
-            }
-        });
+
+        if (isEmpty(username)) {
+            usernameView.setError(getString(R.string.error_field_required));
+            focusView = usernameView;
+            cancel = true;
+        }
+
+        if (isEmpty(password)) {
+            passwordView.setError(getString(R.string.error_field_required));
+            focusView = passwordView;
+            cancel = true;
+        }
+
+        if (isEmpty(passwordConfirmation)) {
+            passwordConfirmationView.setError(getString(R.string.error_field_required));
+            focusView = passwordConfirmationView;
+            cancel = true;
+        }
+
+        if (!password.equals(passwordConfirmation)) {
+            passwordConfirmationView.setError(getString(R.string.error_incorrect_password));
+            focusView = passwordConfirmationView;
+            cancel = true;
+        }
+        if (cancel) {
+            focusView.requestFocus();
+        } else {
+            showProgress(true);
+            SyncUser.loginAsync(SyncCredentials.usernamePassword(username, password, true), AUTH_URL, new SyncUser.Callback() {
+                @Override
+                public void onSuccess(SyncUser user) {
+                    registrationComplete(user);
+                }
+
+                @Override
+                public void onError(ObjectServerError error) {
+                    showProgress(false);
+                    String errorMsg;
+                    switch (error.getErrorCode()) {
+                        case EXISTING_ACCOUNT: errorMsg = "Account already exists"; break;
+                        default:
+                            errorMsg = error.toString();
+                    }
+                    Toast.makeText(RegisterActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
     }
 
-    private void registrationComplete(final SyncUser user) {
-        //Set the newly registered user as Active thereby creating new Synchronised Realm
+    private void registrationComplete(SyncUser user) {
         UserManager.setActiveUser(user);
-
-        Intent completeLoginService = new Intent(mActivity, HandleRealmLoginService.class);
-        completeLoginService.putExtra(Constants.PASSWORD, generatedPassword);
-        completeLoginService.putExtra(Constants.REALM_USER_JSON, user.toJson());
-        startService(completeLoginService);
-
-
-        showProgress(false);
-        Intent intent = new Intent(mActivity, NoteListActivity.class);
+        Intent intent = new Intent(this, SignInActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
@@ -203,21 +227,13 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
 
     @Override
     public void onError(ObjectServerError error) {
-        Intent intent = new Intent(this, SignInActivity.class);
-        intent.putExtra(Constants.EMAIL_ADDRESSS, emailAddress);
-        intent.putExtra(Constants.PASSWORD, generatedPassword);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
-
-    }
-
-    private void makeToast(String message){
-        Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
-        View snackBarView = snackbar.getView();
-        snackBarView.setBackgroundColor(ContextCompat.getColor(mActivity, R.color.primary));
-        TextView tv = (TextView)snackBarView.findViewById(android.support.design.R.id.snackbar_text);
-        tv.setTextColor(Color.WHITE);
-        snackbar.show();
+        String errorMsg;
+        switch (error.getErrorCode()) {
+            case EXISTING_ACCOUNT: errorMsg = "Account already exists"; break;
+            default:
+                errorMsg = error.toString();
+        }
+        Toast.makeText(RegisterActivity.this, errorMsg, Toast.LENGTH_LONG).show();
     }
 
 

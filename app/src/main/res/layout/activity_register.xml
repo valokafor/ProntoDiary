@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:visibility="gone" />
+        android:visibility="gone"/>
 
     <ScrollView
         android:id="@+id/register_form"
@@ -27,10 +27,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:paddingTop="48dp"
             android:paddingBottom="@dimen/activity_vertical_margin"
             android:paddingLeft="@dimen/signin_horizontal_margin"
-            android:paddingRight="@dimen/signin_horizontal_margin"
-            android:paddingTop="48dp">
+            android:paddingRight="@dimen/signin_horizontal_margin">
+
+            <LinearLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/logo_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginBottom="@dimen/margin_padding_small">
+
+                <ImageView
+                    android:id="@+id/logo"
+                    style="@style/FirebaseUI.AuthMethodPicker.Logo"
+                    android:src="@mipmap/ic_launcher"
+                    android:contentDescription="@string/accessibility_logo" />
+
+                <TextView
+                    style="@style/FirebaseUI.AuthMethodPicker.Logo"
+                    android:layout_margin="@dimen/margin_padding_xtiny"
+                    android:text="@string/sync_reason"/>
+
+            </LinearLayout>
+
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
@@ -43,7 +66,7 @@
                     android:hint="@string/prompt_username"
                     android:inputType="textAutoComplete"
                     android:maxLines="1"
-                    android:singleLine="true" />
+                    android:singleLine="true"/>
 
             </android.support.design.widget.TextInputLayout>
 
@@ -58,7 +81,7 @@
                     android:hint="@string/prompt_password"
                     android:inputType="textPassword"
                     android:maxLines="1"
-                    android:singleLine="true" />
+                    android:singleLine="true"/>
 
             </android.support.design.widget.TextInputLayout>
 
@@ -72,48 +95,47 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_password_conformation"
                     android:imeActionId="@+id/register"
-                    android:imeActionLabel="@string/action_register"
+                    android:imeActionLabel="@string/action_register_short"
                     android:imeOptions="actionUnspecified"
                     android:inputType="textPassword"
                     android:maxLines="1"
-                    android:singleLine="true" />
+                    android:singleLine="true"/>
 
             </android.support.design.widget.TextInputLayout>
 
             <Button
                 android:id="@+id/email_register_button"
-                style="@style/Widget.AppCompat.Button.Colored"
+                style="?android:textAppearanceSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/action_register"
-                android:textStyle="bold" />
+                android:backgroundTint="@color/primary"
+                android:textColor="@color/white"
+                android:textStyle="bold"/>
 
             <com.facebook.login.widget.LoginButton
                 android:id="@+id/login_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_padding_xlarge"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
-                android:layout_marginTop="72dp"
-                android:drawablePadding="40dp"
-                android:paddingBottom="12dp"
-                android:paddingEnd="0dp"
-                android:paddingLeft="12dp"
-                android:paddingRight="0dp"
-                android:paddingStart="12dp"
                 android:paddingTop="12dp"
-                android:visibility="gone"/>
+                android:paddingBottom="12dp"
+                android:paddingLeft="12dp"
+                android:paddingStart="12dp"
+                android:paddingRight="0dp"
+                android:paddingEnd="0dp"
+                android:drawablePadding="40dp"/>
 
             <com.google.android.gms.common.SignInButton
                 android:id="@+id/sign_in_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                app:buttonSize="wide"
-                android:visibility="gone"/>
+                app:buttonSize="wide"/>
 
         </LinearLayout>
     </ScrollView>
-
 </LinearLayout>

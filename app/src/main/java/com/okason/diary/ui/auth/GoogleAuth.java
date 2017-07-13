@@ -30,6 +30,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 
 
 /**
@@ -43,10 +44,10 @@ public abstract class GoogleAuth implements GoogleApiClient.OnConnectionFailedLi
     public GoogleAuth(final SignInButton btnSignIn, final FragmentActivity fragmentActivity) {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                .requestIdToken(fragmentActivity.getString(R.string.server_client_id))
+                .requestIdToken(ProntoDiaryApplication.getAppContext().getString(R.string.server_client_id))
                 .build();
 
-        mGoogleApiClient = new GoogleApiClient.Builder(fragmentActivity)
+        mGoogleApiClient = new GoogleApiClient.Builder(ProntoDiaryApplication.getAppContext())
                 .enableAutoManage(fragmentActivity /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();

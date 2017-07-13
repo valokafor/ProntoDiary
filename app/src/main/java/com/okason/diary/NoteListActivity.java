@@ -29,18 +29,14 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
-import com.okason.diary.models.ProntoDiaryUser;
-import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
@@ -143,12 +139,9 @@ public class NoteListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         mActivity = this;
-
-
-        checkNetworkConnected();
-
-
     }
+
+
 
     @Override
     public void onBackPressed() {
@@ -158,70 +151,32 @@ public class NoteListActivity extends AppCompatActivity {
     private void checkLoginStatus() {
         //Check Firebase User status,
 
-        mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (mFirebaseUser == null){
-            //Check if user has logged in for the first time
+        final SyncUser user = SyncUser.currentUser();
+        if (user == null) {
+            //Check to see if the user has registered before
+            //if yes, check to see if the user is not logged in, show login
             preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
-
-            //If user has logged in for the first time, then send to the Login page for them to re-login
             if (unregisteredUser){
-                //If user has never logged in before, initialize local Realm to save data locally
+                //Show Anonymous Login
+                Realm.setDefaultConfiguration(UserManager.getLocalConfig());
+               // realm = Realm.getDefaultInstance();
                 loginLayout.setVisibility(View.VISIBLE);
                 settingsLayout.setVisibility(View.GONE);
-
-                Realm.setDefaultConfiguration(UserManager.getLocalConfig());
-            } else {
-                //Send to Login page which will trigger an initialization of sync Realm after successful login
+                updateUI(null);
+            }else {
                 //User has registered before, show login page
-                startActivity(new Intent(this, AuthUiActivity.class));
-            }
+                startActivity(new Intent(this, SignInActivity.class));}
         }else {
-            //We have a valid Firebase User, then initialize sync Realm using save JSON data
-            getRealmUser(mFirebaseUser);
+            UserManager.setActiveUser(user);
             loginLayout.setVisibility(View.GONE);
             settingsLayout.setVisibility(View.VISIBLE);
+            updateUI(user);
         }
-        updateUI(null);
     }
 
 
 
-    //This methods takes a Firebase User object and gets Pronto Diary User
-    //Then get saved Realm Synch User JSON and recreates the Realm User Object
-    private void getRealmUser(FirebaseUser firebaseUser) {
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
-
-
-        mProntoDiaryUserRef.orderByChild("firebaseUid").equalTo(mFirebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()){
-                    DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
-                    ProntoDiaryUser user = snapshot.getValue(ProntoDiaryUser.class);
-                    if (user != null){
-                        SyncUser syncUser = null;
-                        try {
-                            syncUser = SyncUser.fromJson(user.getRealmJson());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        if (syncUser != null){
-                            UserManager.setActiveUser(syncUser);
-                            updateUI(syncUser);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-    }
 
 
     @Override
@@ -239,6 +194,7 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        checkNetworkConnected();
 
     }
 
@@ -329,7 +285,7 @@ public class NoteListActivity extends AppCompatActivity {
         loginButton.setImageResource(R.drawable.ic_login_gray);
         loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
         loginTextView.setTypeface(loginTextView.getTypeface(), Typeface.BOLD);
-        startActivity(new Intent(mActivity, AuthUiActivity.class));
+        startActivity(new Intent(mActivity, RegisterActivity.class));
     }
 
     private void handleNoteButtonClicked() {

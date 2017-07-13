@@ -8,6 +8,7 @@ import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 import com.okason.diary.models.Tag;
 import com.okason.diary.ui.addnote.AddNoteContract;
+import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
@@ -28,7 +29,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
     @Override
     public List<Note> getAllNotes() {
         List<Note> viewModels = new ArrayList<>();
-        try(Realm realm = Realm.getDefaultInstance()) {
+        try(Realm realm = Realm.getInstance(UserManager.getConfig())) {
             RealmResults<Note> notes = realm.where(Note.class).findAll();
             if (notes != null && notes.size() > 0){
                 viewModels = realm.copyFromRealm(notes);
@@ -40,7 +41,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
     @Override
     public List<Tag> getAllTags() {
         List<Tag> viewModels = new ArrayList<>();
-        try(Realm realm = Realm.getDefaultInstance()) {
+        try(Realm realm = Realm.getInstance(UserManager.getConfig())) {
             RealmResults<Tag> tags = realm.where(Tag.class).findAll();
             if (tags != null && tags.size() > 0){
                 viewModels = realm.copyFromRealm(tags);
@@ -65,7 +66,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
     @Override
     public Note getNoteById(String noteId) {
         Note selectedNote;
-        try (Realm realm = Realm.getDefaultInstance()){
+        try (Realm realm = Realm.getInstance(UserManager.getConfig())){
             selectedNote = realm.where(Note.class).equalTo("id", noteId).findFirst();
             selectedNote = realm.copyFromRealm(selectedNote);
         }catch (Exception e){
@@ -78,7 +79,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
     public Note createNewNote() {
         String noteId = UUID.randomUUID().toString();
         Note note;
-        try(Realm realm = Realm.getDefaultInstance()) {
+        try(Realm realm = Realm.getInstance(UserManager.getConfig())) {
             realm.beginTransaction();
             note = realm.createObject(Note.class, noteId);
             note.setDateCreated(System.currentTimeMillis());
@@ -91,7 +92,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
 
     @Override
     public void updatedNoteTitle(final String noteId, final String title) {
-        try (Realm realm = Realm.getDefaultInstance()){
+        try (Realm realm = Realm.getInstance(UserManager.getConfig())){
             realm.beginTransaction();
             Note selectedNote = realm.where(Note.class).equalTo("id", noteId).findFirst();
             if (selectedNote != null){
@@ -105,7 +106,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
 
     @Override
     public void updatedNoteContent(final String noteId, final String content) {
-        try (Realm realm = Realm.getDefaultInstance()){
+        try (Realm realm = Realm.getInstance(UserManager.getConfig())){
             realm.beginTransaction();
             Note selectedNote = realm.where(Note.class).equalTo("id", noteId).findFirst();
             if (selectedNote != null){
@@ -119,7 +120,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
 
     @Override
     public void setFolder(final String folderId, final String noteId) {
-        try (Realm realm = Realm.getDefaultInstance()){
+        try (Realm realm = Realm.getInstance(UserManager.getConfig())){
             realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm backgroundRealm) {
@@ -142,7 +143,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
 
     @Override
     public void addTag(final String noteId, final String tagId) {
-        try (Realm realm = Realm.getDefaultInstance()){
+        try (Realm realm = Realm.getInstance(UserManager.getConfig())){
             realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm backgroundRealm) {
@@ -182,7 +183,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
 
     @Override
     public void removeTag(final String noteId, final String tagId) {
-        try (Realm realm = Realm.getDefaultInstance()){
+        try (Realm realm = Realm.getInstance(UserManager.getConfig())){
             realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm backgroundRealm) {
@@ -225,7 +226,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
     @Override
     public void deleteNote(final String noteId) {
         String result;
-        try (Realm realm = Realm.getDefaultInstance()){
+        try (Realm realm = Realm.getInstance(UserManager.getConfig())){
             realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm backgroundRealm) {
@@ -254,7 +255,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
     @Override
     public Attachment getAttachmentbyId(String id) {
         Attachment attachment;
-        try (Realm realm = Realm.getDefaultInstance()){
+        try (Realm realm = Realm.getInstance(UserManager.getConfig())){
             attachment = realm.where(Attachment.class).equalTo("id", id).findFirst();
         }catch (Exception e){
             attachment = null;
@@ -266,7 +267,7 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
     public void addAttachment(final String noteId, final Attachment attachment) {
         final String attachmentId = UUID.randomUUID().toString();
 
-        try (Realm realm = Realm.getDefaultInstance()){
+        try (Realm realm = Realm.getInstance(UserManager.getConfig())){
             realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm backgroundRealm) {

@@ -8,14 +8,23 @@ public class ProntoDiaryUser {
     private String id;
     private String firebaseUid;
     private String fcmToken;
+    private String displayName;
     private String emailAddress;
     private boolean isEmailValid;
     private long totalFileSize;
     private boolean isPremium;
     private String upgradeMethod;
-    private String realmJson;
     private String realmPassword;
+    private String loginProvider;
 
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
     public String getId() {
         return id;
@@ -81,12 +90,12 @@ public class ProntoDiaryUser {
         this.upgradeMethod = upgradeMethod;
     }
 
-    public String getRealmJson() {
-        return realmJson;
+    public String getLoginProvider() {
+        return loginProvider;
     }
 
-    public void setRealmJson(String realmJson) {
-        this.realmJson = realmJson;
+    public void setLoginProvider(String loginProvider) {
+        this.loginProvider = loginProvider;
     }
 
     public String getRealmPassword() {

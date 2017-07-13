@@ -313,6 +313,8 @@
     <string name="zero_note">0 Note</string>
     <string name="label_tasks">Tasks</string>
     <string name="reminder_label_week_days">Week Days</string>
+    <string name="action_register_short">Register</string>
+    <string name="activity_sign_in_label">Sign In</string>
 
 
 </resources>

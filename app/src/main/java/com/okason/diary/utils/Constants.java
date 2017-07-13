@@ -30,6 +30,8 @@ public class Constants {
     public static final String REALM_USER_JSON = "realmJson";
     public static final String ACCOUNT_TAG = "account";
     public static final String TAG_ID = "tag_id";
+    public static final String DISPLAY_NAME = "display_name";
+    public static final String SIGN_IN_METHOD = "sign_in_method";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

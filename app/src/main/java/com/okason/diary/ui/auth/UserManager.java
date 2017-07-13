@@ -35,6 +35,16 @@ public class UserManager {
         return configuration;
     }
 
+    public static RealmConfiguration getConfig() {
+        SyncUser  user = SyncUser.currentUser();
+        if (user != null){
+            return getSyncConfig(user);
+        }else {
+            return getLocalConfig();
+        }
+
+    }
+
     // Supported authentication mode
     public enum AUTH_MODE {
         PASSWORD,
@@ -68,6 +78,7 @@ public class UserManager {
     // Configure Realm for the current active user
     public static void setActiveUser(SyncUser user) {
      //   SyncConfiguration defaultConfig = new SyncConfiguration.Builder(user, ProntoDiaryApplication.REALM_URL).build();
+        Realm.removeDefaultConfiguration();
         Realm.setDefaultConfiguration(getSyncConfig(user));
     }
 

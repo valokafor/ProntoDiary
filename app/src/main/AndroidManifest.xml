@@ -90,7 +90,9 @@
 
         <activity android:name=".ui.sketch.SketchActivity">
         </activity>
-        <activity android:name=".ui.auth.RegisterActivity"/>
+        <activity android:name=".ui.auth.RegisterActivity"
+                  android:windowSoftInputMode="stateHidden" >
+            </activity>
         <activity android:name=".ui.auth.SignInActivity"/>
         <activity
             android:name=".core.SplashScreenActivity"

@@ -2,7 +2,6 @@ package com.okason.diary.core.services;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.text.TextUtils;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -64,66 +63,7 @@ public class CreateRealmDatabaseAccountService extends IntentService {
         //Get Pronto Diary User
         if (mFirebaseUser != null){
 
-            mProntoDiaryUserRef.orderByChild("firebaseUid").equalTo(mFirebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()){
-                        DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
-                        user = snapshot.getValue(ProntoDiaryUser.class);
-                    }
 
-                    if (user == null){
-                        //If user does not exist, create one
-                        user = new ProntoDiaryUser();
-                        user.setEmailAddress(mFirebaseUser.getEmail());
-                        user.setFirebaseUid(mFirebaseUser.getUid());
-                        user.setId(mProntoDiaryUserRef.push().getKey());
-                        mProntoDiaryUserRef.child(user.getId()).setValue(user);
-                    }
-                    if (TextUtils.isEmpty(user.getRealmJson())){
-                        //If Realm account has not been created for this user
-                        //Attempt to Register
-                        try {
-                            emailAddress = mFirebaseUser.getEmail();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            return;
-                        }
-
-                        if (TextUtils.isEmpty(emailAddress)){
-                            FirebaseCrash.log(mFirebaseUser.getUid() + ": Has no email address");
-                            return;
-                        }
-
-                        generatedPassword = getRandomPassword();
-
-                        //At this point, there is a valid Firebase user, valid email and random password
-                        attemptRegister();
-                    } else {
-                        //Get the Sync User
-                        SyncUser syncUser = SyncUser.fromJson(user.getRealmJson());
-                        if (syncUser == null){
-                            //If Realm user cannot be retrieved, try logging in
-                            //Attempt to Login
-                            attemptLogin();
-                        }else {
-                            //We have a valid Realm User, go to app
-                            UserManager.setActiveUser(syncUser);
-                            Intent restartIntent = new Intent(getApplicationContext(), NoteListActivity.class);
-                            restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(restartIntent);
-                            return;
-                        }
-                    }
-
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
         }else {
             //We have a Firebase user that has a null Id
         }
@@ -204,7 +144,6 @@ public class CreateRealmDatabaseAccountService extends IntentService {
                     ProntoDiaryUser prontoDiaryUser = snapshot.getValue(ProntoDiaryUser.class);
                     if (prontoDiaryUser != null){
                         //Update
-                        prontoDiaryUser.setRealmJson(user.toJson());
                         prontoDiaryUser.setRealmPassword(generatedPassword);
                         mProntoDiaryUserRef.child(prontoDiaryUser.getId()).setValue(prontoDiaryUser);
                     }
