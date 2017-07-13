@@ -8,17 +8,24 @@ import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.data.NoteRealmRepository;
+import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.ui.auth.AuthUiActivity;
 
 import butterknife.BindView;
@@ -35,6 +42,20 @@ public class ProfileFragment extends Fragment {
     Button loginButton;
 
     @BindView(R.id.toolbar_button_logout) Button logoutButton;
+
+    @BindView(R.id.toolbar_profile_image)
+    ImageView profileImage;
+
+    @BindView(R.id.toolbar_profile_task_count)
+    TextView taskCountTextView;
+
+    @BindView(R.id.toolbar_profile_note_count)
+    TextView journalCountTextView;
+
+    @BindView(R.id.toolbar_profile_name)
+    TextView userName;
+
+
 
     private FirebaseAuth mAuth;
     private FirebaseUser mFirebaseUser;
@@ -54,12 +75,13 @@ public class ProfileFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         if (mAuth != null){
             mFirebaseUser = mAuth.getCurrentUser();
-            if (mFirebaseUser != null){
+            if (mFirebaseUser == null){
                 loginButton.setVisibility(View.VISIBLE);
                 logoutButton.setVisibility(View.GONE);
             }else {
                 loginButton.setVisibility(View.GONE);
                 logoutButton.setVisibility(View.VISIBLE);
+                populateProfile();
             }
         }else {
             loginButton.setVisibility(View.GONE);
@@ -67,6 +89,36 @@ public class ProfileFragment extends Fragment {
         }
 
         return mRootView;
+    }
+
+    @MainThread
+    private void populateProfile() {
+        if (mFirebaseUser.getPhotoUrl() != null) {
+            Glide.with(this)
+                    .load(mFirebaseUser.getPhotoUrl())
+                    .fitCenter()
+                    .into(profileImage);
+        }
+
+        userName.setText(
+                TextUtils.isEmpty(mFirebaseUser.getDisplayName()) ? "No display name" : mFirebaseUser.getDisplayName());
+
+        int numNote = new NoteRealmRepository().getAllNotes().size();
+        String notes = numNote > 1 ? getString(R.string.label_journals) : getString(R.string.label_journal);
+        journalCountTextView.setText(numNote + " " + notes);
+
+
+        String taskLabel = ProntoDiaryApplication.getAppContext().getString(R.string.zero_task);
+        int taskCount = new TaskRealmRepository().getAllTaskAndSubTaskCount();
+        if (taskCount > 0) {
+            taskLabel = taskCount > 1 ? taskCount
+                    + " " + getString(R.string.label_tasks) : taskCount
+                    + " " + getString(R.string.label_task) ;
+        }
+
+        taskCountTextView.setText(taskLabel);
+
+
     }
 
     @OnClick(R.id.toolbar_button_login)

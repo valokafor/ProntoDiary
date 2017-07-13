@@ -51,10 +51,11 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="0 Note"
+                android:text="@string/zero_note"
                 android:clickable="true"
                 android:textSize="@dimen/text_size_normal"
                 android:textStyle="italic" />
+
         </LinearLayout>
 
 

@@ -1,14 +1,19 @@
 package com.okason.diary.ui.todolist;
 
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,9 +21,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
@@ -30,6 +37,8 @@ import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.FolderListAdapter;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.date.DateHelper;
+import com.okason.diary.utils.date.TimeUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -63,11 +72,19 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     @BindView(R.id.button_reminder_weekly)
     Button weeklyReminderButton;
 
+    @BindView(R.id.button_reminder_week_days)
+    Button weekDaysReminderButton;
+
     @BindView(R.id.button_reminder_monthly)
     Button monthlyReminderButton;
 
     @BindView(R.id.button_reminder_yearly)
     Button yearlyReminderButton;
+
+    @BindView(R.id.text_view_due_date) TextView dateTextView;
+    @BindView(R.id.text_view_due_time) TextView timeTextView;
+
+
 
 
     @BindView(R.id.image_button_add_reminder_options)
@@ -81,7 +98,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     private String selectedReminder;
     private int priority = Constants.PRIORITY_LOW;
     private Folder selectedFolder;
-    private Calendar calender;
+    private Calendar mReminderTime;
 
     private TaskContract.Actions presenter;
 
@@ -193,11 +210,11 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
             selectedFolder = new FolderRealmRepository().getOrCreateFolder(getString(R.string.general));
         }
 
-        if (calender == null){
-            calender = Calendar.getInstance();
-            calender.setTimeInMillis(System.currentTimeMillis());
+        if (mReminderTime == null){
+            mReminderTime = Calendar.getInstance();
+            mReminderTime.setTimeInMillis(System.currentTimeMillis());
         }
-        presenter.onSaveAndExit(priority, taskNameEditText.getText().toString(), calender.getTimeInMillis(), "", selectedFolder.getId(), false);
+        presenter.onSaveAndExit(priority, taskNameEditText.getText().toString(), mReminderTime.getTimeInMillis(), "", selectedFolder.getId(), false);
 
     }
 
@@ -217,6 +234,26 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     @OnClick(R.id.edit_text_category)
     public void showSelectFolder(){
         showChooseFolderDialog(mFolders);
+    }
+
+    @OnClick(R.id.image_button_calendar)
+    public void onClickAddDueDateButton(View view){
+        showReminderDate();
+    }
+
+    @OnClick(R.id.image_button_time)
+    public void onClickAddDueTimeButton(View view){
+        showReminderTime();
+    }
+
+    private void onReminderDateSelected(){
+        String formattedDueDate = TimeUtils.getReadableDateWithoutTime(mReminderTime.getTimeInMillis());
+        dateTextView.setText(formattedDueDate);
+    }
+
+    private void onReminderTimeSelected(){
+        String formattedDueTime = DateHelper.getTimeShort(getActivity(), mReminderTime.getTimeInMillis());
+        timeTextView.setText(formattedDueTime);
     }
 
 
@@ -260,6 +297,16 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             weeklyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             weeklyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
+        }
+    }
+
+    @OnClick(R.id.button_reminder_week_days)
+    public void onClickWeekDaysReminderButton(View view){
+        resetReminderButtons();
+        selectedReminder = Constants.REMINDER_WEEK_DAYS;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            weekDaysReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
+            weekDaysReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
         }
     }
 
@@ -311,6 +358,12 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
             weeklyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.white));
             weeklyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.primary_text));
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            weekDaysReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.white));
+            weekDaysReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.primary_text));
+        }
+
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -388,6 +441,96 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
     @Override
     public void showMessage(boolean message) {
+
+    }
+
+
+    public void showReminderDate() {
+        DialogFragment reminderDatePicker = new ReminderDatePickerDialogFragment();
+        reminderDatePicker.setTargetFragment(AddTaskFragment.this, 0);
+        reminderDatePicker.show(getFragmentManager(), "reminderDatePicker");
+
+    }
+
+    public void showReminderEndDate() {
+        DialogFragment reminderDatePicker = new ReminderDatePickerDialogFragment();
+        reminderDatePicker.setTargetFragment(AddTaskFragment.this, 0);
+        reminderDatePicker.show(getFragmentManager(), "reminderDatePicker");
+
+    }
+
+
+    public void showReminderTime() {
+        DialogFragment reminderTimePicker = new ReminderTimePickerDialogFragment();
+        reminderTimePicker.setTargetFragment(AddTaskFragment.this, 0);
+        reminderTimePicker.show(getFragmentManager(), "reminderTimePicker");
+
+    }
+
+
+    public static class ReminderDatePickerDialogFragment extends DialogFragment
+            implements DatePickerDialog.OnDateSetListener{
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the current date as the default date in the picker
+            final Calendar c = Calendar.getInstance();
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH);
+            int day = c.get(Calendar.DAY_OF_MONTH);
+
+            // Create a new instance of DatePickerDialog and return it
+            DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), this, year, month, day);
+            datePickerDialog.setTitle("Select Due Date");
+            return datePickerDialog;
+        }
+        @Override
+        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+            AddTaskFragment targetFragment = (AddTaskFragment) getTargetFragment();
+            if (year < 0){
+                targetFragment = null;
+            } else {
+                targetFragment.mReminderTime = Calendar.getInstance();
+                targetFragment.mReminderTime.set(year, monthOfYear, dayOfMonth);
+                targetFragment.onReminderDateSelected();
+
+            }
+
+        }
+
+    }
+
+    public static class ReminderTimePickerDialogFragment extends DialogFragment
+            implements TimePickerDialog.OnTimeSetListener{
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AddTaskFragment targetFragment = (AddTaskFragment) getTargetFragment();
+            final Calendar c;
+            if (targetFragment.mReminderTime == null) {
+                c = Calendar.getInstance();
+            } else {
+                c = targetFragment.mReminderTime;
+            }
+
+            int hour = c.get(Calendar.HOUR_OF_DAY);
+            int minute = c.get(Calendar.MINUTE);
+
+            // Create a new instance of TimePickerDialog and return it
+            return new TimePickerDialog(getActivity(), this, hour, minute,
+                    DateFormat.is24HourFormat(getActivity()));
+        }
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+            AddTaskFragment targetFragment = (AddTaskFragment) getTargetFragment();
+            if (targetFragment.mReminderTime == null){
+                targetFragment.mReminderTime = Calendar.getInstance();
+            }
+            targetFragment.mReminderTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            targetFragment.mReminderTime.set(Calendar.MINUTE, minute);
+            targetFragment.onReminderTimeSelected();
+
+        }
 
     }
 }

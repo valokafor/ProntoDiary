@@ -267,11 +267,13 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         if (showText){
 
             mEmptyText.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.GONE);
           //  mAdView.setVisibility(View.GONE);
 
         }else {
           //  mAdView.setVisibility(View.VISIBLE);
             mEmptyText.setVisibility(View.GONE);
+            mRecyclerView.setVisibility(View.VISIBLE);
         }
 
     }

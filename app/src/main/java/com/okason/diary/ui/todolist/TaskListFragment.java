@@ -91,7 +91,9 @@ public class TaskListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        mRealm.close();
+        if (mRealm != null && !mRealm.isClosed()) {
+            mRealm.close();
+        }
 
     }
 

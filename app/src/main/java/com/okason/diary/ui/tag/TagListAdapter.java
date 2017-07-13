@@ -47,9 +47,11 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         Tag tag = mTags.get(position);
         String tagName = tag.getTagName();
         holder.tagName.setText(tagName);
+
         int numNote = tag.getNotes().size();
         String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
         holder.noteCountTextView.setText(numNote + " " + notes);
+
     }
 
     public void replaceData(List<Tag> categories){
@@ -71,6 +73,7 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         @BindView(R.id.image_button_delete_tag) ImageButton deleteTag;
         @BindView(R.id.text_view_tag_name)  TextView tagName;
         @BindView(R.id.text_view_note_count) TextView noteCountTextView;
+
 
         public ViewHolder(View itemView) {
             super(itemView);

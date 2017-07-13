@@ -5,6 +5,8 @@ import com.okason.diary.models.Note;
 import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
 
+import java.util.List;
+
 /**
  * Created by valokafor on 6/26/17.
  */
@@ -42,9 +44,10 @@ public class TaskContract {
         Task createNewTask(int priority, String taskName, long dueDateAndTime, String repeat, String folderId);
         void updateTaskStatus(Task task, boolean completed);
         void removeSubTaskFromTask(SubTask subTask, Task task);
-        void getAllTask();
+        List<Task> getAllTask();
         void deleteTask();
         Task getTaskById(String id);
+        int  getAllTaskAndSubTaskCount();
 
     }
 }

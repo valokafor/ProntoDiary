@@ -21,9 +21,9 @@ public class Task extends RealmObject {
 
 
     private long dueDateAndTime;
+    private long reminderEndTime;
     private boolean remind;
-    private String alarm;
-    private Boolean reminderFired;
+    private boolean reminderFired;
     private String recurrenceRule;
     private Double latitude;
     private Double longitude;
@@ -32,6 +32,14 @@ public class Task extends RealmObject {
     private RealmList<History> historyList;
     private Folder folder;
     private RealmList<SubTask> subTask;
+
+    public int getTaskCount(){
+        if (getSubTask() != null && getSubTask().size() > 0){
+            return getSubTask().size() + 1;
+        }else {
+            return 1;
+        }
+    }
 
 
     public String getId() {
@@ -98,28 +106,28 @@ public class Task extends RealmObject {
         this.dueDateAndTime = dueDateAndTime;
     }
 
+    public long getReminderEndTime() {
+        return reminderEndTime;
+    }
+
+    public void setReminderEndTime(long reminderEndTime) {
+        this.reminderEndTime = reminderEndTime;
+    }
+
+    public boolean isReminderFired() {
+        return reminderFired;
+    }
+
+    public void setReminderFired(boolean reminderFired) {
+        this.reminderFired = reminderFired;
+    }
+
     public boolean isRemind() {
         return remind;
     }
 
     public void setRemind(boolean remind) {
         this.remind = remind;
-    }
-
-    public String getAlarm() {
-        return alarm;
-    }
-
-    public void setAlarm(String alarm) {
-        this.alarm = alarm;
-    }
-
-    public Boolean getReminderFired() {
-        return reminderFired;
-    }
-
-    public void setReminderFired(Boolean reminderFired) {
-        this.reminderFired = reminderFired;
     }
 
     public String getRecurrenceRule() {

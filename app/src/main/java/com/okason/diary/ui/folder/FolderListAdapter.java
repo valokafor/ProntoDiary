@@ -9,8 +9,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.models.Folder;
+import com.okason.diary.models.Task;
 
 import java.util.List;
 
@@ -47,9 +49,25 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
         Folder category = mFolders.get(position);
         String categoryName = category.getFolderName();
         holder.categoryName.setText(categoryName);
+
         int numNote = category.getNotes().size();
         String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
         holder.noteCountTextView.setText(numNote + " " + notes);
+
+
+        String taskLabel = ProntoDiaryApplication.getAppContext().getString(R.string.zero_task);
+
+        if (category.getTasks() != null && category.getTasks().size() > 0){
+            int taskCount = 0;
+            for (Task task: category.getTasks()){
+                taskCount += task.getTaskCount();
+            }
+            taskLabel = taskCount > 1 ? taskCount
+                    + " " + mContext.getString(R.string.label_tasks) : taskCount
+                    + " " + mContext.getString(R.string.label_task) ;
+        }
+
+        holder.taskCountTextView.setText(taskLabel);
     }
 
     public void replaceData(List<Folder> categories){
@@ -71,6 +89,7 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
         @BindView(R.id.image_button_delete_category) ImageButton deleteCategory;
         @BindView(R.id.text_view_folder_name)  TextView categoryName;
         @BindView(R.id.text_view_note_count) TextView noteCountTextView;
+        @BindView(R.id.text_view_task_count) TextView taskCountTextView;
 
         public ViewHolder(View itemView) {
             super(itemView);

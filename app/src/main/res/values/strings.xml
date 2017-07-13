@@ -309,6 +309,10 @@
     <string name="label_add_sub_task">Add SubTasks</string>
     <string name="general">General</string>
     <string name="add_task_hint">Example: Buy milk</string>
+    <string name="zero_task">0 Task</string>
+    <string name="zero_note">0 Note</string>
+    <string name="label_tasks">Tasks</string>
+    <string name="reminder_label_week_days">Week Days</string>
 
 
 </resources>

@@ -182,7 +182,7 @@ public class NoteListActivity extends AppCompatActivity {
             loginLayout.setVisibility(View.GONE);
             settingsLayout.setVisibility(View.VISIBLE);
         }
-        updateUI();
+        updateUI(null);
     }
 
 
@@ -209,7 +209,7 @@ public class NoteListActivity extends AppCompatActivity {
                         }
                         if (syncUser != null){
                             UserManager.setActiveUser(syncUser);
-                            openFragment(new NoteListFragment(), getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
+                            updateUI(syncUser);
                         }
                     }
                 }
@@ -341,7 +341,10 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
 
-    private void updateUI() {
+    private void updateUI(SyncUser user) {
+        if (user == null){
+            Realm.setDefaultConfiguration(UserManager.getLocalConfig());
+        }
         addDefaultData();
         handleNoteButtonClicked();
 

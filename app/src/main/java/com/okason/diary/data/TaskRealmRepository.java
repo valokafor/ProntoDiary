@@ -5,9 +5,12 @@ import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
 import com.okason.diary.ui.todolist.TaskContract;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import io.realm.Realm;
+import io.realm.RealmResults;
 
 /**
  * Created by valokafor on 7/7/17.
@@ -66,7 +69,15 @@ public class TaskRealmRepository implements TaskContract.Repository {
     }
 
     @Override
-    public void getAllTask() {
+    public List<Task> getAllTask() {
+        List<Task> allTask = new ArrayList<>();
+        try(Realm realm = Realm.getDefaultInstance()) {
+            RealmResults<Task> taskResult = realm.where(Task.class).findAll();
+            if (taskResult != null && taskResult.size() > 0){
+                allTask = realm.copyFromRealm(taskResult);
+            }
+        }
+        return allTask;
 
     }
 
@@ -85,5 +96,15 @@ public class TaskRealmRepository implements TaskContract.Repository {
             selectedTask = null;
         }
         return selectedTask;
+    }
+
+    @Override
+    public int getAllTaskAndSubTaskCount() {
+        List<Task> tasks = getAllTask();
+        int count = 0;
+        for (Task task: tasks){
+            count += task.getTaskCount();
+        }
+        return count;
     }
 }
