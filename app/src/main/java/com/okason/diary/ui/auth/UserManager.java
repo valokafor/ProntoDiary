@@ -18,7 +18,6 @@ package com.okason.diary.ui.auth;
 
 import com.facebook.login.LoginManager;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.utils.Constants;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -26,23 +25,18 @@ import io.realm.SyncConfiguration;
 import io.realm.SyncUser;
 
 public class UserManager {
-    public static RealmConfiguration getLocalConfig() {
-        RealmConfiguration configuration  = new RealmConfiguration.Builder()
-                .name(Constants.REALM_DATABASE)
-                .schemaVersion(5)
-                .deleteRealmIfMigrationNeeded()
-                .build();
-        return configuration;
-    }
+//    public static RealmConfiguration getLocalConfig() {
+//        RealmConfiguration configuration  = new RealmConfiguration.Builder()
+//                .name(Constants.REALM_DATABASE)
+//                .schemaVersion(5)
+//                .deleteRealmIfMigrationNeeded()
+//                .build();
+//        return configuration;
+//    }
 
     public static RealmConfiguration getConfig() {
         SyncUser  user = SyncUser.currentUser();
-        if (user != null){
-            return getSyncConfig(user);
-        }else {
-            return getLocalConfig();
-        }
-
+        return getSyncConfig(user);
     }
 
     // Supported authentication mode
@@ -72,6 +66,7 @@ public class UserManager {
                 break;
             }
         }
+        ProntoDiaryApplication.setCloudSyncEnabled(false);
         SyncUser.currentUser().logout();
     }
 

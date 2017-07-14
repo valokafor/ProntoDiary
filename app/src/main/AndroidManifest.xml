@@ -90,9 +90,10 @@
 
         <activity android:name=".ui.sketch.SketchActivity">
         </activity>
-        <activity android:name=".ui.auth.RegisterActivity"
-                  android:windowSoftInputMode="stateHidden" >
-            </activity>
+        <activity
+            android:name=".ui.auth.RegisterActivity"
+            android:windowSoftInputMode="stateHidden">
+        </activity>
         <activity android:name=".ui.auth.SignInActivity"/>
         <activity
             android:name=".core.SplashScreenActivity"
@@ -125,6 +126,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.okason.diary.NoteListActivity"/>
         </activity>
+
+        <service
+            android:name=".core.services.MyFirebaseInstanceIdService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+        <service
+            android:name=".core.services.MyFirebaseMessagingService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
     </application>
 
 </manifest>

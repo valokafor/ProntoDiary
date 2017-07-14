@@ -2,6 +2,7 @@ package com.okason.diary.ui.folder;
 
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,10 +19,14 @@ import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.data.FolderRealmRepository;
 import com.okason.diary.models.Folder;
+import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.SignInActivity;
+import com.okason.diary.utils.SettingsHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -88,19 +93,23 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     @Override
     public void onResume() {
         super.onResume();
-        mAdapter = null;
-        try {
-            mRealm = Realm.getDefaultInstance();
-            mFolders = mRealm.where(Folder.class).findAll();
-            mFolders.addChangeListener(new RealmChangeListener<RealmResults<Folder>>() {
-                @Override
-                public void onChange(RealmResults<Folder> folders) {
-                    showFolders(folders);
-                }
-            });
-            showFolders(mFolders);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+            mAdapter = null;
+            try {
+                mRealm = Realm.getDefaultInstance();
+                mFolders = mRealm.where(Folder.class).findAll();
+                mFolders.addChangeListener(new RealmChangeListener<RealmResults<Folder>>() {
+                    @Override
+                    public void onChange(RealmResults<Folder> folders) {
+                        showFolders(folders);
+                    }
+                });
+                showFolders(mFolders);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            showEmptyText();
         }
 
     }
@@ -138,7 +147,20 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         int id = item.getItemId();
         switch (id){
             case R.id.action_add:
-                showAddNewFolderDialog();
+                if (getActivity() != null) {
+                    if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+                        showAddNewFolderDialog();
+                    } else {
+                        boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
+                        if (registeredUser){
+                            startActivity(new Intent(getActivity(), SignInActivity.class));
+                        }else {
+                            startActivity(new Intent(getActivity(), RegisterActivity.class));
+                        }
+
+                    }
+                }
+
                 break;
 
         }

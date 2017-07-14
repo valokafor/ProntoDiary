@@ -3,6 +3,7 @@ package com.okason.diary.ui.auth;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
@@ -25,6 +26,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.okason.diary.R;
 import com.okason.diary.core.services.HandleRealmLoginService;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.SettingsHelper;
 
 import io.realm.ObjectServerError;
 import io.realm.SyncCredentials;
@@ -112,6 +114,8 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
                     loginService.putExtra(Constants.DISPLAY_NAME, name);
                     loginService.putExtra(Constants.EMAIL_ADDRESSS, email);
                     loginService.putExtra(Constants.SIGN_IN_METHOD, Constants.AUTH_METHOD_GOOGLE);
+                    Uri photo = acct.getPhotoUrl();
+                    loginService.putExtra(Constants.PHOTO_URL, photo.toString());
                     startService(loginService);
 
                 } catch (Exception e) {
@@ -173,6 +177,25 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             SyncUser.loginAsync(SyncCredentials.usernamePassword(username, password, true), AUTH_URL, new SyncUser.Callback() {
                 @Override
                 public void onSuccess(SyncUser user) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString(FirebaseAnalytics.Param.SIGN_UP_METHOD, Constants.AUTH_METHOD_EMAIL);
+                    firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
+
+                    try {
+                        String name = username;
+                        String email = username;
+                        Intent loginService = new Intent(RegisterActivity.this, HandleRealmLoginService.class);
+                        loginService.putExtra(Constants.DISPLAY_NAME, name);
+                        loginService.putExtra(Constants.EMAIL_ADDRESSS, email);
+                        loginService.putExtra(Constants.SIGN_IN_METHOD, Constants.AUTH_METHOD_EMAIL);
+                        loginService.putExtra(Constants.PHOTO_URL, "");
+                        startService(loginService);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
                     registrationComplete(user);
                 }
 
@@ -192,6 +215,7 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
     }
 
     private void registrationComplete(SyncUser user) {
+        SettingsHelper.getHelper(this).setRegisteredUser(true);
         UserManager.setActiveUser(user);
         Intent intent = new Intent(this, SignInActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

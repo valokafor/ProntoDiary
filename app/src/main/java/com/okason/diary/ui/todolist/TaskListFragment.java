@@ -1,6 +1,7 @@
 package com.okason.diary.ui.todolist;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,8 +16,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.models.Task;
+import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.SignInActivity;
+import com.okason.diary.utils.SettingsHelper;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -67,22 +72,26 @@ public class TaskListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mListAdapter = null;
-        try {
-            mRealm = Realm.getDefaultInstance();
-            mTasks = mRealm.where(Task.class).findAll();
-            mTasks.addChangeListener(new RealmChangeListener<RealmResults<Task>>() {
-                @Override
-                public void onChange(RealmResults<Task> tasks) {
-                    showTodoLists(tasks);
-                }
-            });
-            showTodoLists(mTasks);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+            mListAdapter = null;
+            try {
+                mRealm = Realm.getDefaultInstance();
+                mTasks = mRealm.where(Task.class).findAll();
+                mTasks.addChangeListener(new RealmChangeListener<RealmResults<Task>>() {
+                    @Override
+                    public void onChange(RealmResults<Task> tasks) {
+                        showTodoLists(tasks);
+                    }
+                });
+                showTodoLists(mTasks);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            showEmptyText(true);
         }
 
-       // addSampleTodoList();
+        // addSampleTodoList();
 
     }
 
@@ -116,7 +125,19 @@ public class TaskListFragment extends Fragment {
         int id = item.getItemId();
         switch (id){
             case R.id.action_add:
-                showAddNewTaskFragment("");
+                if (getActivity() != null) {
+                    if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+                        showAddNewTaskFragment("");
+                    } else {
+                        boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
+                        if (registeredUser){
+                            startActivity(new Intent(getActivity(), SignInActivity.class));
+                        }else {
+                            startActivity(new Intent(getActivity(), RegisterActivity.class));
+                        }
+
+                    }
+                }
                 break;
 
         }

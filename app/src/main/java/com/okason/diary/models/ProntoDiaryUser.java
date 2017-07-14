@@ -16,6 +16,7 @@ public class ProntoDiaryUser {
     private String upgradeMethod;
     private String realmPassword;
     private String loginProvider;
+    private String photoUrl;
 
 
     public String getDisplayName() {
@@ -104,5 +105,13 @@ public class ProntoDiaryUser {
 
     public void setRealmPassword(String realmPassword) {
         this.realmPassword = realmPassword;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 }

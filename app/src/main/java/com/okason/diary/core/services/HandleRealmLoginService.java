@@ -17,6 +17,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.SettingsHelper;
 
 import io.realm.SyncUser;
 
@@ -33,6 +34,7 @@ public class HandleRealmLoginService extends IntentService {
     private String displayName;
     private String emailAddress;
     private String signInMethod;
+    private String photoUrl;
 
     private ProntoDiaryUser prontoDiaryUser;
 
@@ -52,6 +54,7 @@ public class HandleRealmLoginService extends IntentService {
             displayName = intent.getStringExtra(Constants.DISPLAY_NAME);
             emailAddress = intent.getStringExtra(Constants.EMAIL_ADDRESSS);
             signInMethod = intent.getStringExtra(Constants.SIGN_IN_METHOD);
+            photoUrl = intent.getStringExtra(Constants.PHOTO_URL);
 
             //If there is no email do not proceed
             if (TextUtils.isEmpty(emailAddress)) {
@@ -71,42 +74,51 @@ public class HandleRealmLoginService extends IntentService {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            registerOrUpdateUserInfo();
+                            mFirebaseUser = mFirebaseAuth.getCurrentUser();
+                            registerOrUpdateUserInfo(mFirebaseUser.getUid());
                         }
 
                     }
                 });
             } else {
-                registerOrUpdateUserInfo();
+                registerOrUpdateUserInfo("");
             }
         }
     }
 
-    private void registerOrUpdateUserInfo() {
-        mProntoDiaryUserRef.orderByChild("emailAddress").equalTo(emailAddress).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
-                    prontoDiaryUser = snapshot.getValue(ProntoDiaryUser.class);
+    private void registerOrUpdateUserInfo(final String uid) {
+        final String token = SettingsHelper.getHelper(getApplicationContext()).getMessagingToken();
+        if (!TextUtils.isEmpty(token)){
+            mProntoDiaryUserRef.orderByChild("fcmToken").equalTo(token).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
+                        prontoDiaryUser = snapshot.getValue(ProntoDiaryUser.class);
+                    }
+
+                    if (prontoDiaryUser == null) {
+                        //If user does not exist, create one
+                        prontoDiaryUser = new ProntoDiaryUser();
+                        prontoDiaryUser.setEmailAddress(emailAddress);
+                        prontoDiaryUser.setDisplayName(displayName);
+                        prontoDiaryUser.setLoginProvider(signInMethod);
+                        prontoDiaryUser.setFcmToken(token);
+                        prontoDiaryUser.setPhotoUrl(photoUrl);
+                        prontoDiaryUser.setFirebaseUid(uid);
+                        prontoDiaryUser.setId(mProntoDiaryUserRef.push().getKey());
+                        mProntoDiaryUserRef.child(prontoDiaryUser.getId()).setValue(prontoDiaryUser);
+                    }
                 }
 
-                if (prontoDiaryUser == null) {
-                    //If user does not exist, create one
-                    prontoDiaryUser = new ProntoDiaryUser();
-                    prontoDiaryUser.setEmailAddress(emailAddress);
-                    prontoDiaryUser.setDisplayName(displayName);
-                    prontoDiaryUser.setLoginProvider(signInMethod);
-                    prontoDiaryUser.setId(mProntoDiaryUserRef.push().getKey());
-                    mProntoDiaryUserRef.child(prontoDiaryUser.getId()).setValue(prontoDiaryUser);
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
                 }
-            }
+            });
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+        }
 
-            }
-        });
     }
 
 

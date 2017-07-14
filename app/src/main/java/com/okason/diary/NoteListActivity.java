@@ -20,6 +20,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -30,6 +32,8 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
@@ -43,6 +47,7 @@ import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.AccountFragment;
 import com.okason.diary.ui.todolist.TaskListFragment;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.SettingsHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -51,7 +56,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.realm.Realm;
 import io.realm.SyncUser;
 
 public class NoteListActivity extends AppCompatActivity {
@@ -148,32 +152,50 @@ public class NoteListActivity extends AppCompatActivity {
         finish();
     }
 
+//    private void checkLoginStatus() {
+//        //Check Firebase User status,
+//
+//        final SyncUser user = SyncUser.currentUser();
+//        if (user == null) {
+//            //Check to see if the user has registered before
+//            //if yes, check to see if the user is not logged in, show login
+//            boolean registeredUser = SettingsHelper.getHelper(mActivity).isRegisteredUser();
+//            if (!registeredUser){
+//                //Show Anonymous Login
+//                Realm.setDefaultConfiguration(UserManager.getLocalConfig());
+//               // realm = Realm.getDefaultInstance();
+//                loginLayout.setVisibility(View.VISIBLE);
+//                settingsLayout.setVisibility(View.GONE);
+//                updateUI(null);
+//            }else {
+//                //User has registered before, show login page
+//                startActivity(new Intent(this, SignInActivity.class));}
+//        }else {
+//            UserManager.setActiveUser(user);
+//            loginLayout.setVisibility(View.GONE);
+//            settingsLayout.setVisibility(View.VISIBLE);
+//            updateUI(user);
+//        }
+//    }
+
     private void checkLoginStatus() {
         //Check Firebase User status,
 
         final SyncUser user = SyncUser.currentUser();
         if (user == null) {
-            //Check to see if the user has registered before
-            //if yes, check to see if the user is not logged in, show login
-            preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            boolean unregisteredUser = preferences.getBoolean(Constants.UNREGISTERED_USER, true);
-            if (unregisteredUser){
-                //Show Anonymous Login
-                Realm.setDefaultConfiguration(UserManager.getLocalConfig());
-               // realm = Realm.getDefaultInstance();
-                loginLayout.setVisibility(View.VISIBLE);
-                settingsLayout.setVisibility(View.GONE);
-                updateUI(null);
-            }else {
-                //User has registered before, show login page
-                startActivity(new Intent(this, SignInActivity.class));}
+            loginLayout.setVisibility(View.VISIBLE);
+            settingsLayout.setVisibility(View.GONE);
+            ProntoDiaryApplication.setCloudSyncEnabled(false);
+            updateUI();
         }else {
             UserManager.setActiveUser(user);
             loginLayout.setVisibility(View.GONE);
             settingsLayout.setVisibility(View.VISIBLE);
-            updateUI(user);
+            ProntoDiaryApplication.setCloudSyncEnabled(true);
+            updateUI();
         }
     }
+
 
 
 
@@ -285,7 +307,13 @@ public class NoteListActivity extends AppCompatActivity {
         loginButton.setImageResource(R.drawable.ic_login_gray);
         loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
         loginTextView.setTypeface(loginTextView.getTypeface(), Typeface.BOLD);
-        startActivity(new Intent(mActivity, RegisterActivity.class));
+        boolean registeredUser = SettingsHelper.getHelper(mActivity).isRegisteredUser();
+        if (registeredUser){
+            startActivity(new Intent(mActivity, SignInActivity.class));
+        }else {
+            startActivity(new Intent(mActivity, RegisterActivity.class));
+        }
+
     }
 
     private void handleNoteButtonClicked() {
@@ -297,10 +325,7 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
 
-    private void updateUI(SyncUser user) {
-        if (user == null){
-            Realm.setDefaultConfiguration(UserManager.getLocalConfig());
-        }
+    private void updateUI() {
         addDefaultData();
         handleNoteButtonClicked();
 
@@ -437,7 +462,7 @@ public class NoteListActivity extends AppCompatActivity {
         int result = api.isGooglePlayServicesAvailable(this);
         if (result == 0) {
             // next step start service
-            checkLoginStatus();
+            setupMessagingService();
             return;
         }
 
@@ -472,6 +497,20 @@ public class NoteListActivity extends AppCompatActivity {
             startService(new Intent(this, AddSampleDataIntentService.class));
             editor.putBoolean(Constants.FIRST_RUN, false).commit();
         }
+
+    }
+
+
+    private void setupMessagingService() {
+        String token = SettingsHelper.getHelper(this).getMessagingToken();
+        if (TextUtils.isEmpty(token)) {
+            // need to retrieve a messaging token
+            Log.d(TAG, "No FCM token defined. Requesting new token.");
+            token = FirebaseInstanceId.getInstance().getToken();
+            SettingsHelper.getHelper(getApplicationContext()).setMessagingToken(token);
+        }
+
+        checkLoginStatus();
 
     }
 

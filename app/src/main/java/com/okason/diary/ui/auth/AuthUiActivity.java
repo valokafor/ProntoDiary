@@ -30,7 +30,6 @@ import com.google.android.gms.common.Scopes;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.core.services.CreateRealmDatabaseAccountService;
 import com.okason.diary.utils.Constants;
 
 import java.security.MessageDigest;
@@ -171,10 +170,8 @@ public class AuthUiActivity extends AppCompatActivity {
             //Update Shared Preference to mark user as registered
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             preferences.edit().putBoolean(Constants.UNREGISTERED_USER, false).commit();
-
-
             ProntoDiaryApplication.setCloudSyncEnabled(true);
-            startService(new Intent(mActivity, CreateRealmDatabaseAccountService.class));
+
             //Restart
             Intent restartIntent = new Intent(mActivity, NoteListActivity.class);
             restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

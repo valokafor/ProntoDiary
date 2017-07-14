@@ -24,7 +24,6 @@ import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 
 import io.realm.ObjectServerError;
-import io.realm.Realm;
 import io.realm.SyncCredentials;
 import io.realm.SyncUser;
 
@@ -119,6 +118,7 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
 
     private void loginComplete(SyncUser user) {
         UserManager.setActiveUser(user);
+        ProntoDiaryApplication.setCloudSyncEnabled(true);
 
         createInitialDataIfNeeded();
 
@@ -191,6 +191,7 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
     @Override
     public void onError(ObjectServerError error) {
         showProgress(false);
+        ProntoDiaryApplication.setCloudSyncEnabled(false);
         String errorMsg;
         switch (error.getErrorCode()) {
             case UNKNOWN_ACCOUNT:
@@ -206,7 +207,7 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
     }
 
     private static void createInitialDataIfNeeded() {
-        final Realm realm = Realm.getDefaultInstance();
+//        final Realm realm = Realm.getDefaultInstance();
         //noinspection TryFinallyCanBeTryWithResources
 
     }

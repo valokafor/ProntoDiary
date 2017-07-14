@@ -34,6 +34,28 @@
             android:paddingLeft="@dimen/signin_horizontal_margin"
             android:paddingRight="@dimen/signin_horizontal_margin">
 
+            <LinearLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/logo_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginBottom="@dimen/margin_padding_small">
+
+                <ImageView
+                    android:id="@+id/logo"
+                    style="@style/FirebaseUI.AuthMethodPicker.Logo"
+                    android:src="@mipmap/ic_launcher"
+                    android:contentDescription="@string/accessibility_logo" />
+
+                <TextView
+                    style="@style/FirebaseUI.AuthMethodPicker.Logo"
+                    android:layout_margin="@dimen/margin_padding_xtiny"
+                    android:text="@string/use_same_login_reminder"/>
+
+            </LinearLayout>
+
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -73,6 +95,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:backgroundTint="@color/primary"
+                android:textColor="@color/white"
                 android:text="@string/action_sign_in"
                 android:textStyle="bold"/>
 
@@ -89,7 +113,7 @@
                 android:paddingStart="12dp"
                 android:paddingRight="0dp"
                 android:paddingEnd="0dp"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:drawablePadding="40dp"/>
 
             <com.google.android.gms.common.SignInButton
@@ -97,7 +121,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:buttonSize="wide"/>
 
         </LinearLayout>

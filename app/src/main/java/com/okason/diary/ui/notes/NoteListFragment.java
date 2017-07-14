@@ -30,14 +30,18 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.attachment.GalleryActivity;
+import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.SettingsHelper;
 
 import java.io.IOException;
 import java.util.List;
@@ -143,19 +147,24 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     public void onResume() {
         super.onResume();
         mListAdapter = null;
-        try {
 
-            mRealm = Realm.getDefaultInstance();
-            mNotes = mRealm.where(Note.class).findAll();
-            mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
-                @Override
-                public void onChange(RealmResults<Note> notes) {
-                    showNotes(mNotes);
-                }
-            });
-            showNotes(mNotes);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+            try {
+
+                mRealm = Realm.getDefaultInstance();
+                mNotes = mRealm.where(Note.class).findAll();
+                mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
+                    @Override
+                    public void onChange(RealmResults<Note> notes) {
+                        showNotes(mNotes);
+                    }
+                });
+                showNotes(mNotes);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            showEmptyText(true);
         }
     }
 
@@ -201,7 +210,17 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         switch (id){
             case R.id.action_add:
                 if (getActivity() != null) {
-                    startActivity(new Intent(getActivity(), AddNoteActivity.class));
+                    if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+                        startActivity(new Intent(getActivity(), AddNoteActivity.class));
+                    } else {
+                        boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
+                        if (registeredUser){
+                            startActivity(new Intent(getActivity(), SignInActivity.class));
+                        }else {
+                            startActivity(new Intent(getActivity(), RegisterActivity.class));
+                        }
+
+                    }
                 }
                 break;
 

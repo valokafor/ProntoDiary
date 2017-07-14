@@ -315,6 +315,8 @@
     <string name="reminder_label_week_days">Week Days</string>
     <string name="action_register_short">Register</string>
     <string name="activity_sign_in_label">Sign In</string>
+    <string name="please_attention">Attention</string>
+    <string name="use_same_login_reminder">Use the same login method that you used to register so you can access your data!</string>
 
 
 </resources>

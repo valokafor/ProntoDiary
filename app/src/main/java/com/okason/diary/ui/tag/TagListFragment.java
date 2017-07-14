@@ -2,6 +2,7 @@ package com.okason.diary.ui.tag;
 
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -17,10 +18,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.data.TagRealmRepository;
 import com.okason.diary.models.Tag;
+import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.SignInActivity;
+import com.okason.diary.utils.SettingsHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -88,19 +93,23 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     @Override
     public void onResume() {
         super.onResume();
-        mAdapter = null;
-        try {
-            mRealm = Realm.getDefaultInstance();
-            mTags = mRealm.where(Tag.class).findAll();
-            mTags.addChangeListener(new RealmChangeListener<RealmResults<Tag>>() {
-                @Override
-                public void onChange(RealmResults<Tag> tags) {
-                    showTags(tags);
-                }
-            });
-            showTags(mTags);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+            mAdapter = null;
+            try {
+                mRealm = Realm.getDefaultInstance();
+                mTags = mRealm.where(Tag.class).findAll();
+                mTags.addChangeListener(new RealmChangeListener<RealmResults<Tag>>() {
+                    @Override
+                    public void onChange(RealmResults<Tag> tags) {
+                        showTags(tags);
+                    }
+                });
+                showTags(mTags);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            showEmptyText();
         }
 
     }
@@ -138,7 +147,19 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         int id = item.getItemId();
         switch (id){
             case R.id.action_add:
-                showAddNewTagDialog();
+                if (getActivity() != null) {
+                    if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+                        showAddNewTagDialog();
+                    } else {
+                        boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
+                        if (registeredUser){
+                            startActivity(new Intent(getActivity(), SignInActivity.class));
+                        }else {
+                            startActivity(new Intent(getActivity(), RegisterActivity.class));
+                        }
+
+                    }
+                }
                 break;
 
         }
