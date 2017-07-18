@@ -1,5 +1,7 @@
 package com.okason.diary.data;
 
+import android.text.TextUtils;
+
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
@@ -35,7 +37,28 @@ public class TaskRealmRepository implements TaskContract.Repository {
     }
 
     @Override
-    public Task createNewTask(int priority, String taskName, long dueDateAndTime,  String repeat, String folderId) {
+    public SubTask createNewSubTask(String subTaskName, String parentTaskId) {
+        SubTask subTask = null;
+        try(Realm realm = Realm.getDefaultInstance()){
+            Task parentTask = realm.where(Task.class).equalTo("id", parentTaskId).findFirst();
+            if (parentTask != null){
+                realm.beginTransaction();
+                String taskId = UUID.randomUUID().toString();
+                subTask = realm.createObject(SubTask.class, taskId);
+                subTask.setDateCreated(System.currentTimeMillis());
+                subTask.setDateModified(System.currentTimeMillis());
+                subTask.setTitle(subTaskName);
+                subTask.setTask(parentTask);
+                parentTask.getSubTask().add(subTask);
+                realm.commitTransaction();
+                subTask = realm.copyFromRealm(subTask);
+            }
+        }
+        return subTask;
+    }
+
+    @Override
+    public Task createNewTask(int priority, String taskName, long dueDateAndTime,  String repeat, long repeatEndDate, String folderId) {
         Task task = createNewTask(taskName);
         Task updatedTask;
         try(Realm realm = Realm.getDefaultInstance()) {
@@ -44,7 +67,9 @@ public class TaskRealmRepository implements TaskContract.Repository {
             updatedTask.setDateModified(System.currentTimeMillis());
             updatedTask.setPriority(priority);
             updatedTask.setDueDateAndTime(dueDateAndTime);
-            updatedTask.setRecurrenceRule(repeat);
+            updatedTask.setRepeatEndDate(repeatEndDate);
+            updatedTask.setRepeatFrequency(repeat);
+            updatedTask.setRemind(TextUtils.isEmpty(repeat));
 
             Folder selectedFolder = realm.where(Folder.class).equalTo("id", folderId).findFirst();
             if (selectedFolder != null){

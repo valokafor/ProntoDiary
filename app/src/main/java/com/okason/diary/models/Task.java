@@ -21,10 +21,10 @@ public class Task extends RealmObject {
 
 
     private long dueDateAndTime;
-    private long reminderEndTime;
+    private long repeatEndDate;
     private boolean remind;
     private boolean reminderFired;
-    private String recurrenceRule;
+    private String repeatFrequency;
     private Double latitude;
     private Double longitude;
 
@@ -106,12 +106,12 @@ public class Task extends RealmObject {
         this.dueDateAndTime = dueDateAndTime;
     }
 
-    public long getReminderEndTime() {
-        return reminderEndTime;
+    public long getRepeatEndDate() {
+        return repeatEndDate;
     }
 
-    public void setReminderEndTime(long reminderEndTime) {
-        this.reminderEndTime = reminderEndTime;
+    public void setRepeatEndDate(long repeatEndDate) {
+        this.repeatEndDate = repeatEndDate;
     }
 
     public boolean isReminderFired() {
@@ -130,12 +130,12 @@ public class Task extends RealmObject {
         this.remind = remind;
     }
 
-    public String getRecurrenceRule() {
-        return recurrenceRule;
+    public String getRepeatFrequency() {
+        return repeatFrequency;
     }
 
-    public void setRecurrenceRule(String recurrenceRule) {
-        this.recurrenceRule = recurrenceRule;
+    public void setRepeatFrequency(String repeatFrequency) {
+        this.repeatFrequency = repeatFrequency;
     }
 
     public Double getLatitude() {

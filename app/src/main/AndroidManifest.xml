@@ -45,9 +45,7 @@
         <service
             android:name=".core.services.AddSampleDataIntentService"
             android:exported="false"/>
-        <service
-            android:name=".core.services.MergeAnonymousDataIntentService"
-            android:exported="false"/>
+
         <service
             android:name=".core.services.AttachmentUploadService"
             android:exported="false"/>
@@ -105,23 +103,18 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".core.services.DeleteCategoryIntentService"
-            android:exported="false">
-        </service>
+
         <service
             android:name=".core.services.HandleRealmLoginService"
             android:exported="false">
         </service>
-        <service
-            android:name=".core.services.CreateRealmDatabaseAccountService"
-            android:exported="false">
-        </service>
+
 
         <activity
             android:name=".ui.settings.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".NoteListActivity">
+            android:parentActivityName=".NoteListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.okason.diary.NoteListActivity"/>

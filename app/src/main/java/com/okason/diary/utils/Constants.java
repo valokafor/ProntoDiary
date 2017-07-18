@@ -51,9 +51,9 @@ public class Constants {
     public static final String SORT_PREFERENCE = "sort_PREFERENCE";
 
     public static final int PRIORITY_NEGATIVE = -1;
-    public static final int PRIORITY_LOW = 0;
-    public static final int PRIORITY_MEDIUM = 1;
-    public static final int PRIORITY_HIGH = 2;
+    public static final int PRIORITY_LOW = 1;
+    public static final int PRIORITY_MEDIUM = 2;
+    public static final int PRIORITY_HIGH = 3;
     public static final int PRIORITY_TOP = 3;
 
     public final static int NOTES = 1;

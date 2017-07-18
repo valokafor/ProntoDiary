@@ -276,6 +276,20 @@
         <item>3</item>
     </string-array>
 
+
+    <string-array name="sortOptionsEntries">
+        <item>Title</item>
+        <item>Date Added</item>
+        <item>Date Modified</item>
+    </string-array>
+
+    <string-array name="sortOptionsValues">
+        <item>@string/label_title</item>
+        <item>@string/label_date_created</item>
+        <item>@string/label_date_modified</item>
+    </string-array>
+
+
     <string-array name="multi_select_list_preference_default_value"/>
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
@@ -317,6 +331,13 @@
     <string name="activity_sign_in_label">Sign In</string>
     <string name="please_attention">Attention</string>
     <string name="use_same_login_reminder">Use the same login method that you used to register so you can access your data!</string>
+    <string name="label_repeat_end_date">Repeats Until </string>
+    <string name="select_reminder_end_date">Select repeat end date</string>
+    <string name="label_date_created">Date Created</string>
+    <string name="label_date_modified">Date Modified</string>
+    <string name="reminder">Reminder</string>
+    <string name="no_sub_task_found">No Sub Task found for this task, use the + button to start</string>
+    <string name="title_edit_task">Edit Task</string>
 
 
 </resources>

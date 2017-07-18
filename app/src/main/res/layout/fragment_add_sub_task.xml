@@ -1,0 +1,176 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/root_layout"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:animateLayoutChanges="true"
+              android:focusableInTouchMode="true"
+              android:orientation="vertical"
+              android:padding="@dimen/margin_padding_tiny"
+              tools:context="com.okason.diary.ui.todolist.AddSubTaskFragment">
+
+
+    <LinearLayout
+        android:id="@+id/add_task_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal">
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/edit_text_add_sub_task"
+                style="@style/Widget.AppCompat.EditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/add_task_hint"
+                android:inputType="textCapSentences"/>
+
+        </android.support.design.widget.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/button_add_task"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:background="@color/primary"
+            android:padding="@dimen/margin_padding_small"
+            android:src="@drawable/ic_action_add"/>
+    </LinearLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/toplayout_note"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_weight="1"
+        android:paddingTop="@dimen/margin_padding_tiny">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/sub_task_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:descendantFocusability="beforeDescendants"
+            android:paddingBottom="@dimen/margin_padding_small"
+            android:paddingLeft="@dimen/margin_padding_small"
+            android:paddingRight="@dimen/margin_padding_small"
+            android:paddingTop="@dimen/margin_padding_small"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/empty_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fontFamily="sans-serif-condensed"
+            android:gravity="center"
+            android:padding="@dimen/margin_padding_normal"
+            android:text="@string/no_sub_task_found"
+            android:textColor="@color/primary_dark"
+            android:textSize="@dimen/text_size_header"
+            android:textStyle="italic"
+            android:visibility="visible"/>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/task_details_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <LinearLayout
+            android:id="@+id/detail_timestamps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/text_view_task_detail_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:freezesText="true"
+                android:layout_weight="1"
+                android:gravity="start|center_vertical"
+                android:padding="0dp"
+                android:text="Task Detail"
+                android:textAllCaps="true"/>
+
+            <TextView
+                android:id="@+id/text_view_edit_task_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:freezesText="true"
+                android:gravity="end|center_vertical"
+                android:padding="0dp"
+                android:text="Edit Task"
+                android:layout_weight="1"
+                android:textAllCaps="true"
+                android:clickable="true"
+                android:textColor="@color/primary"/>
+
+        </LinearLayout>
+
+        <View
+            style="@style/HorizontalDivider"/>
+        <TextView
+            android:id="@+id/text_view_due_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/margin_padding_tiny"
+            android:drawableLeft="@drawable/ic_calendar_gray"
+            android:drawablePadding="@dimen/activity_horizontal_margin"
+            android:textColor="@color/secondary_text"
+            android:text="June 15, 2017 @ 10.30am"
+            android:layout_marginBottom="@dimen/margin_padding_small"
+            android:background="@android:color/transparent"
+            android:textSize="@dimen/text_size_xnormal" />
+
+        <TextView
+            android:id="@+id/text_view_repeat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/margin_padding_tiny"
+            android:drawableLeft="@drawable/ic_repeat"
+            android:drawablePadding="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/margin_padding_small"
+            android:textColor="@color/secondary_text"
+            android:text="Repeats every Week until June 5, 2018"
+            android:textSize="@dimen/text_size_xnormal" />
+
+        <TextView
+            android:id="@+id/text_view_priority"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/margin_padding_tiny"
+            android:drawableLeft="@drawable/ic_numbered_information"
+            android:drawablePadding="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/margin_padding_small"
+            android:textColor="@color/secondary_text"
+            android:text="Urgent "
+            android:textSize="@dimen/text_size_xnormal" />
+
+        <TextView
+            android:id="@+id/text_view_folder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/margin_padding_tiny"
+            android:drawableLeft="@drawable/ic_folder_gray"
+            android:drawablePadding="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/margin_padding_small"
+            android:textColor="@color/secondary_text"
+            android:text="General"
+            android:textSize="@dimen/text_size_xnormal" />
+
+
+
+    </LinearLayout>
+
+
+</LinearLayout>

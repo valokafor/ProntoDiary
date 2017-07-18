@@ -84,7 +84,18 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         addTagbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showAddNewTagDialog();
+                if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+                    showAddNewTagDialog();
+                } else {
+                    boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
+                    if (registeredUser){
+                        startActivity(new Intent(getActivity(), SignInActivity.class));
+                    }else {
+                        startActivity(new Intent(getActivity(), RegisterActivity.class));
+                    }
+
+                }
+
             }
         });
         return mRootView;

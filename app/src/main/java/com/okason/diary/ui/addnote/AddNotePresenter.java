@@ -30,6 +30,7 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     private String title;
     private String content;
+    private String folderId = "";
 
 
     private boolean isDualScreen = false;
@@ -66,12 +67,15 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
 
     @Override
-    public void onFolderChange(String folderId) {
-        if (mCurrentNote == null){
-            mCurrentNote = mRepository.createNewNote();
+    public void onFolderChange(String selectedFolderId) {
+        //Folder changed for existing Note
+        if (mCurrentNote != null){
+            mRepository.setFolder(folderId, mCurrentNote.getId());
+        } else {
+            //Folder changed for new Note
+            this.folderId = selectedFolderId;
         }
-        mRepository.setFolder(folderId, mCurrentNote.getId());
-        dataChanged = true;
+
 
     }
 
@@ -190,6 +194,9 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
             mRepository.updatedNoteContent(mCurrentNote.getId(), content);
             mRepository.updatedNoteTitle(mCurrentNote.getId(), title);
+            if (!TextUtils.isEmpty(folderId)){
+                mRepository.setFolder(folderId, mCurrentNote.getId());
+            }
 
         }
 

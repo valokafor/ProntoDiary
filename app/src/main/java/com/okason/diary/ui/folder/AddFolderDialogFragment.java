@@ -54,7 +54,7 @@ public class AddFolderDialogFragment extends DialogFragment {
     }
 
     /**
-     * The method gets the Folder that was passed in, in the form of serialized String
+     * The method gets the Folder that was passed in
      */
     public void getCurrentFolder(){
         if (getArguments() != null && getArguments().containsKey(Constants.FOLDER_ID)){
@@ -158,10 +158,12 @@ public class AddFolderDialogFragment extends DialogFragment {
 
     private void saveFolder() {
         final String categoryName = mFolderEditText.getText().toString().trim();
-        if (mFolder == null){
-            mFolder = new FolderRealmRepository().createNewFolder();
+        if (!TextUtils.isEmpty(categoryName)) {
+            if (mFolder == null){
+                mFolder = new FolderRealmRepository().createNewFolder();
+            }
+            new FolderRealmRepository().updatedFolderTitle(mFolder.getId(), categoryName);
         }
-        new FolderRealmRepository().updatedFolderTitle(mFolder.getId(), categoryName);
 
     }
 

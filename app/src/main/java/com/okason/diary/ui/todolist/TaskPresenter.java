@@ -1,40 +1,47 @@
 package com.okason.diary.ui.todolist;
 
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
+import android.util.Log;
+
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.Folder;
-import com.okason.diary.models.Note;
+import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
 
 import org.greenrobot.eventbus.EventBus;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  * Created by valokafor on 6/27/17.
  */
 
 public class TaskPresenter implements TaskContract.Actions {
-    private final TaskContract.View mView;
-    private TaskContract.Repository mRepository;
+    private TaskContract.View mView;
+    private TaskContract.Repository repository;
     private Folder selectedFolder;
     private Task currentTask;
 
-    public TaskPresenter(TaskContract.View view) {
+    public TaskPresenter(@Nullable TaskContract.View view) {
         mView = view;
-        mRepository = new TaskRealmRepository();
+        repository = new TaskRealmRepository();
     }
 
 
     @Override
     public void addSubTaskTask(String taskName) {
+        if (currentTask != null){
+           SubTask savedSubTask = repository.createNewSubTask(taskName, currentTask.getId());
+            Log.d("Task Name", savedSubTask.getTitle());
+        }
 
     }
 
-    @Override
-    public void onAddTaskButtonClick() {
-
-    }
 
     @Override
     public void onShowTaskDetail(Task task) {
@@ -87,8 +94,15 @@ public class TaskPresenter implements TaskContract.Actions {
     }
 
     @Override
-    public Note getCurrentTask() {
-        return null;
+    public void setCurrentTaskId(String taskId) {
+        if (!TextUtils.isEmpty(taskId)){
+            currentTask = repository.getTaskById(taskId);
+        }
+    }
+
+    @Override
+    public Task getCurrentTask() {
+        return currentTask;
     }
 
     @Override
@@ -97,11 +111,22 @@ public class TaskPresenter implements TaskContract.Actions {
     }
 
     @Override
-    public void onSaveAndExit(int priority, String taskName, long dueDate, String repeat, String folderId, boolean addDSubTasks) {
-        Task savedTask = mRepository.createNewTask(priority, taskName, dueDate, repeat, folderId);
+    public void onSaveAndExit(int priority, String taskName, long dueDate, String repeat, long repeadEndDate, String folderId, boolean shouldAddSubTask) {
+        Task savedTask = repository.createNewTask(priority, taskName, dueDate, repeat, repeadEndDate, folderId);
 
-        if (addDSubTasks){
+        Calendar dueTime = new GregorianCalendar();
+        dueTime.setTimeInMillis(savedTask.getDueDateAndTime());
+        if (dueTime.after(Calendar.getInstance())){
+            //Due Date is in the future, so schedule the first reminder
+
+        }
+
+
+
+        if (shouldAddSubTask){
             //Go To Add Subtask
+            AddSubTaskFragment fragment = AddSubTaskFragment.newInstance(savedTask.getId());
+            EventBus.getDefault().post(new DisplayFragmentEvent(fragment, savedTask.getTitle()));
         }else {
             //Go to Task List
             EventBus.getDefault().post(new DisplayFragmentEvent(new TaskListFragment(),

@@ -198,11 +198,31 @@
             android:orientation="vertical"
             android:padding="@dimen/activity_horizontal_margin">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/label_repeat"/>
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="start|center_vertical"
+                    android:text="@string/label_repeat"/>
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:srcCompat="@drawable/ic_angle_arrow_pointing_to_right_green"
+                    android:scaleType="fitEnd"
+                    android:layout_gravity="end|center_vertical"
+                    android:background="@null"
+                    android:layout_marginRight="@dimen/margin_padding_xtiny" />
+
+
+            </LinearLayout>
+
 
             <HorizontalScrollView
                 android:layout_width="wrap_content"
@@ -253,12 +273,6 @@
                             android:backgroundTint="@color/white"
                             android:text="@string/reminder_label_week_days"/>
 
-                    </TableRow>
-
-                    <TableRow
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
                         <Button
                             android:id="@+id/button_reminder_weekly"
                             style="@style/Widget.AppCompat.Button.Colored"
@@ -296,12 +310,57 @@
                             android:layout_margin="@dimen/activity_horizontal_margin"
                             android:background="@null"
                             android:scaleType="fitCenter"
+                            android:visibility="gone"
                             app:srcCompat="@drawable/ic_add_circle_green"/>
+
 
 
                     </TableRow>
                 </TableLayout>
             </HorizontalScrollView>
+        </LinearLayout>
+
+        <View
+            style="@style/HorizontalDivider"/>
+
+        <LinearLayout
+            android:id="@+id/linear_layout_reminder_end_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_repeat_end_date"
+                android:textColor="@color/secondary_text"/>
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:paddingBottom="@dimen/margin_padding_tiny"
+                android:paddingLeft="@dimen/margin_padding_tiny"
+                android:paddingTop="@dimen/margin_padding_tiny">
+
+                <EditText
+                    android:id="@+id/edit_text_repeat_end_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/margin_padding_tiny"
+                    android:background="@android:color/transparent"
+                    android:clickable="true"
+                    android:drawableLeft="@drawable/ic_calendar_icon"
+                    android:drawablePadding="@dimen/margin_padding_xtiny"
+                    android:focusable="false"
+                    android:hint="@string/select_reminder_end_date"
+                    android:textSize="@dimen/text_size_xnormal" />
+            </RelativeLayout>
+
+
+
         </LinearLayout>
 
 
@@ -320,27 +379,18 @@
                 android:text="@string/label_folder"
                 android:textColor="@color/secondary_text"/>
 
-            <RelativeLayout
-                android:id="@+id/toplayout1"
-                android:layout_width="fill_parent"
+            <EditText
+                android:id="@+id/edit_text_category"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:paddingBottom="@dimen/margin_padding_tiny"
-                android:paddingLeft="@dimen/margin_padding_tiny"
-                android:paddingTop="@dimen/margin_padding_tiny">
-
-                <EditText
-                    android:id="@+id/edit_text_category"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/margin_padding_tiny"
-                    android:background="@android:color/transparent"
-                    android:clickable="true"
-                    android:drawableLeft="@drawable/ic_folder_green"
-                    android:focusable="false"
-                    android:hint="@string/select_folder"
-                    android:textSize="@dimen/text_size_xnormal" />
-            </RelativeLayout>
+                android:layout_marginLeft="@dimen/margin_padding_tiny"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:drawableLeft="@drawable/ic_folder_green"
+                android:drawablePadding="@dimen/margin_padding_xtiny"
+                android:focusable="false"
+                android:hint="@string/select_folder"
+                android:textSize="@dimen/text_size_xnormal" />
 
 
 
@@ -370,11 +420,14 @@
                     app:srcCompat="@drawable/ic_task_list_dark_green"/>
 
                 <TextView
+                    android:id="@+id/text_view_add_sub_tasks"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_add_sub_task"
                     android:layout_marginLeft="@dimen/margin_padding_tiny"
                     android:layout_gravity="center_vertical"
+                    android:clickable="true"
+                    android:textStyle="bold"
                     android:textColor="@color/primary"/>
 
 

@@ -81,9 +81,9 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
             stringBuilder.append(completedTasks);
             stringBuilder.append(" ");
             stringBuilder.append(ProntoDiaryApplication.getAppContext().getString(R.string.label_done));
-            stringBuilder.append(",");
+            stringBuilder.append(", ");
             stringBuilder.append(pendingTasks);
-            stringBuilder.append(ProntoDiaryApplication.getAppContext().getString(R.string.label_pending));
+            stringBuilder.append(" " + ProntoDiaryApplication.getAppContext().getString(R.string.label_pending));
             stringBuilder.append(")");
 
         }

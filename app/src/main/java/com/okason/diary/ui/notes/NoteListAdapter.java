@@ -153,6 +153,11 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         notifyDataSetChanged();
     }
 
+    public void addNote(Note note){
+        mNotes.add(note);
+        notifyItemInserted(mNotes.size() - 1);
+    }
+
     private void setList(List<Note> notes) {
         mNotes = notes;
     }

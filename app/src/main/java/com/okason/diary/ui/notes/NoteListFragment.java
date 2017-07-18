@@ -44,6 +44,7 @@ import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -234,8 +235,23 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     public void showNotes(List<Note> notes) {
         if (notes != null && notes.size() > 0){
             showEmptyText(false);
-            mListAdapter = new NoteListAdapter(notes, getContext());
+
+
+            mListAdapter = new NoteListAdapter(new ArrayList<Note>(), getContext());
             mRecyclerView.setAdapter(mListAdapter);
+
+            //Delete any blank Note
+            for (Note note: notes){
+                if (!TextUtils.isEmpty(note.getTitle()) && !TextUtils.isEmpty(note.getContent())){
+                    mListAdapter.addNote(note);
+                } else {
+                    try {
+                        new NoteRealmRepository().deleteNote(note.getId());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
             mListAdapter.setNoteItemListener(new NoteItemListener() {
                 @Override
