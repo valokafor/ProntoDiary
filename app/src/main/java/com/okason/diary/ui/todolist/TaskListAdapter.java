@@ -1,8 +1,10 @@
 package com.okason.diary.ui.todolist;
 
 import android.content.Context;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -28,12 +30,14 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
     private final List<Task> mTasks;
     private final Context mContext;
-    private TaskItemListener mTaskItemListener;
+    private final TaskItemListener taskItemListener;
 
-    public TaskListAdapter(List<Task> todoLists, Context context) {
+    public TaskListAdapter(List<Task> todoLists, Context context, TaskItemListener taskItemListener) {
         mTasks = todoLists;
         mContext = context;
+        this.taskItemListener = taskItemListener;
     }
+
 
 
     @Override
@@ -45,7 +49,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         final Task task = mTasks.get(position);
 
         String title = task.getTitle();
@@ -92,6 +96,35 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.taskCountTextView.setText(statusText);
         String time = DateHelper.getTimeShort(mContext, task.getDueDateAndTime());
         holder.dueTimeTextView.setText(time);
+
+        holder.showMore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PopupMenu popupMenu = new PopupMenu(mContext, holder.showMore);
+                popupMenu.inflate(R.menu.menu_task_options);
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()){
+                            case R.id.action_edit:
+                                //Edit the Task
+                                taskItemListener.onEditTaskButtonClicked(task);
+                                break;
+                            case R.id.action_delete:
+                                //Prompt for delete
+                                taskItemListener.onDeleteTaskButtonClicked(task);
+                                break;
+                            case R.id.action_add_sub_task:
+                                //Go to add Sub Task
+                                taskItemListener.onAddSubTasksButtonClicked(task);
+                                break;
+                        }
+                        return false;
+                    }
+                });
+                popupMenu.show();
+            }
+        });
 
 
 

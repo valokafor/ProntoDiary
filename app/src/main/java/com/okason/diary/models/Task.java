@@ -1,5 +1,7 @@
 package com.okason.diary.models;
 
+import com.okason.diary.utils.reminder.Reminder;
+
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
@@ -130,12 +132,12 @@ public class Task extends RealmObject {
         this.remind = remind;
     }
 
-    public String getRepeatFrequency() {
-        return repeatFrequency;
+    public Reminder getRepeatFrequency() {
+        return Reminder.valueOf(repeatFrequency);
     }
 
-    public void setRepeatFrequency(String repeatFrequency) {
-        this.repeatFrequency = repeatFrequency;
+    public void setRepeatFrequency(Reminder val) {
+        this.repeatFrequency = val.toString();
     }
 
     public Double getLatitude() {

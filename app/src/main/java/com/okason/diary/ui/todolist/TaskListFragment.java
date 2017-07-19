@@ -1,8 +1,10 @@
 package com.okason.diary.ui.todolist;
 
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,13 +19,13 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.core.events.DisplayFragmentEvent;
+import com.okason.diary.core.listeners.TaskItemListener;
+import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.Task;
 import com.okason.diary.ui.auth.RegisterActivity;
 import com.okason.diary.ui.auth.SignInActivity;
+import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
-
-import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,7 +36,7 @@ import io.realm.RealmResults;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class TaskListFragment extends Fragment {
+public class TaskListFragment extends Fragment implements TaskItemListener, TaskContract.View{
 
     private Realm mRealm;
     private RealmResults<Task> mTasks;
@@ -127,7 +129,7 @@ public class TaskListFragment extends Fragment {
             case R.id.action_add:
                 if (getActivity() != null) {
                     if (ProntoDiaryApplication.isCloudSyncEnabled()) {
-                        showAddNewTaskFragment("");
+                        startActivity(new Intent(getActivity(), AddTaskActivity.class));
                     } else {
                         boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
                         if (registeredUser){
@@ -144,17 +146,15 @@ public class TaskListFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    private void showAddNewTaskFragment(String taskId) {
-        AddTaskFragment fragment = AddTaskFragment.newInstance(taskId);
-        EventBus.getDefault().post(new DisplayFragmentEvent(fragment, getString(R.string.title_add_new_task)));
-    }
+
+    
 
 
     private void showTodoLists(RealmResults<Task> tasks) {
 
         if (tasks != null && tasks.size() > 0){
             showEmptyText(false);
-            mListAdapter = new TaskListAdapter(tasks, getActivity());
+            mListAdapter = new TaskListAdapter(tasks, getActivity(), this);
             mRecyclerView.setAdapter(mListAdapter);
         }else {
             showEmptyText(true);
@@ -179,4 +179,88 @@ public class TaskListFragment extends Fragment {
     }
 
 
+    @Override
+    public void onEditTaskButtonClicked(Task clickedTask) {
+        Intent editTaskIntent = new Intent(getActivity(), AddTaskActivity.class);
+        editTaskIntent.putExtra(Constants.TASK_ID, clickedTask.getId());
+        startActivity(editTaskIntent);
+    }
+
+    @Override
+    public void onDeleteTaskButtonClicked(Task clickedTask) {
+        boolean shouldPromptForDelete = PreferenceManager
+                .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
+        if (shouldPromptForDelete) {
+            promptForDelete(clickedTask);
+        } else {
+            new TaskRealmRepository().deleteTask(clickedTask.getId());
+        }
+
+    }
+
+    @Override
+    public void onAddSubTasksButtonClicked(Task clickedTask) {
+        Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
+        addSubTaskIntent.putExtra(Constants.TASK_ID, clickedTask.getId());
+        startActivity(addSubTaskIntent);
+
+    }
+
+    @Override
+    public void onTaskChecked(Task selectedTag) {
+
+    }
+
+    @Override
+    public void onTaskUnChecked(Task unSelectedTag) {
+
+    }
+
+    private void promptForDelete(final Task clickedTask) {
+        String title = getString(R.string.are_you_sure);
+        String message =  getString(R.string.action_delete) + " " + clickedTask.getTitle();
+
+
+        android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        titleText.setText(title);
+        alertDialog.setCustomTitle(titleView);
+
+        alertDialog.setMessage(message);
+        alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                new TaskRealmRepository().deleteTask(clickedTask.getId());
+            }
+        });
+        alertDialog.setNegativeButton(R.string.label_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+
+    @Override
+    public void showTaskDetail(Task task) {
+
+    }
+
+    @Override
+    public void showEditTaskItem(Task todoList) {
+
+    }
+
+    @Override
+    public void showMessage(String message) {
+
+    }
+
+    @Override
+    public void goBackToParent() {
+        getActivity().onBackPressed();
+    }
 }

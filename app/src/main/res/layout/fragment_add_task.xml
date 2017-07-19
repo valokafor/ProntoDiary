@@ -25,7 +25,7 @@
                 android:text="@string/label_priority"/>
 
             <RadioGroup
-                android:id="@+id/radio_group_payment_type"
+                android:id="@+id/radio_group_priority"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -37,6 +37,7 @@
                     android:layout_height="wrap_content"
                     android:buttonTint="@color/primary"
                     android:text="@string/label_low_priotity"
+                    android:checked="true"
                     android:textAllCaps="true"/>
 
                 <RadioButton
@@ -44,7 +45,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:buttonTint="@color/primary"
-                    android:checked="true"
                     android:text="@string/label_medium_priority"
                     android:textAllCaps="true"/>
 

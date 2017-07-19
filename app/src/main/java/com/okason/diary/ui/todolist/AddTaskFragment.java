@@ -4,9 +4,11 @@ package com.okason.diary.ui.todolist;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
@@ -25,9 +27,12 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
@@ -40,6 +45,7 @@ import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
+import com.okason.diary.utils.reminder.Reminder;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -89,6 +95,17 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     LinearLayout reminderEndDateLayout;
 
     @BindView(R.id.edit_text_repeat_end_date) TextView repeadEndDateEditText;
+    @BindView(R.id.radio_group_priority)
+    RadioGroup priorityRadioGroup;
+
+    @BindView(R.id.button_low_priority)
+    RadioButton lowPriorityButton;
+
+    @BindView(R.id.button_medium_priority)
+    RadioButton mediumPriorityButton;
+
+    @BindView(R.id.button_high_priority)
+    RadioButton highPriorityButton;
 
 
 
@@ -101,7 +118,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     private RealmResults<Folder> mFolders;
     private Realm mRealm;
 
-    private String repeatFrequency;
+    private Reminder repeatFrequency;
     private int priority = Constants.PRIORITY_LOW;
     private Folder selectedFolder;
     private Calendar mReminderTime;
@@ -114,7 +131,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
 
     @BindView(R.id.edit_text_category)
-    EditText mCategory;
+    EditText mFolder;
 
     @BindView(R.id.edit_text_task_name) EditText taskNameEditText;
 
@@ -160,11 +177,41 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_add_task, container, false);
         ButterKnife.bind(this, mRootView);
-        oneTimeEventButton.performClick();
         presenter = new TaskPresenter(this);
+        String taskId = getPassedInTaskId();
+        if (!TextUtils.isEmpty(taskId)) {
+            presenter.setCurrentTaskId(taskId);
+        } else {
+            //Set Defaults
+            oneTimeEventButton.performClick();
+
+            //Show Today date on Task Due Date
+            mReminderTime = Calendar.getInstance();
+            mReminderTime.setTimeInMillis(System.currentTimeMillis());
+            String formattedDueDate = TimeUtils.getReadableDateWithoutTime(mReminderTime.getTimeInMillis());
+            dateTextView.setText(formattedDueDate);
+
+            String formattedDueTime = DateHelper.getTimeShort(getActivity(), mReminderTime.getTimeInMillis());
+            timeTextView.setText(formattedDueTime);
 
 
-
+        }
+        priorityRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
+                switch (checkedId){
+                    case R.id.button_low_priority:
+                        priority = Constants.PRIORITY_LOW;
+                        break;
+                    case R.id.button_medium_priority:
+                        priority = Constants.PRIORITY_MEDIUM;
+                        break;
+                    case R.id.button_high_priority:
+                        priority = Constants.PRIORITY_HIGH;
+                        break;
+                }
+            }
+        });
         return mRootView;
     }
 
@@ -182,12 +229,19 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     }
 
     @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
         if (!mRealm.isClosed()) {
             mRealm.close();
         }
+
 
     }
 
@@ -214,8 +268,8 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
             return;
         }
 
-        if (TextUtils.isEmpty(repeatFrequency)){
-            repeatFrequency = Constants.REMINDER_NO_REMINDER;
+        if (repeatFrequency == null){
+            repeatFrequency = Reminder.NO;
         }
 
         if (selectedFolder == null){
@@ -249,7 +303,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
         if (selectedFolder != null){
             String folderName = selectedFolder.getFolderName();
-            mCategory.setText(folderName);
+            mFolder.setText(folderName);
         }
 
     }
@@ -313,7 +367,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     @OnClick(R.id.button_one_time_event)
     public void onClickOneTimeEventButton(View view){
         resetReminderButtons();
-        repeatFrequency = Constants.REMINDER_NO_REMINDER;
+        repeatFrequency = Reminder.NO;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             oneTimeEventButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             oneTimeEventButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -324,7 +378,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     @OnClick(R.id.button_reminder_hourly)
     public void onClickHourlyReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Constants.REMINDER_HOURLY;
+        repeatFrequency = Reminder.HOURLY;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             hourlyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             hourlyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -337,7 +391,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     @OnClick(R.id.button_reminder_daily)
     public void onClickDailyReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Constants.REMINDER_DAILY;
+        repeatFrequency = Reminder.DAILY;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             dailyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             dailyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -349,7 +403,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     @OnClick(R.id.button_reminder_weekly)
     public void onClickWeeklyReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Constants.REMINDER_WEEKLY;
+        repeatFrequency = Reminder.WEEKLY;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             weeklyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             weeklyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -361,7 +415,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     @OnClick(R.id.button_reminder_week_days)
     public void onClickWeekDaysReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Constants.REMINDER_WEEK_DAYS;
+        repeatFrequency = Reminder.WEEKDAYS;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             weekDaysReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             weekDaysReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -372,7 +426,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     @OnClick(R.id.button_reminder_monthly)
     public void onClickMonthlyReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Constants.REMINDER_MONTHLY;
+        repeatFrequency = Reminder.MONTHLY;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             monthlyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             monthlyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -384,7 +438,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     @OnClick(R.id.button_reminder_yearly)
     public void onClickYearlyReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Constants.REMINDER_YEARLY;
+        repeatFrequency = Reminder.YEARLY;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             yearlyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             yearlyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -459,7 +513,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
             @Override
             public void onCategorySelected(Folder selectedCategory) {
                 selectFolderDialogFragment.dismiss();
-                mCategory.setText(selectedCategory.getFolderName());
+                mFolder.setText(selectedCategory.getFolderName());
                 selectedFolder = new FolderRealmRepository().getFolderById(selectedCategory.getId());
             }
 
@@ -491,8 +545,102 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     }
 
 
+    /**
+     * This method populates the AddTask screen
+     * When it is in Edit mode
+     * @param task - the passed in Task
+     */
     @Override
     public void showTaskDetail(Task task) {
+        try {
+            taskNameEditText.setText(task.getTitle());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            String formattedDueDate = TimeUtils.getReadableDateWithoutTime(task.getDueDateAndTime());
+            dateTextView.setText(formattedDueDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            String formattedDueTime = DateHelper.getTimeShort(getActivity(), task.getDueDateAndTime());
+            timeTextView.setText(formattedDueTime);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            int priority = task.getPriority();
+            if (priority > 0){
+                switch (priority){
+                    case Constants.PRIORITY_LOW:
+                        lowPriorityButton.setChecked(true);
+                        break;
+                    case Constants.PRIORITY_MEDIUM:
+                        mediumPriorityButton.setChecked(true);
+                        break;
+                    case Constants.PRIORITY_HIGH:
+                        highPriorityButton.setChecked(true);
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Reminder frequency = null;
+        try {
+            frequency = task.getRepeatFrequency();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (frequency != null){
+
+            switch (frequency){
+                case HOURLY:
+                    hourlyReminderButton.performClick();
+                    break;
+                case DAILY:
+                    dailyReminderButton.performClick();
+                    break;
+                case WEEKLY:
+                    weeklyReminderButton.performClick();
+                    break;
+                case MINUTE:
+                    weekDaysReminderButton.performClick();
+                    break;
+                case YEARLY:
+                    yearlyReminderButton.performClick();
+                    break;
+                case MONTHLY:
+                    monthlyReminderButton.performClick();
+                    break;
+
+
+            }
+        }
+
+        try {
+            mFolder.setText(task.getFolder().getFolderName());
+            selectedFolder = task.getFolder();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //Show the repeat end date of the Frequency is not a single event
+        if (task.getRepeatFrequency() != Reminder.NO){
+            reminderEndDateLayout.setVisibility(View.VISIBLE);
+            repeatEndDate = Calendar.getInstance();
+            if (task.getRepeatEndDate() > 0){
+                repeatEndDate.setTimeInMillis(task.getRepeatEndDate());
+            }
+            onRepeatEndDateSelected(repeatEndDate);
+        }
+
 
     }
 
@@ -595,6 +743,11 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
         }
 
+    }
+
+    @Override
+    public void goBackToParent() {
+        startActivity(new Intent(getActivity(), NoteListActivity.class));
     }
 
     public static class ReminderTimePickerDialogFragment extends DialogFragment

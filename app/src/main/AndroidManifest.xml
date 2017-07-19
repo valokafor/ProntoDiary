@@ -45,7 +45,6 @@
         <service
             android:name=".core.services.AddSampleDataIntentService"
             android:exported="false"/>
-
         <service
             android:name=".core.services.AttachmentUploadService"
             android:exported="false"/>
@@ -54,7 +53,8 @@
             android:name=".ui.addnote.AddNoteActivity"
             android:label="@string/title_activity_add_note"
             android:parentActivityName=".NoteListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.okason.diary.NoteListActivity"/>
@@ -103,12 +103,10 @@
             </intent-filter>
         </activity>
 
-
         <service
             android:name=".core.services.HandleRealmLoginService"
             android:exported="false">
         </service>
-
 
         <activity
             android:name=".ui.settings.SettingsActivity"
@@ -130,6 +128,27 @@
             android:enabled="true"
             android:exported="false">
         </service>
+
+        <activity
+            android:name=".ui.todolist.AddTaskActivity"
+            android:label="@string/title_activity_add_task"
+            android:parentActivityName=".NoteListActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.okason.diary.NoteListActivity"/>
+        </activity>
+        <activity
+            android:name=".ui.todolist.AddSubTaskActivity"
+            android:label="@string/title_activity_add_sub_task"
+            android:parentActivityName=".NoteListActivity"
+            android:windowSoftInputMode="stateHidden"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.okason.diary.NoteListActivity"/>
+        </activity>
     </application>
 
 </manifest>

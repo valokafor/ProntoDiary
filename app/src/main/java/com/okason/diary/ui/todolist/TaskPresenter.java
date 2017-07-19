@@ -1,18 +1,17 @@
 package com.okason.diary.ui.todolist;
 
+import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
-
-import org.greenrobot.eventbus.EventBus;
+import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.reminder.Reminder;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -97,6 +96,10 @@ public class TaskPresenter implements TaskContract.Actions {
     public void setCurrentTaskId(String taskId) {
         if (!TextUtils.isEmpty(taskId)){
             currentTask = repository.getTaskById(taskId);
+            if (currentTask != null && mView != null){
+                mView.showTaskDetail(currentTask);
+
+            }
         }
     }
 
@@ -111,11 +114,16 @@ public class TaskPresenter implements TaskContract.Actions {
     }
 
     @Override
-    public void onSaveAndExit(int priority, String taskName, long dueDate, String repeat, long repeadEndDate, String folderId, boolean shouldAddSubTask) {
-        Task savedTask = repository.createNewTask(priority, taskName, dueDate, repeat, repeadEndDate, folderId);
+    public void onSaveAndExit(int priority, String taskName, long dueDate, Reminder repeat, long repeadEndDate, String folderId, boolean shouldAddSubTask) {
+
+        if (currentTask == null) {
+            currentTask = repository.createNewTask(priority, taskName, dueDate, repeat, repeadEndDate, folderId);
+        } else {
+            repository.updateTask(currentTask.getId(), priority, taskName, dueDate, repeat, repeadEndDate, folderId);
+        }
 
         Calendar dueTime = new GregorianCalendar();
-        dueTime.setTimeInMillis(savedTask.getDueDateAndTime());
+        dueTime.setTimeInMillis(currentTask.getDueDateAndTime());
         if (dueTime.after(Calendar.getInstance())){
             //Due Date is in the future, so schedule the first reminder
 
@@ -125,12 +133,13 @@ public class TaskPresenter implements TaskContract.Actions {
 
         if (shouldAddSubTask){
             //Go To Add Subtask
-            AddSubTaskFragment fragment = AddSubTaskFragment.newInstance(savedTask.getId());
-            EventBus.getDefault().post(new DisplayFragmentEvent(fragment, savedTask.getTitle()));
+            Intent addSubTaskIntent = new Intent(ProntoDiaryApplication.getAppContext(), AddSubTaskActivity.class);
+            addSubTaskIntent.putExtra(Constants.TASK_ID, currentTask.getId());
+            addSubTaskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            ProntoDiaryApplication.getAppContext().startActivity(addSubTaskIntent);
         }else {
             //Go to Task List
-            EventBus.getDefault().post(new DisplayFragmentEvent(new TaskListFragment(),
-                    ProntoDiaryApplication.getAppContext().getString(R.string.title_todo_list)));
+            mView.goBackToParent();
         }
 
     }

@@ -9,7 +9,7 @@ import com.okason.diary.models.Task;
 public interface TaskItemListener {
     void onEditTaskButtonClicked(Task clickedTask);
     void onDeleteTaskButtonClicked(Task clickedTask);
-    void onSubTasksButtonClicked(Task clickedTask);
+    void onAddSubTasksButtonClicked(Task clickedTask);
     void onTaskChecked(Task selectedTag);
     void onTaskUnChecked(Task unSelectedTag);
 }

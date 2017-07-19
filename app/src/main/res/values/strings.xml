@@ -316,9 +316,11 @@
     <string name="label_due_time">Due Time</string>
     <string name="label_repeat">Repeat</string>
     <string name="reminder_label_one_time_event">One Time Event</string>
+    <string name="reminder_label_minute">Minute</string>
     <string name="reminder_label_hourly">Hourly</string>
     <string name="reminder_label_daily">Daily</string>
     <string name="reminder_label_weekly">Weekly</string>
+    <string name="reminder_label_monthly">Monthly</string>
     <string name="reminder_label_yearly">Yearly</string>
     <string name="label_add_sub_task">Add SubTasks</string>
     <string name="general">General</string>
@@ -338,6 +340,8 @@
     <string name="reminder">Reminder</string>
     <string name="no_sub_task_found">No Sub Task found for this task, use the + button to start</string>
     <string name="title_edit_task">Edit Task</string>
+    <string name="title_activity_add_task">AddTaskActivity</string>
+    <string name="title_activity_add_sub_task">AddSubTaskActivity</string>
 
 
 </resources>

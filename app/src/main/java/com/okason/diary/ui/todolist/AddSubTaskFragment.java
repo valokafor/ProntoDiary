@@ -19,6 +19,7 @@ import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.models.Task;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
+import com.okason.diary.utils.reminder.Reminder;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -121,14 +122,14 @@ public class AddSubTaskFragment extends Fragment {
             dueDateTextView.setVisibility(View.GONE);
         }
 
-        String repeat = null;
+        Reminder repeat = null;
         try {
             repeat = parentTask.getRepeatFrequency();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        if (!TextUtils.isEmpty(repeat)){
+        if (repeat != null){
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("Repeats every  ");
             stringBuilder.append(repeat);
@@ -172,6 +173,12 @@ public class AddSubTaskFragment extends Fragment {
         } else {
             folderTextView.setVisibility(View.GONE);
         }
+
+
+
+
+
+
 
 
     }

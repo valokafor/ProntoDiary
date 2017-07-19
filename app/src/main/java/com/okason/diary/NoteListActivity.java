@@ -143,6 +143,10 @@ public class NoteListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         mActivity = this;
+
+        if (savedInstanceState == null){
+            checkNetworkConnected();
+        }
     }
 
 
@@ -216,7 +220,7 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        checkNetworkConnected();
+
 
     }
 

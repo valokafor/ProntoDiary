@@ -1,11 +1,10 @@
 package com.okason.diary.data;
 
-import android.text.TextUtils;
-
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
 import com.okason.diary.ui.todolist.TaskContract;
+import com.okason.diary.utils.reminder.Reminder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +57,7 @@ public class TaskRealmRepository implements TaskContract.Repository {
     }
 
     @Override
-    public Task createNewTask(int priority, String taskName, long dueDateAndTime,  String repeat, long repeatEndDate, String folderId) {
+    public Task createNewTask(int priority, String taskName, long dueDateAndTime,  Reminder repeat, long repeatEndDate, String folderId) {
         Task task = createNewTask(taskName);
         Task updatedTask;
         try(Realm realm = Realm.getDefaultInstance()) {
@@ -69,7 +68,7 @@ public class TaskRealmRepository implements TaskContract.Repository {
             updatedTask.setDueDateAndTime(dueDateAndTime);
             updatedTask.setRepeatEndDate(repeatEndDate);
             updatedTask.setRepeatFrequency(repeat);
-            updatedTask.setRemind(TextUtils.isEmpty(repeat));
+            updatedTask.setRemind(repeat != null);
 
             Folder selectedFolder = realm.where(Folder.class).equalTo("id", folderId).findFirst();
             if (selectedFolder != null){
@@ -81,6 +80,31 @@ public class TaskRealmRepository implements TaskContract.Repository {
             updatedTask = realm.copyFromRealm(updatedTask);
         }
         return updatedTask;
+    }
+
+    @Override
+    public void updateTask(String taskId, int priority, String taskName, long dueDateAndTime, Reminder repeat, long repeatEndDate, String folderId) {
+
+        try(Realm realm = Realm.getDefaultInstance()) {
+            realm.beginTransaction();
+            Task updatedTask = realm.where(Task.class).equalTo("id", taskId).findFirst();
+            updatedTask.setTitle(taskName);
+            updatedTask.setDateModified(System.currentTimeMillis());
+            updatedTask.setPriority(priority);
+            updatedTask.setDueDateAndTime(dueDateAndTime);
+            updatedTask.setRepeatEndDate(repeatEndDate);
+            updatedTask.setRepeatFrequency(repeat);
+            updatedTask.setRemind(repeat != null);
+
+            Folder selectedFolder = realm.where(Folder.class).equalTo("id", folderId).findFirst();
+            if (selectedFolder != null){
+                updatedTask.setFolder(selectedFolder);
+                selectedFolder.getTasks().add(updatedTask);
+            }
+            realm.commitTransaction();
+
+        }
+
     }
 
     @Override
@@ -107,7 +131,16 @@ public class TaskRealmRepository implements TaskContract.Repository {
     }
 
     @Override
-    public void deleteTask() {
+    public void deleteTask(final String taskId) {
+        try (Realm realm = Realm.getDefaultInstance()){
+            realm.executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    realm.where(Task.class).equalTo("id", taskId).findFirst().deleteFromRealm();
+                }
+            });
+
+        }
 
     }
 
