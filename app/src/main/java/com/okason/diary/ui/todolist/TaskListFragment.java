@@ -42,6 +42,9 @@ public class TaskListFragment extends Fragment implements TaskItemListener, Task
     private RealmResults<Task> mTasks;
     private TaskListAdapter mListAdapter;
     private View mRootView;
+    private boolean shouldUpdateAdapter = true;
+    private TaskContract.Actions presenter;
+
 
 
     @BindView(R.id.todo_list_recycler_view)
@@ -68,6 +71,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener, Task
         ButterKnife.bind(this, mRootView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        presenter = new TaskPresenter(this);
         return mRootView;
     }
 
@@ -82,7 +86,11 @@ public class TaskListFragment extends Fragment implements TaskItemListener, Task
                 mTasks.addChangeListener(new RealmChangeListener<RealmResults<Task>>() {
                     @Override
                     public void onChange(RealmResults<Task> tasks) {
-                        showTodoLists(tasks);
+                        if (shouldUpdateAdapter) {
+                            showTodoLists(tasks);
+                        }else {
+                            shouldUpdateAdapter = true;
+                        }
                     }
                 });
                 showTodoLists(mTasks);
@@ -193,7 +201,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener, Task
         if (shouldPromptForDelete) {
             promptForDelete(clickedTask);
         } else {
-            new TaskRealmRepository().deleteTask(clickedTask.getId());
+            presenter.deleteTask(clickedTask);
         }
 
     }
@@ -207,13 +215,16 @@ public class TaskListFragment extends Fragment implements TaskItemListener, Task
     }
 
     @Override
-    public void onTaskChecked(Task selectedTag) {
+    public void onTaskChecked(Task task) {
+        shouldUpdateAdapter = false;
+        presenter.onMarkTaskAsComplete(task);
 
     }
 
     @Override
-    public void onTaskUnChecked(Task unSelectedTag) {
-
+    public void onTaskUnChecked(Task task) {
+        shouldUpdateAdapter = false;
+        presenter.onMarkTaskAsInComplete(task);
     }
 
     private void promptForDelete(final Task clickedTask) {
@@ -246,12 +257,12 @@ public class TaskListFragment extends Fragment implements TaskItemListener, Task
 
     @Override
     public void showTaskDetail(Task task) {
-
+    //NA
     }
 
     @Override
     public void showEditTaskItem(Task todoList) {
-
+        //NA
     }
 
     @Override

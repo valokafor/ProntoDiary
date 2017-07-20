@@ -304,7 +304,7 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="add_task">Add Task</string>
-    <string name="label_sub_task">Sub Tasks</string>
+    <string name="label_sub_task">Sub Task</string>
     <string name="label_priority">Priority</string>
     <string name="label_low_priotity">Low</string>
     <string name="label_medium_priority">Medium</string>
@@ -342,6 +342,8 @@
     <string name="title_edit_task">Edit Task</string>
     <string name="title_activity_add_task">AddTaskActivity</string>
     <string name="title_activity_add_sub_task">AddSubTaskActivity</string>
+    <string name="repeat_date_before_due_date">Task repeat date is before Task due date.</string>
+    <string name="no_parent_task_found">No Parent Task found</string>
 
 
 </resources>

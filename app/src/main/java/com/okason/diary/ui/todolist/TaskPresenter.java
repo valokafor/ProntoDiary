@@ -49,12 +49,22 @@ public class TaskPresenter implements TaskContract.Actions {
 
     @Override
     public void onMarkTaskAsComplete(Task task) {
-
+        repository.updateTaskStatus(task, true);
     }
 
     @Override
     public void onMarkTaskAsInComplete(Task task) {
+        repository.updateTaskStatus(task, false);
+    }
 
+    @Override
+    public void onMarkSubTaskAsComplete(String taskId, String subTaskId) {
+        repository.updateSubTaskStatus(taskId, subTaskId, true);
+    }
+
+    @Override
+    public void onMarkSubTaskAsInComplete(String taskId, String subTaskId) {
+        repository.updateSubTaskStatus(taskId, subTaskId, false);
     }
 
     @Override
@@ -62,10 +72,6 @@ public class TaskPresenter implements TaskContract.Actions {
 
     }
 
-    @Override
-    public void onDeleteTaskButtonClick(Task task) {
-
-    }
 
     @Override
     public Task findTaskById(String id) {
@@ -73,8 +79,8 @@ public class TaskPresenter implements TaskContract.Actions {
     }
 
     @Override
-    public void deleteTask() {
-
+    public void deleteTask(Task task) {
+        repository.deleteTask(task.getId());
     }
 
     @Override
@@ -89,7 +95,7 @@ public class TaskPresenter implements TaskContract.Actions {
 
     @Override
     public String getCurrentTaskId() {
-        return null;
+        return currentTask.getId();
     }
 
     @Override

@@ -309,6 +309,11 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     }
 
     private void onRepeatEndDateSelected(Calendar selectedEndDate){
+        if (selectedEndDate.before(mReminderTime)){
+            makeToast(getString(R.string.repeat_date_before_due_date));
+            return;
+        }
+
         repeatEndDate = selectedEndDate;
         String repeatUntilDate = TimeUtils.getReadableDateWithoutTime(selectedEndDate.getTimeInMillis());
         repeadEndDateEditText.setText(repeatUntilDate);

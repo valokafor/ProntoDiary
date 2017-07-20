@@ -1,11 +1,13 @@
 package com.okason.diary.ui.todolist;
 
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -15,30 +17,30 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.core.events.DisplayFragmentEvent;
+import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.listeners.SubTaskItemListener;
 import com.okason.diary.models.Task;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 import com.okason.diary.utils.reminder.Reminder;
 
-import org.greenrobot.eventbus.EventBus;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.realm.Realm;
+import io.realm.RealmChangeListener;
+import io.realm.RealmModel;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AddSubTaskFragment extends Fragment {
+public class AddSubTaskFragment extends Fragment implements SubTaskItemListener {
 
     private View rootView;
     @BindView(R.id.text_view_edit_task_label)
     TextView editTaskTextView;
 
-    @BindView(R.id.sub_task_recycler_view)
-    RecyclerView subTaskRecyclerView;
-    @BindView(R.id.empty_text) TextView emptyText;
+
     @BindView(R.id.text_view_due_date) TextView dueDateTextView;
     @BindView(R.id.text_view_repeat) TextView repeatTextView;
     @BindView(R.id.text_view_priority) TextView priorityTextView;
@@ -46,7 +48,16 @@ public class AddSubTaskFragment extends Fragment {
     @BindView(R.id.edit_text_add_sub_task)
     EditText addSubTaskEditText;
 
+    @BindView(R.id.sub_task_recycler_view)
+    RecyclerView mRecyclerView;
+    @BindView(R.id.empty_text) TextView mEmptyText;
+
     private TaskContract.Actions presenter;
+    private SubTaskListAdapter subTaskListAdapter;
+    private boolean shouldUpdateAdapter = true;
+    private Realm realm;
+    private Task parentTask;
+
 
 
     public AddSubTaskFragment() {
@@ -86,14 +97,54 @@ public class AddSubTaskFragment extends Fragment {
         ButterKnife.bind(this, rootView);
         presenter = new TaskPresenter(null);
         getParentTask();
+
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         return rootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        //Show the details of this Task is the Task is not empty
         if (presenter != null && presenter.getCurrentTask() != null){
             populateTaskDetails(presenter.getCurrentTask());
+        }
+
+        //Show the Sub Tasks of this Task
+        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+            subTaskListAdapter = null;
+            try {
+                realm = Realm.getDefaultInstance();
+                parentTask = realm.where(Task.class).equalTo("id", presenter.getCurrentTaskId()).findFirst();
+                parentTask.addChangeListener(new RealmChangeListener<RealmModel>() {
+                    @Override
+                    public void onChange(RealmModel realmModel) {
+                        if (shouldUpdateAdapter) {
+                            showSubTasks((Task) realmModel);
+                        }else {
+                            shouldUpdateAdapter = true;
+                        }
+
+                    }
+                });
+                showSubTasks(parentTask);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            showEmptyText(true);
+        }
+
+    }
+
+    private void showSubTasks(Task task) {
+        if (task != null && task.getSubTask().size() > 0){
+            showEmptyText(false);
+            subTaskListAdapter = new SubTaskListAdapter(task, this);
+            mRecyclerView.setAdapter(subTaskListAdapter);
+        }else {
+            showEmptyText(true);
         }
     }
 
@@ -173,23 +224,16 @@ public class AddSubTaskFragment extends Fragment {
         } else {
             folderTextView.setVisibility(View.GONE);
         }
-
-
-
-
-
-
-
-
     }
 
     @OnClick(R.id.text_view_edit_task_label)
     public void onClickEditTaskTextView(View view){
         if (presenter.getCurrentTask() != null){
-            AddTaskFragment taskFragment = AddTaskFragment.newInstance(presenter.getCurrentTaskId());
-            EventBus.getDefault().post(new DisplayFragmentEvent(taskFragment, getString(R.string.title_edit_task)));
+            Intent editTaskIntent = new Intent(getActivity(), AddTaskActivity.class);
+            editTaskIntent.putExtra(Constants.TASK_ID, presenter.getCurrentTaskId());
+            startActivity(editTaskIntent);
         }else {
-            makeToast("No Parent Task found");
+            makeToast(getString(R.string.no_parent_task_found));
         }
     }
 
@@ -202,4 +246,38 @@ public class AddSubTaskFragment extends Fragment {
         snackbar.show();
     }
 
+
+    public void showEmptyText(boolean showText) {
+        if (showText){
+            mRecyclerView.setVisibility(View.GONE);
+            mEmptyText.setVisibility(View.VISIBLE);
+            //  mAdView.setVisibility(View.GONE);
+
+        }else {
+            //  mAdView.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.VISIBLE);
+            mEmptyText.setVisibility(View.GONE);
+
+        }
+
+    }
+
+    @Override
+    public void onSubTaskChecked(String taskId, String subTaskId) {
+        shouldUpdateAdapter = false;
+        presenter.onMarkSubTaskAsComplete(taskId, subTaskId);
+
+    }
+
+    @Override
+    public void onSubTaskUnChecked(String taskId, String subTaskId) {
+        shouldUpdateAdapter = false;
+        presenter.onMarkSubTaskAsInComplete(taskId, subTaskId);
+
+    }
+
+    @Override
+    public void onSubTaskDeleted(String taskId, String subTaskId) {
+
+    }
 }

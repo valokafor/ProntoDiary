@@ -26,10 +26,11 @@ public class TaskContract {
         void onShowTaskDetail(Task task);
         void onMarkTaskAsComplete(Task task);
         void onMarkTaskAsInComplete(Task task);
+        void onMarkSubTaskAsComplete(String taskId, String subTaskId);
+        void onMarkSubTaskAsInComplete(String taskId, String subTaskId);
         void onEditTaskButtonClick(Task task);
-        void onDeleteTaskButtonClick(Task task);
         Task findTaskById(String id);
-        void deleteTask();
+        void deleteTask(Task task);
         void onTitleChange(String newTitle);
         void onFolderChange(String folderId);
         String getCurrentTaskId();
@@ -46,6 +47,7 @@ public class TaskContract {
         Task createNewTask(int priority, String taskName, long dueDateAndTime, Reminder repeat, long repeatEndDate, String folderId);
         void updateTask(String taskId, int priority, String taskName, long dueDateAndTime, Reminder repeat, long repeatEndDate, String folderId);
         void updateTaskStatus(Task task, boolean completed);
+        void updateSubTaskStatus(String taskId, String subTaskId, boolean completed);
         void removeSubTaskFromTask(SubTask subTask, Task task);
         List<Task> getAllTask();
         void deleteTask(String taskId);

@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -51,6 +53,9 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final Task task = mTasks.get(position);
+
+        boolean isChecked = task.isChecked();
+        holder.checkBox.setChecked(isChecked);
 
         String title = task.getTitle();
 
@@ -142,6 +147,9 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     public class ViewHolder extends RecyclerView.ViewHolder{
         public FrameLayout container;
 
+        @BindView(R.id.checkbox)
+        CheckBox checkBox;
+
         @BindView(R.id.text_view_title)
         TextView titleTextView;
 
@@ -158,6 +166,21 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         public ViewHolder(FrameLayout container) {
             super(container);
             ButterKnife.bind(this, container);
+
+            checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        final Task checkedTask = mTasks.get(getLayoutPosition());
+                        taskItemListener.onTaskChecked(checkedTask);
+
+                    } else {
+                        final Task uncheckedTask = mTasks.get(getLayoutPosition());
+                        taskItemListener.onTaskUnChecked(uncheckedTask);
+                    }
+
+                }
+            });
 
         }
 

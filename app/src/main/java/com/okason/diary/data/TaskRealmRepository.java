@@ -108,7 +108,50 @@ public class TaskRealmRepository implements TaskContract.Repository {
     }
 
     @Override
-    public void updateTaskStatus(Task task, boolean completed) {
+    public void updateTaskStatus(final Task task, final boolean completed) {
+        try (Realm realm = Realm.getDefaultInstance()) {
+            realm.executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm backgroundRealm) {
+                    Task updatedTask = backgroundRealm.where(Task.class).equalTo("id", task.getId()).findFirst();
+                    updatedTask.setChecked(completed);
+                    updatedTask.setDateModified(System.currentTimeMillis());
+                    for (SubTask subTask: updatedTask.getSubTask()){
+                        subTask.setChecked(completed);
+                    }
+                }
+            });
+        }
+
+    }
+
+    /**
+     * Saves changes to databas when a SubTask checkbox is selected
+     * @param taskId - Parent Task Id
+     * @param subTaskId - Sub Task Id
+     * @param completed - Sub Task status
+     */
+    @Override
+    public void updateSubTaskStatus(final String taskId, final String subTaskId, final boolean completed) {
+        try (Realm realm = Realm.getDefaultInstance()) {
+            realm.executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm backgroundRealm) {
+                    Task updatedTask = backgroundRealm.where(Task.class).equalTo("id", taskId).findFirst();
+                    SubTask updatedSubTask = null;
+                    for (SubTask subTask: updatedTask.getSubTask()){
+                        if (subTask.getId().equals(subTaskId)){
+                            updatedSubTask = subTask;
+                            break;
+                        }
+                    }
+                    if (updatedSubTask != null){
+                        updatedSubTask.setChecked(completed);
+                        updatedTask.setDateModified(System.currentTimeMillis());
+                    }
+                }
+            });
+        }
 
     }
 
