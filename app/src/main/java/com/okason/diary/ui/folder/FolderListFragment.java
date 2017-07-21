@@ -24,9 +24,7 @@ import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.data.FolderRealmRepository;
 import com.okason.diary.models.Folder;
-import com.okason.diary.ui.auth.RegisterActivity;
-import com.okason.diary.ui.auth.SignInActivity;
-import com.okason.diary.utils.SettingsHelper;
+import com.okason.diary.ui.auth.AuthUiActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -151,13 +149,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
                     if (ProntoDiaryApplication.isCloudSyncEnabled()) {
                         showAddNewFolderDialog();
                     } else {
-                        boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
-                        if (registeredUser){
-                            startActivity(new Intent(getActivity(), SignInActivity.class));
-                        }else {
-                            startActivity(new Intent(getActivity(), RegisterActivity.class));
-                        }
-
+                        startActivity(new Intent(getActivity(), AuthUiActivity.class));
                     }
                 }
 

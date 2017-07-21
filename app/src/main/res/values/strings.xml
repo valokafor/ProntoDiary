@@ -344,6 +344,7 @@
     <string name="title_activity_add_sub_task">AddSubTaskActivity</string>
     <string name="repeat_date_before_due_date">Task repeat date is before Task due date.</string>
     <string name="no_parent_task_found">No Parent Task found</string>
+    <string name="completing_sign_in">Completing sign in</string>
 
 
 </resources>

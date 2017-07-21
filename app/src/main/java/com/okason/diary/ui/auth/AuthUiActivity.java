@@ -3,13 +3,11 @@ package com.okason.diary.ui.auth;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
@@ -23,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.ui.ResultCodes;
@@ -30,7 +29,14 @@ import com.google.android.gms.common.Scopes;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
+import com.okason.diary.core.services.HandleRealmLoginService;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.SettingsHelper;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -45,6 +51,7 @@ public class AuthUiActivity extends AppCompatActivity {
     private static final String GOOGLE_TOS_URL = "https://www.google.com/policies/terms/";
     private static final int RC_SIGN_IN = 100;
     private Activity mActivity;
+    private MaterialDialog progressDialog;
 
 
     @BindView(android.R.id.content)
@@ -164,29 +171,23 @@ public class AuthUiActivity extends AppCompatActivity {
 
     @MainThread
     private void handleSignInResponse(int resultCode, final Intent data) {
-        IdpResponse response = IdpResponse.fromResultIntent(data);
+
 
         if (resultCode == RESULT_OK) {
-            //Update Shared Preference to mark user as registered
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            preferences.edit().putBoolean(Constants.UNREGISTERED_USER, false).commit();
-            ProntoDiaryApplication.setCloudSyncEnabled(true);
+            IdpResponse response = IdpResponse.fromResultIntent(data);
 
-            //Restart
-            Intent restartIntent = new Intent(mActivity, NoteListActivity.class);
-            restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(restartIntent);
-            return;
-        } else {
-            if (response == null){
-                ProntoDiaryApplication.setCloudSyncEnabled(false);
-                // User pressed back button
-                showSnackbar(R.string.sign_in_cancelled);
-                finish();
-                return;
+            Intent realmIntent = new Intent(mActivity, HandleRealmLoginService.class);
+            if (response != null){
+                realmIntent.putExtra(Constants.LOGIN_PROVIDER, response.getProviderType());
             }
+            startService(realmIntent);
+            SettingsHelper.getHelper(mActivity).setRegisteredUser(true);
 
+            progressDialog = new MaterialDialog.Builder(mActivity)
+                    .title(getString(R.string.please_wait))
+                    .content(getString(R.string.syncing_data))
+                    .show();
+            return;
         }
 
         if (resultCode == RESULT_CANCELED) {
@@ -201,7 +202,7 @@ public class AuthUiActivity extends AppCompatActivity {
             return;
         }
 
-        makeToast(getString(R.string.unknown_sign_in_response));
+
     }
 
     @MainThread
@@ -222,6 +223,36 @@ public class AuthUiActivity extends AppCompatActivity {
         } else {
             getFragmentManager().popBackStack();
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRealmDatabaseRegistrationComplete(RealmDatabaseRegistrationCompletedEvent event){
+        if (event.isInProgress()){
+            progressDialog = new MaterialDialog.Builder(mActivity)
+                    .title(getString(R.string.please_wait))
+                    .content(getString(R.string.syncing_data))
+                    .show();
+        }else {
+            progressDialog.dismiss();
+            //Restart
+            Intent restartIntent = new Intent(mActivity, NoteListActivity.class);
+            restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(restartIntent);
+        }
+
     }
 
     public static Intent createIntent(Context context) {

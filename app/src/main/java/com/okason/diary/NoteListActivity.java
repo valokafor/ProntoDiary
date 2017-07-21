@@ -39,8 +39,7 @@ import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
-import com.okason.diary.ui.auth.RegisterActivity;
-import com.okason.diary.ui.auth.SignInActivity;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
@@ -198,6 +197,9 @@ public class NoteListActivity extends AppCompatActivity {
             ProntoDiaryApplication.setCloudSyncEnabled(true);
             updateUI();
         }
+
+
+       //SampleData.addSampleNotes();
     }
 
 
@@ -311,12 +313,7 @@ public class NoteListActivity extends AppCompatActivity {
         loginButton.setImageResource(R.drawable.ic_login_gray);
         loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
         loginTextView.setTypeface(loginTextView.getTypeface(), Typeface.BOLD);
-        boolean registeredUser = SettingsHelper.getHelper(mActivity).isRegisteredUser();
-        if (registeredUser){
-            startActivity(new Intent(mActivity, SignInActivity.class));
-        }else {
-            startActivity(new Intent(mActivity, RegisterActivity.class));
-        }
+        startActivity(new Intent(mActivity, AuthUiActivity.class));
 
     }
 

@@ -33,6 +33,7 @@ public class Constants {
     public static final String DISPLAY_NAME = "display_name";
     public static final String SIGN_IN_METHOD = "sign_in_method";
     public static final String PHOTO_URL = "photo_url";
+    public static final String LOGIN_PROVIDER = "login_provider";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

@@ -23,7 +23,7 @@ import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.data.TagRealmRepository;
 import com.okason.diary.models.Tag;
-import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.utils.SettingsHelper;
 
@@ -87,13 +87,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
                 if (ProntoDiaryApplication.isCloudSyncEnabled()) {
                     showAddNewTagDialog();
                 } else {
-                    boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
-                    if (registeredUser){
-                        startActivity(new Intent(getActivity(), SignInActivity.class));
-                    }else {
-                        startActivity(new Intent(getActivity(), RegisterActivity.class));
-                    }
-
+                    startActivity(new Intent(getActivity(), AuthUiActivity.class));
                 }
 
             }
@@ -166,7 +160,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
                         if (registeredUser){
                             startActivity(new Intent(getActivity(), SignInActivity.class));
                         }else {
-                            startActivity(new Intent(getActivity(), RegisterActivity.class));
+                            startActivity(new Intent(getActivity(), AuthUiActivity.class));
                         }
 
                     }

@@ -37,14 +37,11 @@ import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.attachment.GalleryActivity;
-import com.okason.diary.ui.auth.RegisterActivity;
-import com.okason.diary.ui.auth.SignInActivity;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
-import com.okason.diary.utils.SettingsHelper;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -214,13 +211,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
                     if (ProntoDiaryApplication.isCloudSyncEnabled()) {
                         startActivity(new Intent(getActivity(), AddNoteActivity.class));
                     } else {
-                        boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
-                        if (registeredUser){
-                            startActivity(new Intent(getActivity(), SignInActivity.class));
-                        }else {
-                            startActivity(new Intent(getActivity(), RegisterActivity.class));
-                        }
-
+                        startActivity(new Intent(getActivity(), AuthUiActivity.class));
                     }
                 }
                 break;
@@ -235,23 +226,11 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     public void showNotes(List<Note> notes) {
         if (notes != null && notes.size() > 0){
             showEmptyText(false);
+            mListAdapter = null;
 
 
-            mListAdapter = new NoteListAdapter(new ArrayList<Note>(), getContext());
+            mListAdapter = new NoteListAdapter(notes, getContext());
             mRecyclerView.setAdapter(mListAdapter);
-
-            //Delete any blank Note
-            for (Note note: notes){
-                if (!TextUtils.isEmpty(note.getTitle()) && !TextUtils.isEmpty(note.getContent())){
-                    mListAdapter.addNote(note);
-                } else {
-                    try {
-                        new NoteRealmRepository().deleteNote(note.getId());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
 
             mListAdapter.setNoteItemListener(new NoteItemListener() {
                 @Override

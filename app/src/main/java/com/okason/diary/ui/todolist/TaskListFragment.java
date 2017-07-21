@@ -22,10 +22,8 @@ import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.TaskItemListener;
 import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.Task;
-import com.okason.diary.ui.auth.RegisterActivity;
-import com.okason.diary.ui.auth.SignInActivity;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.utils.Constants;
-import com.okason.diary.utils.SettingsHelper;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -139,13 +137,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener, Task
                     if (ProntoDiaryApplication.isCloudSyncEnabled()) {
                         startActivity(new Intent(getActivity(), AddTaskActivity.class));
                     } else {
-                        boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
-                        if (registeredUser){
-                            startActivity(new Intent(getActivity(), SignInActivity.class));
-                        }else {
-                            startActivity(new Intent(getActivity(), RegisterActivity.class));
-                        }
-
+                        startActivity(new Intent(getActivity(), AuthUiActivity.class));
                     }
                 }
                 break;

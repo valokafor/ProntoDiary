@@ -2,12 +2,7 @@ package com.okason.diary.core.services;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -15,14 +10,25 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.okason.diary.NoteListActivity;
+import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
 import com.okason.diary.models.ProntoDiaryUser;
+import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
 
+import org.greenrobot.eventbus.EventBus;
+
+import java.util.UUID;
+
+import io.realm.ObjectServerError;
+import io.realm.SyncCredentials;
 import io.realm.SyncUser;
 
+import static com.okason.diary.core.ProntoDiaryApplication.AUTH_URL;
 
-public class HandleRealmLoginService extends IntentService {
+
+public class HandleRealmLoginService extends IntentService implements SyncUser.Callback {
 
     private DatabaseReference mDatabase;
     private DatabaseReference mProntoDiaryUserRef;
@@ -31,10 +37,8 @@ public class HandleRealmLoginService extends IntentService {
     private FirebaseUser mFirebaseUser;
     private SyncUser mSyncUser;
 
-    private String displayName;
-    private String emailAddress;
-    private String signInMethod;
-    private String photoUrl;
+    private String generatedPassword;
+    private String providerType = "";
 
     private ProntoDiaryUser prontoDiaryUser;
 
@@ -46,68 +50,37 @@ public class HandleRealmLoginService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        if (intent != null && intent.hasExtra(Constants.DISPLAY_NAME) &&
-                intent.hasExtra(Constants.EMAIL_ADDRESSS) &&
-                intent.hasExtra(Constants.SIGN_IN_METHOD)) {
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
 
-            displayName = intent.getStringExtra(Constants.DISPLAY_NAME);
-            emailAddress = intent.getStringExtra(Constants.EMAIL_ADDRESSS);
-            signInMethod = intent.getStringExtra(Constants.SIGN_IN_METHOD);
-            photoUrl = intent.getStringExtra(Constants.PHOTO_URL);
-
-            //If there is no email do not proceed
-            if (TextUtils.isEmpty(emailAddress)) {
-                return;
-            }
-
-
-            mFirebaseAuth = FirebaseAuth.getInstance();
-            mFirebaseUser = mFirebaseAuth.getCurrentUser();
-
-            mDatabase = FirebaseDatabase.getInstance().getReference();
-            mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
-
-            if (mFirebaseUser == null) {
-                //If Firebase user is null, create one anonymously
-                mFirebaseAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            mFirebaseUser = mFirebaseAuth.getCurrentUser();
-                            registerOrUpdateUserInfo(mFirebaseUser.getUid());
-                        }
-
-                    }
-                });
-            } else {
-                registerOrUpdateUserInfo("");
-            }
+        if (intent != null && intent.hasExtra(Constants.LOGIN_PROVIDER)){
+            providerType = intent.getStringExtra(Constants.LOGIN_PROVIDER);
         }
-    }
 
-    private void registerOrUpdateUserInfo(final String uid) {
-        final String token = SettingsHelper.getHelper(getApplicationContext()).getMessagingToken();
-        if (!TextUtils.isEmpty(token)){
-            mProntoDiaryUserRef.orderByChild("fcmToken").equalTo(token).addListenerForSingleValueEvent(new ValueEventListener() {
+        if (mFirebaseUser != null){
+            mProntoDiaryUserRef.orderByChild("firebaseUid").equalTo(mFirebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
-                        DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
-                        prontoDiaryUser = snapshot.getValue(ProntoDiaryUser.class);
-                    }
-
-                    if (prontoDiaryUser == null) {
-                        //If user does not exist, create one
-                        prontoDiaryUser = new ProntoDiaryUser();
-                        prontoDiaryUser.setEmailAddress(emailAddress);
-                        prontoDiaryUser.setDisplayName(displayName);
-                        prontoDiaryUser.setLoginProvider(signInMethod);
-                        prontoDiaryUser.setFcmToken(token);
-                        prontoDiaryUser.setPhotoUrl(photoUrl);
-                        prontoDiaryUser.setFirebaseUid(uid);
-                        prontoDiaryUser.setId(mProntoDiaryUserRef.push().getKey());
-                        mProntoDiaryUserRef.child(prontoDiaryUser.getId()).setValue(prontoDiaryUser);
+                        try {
+                            DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
+                            prontoDiaryUser = snapshot.getValue(ProntoDiaryUser.class);
+                            attemptSignIn(prontoDiaryUser.getEmailAddress(), prontoDiaryUser.getRealmPassword());
+                        } catch (Exception e) {
+                            //Failed to retrieve Pronto Diary User object
+                            e.printStackTrace();
+                            Intent restartIntent = new Intent(getApplicationContext(), NoteListActivity.class);
+                            restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(restartIntent);
+                            return;
+                        }
+                    } else {
+                        generatedPassword = UUID.randomUUID().toString();
+                        attemptRegister(mFirebaseUser.getEmail(), generatedPassword );
                     }
                 }
 
@@ -118,8 +91,54 @@ public class HandleRealmLoginService extends IntentService {
             });
 
         }
+    }
+
+
+    private void attemptRegister(String email, String generatedPassword) {
+        SyncUser.loginAsync(SyncCredentials.usernamePassword(email, generatedPassword, true), AUTH_URL, this);
+    }
+
+    private void attemptSignIn(String email, String realmPassword) {
+        SyncUser.loginAsync(SyncCredentials.usernamePassword(email, realmPassword, false), AUTH_URL, this);
+    }
+
+    private void updatedProntoDiaryUser(FirebaseUser firebaseUser) {
+        if (prontoDiaryUser == null) {
+            //If user does not exist, create one
+            prontoDiaryUser = new ProntoDiaryUser();
+            prontoDiaryUser.setEmailAddress(firebaseUser.getEmail());
+            prontoDiaryUser.setDisplayName(firebaseUser.getDisplayName());
+            prontoDiaryUser.setLoginProvider(providerType);
+            prontoDiaryUser.setFcmToken(SettingsHelper.getHelper(getApplication()).getMessagingToken());
+            prontoDiaryUser.setPhotoUrl(firebaseUser.getPhotoUrl().toString());
+            prontoDiaryUser.setFirebaseUid(firebaseUser.getUid());
+            prontoDiaryUser.setRealmPassword(generatedPassword);
+            prontoDiaryUser.setId(mProntoDiaryUserRef.push().getKey());
+            mProntoDiaryUserRef.child(prontoDiaryUser.getId()).setValue(prontoDiaryUser);
+        }
+
+        EventBus.getDefault().post(new RealmDatabaseRegistrationCompletedEvent(false));
+
 
     }
 
 
+    @Override
+    public void onSuccess(SyncUser user) {
+        SettingsHelper.getHelper(getApplicationContext()).setRegisteredUser(true);
+        UserManager.setActiveUser(user);
+        updatedProntoDiaryUser(mFirebaseUser);
+
+    }
+
+    @Override
+    public void onError(ObjectServerError error) {
+        //Restart
+        Intent restartIntent = new Intent(getApplicationContext(), NoteListActivity.class);
+        restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(restartIntent);
+        return;
+
+    }
 }

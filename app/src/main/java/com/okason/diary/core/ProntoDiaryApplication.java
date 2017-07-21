@@ -2,8 +2,10 @@ package com.okason.diary.core;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 
 import com.okason.diary.BuildConfig;
+import com.okason.diary.core.services.AddSampleDataIntentService;
 import com.squareup.leakcanary.LeakCanary;
 
 import io.realm.Realm;
@@ -33,6 +35,7 @@ public class ProntoDiaryApplication extends Application {
         mContext = getApplicationContext();
         LeakCanary.install(this);
         Realm.init(this);
+
     }
 
     public static Context getAppContext() {

@@ -35,7 +35,7 @@ import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.ProntoDiaryUser;
-import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.utils.Constants;
@@ -185,18 +185,7 @@ public class ProfileFragment extends Fragment {
 
     @OnClick(R.id.toolbar_button_login)
     public void onLoginButtonClicked(View view){
-
-        boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
-        if (registeredUser){
-            Intent intent = new Intent(getActivity(), SignInActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-        } else {
-            Intent intent = new Intent(getActivity(), RegisterActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-        }
-
+        startActivity(new Intent(getActivity(), AuthUiActivity.class));
     }
 
     @OnClick(R.id.toolbar_button_logout)
