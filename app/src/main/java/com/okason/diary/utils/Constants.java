@@ -34,6 +34,7 @@ public class Constants {
     public static final String SIGN_IN_METHOD = "sign_in_method";
     public static final String PHOTO_URL = "photo_url";
     public static final String LOGIN_PROVIDER = "login_provider";
+    public static final String TAG_FILTER = "TAG_FILTER";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

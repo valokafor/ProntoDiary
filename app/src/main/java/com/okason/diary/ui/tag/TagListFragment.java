@@ -19,12 +19,14 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.data.TagRealmRepository;
 import com.okason.diary.models.Tag;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.auth.SignInActivity;
+import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.utils.SettingsHelper;
 
 import org.greenrobot.eventbus.EventBus;
@@ -226,6 +228,10 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
     @Override
     public void onTagClicked(Tag clickedTag) {
+
+        NoteListFragment fragment = NoteListFragment.newInstance(false, clickedTag.getTagName());
+        String title = getString(R.string.action_tag) + ": " + clickedTag.getTagName();
+        EventBus.getDefault().post(new DisplayFragmentEvent(fragment, title));
 
     }
 

@@ -79,8 +79,10 @@ public interface AddNoteContract {
         List<Tag> getAllTags();
         Tag getTagById(String id);
         Tag createNewTag();
+        Tag getOrCreateTag(String tagName);
         void updatedTagTitle(String id, String title);
         void deleteTag(String tagId);
+        List<Note> getNotesForTag(String tagName);
     }
 
 

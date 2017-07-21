@@ -322,7 +322,19 @@ public class NoteListActivity extends AppCompatActivity {
         noteButton.setImageResource(R.drawable.ic_post_it_dark_green);
         noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
         noteTextView.setTypeface(noteTextView.getTypeface(), Typeface.BOLD);
-        openFragment(new NoteListFragment(), getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
+
+        //Apply Tag filter is one exist.
+        NoteListFragment fragment = new NoteListFragment();
+        if (getIntent().hasExtra(Constants.TAG_FILTER)){
+            String tagName = getIntent().getStringExtra(Constants.TAG_FILTER);
+            fragment.setArguments(getIntent().getExtras());
+            String title = getString(R.string.label_tag) + ": " + tagName;
+            openFragment(new NoteListFragment(), title, Constants.NOTE_LIST_FRAGMENT_TAG);
+        }else {
+            openFragment(fragment, getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
+        }
+
+
     }
 
 
@@ -345,7 +357,6 @@ public class NoteListActivity extends AppCompatActivity {
         }
     }
 
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDisplayFragmentEvent(DisplayFragmentEvent event){
 
@@ -356,6 +367,7 @@ public class NoteListActivity extends AppCompatActivity {
             openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list), Constants.NOTE_LIST_FRAGMENT_TAG);
         }
     }
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRealmDatabaseRegistrationComplete(RealmDatabaseRegistrationCompletedEvent event){

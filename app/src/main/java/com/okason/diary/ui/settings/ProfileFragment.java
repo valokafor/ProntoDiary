@@ -22,7 +22,6 @@ import com.bumptech.glide.Glide;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -97,27 +96,12 @@ public class ProfileFragment extends Fragment {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
 
-        if (mFirebaseUser == null) {
-            //If Firebase user is null, create one anonymously
-            mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if (task.isSuccessful()) {
-                        updateProfile();
-                    }
-
-                }
-            });
-        } else {
+        if (mFirebaseUser != null) {
             updateProfile();
         }
-        return mRootView;
-    }
 
-    private void updateProfile() {
-        final String token = SettingsHelper.getHelper(getActivity()).getMessagingToken();
-        if (!TextUtils.isEmpty(token)){
-            mProntoDiaryUserRef.orderByChild("fcmToken").equalTo(token).addListenerForSingleValueEvent(new ValueEventListener() {
+        if (mFirebaseUser != null){
+            mProntoDiaryUserRef.orderByChild("firebaseUid").equalTo(mFirebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -131,6 +115,27 @@ public class ProfileFragment extends Fragment {
                             logoutButton.setVisibility(View.VISIBLE);
                             populateProfile(prontoDiaryUser);
                         }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+        }
+        return mRootView;
+    }
+
+    private void updateProfile() {
+        final String token = SettingsHelper.getHelper(getActivity()).getMessagingToken();
+        if (!TextUtils.isEmpty(token)){
+            mProntoDiaryUserRef.orderByChild("fcmToken").equalTo(token).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+
                     }
                 }
 

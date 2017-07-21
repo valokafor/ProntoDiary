@@ -48,7 +48,7 @@
                 android:layout_margin="@dimen/margin_padding_small"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:src="@drawable/delete_button"
+                card_view:srcCompat="@drawable/ic_delete_forever"
                 android:layout_centerVertical="true" />
         </RelativeLayout>
 

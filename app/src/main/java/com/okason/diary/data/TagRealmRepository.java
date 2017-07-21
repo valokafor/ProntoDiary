@@ -1,5 +1,6 @@
 package com.okason.diary.data;
 
+import com.okason.diary.models.Note;
 import com.okason.diary.models.Tag;
 import com.okason.diary.ui.addnote.AddNoteContract;
 
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 import io.realm.Realm;
+import io.realm.RealmList;
 import io.realm.RealmResults;
 
 /**
@@ -54,6 +56,27 @@ public class TagRealmRepository implements AddNoteContract.TagRepository {
         return tag;
     }
 
+    public Tag getTagByName(String tagName) {
+        Tag selectedTag;
+        try (Realm realm = Realm.getDefaultInstance()){
+            selectedTag = realm.where(Tag.class).equalTo("tagName", tagName).findFirst();
+            selectedTag = realm.copyFromRealm(selectedTag);
+        }catch (Exception e){
+            selectedTag = null;
+        }
+        return selectedTag;
+    }
+
+    @Override
+    public Tag getOrCreateTag(String tagName) {
+        Tag tag;
+        tag = getTagByName(tagName);
+        if (tag == null){
+            tag = createNewTag();
+        }
+        return tag;
+    }
+
     @Override
     public void updatedTagTitle(final String id, final String title) {
         try (Realm realm = Realm.getDefaultInstance()){
@@ -81,5 +104,23 @@ public class TagRealmRepository implements AddNoteContract.TagRepository {
                 }
             });
         }
+    }
+
+    @Override
+    public List<Note> getNotesForTag(String tagName) {
+        List<Note> notes = new ArrayList<>();
+        try (Realm realm = Realm.getDefaultInstance()){
+            Tag selectedTag = realm.where(Tag.class).equalTo("tagName", tagName).findFirst();
+            if (selectedTag != null) {
+                RealmList<Note> savedNotes = selectedTag.getNotes();
+                if (savedNotes != null && savedNotes.size() > 0){
+                    for (Note note: savedNotes){
+                        notes.add(realm.copyFromRealm(note));
+                    }
+                }
+            }
+
+        }
+        return notes;
     }
 }

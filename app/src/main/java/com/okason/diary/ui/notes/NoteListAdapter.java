@@ -1,6 +1,7 @@
 package com.okason.diary.ui.notes;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -70,7 +71,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             }else {
                 firstLetter = note.getTitle().substring(0, 1);
                 generator = ColorGenerator.MATERIAL;
-                color = generator.getRandomColor();
+                color = Color.GRAY;
                 drawable = TextDrawable.builder()
                         .buildRound(firstLetter, color);
                 holder.firstLetterIcon.setImageDrawable(drawable);

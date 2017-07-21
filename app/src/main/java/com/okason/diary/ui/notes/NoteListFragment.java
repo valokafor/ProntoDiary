@@ -33,6 +33,7 @@ import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.data.NoteRealmRepository;
+import com.okason.diary.data.TagRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
@@ -61,6 +62,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     private FirebaseUser mFirebaseUser;
     private Realm mRealm;
     private RealmResults<Note> mNotes;
+    private List<Note> mNotes2;
 
 
     private MediaPlayer mPlayer = null;
@@ -93,10 +95,11 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
      * @param dualScreen - indicates if this Fragment is participating in dual screen
      * @return - returns the created Fragment
      */
-    public static NoteListFragment newInstance(boolean dualScreen){
+    public static NoteListFragment newInstance(boolean dualScreen, String tagName){
         NoteListFragment fragment = new NoteListFragment();
         Bundle args = new Bundle();
         args.putBoolean(Constants.IS_DUAL_SCREEN, dualScreen);
+        args.putString(Constants.TAG_FILTER, tagName);
         fragment.setArguments(args);
         return fragment;
     }
@@ -146,18 +149,28 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         super.onResume();
         mListAdapter = null;
 
+        //Only show content if user is logged in
         if (ProntoDiaryApplication.isCloudSyncEnabled()) {
             try {
-
+                //Instantiate Realm
                 mRealm = Realm.getDefaultInstance();
-                mNotes = mRealm.where(Note.class).findAll();
-                mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
-                    @Override
-                    public void onChange(RealmResults<Note> notes) {
-                        showNotes(mNotes);
-                    }
-                });
-                showNotes(mNotes);
+                //Check to see if a Tag name was passed in, and if yes, filter the result to only show
+                //The Note for that Tag
+                if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)) {
+                    String tagName = getArguments().getString(Constants.TAG_FILTER);
+                    mNotes2 = new TagRealmRepository().getNotesForTag(tagName);
+                    showNotes(mNotes2);
+                } else {
+                    mNotes = mRealm.where(Note.class).findAll();
+                    mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
+                        @Override
+                        public void onChange(RealmResults<Note> notes) {
+                            showNotes(mRealm.copyFromRealm(mNotes));
+                        }
+                    });
+                    showNotes(mRealm.copyFromRealm(mNotes));
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
