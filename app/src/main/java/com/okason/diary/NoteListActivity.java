@@ -142,6 +142,7 @@ public class NoteListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         mActivity = this;
+        mAuth = FirebaseAuth.getInstance();
 
         if (savedInstanceState == null){
             checkNetworkConnected();
@@ -185,16 +186,17 @@ public class NoteListActivity extends AppCompatActivity {
         //Check Firebase User status,
 
         final SyncUser user = SyncUser.currentUser();
-        if (user == null) {
-            loginLayout.setVisibility(View.VISIBLE);
-            settingsLayout.setVisibility(View.GONE);
-            ProntoDiaryApplication.setCloudSyncEnabled(false);
-            updateUI();
-        }else {
+        mFirebaseUser = mAuth.getCurrentUser();
+        if (user != null && mFirebaseUser != null ) {
             UserManager.setActiveUser(user);
             loginLayout.setVisibility(View.GONE);
             settingsLayout.setVisibility(View.VISIBLE);
             ProntoDiaryApplication.setCloudSyncEnabled(true);
+            updateUI();
+        }else {
+            loginLayout.setVisibility(View.VISIBLE);
+            settingsLayout.setVisibility(View.GONE);
+            ProntoDiaryApplication.setCloudSyncEnabled(false);
             updateUI();
         }
 

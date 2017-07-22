@@ -35,6 +35,7 @@ public class Constants {
     public static final String PHOTO_URL = "photo_url";
     public static final String LOGIN_PROVIDER = "login_provider";
     public static final String TAG_FILTER = "TAG_FILTER";
+    public static final String ATTACHMENT_ID = "attachment_id";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

@@ -55,6 +55,7 @@ import com.okason.diary.core.events.UpdateTagLayoutEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.core.services.UploadFileToFirebaseIntentService;
 import com.okason.diary.data.FolderRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
@@ -380,6 +381,11 @@ public class NoteEditorFragment extends Fragment implements
     public void onAttachmentAddedToNote(OnAttachmentAddedToNoteEvent event) {
         hideProgressDialog();
         populateNote(event.getUpdatedNote());
+
+        Intent uploadIntent = new Intent(getActivity(),
+                UploadFileToFirebaseIntentService.class);
+        uploadIntent.putExtra(Constants.ATTACHMENT_ID, event.getAttachmentId());
+        getActivity().startService(uploadIntent);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -554,6 +560,7 @@ public class NoteEditorFragment extends Fragment implements
     public String getContent() {
         return mContent.getText().toString();
     }
+
 
     /**
      * Shows a horizontal layout at the top of the screen that displays
@@ -977,6 +984,7 @@ public class NoteEditorFragment extends Fragment implements
 
             Attachment attachment = new Attachment(attachmentUri, mLocalAudioFilePath, Constants.MIME_TYPE_AUDIO);
             mPresenter.onAttachmentAdded(attachment);
+
         }
 
         makeToast("Recording added");

@@ -143,12 +143,18 @@
             android:name=".ui.todolist.AddSubTaskActivity"
             android:label="@string/title_activity_add_sub_task"
             android:parentActivityName=".NoteListActivity"
-            android:windowSoftInputMode="stateHidden"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.okason.diary.NoteListActivity"/>
         </activity>
+
+        <service
+            android:name=".core.services.UploadFileToFirebaseIntentService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
     </application>
 
 </manifest>

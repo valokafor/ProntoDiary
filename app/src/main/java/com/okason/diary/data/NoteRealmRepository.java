@@ -1,5 +1,6 @@
 package com.okason.diary.data;
 
+import com.google.firebase.database.DatabaseReference;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.events.OnAttachmentAddedToNoteEvent;
 import com.okason.diary.core.events.UpdateTagLayoutEvent;
@@ -26,6 +27,11 @@ import io.realm.RealmResults;
  */
 
 public class NoteRealmRepository implements AddNoteContract.Repository {
+    private DatabaseReference mDatabase;
+    private DatabaseReference noteCloudReference;
+    private DatabaseReference storageRecordCloudReference;
+
+
     @Override
     public List<Note> getAllNotes() {
         List<Note> viewModels = new ArrayList<>();
@@ -267,22 +273,24 @@ public class NoteRealmRepository implements AddNoteContract.Repository {
     public void addAttachment(final String noteId, final Attachment attachment) {
         final String attachmentId = UUID.randomUUID().toString();
 
-        try (Realm realm = Realm.getInstance(UserManager.getConfig())){
+        try (final Realm realm = Realm.getInstance(UserManager.getConfig())){
             realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm backgroundRealm) {
-                    Attachment savedAttachment = backgroundRealm.createObject(Attachment.class, attachmentId);
+                    final Attachment savedAttachment = backgroundRealm.createObject(Attachment.class, attachmentId);
                     savedAttachment.update(attachment);
 
                     Note parentNote = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
                     parentNote.getAttachments().add(savedAttachment);
-                    EventBus.getDefault().post(new OnAttachmentAddedToNoteEvent(backgroundRealm.copyFromRealm(parentNote)));
+                    EventBus.getDefault().post(new OnAttachmentAddedToNoteEvent(backgroundRealm.copyFromRealm(parentNote), attachmentId));
 
                 }
             });
 
         }
     }
+
+   // private void uploadFileToFirebase(Data)
 
     @Override
     public boolean noteExists(Realm realm, String noteId) {
