@@ -31,6 +31,7 @@ public class TaskContract {
         void onEditTaskButtonClick(Task task);
         Task findTaskById(String id);
         void deleteTask(Task task);
+        void deleteSubTask(String taskId, String subTaskId);
         void onTitleChange(String newTitle);
         void onFolderChange(String folderId);
         String getCurrentTaskId();
@@ -48,9 +49,9 @@ public class TaskContract {
         void updateTask(String taskId, int priority, String taskName, long dueDateAndTime, Reminder repeat, long repeatEndDate, String folderId);
         void updateTaskStatus(Task task, boolean completed);
         void updateSubTaskStatus(String taskId, String subTaskId, boolean completed);
-        void removeSubTaskFromTask(SubTask subTask, Task task);
         List<Task> getAllTask();
         void deleteTask(String taskId);
+        void deleteSubTask(String parentTaskId, String subTaskId);
         Task getTaskById(String id);
         int  getAllTaskAndSubTaskCount();
 

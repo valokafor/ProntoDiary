@@ -99,6 +99,15 @@ public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.
 
                 }
             });
+
+            taskTitle.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final SubTask clickedTask = subTasks.get(getLayoutPosition());
+                    taskItemListener.onEditSubTask(clickedTask);
+
+                }
+            });
         }
     }
 

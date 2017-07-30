@@ -155,10 +155,6 @@ public class TaskRealmRepository implements TaskContract.Repository {
 
     }
 
-    @Override
-    public void removeSubTaskFromTask(SubTask subTask, Task task) {
-
-    }
 
     @Override
     public List<Task> getAllTask() {
@@ -180,6 +176,21 @@ public class TaskRealmRepository implements TaskContract.Repository {
                 @Override
                 public void execute(Realm realm) {
                     realm.where(Task.class).equalTo("id", taskId).findFirst().deleteFromRealm();
+                }
+            });
+
+        }
+
+    }
+
+    @Override
+    public void deleteSubTask(String parentTaskId, final String subTaskId) {
+
+        try (Realm realm = Realm.getDefaultInstance()){
+            realm.executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    realm.where(SubTask.class).equalTo("id", subTaskId).findFirst().deleteFromRealm();
                 }
             });
 

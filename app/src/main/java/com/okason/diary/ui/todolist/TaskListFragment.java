@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,8 +27,11 @@ import com.okason.diary.models.Task;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.utils.Constants;
 
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Case;
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
@@ -34,7 +39,8 @@ import io.realm.RealmResults;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class TaskListFragment extends Fragment implements TaskItemListener, TaskContract.View{
+public class TaskListFragment extends Fragment implements TaskItemListener,
+        TaskContract.View, SearchView.OnCloseListener, SearchView.OnQueryTextListener{
 
     private Realm mRealm;
     private RealmResults<Task> mTasks;
@@ -121,6 +127,9 @@ public class TaskListFragment extends Fragment implements TaskItemListener, Task
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_todo_list, menu);
         MenuItem search = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
+        searchView.setOnQueryTextListener(this);
+        searchView.setOnCloseListener(this);
 
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -146,11 +155,44 @@ public class TaskListFragment extends Fragment implements TaskItemListener, Task
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean onClose() {
+        mTasks = mRealm.where(Task.class).findAll();
+        mTasks.addChangeListener(new RealmChangeListener<RealmResults<Task>>() {
+            @Override
+            public void onChange(RealmResults<Task> tasks) {
+                if (shouldUpdateAdapter) {
+                    showTodoLists(tasks);
+                }else {
+                    shouldUpdateAdapter = true;
+                }
+            }
+        });
+        showTodoLists(mTasks);
+        return false;
+    }
 
-    
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        if (query.length() > 0) {
+            mTasks = mRealm.where(Task.class).contains("title", query, Case.INSENSITIVE).findAll();
+            showTodoLists(mRealm.copyFromRealm(mTasks));
+            return true;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        return true;
+    }
 
 
-    private void showTodoLists(RealmResults<Task> tasks) {
+
+
+
+
+    private void showTodoLists(List<Task> tasks) {
 
         if (tasks != null && tasks.size() > 0){
             showEmptyText(false);
@@ -266,4 +308,6 @@ public class TaskListFragment extends Fragment implements TaskItemListener, Task
     public void goBackToParent() {
         getActivity().onBackPressed();
     }
+
+
 }

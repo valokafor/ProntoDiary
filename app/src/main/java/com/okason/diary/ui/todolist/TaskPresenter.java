@@ -84,6 +84,11 @@ public class TaskPresenter implements TaskContract.Actions {
     }
 
     @Override
+    public void deleteSubTask(String taskId, String subTaskId) {
+        repository.deleteSubTask(taskId, subTaskId);
+    }
+
+    @Override
     public void onTitleChange(String newTitle) {
 
     }

@@ -121,7 +121,7 @@ public class AddFolderDialogFragment extends DialogFragment {
     }
 
     private boolean requiredFieldCompleted(){
-        if (mFolderEditText.getText().toString().isEmpty())
+        if (TextUtils.isEmpty(mFolderEditText.getText().toString()))
         {
             mFolderEditText.setError(getString(R.string.required));
             mFolderEditText.requestFocus();

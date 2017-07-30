@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -34,6 +36,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Case;
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
@@ -41,7 +44,8 @@ import io.realm.RealmResults;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FolderListFragment extends Fragment implements OnFolderSelectedListener{
+public class FolderListFragment extends Fragment implements OnFolderSelectedListener,
+        SearchView.OnCloseListener, SearchView.OnQueryTextListener{
 
    // private List<Note> mNotes;
     private FolderListAdapter mAdapter;
@@ -133,7 +137,9 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_folder_list, menu);
         MenuItem search = menu.findItem(R.id.action_search);
-
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
+        searchView.setOnQueryTextListener(this);
+        searchView.setOnCloseListener(this);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -152,11 +158,38 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
                         startActivity(new Intent(getActivity(), AuthUiActivity.class));
                     }
                 }
-
                 break;
-
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onClose() {
+        mFolders = mRealm.where(Folder.class).findAll();
+        mFolders = mRealm.where(Folder.class).findAll();
+        mFolders.addChangeListener(new RealmChangeListener<RealmResults<Folder>>() {
+            @Override
+            public void onChange(RealmResults<Folder> folders) {
+                showFolders(folders);
+            }
+        });
+        showFolders(mFolders);
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        if (query.length() > 0) {
+            mFolders = mRealm.where(Folder.class).contains("folderName", query, Case.INSENSITIVE).findAll();
+            showFolders(mRealm.copyFromRealm(mFolders));
+            return true;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        return true;
     }
 
 
@@ -263,4 +296,6 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         alertDialog.show();
 
     }
+
+
 }

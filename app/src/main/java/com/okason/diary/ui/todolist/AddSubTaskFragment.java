@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.SubTaskItemListener;
+import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
@@ -278,6 +279,11 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
     @Override
     public void onSubTaskDeleted(String taskId, String subTaskId) {
+        presenter.deleteSubTask(taskId, subTaskId);
+    }
+
+    @Override
+    public void onEditSubTask(SubTask subTask) {
 
     }
 }

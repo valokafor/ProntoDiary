@@ -47,6 +47,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Case;
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
@@ -54,7 +55,7 @@ import io.realm.RealmResults;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NoteListFragment extends Fragment implements SearchView.OnQueryTextListener {
+public class NoteListFragment extends Fragment implements SearchView.OnQueryTextListener, SearchView.OnCloseListener {
 
     private FirebaseAnalytics mFirebaseAnalytics;
 
@@ -83,19 +84,17 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 //    AdView mAdView;
 
 
-
-
-
     public NoteListFragment() {
         // Required empty public constructor
     }
 
     /**
      * Factory method to create a Note List Fragment
+     *
      * @param dualScreen - indicates if this Fragment is participating in dual screen
      * @return - returns the created Fragment
      */
-    public static NoteListFragment newInstance(boolean dualScreen, String tagName){
+    public static NoteListFragment newInstance(boolean dualScreen, String tagName) {
         NoteListFragment fragment = new NoteListFragment();
         Bundle args = new Bundle();
         args.putBoolean(Constants.IS_DUAL_SCREEN, dualScreen);
@@ -109,13 +108,12 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         Bundle args = getArguments();
-        if (args  != null && args.containsKey(Constants.IS_DUAL_SCREEN)){
+        if (args != null && args.containsKey(Constants.IS_DUAL_SCREEN)) {
             isDualScreen = args.getBoolean(Constants.IS_DUAL_SCREEN);
         }
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-
 
 
     }
@@ -134,7 +132,6 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
         return mRootView;
     }
-
 
 
     private void goToImageGallery(Note clickedNote, Attachment clickedAttachment) {
@@ -187,7 +184,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (mPlayer != null){
+        if (mPlayer != null) {
             mPlayer.release();
             mPlayer = null;
         }
@@ -200,25 +197,52 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         MenuItem search = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
         searchView.setOnQueryTextListener(this);
+        searchView.setOnCloseListener(this);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-        @Override
-        public boolean onQueryTextSubmit(String query) {
-            return false;
-        }
 
-        @Override
-        public boolean onQueryTextChange(String newText) {
-            return false;
+    /**
+     * Handles Toolbar Search
+     * @param query
+     * @return
+     */
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        if (query.length() > 0) {
+            mNotes = mRealm.where(Note.class).contains("content", query, Case.INSENSITIVE).or().contains("title", query, Case.INSENSITIVE).findAll();
+            showNotes(mRealm.copyFromRealm(mNotes));
+            return true;
         }
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+
+        return true;
+    }
+
+    @Override
+    public boolean onClose() {
+        mNotes = mRealm.where(Note.class).findAll();
+        mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
+            @Override
+            public void onChange(RealmResults<Note> notes) {
+                showNotes(mRealm.copyFromRealm(mNotes));
+            }
+        });
+        showNotes(mRealm.copyFromRealm(mNotes));
+        return false;
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
 
         int id = item.getItemId();
-        switch (id){
+        switch (id) {
             case R.id.action_add:
                 if (getActivity() != null) {
                     if (ProntoDiaryApplication.isCloudSyncEnabled()) {
@@ -234,10 +258,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
 
-
-
     public void showNotes(List<Note> notes) {
-        if (notes != null && notes.size() > 0){
+        if (notes != null && notes.size() > 0) {
             showEmptyText(false);
             mListAdapter = null;
 
@@ -264,25 +286,25 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
                 public void onAttachmentClicked(Note clickedNote, int position) {
                     //An attachment in the Note list has been clicked
                     Attachment clickedAttachment = clickedNote.getAttachments().get(clickedNote.getAttachments().size() - 1);
-                    if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
+                    if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)) {
                         //Play Audio
                         startPlaying(clickedAttachment, position);
-                    }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)){
+                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)) {
                         //Play Video
                         viewMedia(clickedAttachment);
-                    }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
+                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)) {
                         //Show Image Gallery
                         goToImageGallery(clickedNote, clickedAttachment);
-                    }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
+                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)) {
                         //Show file
 
-                    }else {
+                    } else {
                         //Show details page
                     }
                 }
             });
 
-        }else {
+        } else {
             showEmptyText(true);
         }
 
@@ -291,14 +313,14 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
 
     public void showEmptyText(boolean showText) {
-        if (showText){
+        if (showText) {
 
             mEmptyText.setVisibility(View.VISIBLE);
             mRecyclerView.setVisibility(View.GONE);
-          //  mAdView.setVisibility(View.GONE);
+            //  mAdView.setVisibility(View.GONE);
 
-        }else {
-          //  mAdView.setVisibility(View.VISIBLE);
+        } else {
+            //  mAdView.setVisibility(View.VISIBLE);
             mEmptyText.setVisibility(View.GONE);
             mRecyclerView.setVisibility(View.VISIBLE);
         }
@@ -324,7 +346,6 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
 
-
     public void showSingleDetailUi(Note selectedNote) {
         String id = selectedNote.getId();
         startActivity(NoteDetailActivity.getStartIntent(getContext(), id));
@@ -336,20 +357,20 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 //        activity.showTwoPane(note);
     }
 
-    public void promptForDelete(final Note note){
+    public void promptForDelete(final Note note) {
         String content;
         if (!TextUtils.isEmpty(note.getContent())) {
             content = note.getContent();
         } else {
             content = "";
         }
-        String message =  getString(R.string.label_delete)  + " " + content.substring(0, Math.min(content.length(), 50)) + "  ... ?";
+        String message = getString(R.string.label_delete) + " " + content.substring(0, Math.min(content.length(), 50)) + "  ... ?";
 
 
         android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext(), R.style.dialog);
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
-        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        View titleView = (View) inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView) titleView.findViewById(R.id.text_view_dialog_title);
         titleText.setText(getString(R.string.warning_are_you_sure));
         alertDialog.setCustomTitle(titleView);
 
@@ -369,11 +390,11 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         alertDialog.show();
     }
 
-    private void makeToast(String message){
+    private void makeToast(String message) {
         Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
         View snackBarView = snackbar.getView();
         snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
-        TextView tv = (TextView)snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+        TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
         tv.setTextColor(Color.WHITE);
         snackbar.show();
     }
@@ -394,7 +415,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
                 mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
-                        if (!mp.isPlaying()){
+                        if (!mp.isPlaying()) {
                             mListAdapter.setAudioPlaying(false, position);
                             isAudioPlaying = false;
                         }
@@ -414,11 +435,6 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         intent.setDataAndType(Uri.parse(attachment.getFilePath()), attachment.getMime_type());
         startActivity(intent);
     }
-
-
-
-
-
 
 
 }
