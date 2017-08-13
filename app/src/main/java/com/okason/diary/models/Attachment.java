@@ -1,6 +1,13 @@
 package com.okason.diary.models;
 
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
+import android.text.TextUtils;
+
+import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.services.DownloadFileFromFireaseIntentService;
+import com.okason.diary.utils.Constants;
 
 import java.io.File;
 
@@ -81,6 +88,16 @@ public class Attachment extends RealmObject{
             filePath = this.getLocalFilePath();
         }else {
             filePath = this.getCloudFilePath();
+            //If Attachment exists in the cloud, kick off an Intent Service that
+            //Downloads that file from the cloud and save it locally
+            if (!TextUtils.isEmpty(filePath)){
+                Context appContext =  ProntoDiaryApplication.getAppContext();
+                Intent downloadIntent = new Intent(appContext,
+                        DownloadFileFromFireaseIntentService.class);
+                downloadIntent.putExtra(Constants.ATTACHMENT_ID, id);
+                appContext.startService(downloadIntent);
+
+            }
         }
         return filePath;
     }

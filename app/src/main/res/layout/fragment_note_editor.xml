@@ -72,6 +72,7 @@
                             android:background="@android:color/transparent"
                             android:clickable="true"
                             android:drawableLeft="@drawable/ic_folder_green"
+                            android:drawablePadding="@dimen/activity_horizontal_margin"
                             android:focusable="false"
                             android:hint="@string/select_folder"
                             android:textSize="@dimen/text_size_xnormal" />

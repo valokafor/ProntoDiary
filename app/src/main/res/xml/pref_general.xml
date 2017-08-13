@@ -4,29 +4,57 @@
     <PreferenceCategory
         android:title="Editor" >
         <SwitchPreference
-            android:title="Note Editor"
-            android:key="default_editor"
-            android:summary="Toogle to use Lined Editor or Plain Editor"
-            android:defaultValue="false"/>
-        <SwitchPreference
             android:title="Delete"
             android:key="prompt_for_delete"
             android:summary="Toogle to prompt for Confirm delete"
             android:defaultValue="true"/>
     </PreferenceCategory>
 
+    <!--<PreferenceCategory-->
+        <!--android:title="Default Sort" >-->
+        <!--<ListPreference-->
+            <!--android:key="sort_options"-->
+            <!--android:title="Sort Options"-->
+            <!--android:dialogTitle="Select Sort Option"-->
+            <!--android:entries="@array/sortOptionsEntries"-->
+            <!--android:entryValues="@array/sortOptionsValues"-->
+            <!--android:defaultValue="@string/label_title" />-->
+    <!--</PreferenceCategory>-->
+
+
     <PreferenceCategory
-        android:title="Default Sort" >
+        android:title="@string/pref_header_notifications">
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/pref_vibration_key"
+            android:title="@string/pref_vibration_title"/>
+
+        <RingtonePreference
+            android:defaultValue="content://settings/system/notification_sound"
+            android:key="@string/pref_sound_key"
+            android:title="@string/pref_sound_title"/>
+
         <ListPreference
-            android:key="sort_options"
-            android:title="Sort Options"
-            android:dialogTitle="Select Sort Option"
-            android:entries="@array/sortOptionsEntries"
-            android:entryValues="@array/sortOptionsValues"
-            android:defaultValue="@string/label_title" />
+            android:defaultValue="0"
+            android:entries="@array/pref_tasknotification_list_titles"
+            android:entryValues="@array/pref_tasknotification_list_values"
+            android:key="@string/pref_tasknotification_key"
+            android:negativeButtonText="@string/pref_cancel"
+            android:positiveButtonText="@null"
+            android:title="@string/pref_tasknotification_title"/>
 
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/pref_daysummary_key"
+            android:title="@string/pref_daysummary_title"/>
 
-
+        <com.okason.diary.utils.reminder.TimePreference
+            android:dependency="@string/pref_daysummary_key"
+            android:key="@string/pref_time_key"
+            android:negativeButtonText="@string/pref_cancel"
+            android:positiveButtonText="@string/pref_ok"
+            android:title="@string/pref_time_title"/>
     </PreferenceCategory>
 
 

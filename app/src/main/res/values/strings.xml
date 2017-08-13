@@ -294,8 +294,7 @@
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
-    <!-- Example settings for Notifications -->
-    <string name="pref_header_notifications">Notifications</string>
+
 
     <string name="pref_title_new_message_notifications">New message notifications</string>
 
@@ -345,6 +344,56 @@
     <string name="repeat_date_before_due_date">Task repeat date is before Task due date.</string>
     <string name="no_parent_task_found">No Parent Task found</string>
     <string name="completing_sign_in">Completing sign in</string>
+
+    <!-- Settings screen -->
+    <string name="pref_header_notifications">Notifications</string>
+
+    <string name="pref_sound_key">pref_key_sound</string>
+    <string name="pref_sound_title">Sound</string>
+
+    <string name="pref_vibration_key">pref_vibration_key</string>
+    <string name="pref_vibration_title">Vibration</string>
+
+    <string name="pref_tasknotification_key">pref_key_tasknotification</string>
+    <string name="pref_tasknotification_title">Task notification</string>
+    <string-array name="pref_tasknotification_list_titles">
+        <item>On time</item>
+        <item>5 mins before</item>
+        <item>15 mins before</item>
+        <item>30 mins before</item>
+        <item>1 hour before</item>
+        <item>2 hours before</item>
+        <item>3 hours before</item>
+    </string-array>
+    <string-array name="pref_tasknotification_list_values">
+        <item>0</item>
+        <item>5</item>
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+        <item>180</item>
+    </string-array>
+
+    <string name="pref_daysummary_key">pref_daysummary_key</string>
+    <string name="pref_daysummary_title">Day summary</string>
+
+    <string name="pref_time_key">pref_time_key</string>
+    <string name="pref_time_title">Choice time</string>
+
+    <string name="pref_enabled">Enabled</string>
+    <string name="pref_disabled">Disabled</string>
+    <string name="pref_no_sound">No sound</string>
+    <string name="pref_cancel">Cancel</string>
+    <string name="pref_ok">OK</string>
+
+    <string name="reminder_no">no_reminder</string>
+    <string name="reminder_hourly">hourly</string>
+    <string name="reminder_daily">daily</string>
+    <string name="reminder_weekly">weekly</string>
+    <string name="reminder_monthly">monthly</string>
+    <string name="reminder_yearly">yearly</string>
+    <string name="reminder_minute">minute</string>
 
 
 </resources>

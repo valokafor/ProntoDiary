@@ -1235,55 +1235,59 @@ public class NoteEditorFragment extends Fragment implements
 
 
     public void displayShareIntent(Note note) {
-        if (note == null) {
+        if (note != null && !TextUtils.isEmpty(note.getContent()) && !TextUtils.isEmpty(note.getTitle())) {
+
+            String titleText = note.getTitle();
+
+            String contentText = titleText
+                    + System.getProperty("line.separator")
+                    + note.getContent();
+
+
+            Intent shareIntent = new Intent();
+            // Prepare sharing intent with only text
+            if (note.getAttachments().size() == 0) {
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.setType("text/plain");
+
+                // Intent with single image attachment
+            } else if (note.getAttachments().size() == 1) {
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.setType(note.getAttachments().get(0).getMime_type());
+                Uri singleUri = Uri.parse(note.getAttachments().get(0).getUri());
+                shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
+
+                // Intent with multiple images
+            } else if (note.getAttachments().size() > 1) {
+                shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+                ArrayList<Uri> uris = new ArrayList<>();
+                // A check to decide the mime type of attachments to share is done here
+                HashMap<String, Boolean> mimeTypes = new HashMap<>();
+                for (Attachment attachment : note.getAttachments()) {
+                    Uri uri = Uri.parse(attachment.getUri());
+                    uris.add(uri);
+                    mimeTypes.put(attachment.getMime_type(), true);
+                }
+                // If many mime types are present a general type is assigned to intent
+                if (mimeTypes.size() > 1) {
+                    shareIntent.setType("*/*");
+                } else {
+                    shareIntent.setType((String) mimeTypes.keySet().toArray()[0]);
+                }
+
+                shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+            }
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
+            shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
+
+            startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+
+        } else {
             makeToast(getString(R.string.no_notes_found));
             return;
+
         }
 
-        String titleText = note.getTitle();
-
-        String contentText = titleText
-                + System.getProperty("line.separator")
-                + note.getContent();
-
-
-        Intent shareIntent = new Intent();
-        // Prepare sharing intent with only text
-        if (note.getAttachments().size() == 0) {
-            shareIntent.setAction(Intent.ACTION_SEND);
-            shareIntent.setType("text/plain");
-
-            // Intent with single image attachment
-        } else if (note.getAttachments().size() == 1) {
-            shareIntent.setAction(Intent.ACTION_SEND);
-            shareIntent.setType(note.getAttachments().get(0).getMime_type());
-            Uri singleUri = Uri.parse(note.getAttachments().get(0).getUri());
-            shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
-
-            // Intent with multiple images
-        } else if (note.getAttachments().size() > 1) {
-            shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
-            ArrayList<Uri> uris = new ArrayList<>();
-            // A check to decide the mime type of attachments to share is done here
-            HashMap<String, Boolean> mimeTypes = new HashMap<>();
-            for (Attachment attachment : note.getAttachments()) {
-                Uri uri = Uri.parse(attachment.getUri());
-                uris.add(uri);
-                mimeTypes.put(attachment.getMime_type(), true);
-            }
-            // If many mime types are present a general type is assigned to intent
-            if (mimeTypes.size() > 1) {
-                shareIntent.setType("*/*");
-            } else {
-                shareIntent.setType((String) mimeTypes.keySet().toArray()[0]);
-            }
-
-            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-        }
-        shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
-        shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
-
-        startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
     }
 
 }

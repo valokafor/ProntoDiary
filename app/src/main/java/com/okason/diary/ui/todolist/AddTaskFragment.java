@@ -752,7 +752,9 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
     @Override
     public void goBackToParent() {
-        startActivity(new Intent(getActivity(), NoteListActivity.class));
+        Intent parentIntent = new Intent(getActivity(), NoteListActivity.class);
+        parentIntent.putExtra(Constants.FRAGMENT_TAG, Constants.TODO_LIST_FRAGMENT_TAG);
+        startActivity(parentIntent);
     }
 
     public static class ReminderTimePickerDialogFragment extends DialogFragment

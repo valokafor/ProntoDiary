@@ -224,6 +224,12 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (getIntent() != null && getIntent().hasExtra(Constants.FRAGMENT_TAG)){
+            String tag = getIntent().getStringExtra(Constants.FRAGMENT_TAG);
+            if (tag.equals(Constants.TODO_LIST_FRAGMENT_TAG)){
+                openFragment(new TaskListFragment(), getString(R.string.title_todo_list), Constants.TODO_LIST_FRAGMENT_TAG);
+            }
+        }
 
 
     }
@@ -429,8 +435,9 @@ public class NoteListActivity extends AppCompatActivity {
                 .replace(R.id.container, fragment, tag)
                 .addToBackStack(screenTitle)
                 .commit();
-        //getSupportActionBar().setTitle(screenTitle);
-        toolbarTitle.setText(screenTitle);
+        toolbarTitle.setVisibility(View.GONE);
+        getSupportActionBar().setTitle(screenTitle);
+       // toolbarTitle.setText(screenTitle);
     }
 
 

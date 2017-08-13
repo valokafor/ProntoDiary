@@ -24,8 +24,6 @@ public class Task extends RealmObject {
 
     private long dueDateAndTime;
     private long repeatEndDate;
-    private boolean remind;
-    private boolean reminderFired;
     private String repeatFrequency;
     private Double latitude;
     private Double longitude;
@@ -114,22 +112,6 @@ public class Task extends RealmObject {
 
     public void setRepeatEndDate(long repeatEndDate) {
         this.repeatEndDate = repeatEndDate;
-    }
-
-    public boolean isReminderFired() {
-        return reminderFired;
-    }
-
-    public void setReminderFired(boolean reminderFired) {
-        this.reminderFired = reminderFired;
-    }
-
-    public boolean isRemind() {
-        return remind;
-    }
-
-    public void setRemind(boolean remind) {
-        this.remind = remind;
     }
 
     public Reminder getRepeatFrequency() {

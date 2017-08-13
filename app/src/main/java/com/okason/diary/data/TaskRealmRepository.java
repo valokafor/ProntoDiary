@@ -68,7 +68,6 @@ public class TaskRealmRepository implements TaskContract.Repository {
             updatedTask.setDueDateAndTime(dueDateAndTime);
             updatedTask.setRepeatEndDate(repeatEndDate);
             updatedTask.setRepeatFrequency(repeat);
-            updatedTask.setRemind(repeat != null);
 
             Folder selectedFolder = realm.where(Folder.class).equalTo("id", folderId).findFirst();
             if (selectedFolder != null){
@@ -94,7 +93,6 @@ public class TaskRealmRepository implements TaskContract.Repository {
             updatedTask.setDueDateAndTime(dueDateAndTime);
             updatedTask.setRepeatEndDate(repeatEndDate);
             updatedTask.setRepeatFrequency(repeat);
-            updatedTask.setRemind(repeat != null);
 
             Folder selectedFolder = realm.where(Folder.class).equalTo("id", folderId).findFirst();
             if (selectedFolder != null){
