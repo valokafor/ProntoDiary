@@ -11,6 +11,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.NoteListActivity;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
 import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.ui.auth.UserManager;
@@ -22,8 +23,10 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.UUID;
 
 import io.realm.ObjectServerError;
+import io.realm.Realm;
 import io.realm.SyncCredentials;
 import io.realm.SyncUser;
+import io.realm.permissions.PermissionChange;
 
 import static com.okason.diary.core.ProntoDiaryApplication.AUTH_URL;
 
@@ -110,7 +113,9 @@ public class HandleRealmLoginService extends IntentService implements SyncUser.C
             prontoDiaryUser.setDisplayName(firebaseUser.getDisplayName());
             prontoDiaryUser.setLoginProvider(providerType);
             prontoDiaryUser.setFcmToken(SettingsHelper.getHelper(getApplication()).getMessagingToken());
-            prontoDiaryUser.setPhotoUrl(firebaseUser.getPhotoUrl().toString());
+            if (firebaseUser.getPhotoUrl() != null) {
+                prontoDiaryUser.setPhotoUrl(firebaseUser.getPhotoUrl().toString());
+            }
             prontoDiaryUser.setFirebaseUid(firebaseUser.getUid());
             prontoDiaryUser.setRealmPassword(generatedPassword);
             prontoDiaryUser.setId(mProntoDiaryUserRef.push().getKey());
@@ -128,6 +133,10 @@ public class HandleRealmLoginService extends IntentService implements SyncUser.C
         SettingsHelper.getHelper(getApplicationContext()).setRegisteredUser(true);
         UserManager.setActiveUser(user);
         updatedProntoDiaryUser(mFirebaseUser);
+
+        Realm managementRealm = user.getManagementRealm();
+        PermissionChange permissionChange = new PermissionChange(
+                ProntoDiaryApplication.REALM_URL, "1234", true, null, false);
 
     }
 

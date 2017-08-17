@@ -41,9 +41,9 @@ import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.auth.UserManager;
-import com.okason.diary.ui.folder.FolderListFragment;
+import com.okason.diary.ui.folder.AccountFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
-import com.okason.diary.ui.settings.AccountFragment;
+import com.okason.diary.ui.settings.SettingsActivity;
 import com.okason.diary.ui.todolist.TaskListFragment;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
@@ -304,16 +304,17 @@ public class NoteListActivity extends AppCompatActivity {
         folderButton.setImageResource(R.drawable.ic_folder_dark_green);
         folderTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
         folderTextView.setTypeface(folderTextView.getTypeface(), Typeface.BOLD);
-        openFragment(new FolderListFragment(), getString(R.string.label_folders), Constants.FOLDER_FRAGMENT_TAG);
+        openFragment(new AccountFragment(), getString(R.string.label_folders), Constants.FOLDER_FRAGMENT_TAG);
     }
 
 
     private void handleSettingsButtonClicked() {
         resetBottomNavigationIcons();
-        settingsButton.setImageResource(R.drawable.ic_account_passkey_dark_green);
+        settingsButton.setImageResource(R.drawable.ic_settings_dark_green);
         settingsTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
         settingsTextView.setTypeface(settingsTextView.getTypeface(), Typeface.BOLD);
-        openFragment(new AccountFragment(), getString(R.string.label_account), Constants.ACCOUNT_TAG);
+        startActivity(new Intent(mActivity, SettingsActivity.class));
+       // openFragment(new AccountFragment(), getString(R.string.label_account), Constants.ACCOUNT_TAG);
     }
 
     private void handleLoginButtonClicked(){
@@ -414,7 +415,7 @@ public class NoteListActivity extends AppCompatActivity {
         loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
         loginTextView.setTypeface(loginTextView.getTypeface(), Typeface.NORMAL);
 
-        settingsButton.setImageResource(R.drawable.ic_account_passkey_gray);
+        settingsButton.setImageResource(R.drawable.ic_settings_gray);
         settingsTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
         settingsTextView.setTypeface(settingsTextView.getTypeface(), Typeface.NORMAL);
     }

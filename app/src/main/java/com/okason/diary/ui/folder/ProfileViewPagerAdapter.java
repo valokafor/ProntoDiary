@@ -1,9 +1,10 @@
-package com.okason.diary.ui.settings;
+package com.okason.diary.ui.folder;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
+import com.okason.diary.ui.settings.ProfileFragment;
 import com.okason.diary.ui.tag.TagListFragment;
 
 
@@ -21,7 +22,7 @@ public class ProfileViewPagerAdapter extends FragmentStatePagerAdapter {
         Fragment selectedFragment;
         switch (position){
             case 0:
-                selectedFragment = new ProfileFragment();
+                selectedFragment = new FolderListFragment();
                 break;
             case 1:
                 selectedFragment = new TagListFragment();
@@ -30,7 +31,7 @@ public class ProfileViewPagerAdapter extends FragmentStatePagerAdapter {
 //                selectedFragment = new LocationListFragment();
 //                break;
             default:
-                selectedFragment = new TagListFragment();
+                selectedFragment = new FolderListFragment();
 
         }
         return selectedFragment;
@@ -46,7 +47,7 @@ public class ProfileViewPagerAdapter extends FragmentStatePagerAdapter {
         String title = "";
         switch (position){
             case 0:
-                title = "Profile";
+                title = "Folders";
                 break;
             case 1:
                 title = "Tags";

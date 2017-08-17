@@ -122,7 +122,7 @@
                     android:layout_gravity="center_horizontal"
                     android:background="@null"
                     android:layout_weight="1"
-                    app:srcCompat="@drawable/ic_account_passkey_gray"/>
+                    app:srcCompat="@drawable/ic_settings_gray"/>
 
                 <TextView
                     android:id="@+id/settings_text_view"
@@ -130,7 +130,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:clickable="true"
-                    android:text="@string/label_account"/>
+                    android:text="@string/label_settings"/>
             </LinearLayout>
 
             <LinearLayout

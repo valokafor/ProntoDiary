@@ -52,6 +52,7 @@ public class AuthUiActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 100;
     private Activity mActivity;
     private MaterialDialog progressDialog;
+    private boolean shouldShowDialog = false;
 
 
     @BindView(android.R.id.content)
@@ -87,6 +88,19 @@ public class AuthUiActivity extends AppCompatActivity {
 
         showSignInScreen();
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (shouldShowDialog){
+            progressDialog = new MaterialDialog.Builder(mActivity)
+                    .title(getString(R.string.please_wait))
+                    .content(getString(R.string.syncing_data))
+                    .show();
+            shouldShowDialog = false;
+
+        }
     }
 
     @Override
@@ -175,7 +189,7 @@ public class AuthUiActivity extends AppCompatActivity {
 
         if (resultCode == RESULT_OK) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
-
+            shouldShowDialog = true;
             Intent realmIntent = new Intent(mActivity, HandleRealmLoginService.class);
             if (response != null){
                 realmIntent.putExtra(Constants.LOGIN_PROVIDER, response.getProviderType());
@@ -183,10 +197,7 @@ public class AuthUiActivity extends AppCompatActivity {
             startService(realmIntent);
             SettingsHelper.getHelper(mActivity).setRegisteredUser(true);
 
-            progressDialog = new MaterialDialog.Builder(mActivity)
-                    .title(getString(R.string.please_wait))
-                    .content(getString(R.string.syncing_data))
-                    .show();
+            showSnackbar(R.string.syncing_data);
             return;
         }
 
@@ -245,7 +256,9 @@ public class AuthUiActivity extends AppCompatActivity {
                     .content(getString(R.string.syncing_data))
                     .show();
         }else {
-            progressDialog.dismiss();
+            if (progressDialog != null && progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
             //Restart
             Intent restartIntent = new Intent(mActivity, NoteListActivity.class);
             restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
