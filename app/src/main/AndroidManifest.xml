@@ -45,9 +45,6 @@
         <service
             android:name=".core.services.AddSampleDataIntentService"
             android:exported="false"/>
-        <service
-            android:name=".core.services.AttachmentUploadService"
-            android:exported="false"/>
 
         <activity
             android:name=".ui.addnote.AddNoteActivity"

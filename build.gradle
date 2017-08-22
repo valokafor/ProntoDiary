@@ -19,6 +19,9 @@ allprojects {
     repositories {
         jcenter()
         maven { url "https://jitpack.io" }
+        maven {
+            url 'https://maven.google.com'
+        }
     }
 }
 
@@ -32,9 +35,10 @@ ext {
     targetSdkVersion = 22
     compileSdkVersion = 23
     buildToolsVersion = '23.0.3'
+    firebaseVersion = '11.0.4'
 
     // App dependencies
-    supportLibraryVersion = '25.3.1'
+    supportLibraryVersion = '25.4.0'
     guavaVersion = '18.0'
     glideVersion = '3.6.1'
     junitVersion = '4.12'

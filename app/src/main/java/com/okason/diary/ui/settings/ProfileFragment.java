@@ -35,7 +35,6 @@ import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.ui.auth.AuthUiActivity;
-import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
@@ -213,8 +212,9 @@ public class ProfileFragment extends Fragment {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 UserManager.logoutActiveUser();
+                                AuthUI.getInstance().signOut(getActivity());
                                 if (task.isSuccessful()) {
-                                    Intent intent = new Intent(getActivity(), SignInActivity.class);
+                                    Intent intent = new Intent(getActivity(), AuthUiActivity.class);
                                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     startActivity(intent);
                                 } else {

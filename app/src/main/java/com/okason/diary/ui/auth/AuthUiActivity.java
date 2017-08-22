@@ -1,11 +1,10 @@
 package com.okason.diary.ui.auth;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
@@ -14,17 +13,14 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
-import com.firebase.ui.auth.ui.ResultCodes;
 import com.google.android.gms.common.Scopes;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
@@ -38,8 +34,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,8 +45,7 @@ public class AuthUiActivity extends AppCompatActivity {
     private static final String GOOGLE_TOS_URL = "https://www.google.com/policies/terms/";
     private static final int RC_SIGN_IN = 100;
     private Activity mActivity;
-    private MaterialDialog progressDialog;
-    private boolean shouldShowDialog = false;
+    private View progressView;
 
 
     @BindView(android.R.id.content)
@@ -67,24 +60,8 @@ public class AuthUiActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        progressView = findViewById(R.id.register_progress);
 
-
-
-
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo(
-                    "com.okason.prontodiary",
-                    PackageManager.GET_SIGNATURES);
-            for (Signature signature : info.signatures) {
-                MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(signature.toByteArray());
-                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-
-        } catch (NoSuchAlgorithmException e) {
-
-        }
 
         showSignInScreen();
 
@@ -93,14 +70,6 @@ public class AuthUiActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (shouldShowDialog){
-            progressDialog = new MaterialDialog.Builder(mActivity)
-                    .title(getString(R.string.please_wait))
-                    .content(getString(R.string.syncing_data))
-                    .show();
-            shouldShowDialog = false;
-
-        }
     }
 
     @Override
@@ -130,11 +99,10 @@ public class AuthUiActivity extends AppCompatActivity {
     private void showSignInScreen() {
         startActivityForResult(
                 AuthUI.getInstance().createSignInIntentBuilder()
-                        .setTheme(R.style.GreenTheme)
-                        .setLogo(R.mipmap.ic_launcher)
-                        .setProviders(getSelectedProviders())
+                        .setLogo(R.drawable.app_icon)
+                        .setAvailableProviders(getSelectedProviders())
                         .setTosUrl(GOOGLE_TOS_URL)
-                        .setIsSmartLockEnabled(true)
+                        .setIsSmartLockEnabled(true, true)
                         .setAllowNewEmailAccounts(true)
                         .build(),
                 RC_SIGN_IN);
@@ -152,7 +120,6 @@ public class AuthUiActivity extends AppCompatActivity {
                         .build());
         selectedProviders.add(
                 new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER)
-                        .setPermissions(getFacebookPermissions())
                         .build());
 
 
@@ -168,7 +135,6 @@ public class AuthUiActivity extends AppCompatActivity {
 
     private List<String> getFacebookPermissions() {
         List<String> result = new ArrayList<>();
-        result.add("user_friends");
         return result;
     }
 
@@ -185,11 +151,20 @@ public class AuthUiActivity extends AppCompatActivity {
 
     @MainThread
     private void handleSignInResponse(int resultCode, final Intent data) {
+        IdpResponse response = IdpResponse.fromResultIntent(data);
 
 
         if (resultCode == RESULT_OK) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-            shouldShowDialog = true;
+
+            if (progressView != null){
+                showProgress(true);
+            } else{
+               progressView = findViewById(R.id.register_progress);
+                showProgress(true);
+            }
+
+
+
             Intent realmIntent = new Intent(mActivity, HandleRealmLoginService.class);
             if (response != null){
                 realmIntent.putExtra(Constants.LOGIN_PROVIDER, response.getProviderType());
@@ -207,13 +182,30 @@ public class AuthUiActivity extends AppCompatActivity {
             return;
         }
 
-        if (resultCode == ResultCodes.RESULT_NO_NETWORK) {
+        if (response.getErrorCode() == ErrorCodes.NO_NETWORK) {
             makeToast(getString(R.string.no_internet_connection));
             ProntoDiaryApplication.setCloudSyncEnabled(false);
             return;
         }
 
+        if (response.getErrorCode() == ErrorCodes.UNKNOWN_ERROR) {
+            showSnackbar(R.string.unknown_error);
+            return;
+        }
 
+    }
+
+    private void showProgress(final boolean show) {
+        final int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+        progressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        progressView.animate().setDuration(shortAnimTime).alpha(
+                show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                progressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            }
+        });
     }
 
     @MainThread
@@ -251,14 +243,9 @@ public class AuthUiActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRealmDatabaseRegistrationComplete(RealmDatabaseRegistrationCompletedEvent event){
         if (event.isInProgress()){
-            progressDialog = new MaterialDialog.Builder(mActivity)
-                    .title(getString(R.string.please_wait))
-                    .content(getString(R.string.syncing_data))
-                    .show();
+            showProgress(true);
         }else {
-            if (progressDialog != null && progressDialog.isShowing()) {
-                progressDialog.dismiss();
-            }
+            showProgress(false);
             //Restart
             Intent restartIntent = new Intent(mActivity, NoteListActivity.class);
             restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

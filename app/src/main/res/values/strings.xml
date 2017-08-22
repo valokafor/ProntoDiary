@@ -14,7 +14,8 @@
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
-    <string name="facebook_app_id" translatable="false">1084180085015342</string>
+    <string name="facebook_application_id" translatable="false">1084180085015342</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">fb1084180085015342</string>
     <string name="banner_ad_unit_id" translatable="false">xxxxxxxx</string>
     <string name="server_client_id" translatable="false">498554407152-49454rjtf4o83jkhejfk5kgvc90kru2b.apps.googleusercontent.com</string>
 
@@ -33,7 +34,7 @@
     <string name="sync_reason_4">Peace of mind, if something happens to your device, be rest assured that your data will be waiting for you on your next device.</string>
     <string name="sync_reason_5">Your app will continue to work 100% offline. Only syncs when you have internet access.</string>
 
-    <string name="sync_reason">  Welcome to Pronto Diary \n \nCreate an account to save your Diaries, Journal and Todo List. You can access them from any Android device. It\'s free. Always!.</string>
+    <string name="sync_reason">  Welcome to Pronto Diary \n \nLogin or create an account to save your Diaries, Journal and Todo List. You can access them from any Android device. It\'s free. Always!.</string>
 
 
     <!--Account Register and Login Related-->
@@ -394,6 +395,8 @@
     <string name="reminder_monthly">monthly</string>
     <string name="reminder_yearly">yearly</string>
     <string name="reminder_minute">minute</string>
+    <string name="accessibility_logo">Accessibility Logo</string>
+    <string name="unknown_error">Unknown Error</string>
 
 
 </resources>

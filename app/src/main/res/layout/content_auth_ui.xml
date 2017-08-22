@@ -8,4 +8,18 @@
     tools:context="com.okason.diary.ui.auth.AuthUiActivity"
     tools:showIn="@layout/activity_auth_ui">
 
+    <ProgressBar
+        android:id="@+id/register_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"/>
+
+    <TextView
+        style="@style/FirebaseUI.AuthMethodPicker.Logo"
+        android:layout_margin="@dimen/signin_horizontal_margin"
+        android:text="@string/sync_reason"/>
+
+
 </RelativeLayout>
