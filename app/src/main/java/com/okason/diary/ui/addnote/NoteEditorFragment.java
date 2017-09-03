@@ -876,7 +876,7 @@ public class NoteEditorFragment extends Fragment implements
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
             startActivityForResult(takePictureIntent, IMAGE_CAPTURE_REQUEST);
         }
-        ;
+
     }
 
     private void startRecording() {

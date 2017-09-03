@@ -3,9 +3,9 @@ package com.okason.diary.ui.auth;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -15,18 +15,21 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.SignInButton;
-import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.core.services.HandleRealmLoginService;
-import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import io.realm.ObjectServerError;
 import io.realm.SyncCredentials;
@@ -47,10 +50,6 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
     private FacebookAuth facebookAuth;
     private GoogleAuth googleAuth;
 
-    private FirebaseAnalytics firebaseAnalytics;
-    private DatabaseReference mDatabase;
-    private DatabaseReference mProntoDiaryUserRef;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,11 +67,6 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
                 return false;
             }
         });
-
-        firebaseAnalytics = FirebaseAnalytics.getInstance(this);
-
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
 
 
         final Button mailRegisterButton = (Button) findViewById(R.id.email_register_button);
@@ -92,6 +86,34 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             public void onRegistrationComplete(final LoginResult loginResult) {
                 UserManager.setAuthMode(UserManager.AUTH_MODE.FACEBOOK);
                 SyncCredentials credentials = SyncCredentials.facebook(loginResult.getAccessToken().getToken());
+
+                AccessToken accessToken = loginResult.getAccessToken();
+                Profile profile = Profile.getCurrentProfile();
+                GraphRequest request = GraphRequest.newMeRequest(
+                        loginResult.getAccessToken(),
+                        new GraphRequest.GraphJSONObjectCallback() {
+                            @Override
+                            public void onCompleted(
+                                    JSONObject object,
+                                    GraphResponse response) {
+                                Log.v("LoginActivity Response ", response.toString());
+
+                                try {
+                                    String name = object.getString("name");
+                                    String email = object.getString("email");
+                                    String  userId = object.getString("id");
+                                    String photoUrl = "https://graph.facebook.com/" + userId+ "/picture?type=large";
+                                    Log.d(NoteListActivity.TAG, "Name: " + name + ", Email: " + email + ", UserId: " + userId + ", Photo Url: " + photoUrl);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                Bundle parameters = new Bundle();
+                parameters.putString("fields", "id,name,email");
+                request.setParameters(parameters);
+                request.executeAsync();
+
                 SyncUser.loginAsync(credentials, AUTH_URL, RegisterActivity.this);
             }
         };
@@ -102,26 +124,6 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             public void onRegistrationComplete(GoogleSignInResult result) {
                 UserManager.setAuthMode(UserManager.AUTH_MODE.GOOGLE);
                 GoogleSignInAccount acct = result.getSignInAccount();
-
-                Bundle bundle = new Bundle();
-                bundle.putString(FirebaseAnalytics.Param.SIGN_UP_METHOD, Constants.AUTH_METHOD_GOOGLE);
-                firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
-
-                try {
-                    String name = acct.getDisplayName();
-                    String email = acct.getEmail();
-                    Intent loginService = new Intent(RegisterActivity.this, HandleRealmLoginService.class);
-                    loginService.putExtra(Constants.DISPLAY_NAME, name);
-                    loginService.putExtra(Constants.EMAIL_ADDRESSS, email);
-                    loginService.putExtra(Constants.SIGN_IN_METHOD, Constants.AUTH_METHOD_GOOGLE);
-                    Uri photo = acct.getPhotoUrl();
-                    loginService.putExtra(Constants.PHOTO_URL, photo.toString());
-                    startService(loginService);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
                 SyncCredentials credentials = SyncCredentials.google(acct.getIdToken());
                 SyncUser.loginAsync(credentials, AUTH_URL, RegisterActivity.this);
             }
@@ -177,25 +179,6 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             SyncUser.loginAsync(SyncCredentials.usernamePassword(username, password, true), AUTH_URL, new SyncUser.Callback() {
                 @Override
                 public void onSuccess(SyncUser user) {
-                    Bundle bundle = new Bundle();
-                    bundle.putString(FirebaseAnalytics.Param.SIGN_UP_METHOD, Constants.AUTH_METHOD_EMAIL);
-                    firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
-
-                    try {
-                        String name = username;
-                        String email = username;
-                        Intent loginService = new Intent(RegisterActivity.this, HandleRealmLoginService.class);
-                        loginService.putExtra(Constants.DISPLAY_NAME, name);
-                        loginService.putExtra(Constants.EMAIL_ADDRESSS, email);
-                        loginService.putExtra(Constants.SIGN_IN_METHOD, Constants.AUTH_METHOD_EMAIL);
-                        loginService.putExtra(Constants.PHOTO_URL, "");
-                        startService(loginService);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-
                     registrationComplete(user);
                 }
 
@@ -215,8 +198,8 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
     }
 
     private void registrationComplete(SyncUser user) {
-        SettingsHelper.getHelper(this).setRegisteredUser(true);
         UserManager.setActiveUser(user);
+        SettingsHelper.getHelper(RegisterActivity.this).setRegisteredUser(true);
         Intent intent = new Intent(this, SignInActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
@@ -259,6 +242,5 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
         }
         Toast.makeText(RegisterActivity.this, errorMsg, Toast.LENGTH_LONG).show();
     }
-
 
 }

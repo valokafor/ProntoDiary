@@ -43,12 +43,15 @@
 
                 <ImageView
                     android:id="@+id/logo"
-                    style="@style/FirebaseUI.AuthMethodPicker.Logo"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
                     android:src="@mipmap/ic_launcher"
                     android:contentDescription="@string/accessibility_logo" />
 
                 <TextView
-                    style="@style/FirebaseUI.AuthMethodPicker.Logo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
                     android:layout_margin="@dimen/margin_padding_xtiny"
                     android:text="@string/sync_reason"/>
 

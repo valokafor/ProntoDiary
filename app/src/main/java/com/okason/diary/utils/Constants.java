@@ -37,6 +37,7 @@ public class Constants {
     public static final String TAG_FILTER = "TAG_FILTER";
     public static final String ATTACHMENT_ID = "attachment_id";
     public static final String ALARM_NOTIFICATION = "alarm_notification";
+    public static final String REGISTERED_USER = "registered_user";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

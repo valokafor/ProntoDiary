@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
@@ -20,6 +23,7 @@ import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.SignInButton;
+import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 
@@ -118,17 +122,28 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
 
     private void loginComplete(SyncUser user) {
         UserManager.setActiveUser(user);
-        ProntoDiaryApplication.setCloudSyncEnabled(true);
 
-        createInitialDataIfNeeded();
-
-        Intent i = getBaseContext().getPackageManager()
-                .getLaunchIntentForPackage( getBaseContext().getPackageName() );
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(i);
+        Intent listActivity = new Intent(this, NoteListActivity.class);
+        Intent tasksActivity = new Intent(this, NoteListActivity.class);
+        startActivities(new Intent[] { listActivity, tasksActivity} );
         finish();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        final MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_signin, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        final int itemId = item.getItemId();
+        if (itemId == R.id.register) {
+            startActivity(new Intent(this, RegisterActivity.class));
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     private void attemptLogin() {
         usernameView.setError(null);
@@ -191,7 +206,6 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
     @Override
     public void onError(ObjectServerError error) {
         showProgress(false);
-        ProntoDiaryApplication.setCloudSyncEnabled(false);
         String errorMsg;
         switch (error.getErrorCode()) {
             case UNKNOWN_ACCOUNT:
@@ -206,11 +220,7 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
         Toast.makeText(SignInActivity.this, errorMsg, Toast.LENGTH_LONG).show();
     }
 
-    private static void createInitialDataIfNeeded() {
-//        final Realm realm = Realm.getDefaultInstance();
-        //noinspection TryFinallyCanBeTryWithResources
 
-    }
 
 
 }

@@ -2,10 +2,8 @@ package com.okason.diary.core;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
 
 import com.okason.diary.BuildConfig;
-import com.okason.diary.core.services.AddSampleDataIntentService;
 import com.squareup.leakcanary.LeakCanary;
 
 import io.realm.Realm;
@@ -17,6 +15,7 @@ import io.realm.Realm;
 public class ProntoDiaryApplication extends Application {
     public static final String AUTH_URL = "http://" + BuildConfig.OBJECT_SERVER_IP + ":9080/auth";
     public static final String REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/~/diary";
+    public static final String COMMON_REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/common";
 
     private static Context mContext;
 

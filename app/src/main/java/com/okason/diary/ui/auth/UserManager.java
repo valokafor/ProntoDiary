@@ -18,6 +18,7 @@ package com.okason.diary.ui.auth;
 
 import com.facebook.login.LoginManager;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.models.ProntoDiaryUser;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -81,6 +82,15 @@ public class UserManager {
         String identityToken = user.getAccessToken().identity();
         SyncConfiguration defaultConfig = new SyncConfiguration.Builder(user, ProntoDiaryApplication.REALM_URL)
                 .name(identityToken + ".realm")
+                .build();
+        return defaultConfig;
+    }
+
+    public static RealmConfiguration getPublicConfig(SyncUser user) {
+        String identityToken = user.getAccessToken().identity();
+        SyncConfiguration defaultConfig = new SyncConfiguration.Builder(user, ProntoDiaryApplication.REALM_URL)
+                .name(identityToken + ".realm")
+                .modules(ProntoDiaryUser.class)
                 .build();
         return defaultConfig;
     }

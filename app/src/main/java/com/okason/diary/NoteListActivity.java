@@ -33,13 +33,13 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
-import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.AccountFragment;
 import com.okason.diary.ui.notes.NoteListFragment;
@@ -186,22 +186,17 @@ public class NoteListActivity extends AppCompatActivity {
         //Check Firebase User status,
 
         final SyncUser user = SyncUser.currentUser();
-        mFirebaseUser = mAuth.getCurrentUser();
-        if (user != null && mFirebaseUser != null ) {
+        if (user != null) {
             UserManager.setActiveUser(user);
             loginLayout.setVisibility(View.GONE);
             settingsLayout.setVisibility(View.VISIBLE);
-            ProntoDiaryApplication.setCloudSyncEnabled(true);
             updateUI();
         }else {
             loginLayout.setVisibility(View.VISIBLE);
             settingsLayout.setVisibility(View.GONE);
-            ProntoDiaryApplication.setCloudSyncEnabled(false);
             updateUI();
         }
-
-
-       //SampleData.addSampleNotes();
+        //SampleData.addSampleNotes();
     }
 
 
@@ -322,7 +317,11 @@ public class NoteListActivity extends AppCompatActivity {
         loginButton.setImageResource(R.drawable.ic_login_gray);
         loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
         loginTextView.setTypeface(loginTextView.getTypeface(), Typeface.BOLD);
-        startActivity(new Intent(mActivity, AuthUiActivity.class));
+        if (SettingsHelper.getHelper(mActivity).isRegisteredUser()) {
+            startActivity(new Intent(mActivity, SignInActivity.class));
+        }else {
+            startActivity(new Intent(mActivity, RegisterActivity.class));
+        }
 
     }
 

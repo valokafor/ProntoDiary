@@ -397,6 +397,7 @@
     <string name="reminder_minute">minute</string>
     <string name="accessibility_logo">Accessibility Logo</string>
     <string name="unknown_error">Unknown Error</string>
+    <string name="menu_item_register">Register</string>
 
 
 </resources>

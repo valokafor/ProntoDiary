@@ -69,10 +69,11 @@ public class SettingsHelper {
 
 
   public boolean isRegisteredUser() {
-    return getSharedPreferences().getBoolean(Constants.UNREGISTERED_USER, false);
+    return getSharedPreferences().getBoolean(Constants.REGISTERED_USER, false);
   }
 
   public void setRegisteredUser(boolean registered){
     SharedPreferences.Editor editor = getSharedPreferences().edit();
+    editor.putBoolean(Constants.REGISTERED_USER, registered).apply();
   }
 }
