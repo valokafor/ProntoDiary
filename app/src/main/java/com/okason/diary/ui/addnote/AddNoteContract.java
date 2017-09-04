@@ -9,8 +9,6 @@ import com.okason.diary.models.Tag;
 
 import java.util.List;
 
-import io.realm.Realm;
-
 /**
  * Created by Valentine on 5/8/2017.
  */
@@ -63,7 +61,8 @@ public interface AddNoteContract {
         void saveNote(Note note);
         Attachment getAttachmentbyId(String id);
         void addAttachment(String noteId, Attachment attachment);
-        boolean noteExists(Realm realm, String noteId);
+
+
     }
 
     interface FolderRepository{

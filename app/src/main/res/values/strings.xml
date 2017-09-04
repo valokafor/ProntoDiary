@@ -398,6 +398,8 @@
     <string name="accessibility_logo">Accessibility Logo</string>
     <string name="unknown_error">Unknown Error</string>
     <string name="menu_item_register">Register</string>
+    <string name="prompt_to_discard_note">Are you sure you want to discard note</string>
+    <string name="prompt_to_delete_note">Are you sure you want to delete note</string>
 
 
 </resources>

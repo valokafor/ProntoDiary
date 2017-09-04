@@ -3,6 +3,7 @@ package com.okason.diary.ui.notes;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -26,14 +27,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
+import com.bumptech.glide.Glide;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.core.listeners.NoteItemListener;
-import com.okason.diary.data.NoteRealmRepository;
-import com.okason.diary.data.TagRealmRepository;
+import com.okason.diary.data.NoteDataAccessManager;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
@@ -41,16 +46,14 @@ import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.FileHelper;
+import com.okason.diary.utils.date.TimeUtils;
 
 import java.io.IOException;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.Case;
-import io.realm.Realm;
-import io.realm.RealmChangeListener;
-import io.realm.RealmResults;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -59,19 +62,25 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     private FirebaseAnalytics mFirebaseAnalytics;
 
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
-    private Realm mRealm;
-    private RealmResults<Note> mNotes;
-    private List<Note> mNotes2;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+
+    private DatabaseReference database;
+    private DatabaseReference noteCloudReference;
+
+    private List<Note> mNotes;
 
 
     private MediaPlayer mPlayer = null;
     private boolean isAudioPlaying = false;
 
+    private SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
+
+
 
     private View mRootView;
-    private NoteListAdapter mListAdapter;
+    private FirebaseRecyclerAdapter<Note, NoteViewHolder> noteFirebaseAdapter;
 
     private boolean isDualScreen = false;
     private final static String LOG_TAG = "NoteListFragment";
@@ -112,8 +121,6 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             isDualScreen = args.getBoolean(Constants.IS_DUAL_SCREEN);
         }
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
 
     }
@@ -129,9 +136,106 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
 
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        database = FirebaseDatabase.getInstance().getReference();
+        noteCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.JOURNAL_CLOUD_END_POINT);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
         return mRootView;
     }
+
+    private void populateRecyclerViewWithFirebaseUI() {
+
+        noteFirebaseAdapter = new FirebaseRecyclerAdapter<Note, NoteViewHolder>(
+                Note.class,
+                R.layout.custom_row_layout_note_list,
+                NoteViewHolder.class,
+                noteCloudReference) {
+            @Override
+            public void populateViewHolder(NoteViewHolder holder, Note note, int position) {
+                String firstLetter;
+                ColorGenerator generator;
+                TextDrawable drawable;
+                int color;
+
+                holder.title.setText(note.getTitle());
+                holder.contentSummary.setText(note.getContent().substring(0, Math.min(100, note.getContent().length())));
+                holder.date.setText(TimeUtils.getReadableModifiedDateWithTime(note.getDateModified()));
+
+                firstLetter = note.getTitle().substring(0, 1);
+                color = Color.GRAY;
+                drawable = TextDrawable.builder()
+                        .buildRound(firstLetter, color);
+                holder.firstLetterIcon.setImageDrawable(drawable);
+
+                //Check to see if this Note has Attachments, if it does check if the attachment is image
+                //If it is then show the thumbnail
+                if (note.getAttachments() != null && note.getAttachments().size() > 0){
+                    holder.attachmentLayout.setVisibility(View.VISIBLE);
+
+                    Attachment lastAttachment = note.getAttachments().get(note.getAttachments().size() - 1);
+
+
+                    if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
+                        if (isAudioPlaying) {
+                            holder.noteAttachment.setImageResource(R.drawable.audio_pause);
+                        } else {
+                            holder.noteAttachment.setImageResource(R.drawable.play_button_75);
+                        }
+
+                    } else if(lastAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
+                        Glide.with(getContext())
+                                .load(lastAttachment.getFilePath())
+                                .placeholder(R.drawable.default_image)
+                                .into(holder.noteAttachment);
+                    } else if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)){
+                        holder.noteAttachment.setImageResource(R.drawable.video_icon);
+
+                    } else if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
+                        //Attachment is file, show a PDF icon, if the attachment is a PDF else
+                        //Show a document icon
+                        String name = FileHelper.getNameFromUri(getContext(), Uri.parse(lastAttachment.getUri()));
+                        String extension = FileHelper.getFileExtension(name).toLowerCase();
+                        if (extension.equals(".pdf")){
+                            Glide.with(getContext())
+                                    .load(R.drawable.pdf_icon_2)
+                                    .placeholder(R.drawable.default_image)
+                                    .centerCrop()
+                                    .into(holder.noteAttachment);
+                        } else {
+                            Glide.with(getContext())
+                                    .load(R.drawable.ic_action_document)
+                                    .placeholder(R.drawable.default_image)
+                                    .centerCrop()
+                                    .into(holder.noteAttachment);
+                        }
+
+
+                    } else {
+                        Glide.with(getContext())
+                                .load(lastAttachment.getFilePath())
+                                .placeholder(R.drawable.default_image)
+                                .centerCrop()
+                                .into(holder.noteAttachment);
+                    }
+
+                }else {
+                    holder.attachmentLayout.setVisibility(View.GONE);
+                }
+
+            }
+
+            @Override
+            public void onDataChanged() {
+                mEmptyText.setVisibility(getItemCount() == 0 ? View.VISIBLE : View.GONE);
+
+            }
+        };
+
+        mRecyclerView.setAdapter(noteFirebaseAdapter);
+
+    }
+
 
 
     private void goToImageGallery(Note clickedNote, Attachment clickedAttachment) {
@@ -144,44 +248,13 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public void onResume() {
         super.onResume();
-        mListAdapter = null;
-
-        //Only show content if user is logged in
-        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
-            try {
-                //Instantiate Realm
-                mRealm = Realm.getDefaultInstance();
-                //Check to see if a Tag name was passed in, and if yes, filter the result to only show
-                //The Note for that Tag
-                if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)) {
-                    String tagName = getArguments().getString(Constants.TAG_FILTER);
-                    mNotes2 = new TagRealmRepository().getNotesForTag(tagName);
-                    showNotes(mNotes2);
-                } else {
-                    mNotes = mRealm.where(Note.class).findAll();
-                    mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
-                        @Override
-                        public void onChange(RealmResults<Note> notes) {
-                            showNotes(mRealm.copyFromRealm(mNotes));
-                        }
-                    });
-                    showNotes(mRealm.copyFromRealm(mNotes));
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            showEmptyText(true);
-        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (mRealm != null && !mRealm.isClosed()) {
-            mRealm.close();
-        }
+
+
         if (mPlayer != null) {
             mPlayer.release();
             mPlayer = null;
@@ -208,8 +281,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (query.length() > 0) {
-            mNotes = mRealm.where(Note.class).contains("content", query, Case.INSENSITIVE).or().contains("title", query, Case.INSENSITIVE).findAll();
-            showNotes(mRealm.copyFromRealm(mNotes));
+
+            //Todo - Show NOtes
             return true;
         }
         return true;
@@ -223,14 +296,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     @Override
     public boolean onClose() {
-        mNotes = mRealm.where(Note.class).findAll();
-        mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
-            @Override
-            public void onChange(RealmResults<Note> notes) {
-                showNotes(mRealm.copyFromRealm(mNotes));
-            }
-        });
-        showNotes(mRealm.copyFromRealm(mNotes));
+
+        //Todo - Show Notes
         return false;
     }
 
@@ -259,48 +326,45 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     public void showNotes(List<Note> notes) {
         if (notes != null && notes.size() > 0) {
             showEmptyText(false);
-            mListAdapter = null;
 
 
-            mListAdapter = new NoteListAdapter(notes, getContext());
-            mRecyclerView.setAdapter(mListAdapter);
 
-            mListAdapter.setNoteItemListener(new NoteItemListener() {
-                @Override
-                public void onNoteClick(Note clickedNote) {
-                    if (isDualScreen) {
-                        showDualDetailUi(clickedNote);
-                    } else {
-                        showSingleDetailUi(clickedNote);
-                    }
-                }
-
-                @Override
-                public void onDeleteButtonClicked(Note clickedNote) {
-                    showDeleteConfirmation(clickedNote);
-                }
-
-                @Override
-                public void onAttachmentClicked(Note clickedNote, int position) {
-                    //An attachment in the Note list has been clicked
-                    Attachment clickedAttachment = clickedNote.getAttachments().get(clickedNote.getAttachments().size() - 1);
-                    if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)) {
-                        //Play Audio
-                        startPlaying(clickedAttachment, position);
-                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)) {
-                        //Play Video
-                        viewMedia(clickedAttachment);
-                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)) {
-                        //Show Image Gallery
-                        goToImageGallery(clickedNote, clickedAttachment);
-                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)) {
-                        //Show file
-
-                    } else {
-                        //Show details page
-                    }
-                }
-            });
+//            mListAdapter.setNoteItemListener(new NoteItemListener() {
+//                @Override
+//                public void onNoteClick(Note clickedNote) {
+//                    if (isDualScreen) {
+//                        showDualDetailUi(clickedNote);
+//                    } else {
+//                        showSingleDetailUi(clickedNote);
+//                    }
+//                }
+//
+//                @Override
+//                public void onDeleteButtonClicked(Note clickedNote) {
+//                    showDeleteConfirmation(clickedNote);
+//                }
+//
+//                @Override
+//                public void onAttachmentClicked(Note clickedNote, int position) {
+//                    //An attachment in the Note list has been clicked
+//                    Attachment clickedAttachment = clickedNote.getAttachments().get(clickedNote.getAttachments().size() - 1);
+//                    if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)) {
+//                        //Play Audio
+//                        startPlaying(clickedAttachment, position);
+//                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)) {
+//                        //Play Video
+//                        viewMedia(clickedAttachment);
+//                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)) {
+//                        //Show Image Gallery
+//                        goToImageGallery(clickedNote, clickedAttachment);
+//                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)) {
+//                        //Show file
+//
+//                    } else {
+//                        //Show details page
+//                    }
+//                }
+//            });
 
         } else {
             showEmptyText(true);
@@ -339,7 +403,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     private void deleteNote(Note note) {
         if (!TextUtils.isEmpty(note.getId())) {
-            new NoteRealmRepository().deleteNote(note.getId());
+            new NoteDataAccessManager().deleteNote(note.getId());
         }
     }
 
@@ -401,7 +465,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         if (isAudioPlaying) {
             mPlayer.stop();
             mPlayer.release();
-            mListAdapter.setAudioPlaying(false, position);
+         //   mListAdapter.setAudioPlaying(false, position);
             isAudioPlaying = false;
 
         } else {
@@ -414,13 +478,13 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
                     @Override
                     public void onCompletion(MediaPlayer mp) {
                         if (!mp.isPlaying()) {
-                            mListAdapter.setAudioPlaying(false, position);
+                          //  mListAdapter.setAudioPlaying(false, position);
                             isAudioPlaying = false;
                         }
                     }
                 });
                 isAudioPlaying = true;
-                mListAdapter.setAudioPlaying(true, position);
+               // mListAdapter.setAudioPlaying(true, position);
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Play audio failed " + e.getLocalizedMessage());
             }

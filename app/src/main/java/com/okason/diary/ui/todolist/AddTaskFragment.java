@@ -32,6 +32,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
@@ -58,7 +60,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.realm.Realm;
-import io.realm.RealmResults;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -115,8 +116,8 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     private SelectFolderDialogFragment selectFolderDialogFragment;
     private AddFolderDialogFragment addFolderDialogFragment;
 
-    private RealmResults<Folder> mFolders;
-    private Realm mRealm;
+    private List<Folder> folders;
+
 
     private Reminder repeatFrequency;
     private int priority = Constants.PRIORITY_LOW;
@@ -151,16 +152,19 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
     }
 
-    public static AddTaskFragment newInstance(String taskId){
+    public static AddTaskFragment newInstance(String serializedTask){
         AddTaskFragment fragment = new AddTaskFragment();
-        if (!TextUtils.isEmpty(taskId)){
+        if (!TextUtils.isEmpty(serializedTask)){
             Bundle args = new Bundle();
-            args.putString(Constants.TASK_ID, taskId);
+            args.putString(Constants.SERIALIZED_TASK, serializedTask);
             fragment.setArguments(args);
         }
-
         return fragment;
     }
+
+
+
+
 
 
 
@@ -222,7 +226,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
         try {
             mRealm = Realm.getDefaultInstance();
-            mFolders = mRealm.where(Folder.class).findAll();
+            folders = mRealm.where(Folder.class).findAll();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -321,7 +325,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
     @OnClick(R.id.edit_text_category)
     public void showSelectFolder(){
-        showChooseFolderDialog(mFolders);
+        showChooseFolderDialog(folders);
     }
 
     @OnClick(R.id.edit_text_repeat_end_date)

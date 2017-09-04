@@ -2,17 +2,15 @@ package com.okason.diary.models;
 
 import com.okason.diary.utils.reminder.Reminder;
 
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Task extends RealmObject {
+public class Task{
 
-    @PrimaryKey
     private String id;
     private String title;
     private String description;
@@ -29,9 +27,13 @@ public class Task extends RealmObject {
     private Double longitude;
 
 
-    private RealmList<History> historyList;
-    private Folder folder;
-    private RealmList<SubTask> subTask;
+    private String folderId;
+    private String folderName;
+    private List<SubTask> subTask;
+
+    public Task(){
+        subTask = new ArrayList<>();
+    }
 
     public int getTaskCount(){
         if (getSubTask() != null && getSubTask().size() > 0){
@@ -40,7 +42,6 @@ public class Task extends RealmObject {
             return 1;
         }
     }
-
 
     public String getId() {
         return id;
@@ -138,28 +139,27 @@ public class Task extends RealmObject {
         this.longitude = longitude;
     }
 
-
-    public RealmList<History> getHistoryList() {
-        return historyList;
+    public String getFolderId() {
+        return folderId;
     }
 
-    public void setHistoryList(RealmList<History> historyList) {
-        this.historyList = historyList;
+    public void setFolderId(String folderId) {
+        this.folderId = folderId;
     }
 
-    public RealmList<SubTask> getSubTask() {
+    public String getFolderName() {
+        return folderName;
+    }
+
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
+    }
+
+    public List<SubTask> getSubTask() {
         return subTask;
     }
 
-    public void setSubTask(RealmList<SubTask> subTask) {
+    public void setSubTask(List<SubTask> subTask) {
         this.subTask = subTask;
-    }
-
-    public Folder getFolder() {
-        return folder;
-    }
-
-    public void setFolder(Folder folder) {
-        this.folder = folder;
     }
 }

@@ -43,7 +43,7 @@ import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
-import com.okason.diary.data.NoteRealmRepository;
+import com.okason.diary.data.NoteDataAccessManager;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
@@ -153,7 +153,7 @@ public class NoteDetailFragment extends Fragment{
         mFirebaseStorage = FirebaseStorage.getInstance();
 
         String noteId = getPassedInNoteId();
-        mCurrentNote = new NoteRealmRepository().getNoteById(noteId);
+        mCurrentNote = new NoteDataAccessManager().getNoteById(noteId);
         if (mCurrentNote != null) {
             displayNote(mCurrentNote);
         }
@@ -247,7 +247,7 @@ public class NoteDetailFragment extends Fragment{
 
     public void displayNote(Note note) {
         try {
-            mCategory.setText(note.getFolder().getFolderName());
+            mCategory.setText(note.getFolderName());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -488,7 +488,7 @@ public class NoteDetailFragment extends Fragment{
 
     private void deleteNote(Note note) {
         if (!TextUtils.isEmpty(note.getId())) {
-            new NoteRealmRepository().deleteNote(note.getId());
+            new NoteDataAccessManager().deleteNote(note.getId());
         }
         displayPreviousActivity();
     }

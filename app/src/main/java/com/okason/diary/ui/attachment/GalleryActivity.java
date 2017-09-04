@@ -12,7 +12,7 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 
 import com.okason.diary.R;
-import com.okason.diary.data.NoteRealmRepository;
+import com.okason.diary.data.NoteDataAccessManager;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.utils.Constants;
@@ -58,7 +58,7 @@ public class GalleryActivity extends AppCompatActivity {
     private void getPassedInNote() {
         if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)){
             String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
-            parentNote = new NoteRealmRepository().getNoteById(noteId);
+            parentNote = new NoteDataAccessManager().getNoteById(noteId);
         }
 
     }

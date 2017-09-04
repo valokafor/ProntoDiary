@@ -11,7 +11,7 @@ import android.support.v7.widget.Toolbar;
 import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
-import com.okason.diary.data.NoteRealmRepository;
+import com.okason.diary.data.NoteDataAccessManager;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.utils.Constants;
@@ -40,7 +40,7 @@ public class NoteDetailActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
                 String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
-                Note passedInNote = new NoteRealmRepository().getNoteById(noteId);
+                Note passedInNote = new NoteDataAccessManager().getNoteById(noteId);
                 NoteDetailFragment fragment = NoteDetailFragment.newInstance(noteId);
                 if (passedInNote != null) {
                     openFragment(fragment, TimeUtils.getReadableDateWithoutTime(passedInNote.getDateModified()));

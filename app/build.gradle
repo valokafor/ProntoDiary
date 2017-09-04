@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
-apply plugin: 'realm-android'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
     defaultConfig {
         applicationId "com.okason.diary"
         minSdkVersion 19
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 4
         versionName "1.2"
         multiDexEnabled true
@@ -16,23 +15,6 @@ android {
         resConfigs "auto"
     }
 
-    buildTypes {
-        def host = "138.197.217.118"
-        debug {
-            // This will automatically detect the IP address of the machine building RealmTasks.
-            // It is assumed that this machine is also running the Object Server.
-            // If not, replace 'host' with the IP of the machine hosting the server.
-            buildConfigField "String", "OBJECT_SERVER_IP", "\"${host}\""
-        }
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            // This will automatically detect the IP address of the machine building RealmTasks.
-            // It is assumed that this machine is also running the Object Server.
-            // If not, replace 'host' with the IP of the machine hosting the server.
-            buildConfigField "String", "OBJECT_SERVER_IP", "\"${host}\""
-        }
-    }
 
     signingConfigs {
         config {
@@ -50,9 +32,6 @@ android {
     }
 }
 
-realm {
-    syncEnabled = true
-}
 
 configurations {
     all*.exclude group: 'commons-logging', module: 'commons-logging'
@@ -101,7 +80,7 @@ dependencies {
 
 
     compile 'com.android.support:multidex:1.0.1'
-    compile 'com.afollestad.material-dialogs:core:0.9.4.5'
+    compile 'com.afollestad.material-dialogs:core:0.9.4.7'
     compile 'com.google.android.gms:play-services-auth:11.0.4'
     compile 'com.google.firebase:firebase-crash:11.0.4'
     compile 'com.google.firebase:firebase-core:11.0.4'
@@ -109,28 +88,34 @@ dependencies {
     compile 'com.google.firebase:firebase-messaging:11.0.4'
     compile 'com.google.firebase:firebase-auth:11.0.4'
     compile 'com.firebaseui:firebase-ui:2.2.0'
-    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha9'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'org.greenrobot:eventbus:3.0.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
     compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'be.billington.calendar.recurrencepicker:library:1.1.1'
-    compile 'org.ocpsoft.prettytime:prettytime:3.2.7.Final'
-    compile 'com.jakewharton:butterknife:8.5.1'
+    compile 'com.jakewharton:butterknife:8.8.1'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'commons-io:commons-io:2.5'
     compile 'org.apache.commons:commons-collections4:4.1'
+    compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
     compile 'com.afollestad:material-camera:0.4.4'
-    compile 'com.google.android:flexbox:0.2.5'
-    compile 'com.github.fiskurgit:ChipCloud:3.0.3'
-    compile 'com.github.adroitandroid:ChipCloud:2.2.1'
-    compile 'com.facebook.android:facebook-android-sdk:4.22.1'
+    compile 'com.facebook.android:facebook-android-sdk:[4,5)'
     compile 'com.google.code.gson:gson:2.8.1'
     testCompile 'junit:junit:4.12'
     testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.1'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        def requested = details.requested
+        if (requested.group == 'com.android.support') {
+            if (!requested.name.startsWith("multidex")) {
+                details.useVersion '26.0.2'
+            }
+        }
+    }
 }
 
 apply plugin: 'com.google.gms.google-services'

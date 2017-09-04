@@ -41,7 +41,7 @@ public class SampleData {
         try (Realm realm = Realm.getDefaultInstance()){
 
             Random random = new Random();
-            AddNoteContract.Repository repository = new NoteRealmRepository();
+            AddNoteContract.Repository repository = new NoteDataAccessManager();
 
             List<Note> notes = new ArrayList<>();
             //create the dummy note

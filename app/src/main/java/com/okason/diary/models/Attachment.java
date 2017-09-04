@@ -5,23 +5,19 @@ import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import com.google.firebase.database.Exclude;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.services.DownloadFileFromFireaseIntentService;
 import com.okason.diary.utils.Constants;
 
 import java.io.File;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Attachment extends RealmObject{
+public class Attachment{
 
-
-    @PrimaryKey
     private String id;
     private String localFilePath;
     private String cloudFilePath;
@@ -70,6 +66,7 @@ public class Attachment extends RealmObject{
 
     }
 
+    @Exclude
     public void update(Attachment attachment){
         this.uri = attachment.getUri();
         this.localFilePath = attachment.getLocalFilePath();
@@ -81,6 +78,7 @@ public class Attachment extends RealmObject{
         this.dateCreated = System.currentTimeMillis();
     }
 
+    @Exclude
     public String getFilePath(){
         String filePath;
         File file = new File(this.getLocalFilePath());

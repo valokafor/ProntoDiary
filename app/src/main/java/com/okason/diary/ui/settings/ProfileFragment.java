@@ -31,7 +31,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.data.NoteRealmRepository;
+import com.okason.diary.data.NoteDataAccessManager;
 import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.ui.auth.AuthUiActivity;
@@ -161,7 +161,7 @@ public class ProfileFragment extends Fragment {
 
         int numNote = 0;
         try {
-            numNote = new NoteRealmRepository().getAllNotes().size();
+            numNote = new NoteDataAccessManager().getAllNotes().size();
         } catch (Exception e) {
             e.printStackTrace();
         }

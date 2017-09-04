@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.data.FolderRealmRepository;
-import com.okason.diary.data.NoteRealmRepository;
+import com.okason.diary.data.NoteDataAccessManager;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -37,7 +37,7 @@ public class AddNotePresenter implements AddNoteContract.Action {
 
     public AddNotePresenter(final AddNoteContract.View mView, String noteid) {
         this.mView = mView;
-        mRepository = new NoteRealmRepository();
+        mRepository = new NoteDataAccessManager();
 
         if (!TextUtils.isEmpty(noteid)){
             mCurrentNote = mRepository.getNoteById(noteid);

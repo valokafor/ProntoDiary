@@ -75,6 +75,7 @@ public class Constants {
     public final static String ACTIVE_CATEGORY_ID = "active_category_id";
     public final static String SERIALIZED_TODO_ITEM = "serialized_todo_item";
     public final static String CATEGORY_FILTER = "category_filter";
+    public static final String SERIALIZED_NOTE = "serialized_note";
 
 
     public static final String PERMISSION_PROMPT_SHOWN = "permission_prompt_shown";
@@ -113,9 +114,12 @@ public class Constants {
     public static final String SERIALIZED_TAG = "serialized_tag";
     public static final String DEFAULT_CATEGORY = "General";
 
-    public static final String NOTE_CLOUD_END_POINT = "/notes";
+    public static final String JOURNAL_CLOUD_END_POINT = "/journals";
+    public static final String TASK_CLOUD_END_POINT = "/tasks";
+    public static final String SUBTASK_CLOUD_END_POINT = "/sub_tasks";
     public static final String FOLDER_CLOUD_END_POINT = "/folders";
     public static final String TAG_CLOUD_END_POINT = "/tags";
+    public static final String CATEGORY_CLOUD_END_POINT = "/categories";
     public static final String ATTACHMENT_CLOUD_END_POINT = "/attachments";
     public static final String USERS_CLOUD_END_POINT = "/users/";
 

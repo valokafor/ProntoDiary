@@ -16,8 +16,13 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.SubTaskItemListener;
 import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
@@ -28,9 +33,6 @@ import com.okason.diary.utils.reminder.Reminder;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.realm.Realm;
-import io.realm.RealmChangeListener;
-import io.realm.RealmModel;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -40,6 +42,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     private View rootView;
     @BindView(R.id.text_view_edit_task_label)
     TextView editTaskTextView;
+
 
 
     @BindView(R.id.text_view_due_date) TextView dueDateTextView;
@@ -53,11 +56,17 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     RecyclerView mRecyclerView;
     @BindView(R.id.empty_text) TextView mEmptyText;
 
-    private TaskContract.Actions presenter;
+  //  private TaskContract.Actions presenter;
     private SubTaskListAdapter subTaskListAdapter;
     private boolean shouldUpdateAdapter = true;
-    private Realm realm;
     private Task parentTask;
+
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference database;
+    private DatabaseReference taskCloudReference;
+    private DatabaseReference subTaskCloudReference;
+
 
 
 
@@ -65,14 +74,14 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         // Required empty public constructor
     }
 
-    public static AddSubTaskFragment newInstance(String taskId){
+
+    public static AddSubTaskFragment newInstance(String serializedTask){
         AddSubTaskFragment fragment = new AddSubTaskFragment();
-        if (!TextUtils.isEmpty(taskId)){
+        if (!TextUtils.isEmpty(serializedTask)){
             Bundle args = new Bundle();
-            args.putString(Constants.TASK_ID, taskId);
+            args.putString(Constants.SERIALIZED_TASK, serializedTask);
             fragment.setArguments(args);
         }
-
         return fragment;
     }
 
@@ -80,14 +89,15 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
      * The method gets the parent Task that was passed in
      */
     public void getParentTask(){
-        if (getArguments() != null && getArguments().containsKey(Constants.TASK_ID)){
-            String taskId = getArguments().getString(Constants.TASK_ID);
-            if (!TextUtils.isEmpty(taskId)){
-                presenter.setCurrentTaskId(taskId);
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(Constants.SERIALIZED_TASK)){
+            String serializedTask = args.getString(Constants.SERIALIZED_TASK, "");
+            if (!serializedTask.isEmpty()){
+                Gson gson = new Gson();
+                parentTask = gson.fromJson(serializedTask, new TypeToken<Task>(){}.getType());
             }
         }
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -96,8 +106,14 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         rootView = inflater.inflate(R.layout.fragment_add_sub_task, container, false);
 
         ButterKnife.bind(this, rootView);
-        presenter = new TaskPresenter(null);
         getParentTask();
+
+        database = FirebaseDatabase.getInstance().getReference();
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        taskCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TASK_CLOUD_END_POINT);
+        subTaskCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.SUBTASK_CLOUD_END_POINT);
+
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -107,36 +123,15 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     @Override
     public void onResume() {
         super.onResume();
-        //Show the details of this Task is the Task is not empty
-        if (presenter != null && presenter.getCurrentTask() != null){
-            populateTaskDetails(presenter.getCurrentTask());
-        }
-
-        //Show the Sub Tasks of this Task
-        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
-            subTaskListAdapter = null;
-            try {
-                realm = Realm.getDefaultInstance();
-                parentTask = realm.where(Task.class).equalTo("id", presenter.getCurrentTaskId()).findFirst();
-                parentTask.addChangeListener(new RealmChangeListener<RealmModel>() {
-                    @Override
-                    public void onChange(RealmModel realmModel) {
-                        if (shouldUpdateAdapter) {
-                            showSubTasks((Task) realmModel);
-                        }else {
-                            shouldUpdateAdapter = true;
-                        }
-
-                    }
-                });
+        //Show the details of this Task if the Task is not empty
+        if (parentTask != null){
+            populateTaskDetails(parentTask);
+            if (parentTask.getSubTask() != null && parentTask.getSubTask().size() > 0){
                 showSubTasks(parentTask);
-            } catch (Exception e) {
-                e.printStackTrace();
+            }  else {
+                showEmptyText(true);
             }
-        } else {
-            showEmptyText(true);
         }
-
     }
 
     private void showSubTasks(Task task) {
@@ -156,8 +151,18 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
             addSubTaskEditText.setError(getString(R.string.required));
             return;
         }
-        presenter.addSubTaskTask(addSubTaskEditText.getText().toString());
+        addSubTaskTask(addSubTaskEditText.getText().toString());
         addSubTaskEditText.setText("");
+    }
+
+    private void addSubTaskTask(String subTaskName) {
+        SubTask subTask = new SubTask();
+        subTask.setDateCreated(System.currentTimeMillis());
+        subTask.setDateModified(System.currentTimeMillis());
+        subTask.setTitle(subTaskName);
+        subTask.setParentTaskName(parentTask.getTitle());
+        parentTask.getSubTask().add(subTask);
+        taskCloudReference.child(parentTask.getId()).setValue(parentTask);
     }
 
     private void populateTaskDetails(Task parentTask) {
@@ -215,7 +220,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
         String folderName = null;
         try {
-            folderName = parentTask.getFolder().getFolderName();
+            folderName = parentTask.getFolderName();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -229,9 +234,9 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
     @OnClick(R.id.text_view_edit_task_label)
     public void onClickEditTaskTextView(View view){
-        if (presenter.getCurrentTask() != null){
+        if (parentTask != null){
             Intent editTaskIntent = new Intent(getActivity(), AddTaskActivity.class);
-            editTaskIntent.putExtra(Constants.TASK_ID, presenter.getCurrentTaskId());
+            editTaskIntent.putExtra(Constants.TASK_ID, parentTask.getId());
             startActivity(editTaskIntent);
         }else {
             makeToast(getString(R.string.no_parent_task_found));
@@ -264,22 +269,33 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     }
 
     @Override
-    public void onSubTaskChecked(String taskId, String subTaskId) {
-        shouldUpdateAdapter = false;
-        presenter.onMarkSubTaskAsComplete(taskId, subTaskId);
+    public void onSubTaskStatus(SubTask subTask, boolean checked) {
+        int updatedSubTaskPosition = -1;
+        for (int i = 0; i < parentTask.getSubTask().size(); i++){
+            SubTask temp = parentTask.getSubTask().get(i);
+            if (subTask.getTitle().equals(temp.getTitle())){
+                updatedSubTaskPosition = i;
+                break;
+            }
+        }
 
+        if (updatedSubTaskPosition != -1){
+            parentTask.getSubTask().get(updatedSubTaskPosition).setChecked(checked);
+            parentTask.getSubTask().get(updatedSubTaskPosition).setDateModified(System.currentTimeMillis());
+        }
     }
 
-    @Override
-    public void onSubTaskUnChecked(String taskId, String subTaskId) {
-        shouldUpdateAdapter = false;
-        presenter.onMarkSubTaskAsInComplete(taskId, subTaskId);
 
-    }
 
     @Override
-    public void onSubTaskDeleted(String taskId, String subTaskId) {
-        presenter.deleteSubTask(taskId, subTaskId);
+    public void onSubTaskDeleted(SubTask subTask) {
+        for (int i = 0; i < parentTask.getSubTask().size(); i++){
+            SubTask temp = parentTask.getSubTask().get(i);
+            if (subTask.getTitle().equals(temp.getTitle())){
+                parentTask.getSubTask().remove(i);
+                break;
+            }
+        }
     }
 
     @Override
