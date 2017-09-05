@@ -67,7 +67,6 @@ public class UserManager {
                 break;
             }
         }
-        ProntoDiaryApplication.setCloudSyncEnabled(false);
         SyncUser.currentUser().logout();
     }
 

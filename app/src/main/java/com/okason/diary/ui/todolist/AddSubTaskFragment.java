@@ -17,7 +17,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.SubTaskItemListener;
 import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
@@ -31,6 +30,7 @@ import butterknife.OnClick;
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmModel;
+import io.realm.SyncUser;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -113,7 +113,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         }
 
         //Show the Sub Tasks of this Task
-        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+        if (SyncUser.currentUser() != null) {
             subTaskListAdapter = null;
             try {
                 realm = Realm.getDefaultInstance();

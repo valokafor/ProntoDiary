@@ -20,11 +20,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.TaskItemListener;
 import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.Task;
-import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.auth.RegisterActivity;
 import com.okason.diary.utils.Constants;
 
 import java.util.List;
@@ -35,6 +34,7 @@ import io.realm.Case;
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
+import io.realm.SyncUser;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -82,7 +82,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public void onResume() {
         super.onResume();
-        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+        if (SyncUser.currentUser() != null) {
             mListAdapter = null;
             try {
                 mRealm = Realm.getDefaultInstance();
@@ -125,6 +125,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        getActivity().invalidateOptionsMenu();
         inflater.inflate(R.menu.menu_todo_list, menu);
         MenuItem search = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
@@ -142,12 +143,10 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         int id = item.getItemId();
         switch (id){
             case R.id.action_add:
-                if (getActivity() != null) {
-                    if (ProntoDiaryApplication.isCloudSyncEnabled()) {
-                        startActivity(new Intent(getActivity(), AddTaskActivity.class));
-                    } else {
-                        startActivity(new Intent(getActivity(), AuthUiActivity.class));
-                    }
+                if (SyncUser.currentUser() != null) {
+                    startActivity(new Intent(getActivity(), AddTaskActivity.class));
+                } else {
+                    startActivity(new Intent(getActivity(), RegisterActivity.class));
                 }
                 break;
 

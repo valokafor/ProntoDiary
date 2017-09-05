@@ -14,12 +14,12 @@ import io.realm.Realm;
 
 public class ProntoDiaryApplication extends Application {
     public static final String AUTH_URL = "http://" + BuildConfig.OBJECT_SERVER_IP + ":9080/auth";
-    public static final String REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/~/diary";
+    public static final String REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/~/journal";
     public static final String COMMON_REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/common";
 
     private static Context mContext;
 
-    private static boolean cloudSyncEnabled;
+
 
 
 
@@ -41,13 +41,7 @@ public class ProntoDiaryApplication extends Application {
         return ProntoDiaryApplication.mContext;
     }
 
-    public static boolean isCloudSyncEnabled() {
-        return cloudSyncEnabled;
-    }
 
-    public static void setCloudSyncEnabled(boolean cloudSyncEnabled) {
-        ProntoDiaryApplication.cloudSyncEnabled = cloudSyncEnabled;
-    }
 
 
 }

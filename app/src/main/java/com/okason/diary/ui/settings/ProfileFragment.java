@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
-import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -19,22 +18,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.ProntoDiaryUser;
-import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
@@ -66,6 +60,8 @@ public class ProfileFragment extends Fragment {
     @BindView(R.id.toolbar_profile_name)
     TextView userName;
 
+    private SettingsHelper settingsHelper;
+
 
 
     private FirebaseAuth mAuth;
@@ -87,6 +83,17 @@ public class ProfileFragment extends Fragment {
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_profile, container, false);
         ButterKnife.bind(this, mRootView);
+        settingsHelper = SettingsHelper.getHelper(getContext());
+
+        if (settingsHelper.isRegisteredUser()){
+            loginButton.setVisibility(View.GONE);
+            logoutButton.setVisibility(View.VISIBLE);
+            populateProfile();
+        }else {
+            loginButton.setVisibility(View.VISIBLE);
+            logoutButton.setVisibility(View.GONE);
+        }
+
         mAuth = FirebaseAuth.getInstance();
 
 
@@ -95,69 +102,21 @@ public class ProfileFragment extends Fragment {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
 
-        if (mFirebaseUser != null) {
-            updateProfile();
-        }
-
-        if (mFirebaseUser != null){
-            mProntoDiaryUserRef.orderByChild("firebaseUid").equalTo(mFirebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
-                        prontoDiaryUser = snapshot.getValue(ProntoDiaryUser.class);
-                        if (prontoDiaryUser == null){
-                            loginButton.setVisibility(View.VISIBLE);
-                            logoutButton.setVisibility(View.GONE);
-                        }else {
-                            loginButton.setVisibility(View.GONE);
-                            logoutButton.setVisibility(View.VISIBLE);
-                            populateProfile(prontoDiaryUser);
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-
-        }
         return mRootView;
     }
 
-    private void updateProfile() {
-        final String token = SettingsHelper.getHelper(getActivity()).getMessagingToken();
-        if (!TextUtils.isEmpty(token)){
-            mProntoDiaryUserRef.orderByChild("fcmToken").equalTo(token).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-
-        }
-    }
 
     @MainThread
-    private void populateProfile(ProntoDiaryUser prontoDiaryUser) {
-        if (prontoDiaryUser.getPhotoUrl() != null) {
+    private void populateProfile() {
+        if (!TextUtils.isEmpty(settingsHelper.getPhotoUrl())) {
             Glide.with(this)
-                    .load(Uri.parse(prontoDiaryUser.getPhotoUrl()))
+                    .load(Uri.parse(settingsHelper.getPhotoUrl()))
                     .fitCenter()
                     .into(profileImage);
         }
 
         userName.setText(
-                TextUtils.isEmpty(prontoDiaryUser.getDisplayName()) ? "No display name" : prontoDiaryUser.getDisplayName());
+                TextUtils.isEmpty(settingsHelper.getDisplayName()) ? "No display name" : settingsHelper.getDisplayName());
 
         int numNote = 0;
         try {
@@ -189,7 +148,7 @@ public class ProfileFragment extends Fragment {
 
     @OnClick(R.id.toolbar_button_login)
     public void onLoginButtonClicked(View view){
-        startActivity(new Intent(getActivity(), AuthUiActivity.class));
+        startActivity(new Intent(getActivity(), RegisterActivity.class));
     }
 
     @OnClick(R.id.toolbar_button_logout)
@@ -202,26 +161,13 @@ public class ProfileFragment extends Fragment {
         titleText.setText(getString(R.string.please_attention));
         alertDialog.setCustomTitle(titleView);
 
-        alertDialog.setMessage("You logged in with " + prontoDiaryUser.getLoginProvider() + " Please use the same login method to sign again next time to access your data");
+        alertDialog.setMessage("You logged in with " + settingsHelper.getLoginProvider() +
+                ". Please use the same login method to sign-in again next time to access your data");
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                AuthUI.getInstance()
-                        .signOut(getActivity())
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                UserManager.logoutActiveUser();
-                                AuthUI.getInstance().signOut(getActivity());
-                                if (task.isSuccessful()) {
-                                    Intent intent = new Intent(getActivity(), AuthUiActivity.class);
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                    startActivity(intent);
-                                } else {
-                                    showSnackbar(R.string.sign_out_failed);
-                                }
-                            }
-                        });
+                UserManager.logoutActiveUser();
+                startActivity(new Intent(getActivity(), SignInActivity.class));
             }
         });
         alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
@@ -231,9 +177,6 @@ public class ProfileFragment extends Fragment {
             }
         });
         alertDialog.show();
-
-
-
     }
 
     @MainThread

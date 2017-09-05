@@ -144,9 +144,6 @@ public class NoteListActivity extends AppCompatActivity {
         mActivity = this;
         mAuth = FirebaseAuth.getInstance();
 
-        if (savedInstanceState == null){
-            checkNetworkConnected();
-        }
     }
 
 
@@ -225,6 +222,7 @@ public class NoteListActivity extends AppCompatActivity {
                 openFragment(new TaskListFragment(), getString(R.string.title_todo_list), Constants.TODO_LIST_FRAGMENT_TAG);
             }
         }
+        checkNetworkConnected();
 
 
     }

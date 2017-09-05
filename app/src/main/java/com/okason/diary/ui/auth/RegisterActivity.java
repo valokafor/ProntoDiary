@@ -2,6 +2,7 @@ package com.okason.diary.ui.auth;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +27,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.SignInButton;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.services.HandleRealmLoginService;
+import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
 
 import org.json.JSONException;
@@ -49,11 +52,21 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
     private View registerFormView;
     private FacebookAuth facebookAuth;
     private GoogleAuth googleAuth;
+    private Activity activity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
+        //If user is already registered, send user to Sign In Screen
+        if (SettingsHelper.getHelper(this).isRegisteredUser()) {
+            startActivity(new Intent(this, SignInActivity.class));
+        }
+
+        activity = this;
+
+
         usernameView = (AutoCompleteTextView) findViewById(R.id.username);
         passwordView = (EditText) findViewById(R.id.password);
         passwordConfirmationView = (EditText) findViewById(R.id.password_confirmation);
@@ -103,6 +116,13 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
                                     String email = object.getString("email");
                                     String  userId = object.getString("id");
                                     String photoUrl = "https://graph.facebook.com/" + userId+ "/picture?type=large";
+
+                                    Intent completeRegisterIntent = new Intent(activity, HandleRealmLoginService.class);
+                                    completeRegisterIntent.putExtra(Constants.DISPLAY_NAME, name);
+                                    completeRegisterIntent.putExtra(Constants.EMAIL_ADDRESSS, email);
+                                    completeRegisterIntent.putExtra(Constants.PHOTO_URL, photoUrl);
+                                    completeRegisterIntent.putExtra(Constants.LOGIN_PROVIDER, "Facebook");
+                                    startService(completeRegisterIntent);
                                     Log.d(NoteListActivity.TAG, "Name: " + name + ", Email: " + email + ", UserId: " + userId + ", Photo Url: " + photoUrl);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -113,7 +133,6 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
                 parameters.putString("fields", "id,name,email");
                 request.setParameters(parameters);
                 request.executeAsync();
-
                 SyncUser.loginAsync(credentials, AUTH_URL, RegisterActivity.this);
             }
         };
@@ -124,6 +143,15 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             public void onRegistrationComplete(GoogleSignInResult result) {
                 UserManager.setAuthMode(UserManager.AUTH_MODE.GOOGLE);
                 GoogleSignInAccount acct = result.getSignInAccount();
+                Intent completeRegisterIntent = new Intent(activity, HandleRealmLoginService.class);
+
+                completeRegisterIntent.putExtra(Constants.DISPLAY_NAME, acct.getDisplayName());
+                completeRegisterIntent.putExtra(Constants.EMAIL_ADDRESSS, acct.getEmail());
+                if (acct.getPhotoUrl() != null) {
+                    completeRegisterIntent.putExtra(Constants.PHOTO_URL, acct.getPhotoUrl().toString());
+                }
+                completeRegisterIntent.putExtra(Constants.LOGIN_PROVIDER, "Google");
+                startService(completeRegisterIntent);
                 SyncCredentials credentials = SyncCredentials.google(acct.getIdToken());
                 SyncUser.loginAsync(credentials, AUTH_URL, RegisterActivity.this);
             }
@@ -179,6 +207,12 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             SyncUser.loginAsync(SyncCredentials.usernamePassword(username, password, true), AUTH_URL, new SyncUser.Callback() {
                 @Override
                 public void onSuccess(SyncUser user) {
+                    Intent completeRegisterIntent = new Intent(activity, HandleRealmLoginService.class);
+                    completeRegisterIntent.putExtra(Constants.DISPLAY_NAME, "");
+                    completeRegisterIntent.putExtra(Constants.EMAIL_ADDRESSS, usernameView.getText());
+                    completeRegisterIntent.putExtra(Constants.PHOTO_URL, "");
+                    completeRegisterIntent.putExtra(Constants.LOGIN_PROVIDER, "Email");
+                    startService(completeRegisterIntent);
                     registrationComplete(user);
                 }
 
@@ -201,7 +235,7 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
         UserManager.setActiveUser(user);
         SettingsHelper.getHelper(RegisterActivity.this).setRegisteredUser(true);
         Intent intent = new Intent(this, SignInActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 

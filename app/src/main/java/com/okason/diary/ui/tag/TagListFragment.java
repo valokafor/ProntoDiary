@@ -18,16 +18,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.data.TagRealmRepository;
 import com.okason.diary.models.Tag;
-import com.okason.diary.ui.auth.AuthUiActivity;
-import com.okason.diary.ui.auth.SignInActivity;
+import com.okason.diary.ui.auth.RegisterActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
-import com.okason.diary.utils.SettingsHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -40,6 +37,7 @@ import butterknife.ButterKnife;
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
+import io.realm.SyncUser;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -86,10 +84,10 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         addTagbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+                if (SyncUser.currentUser() != null) {
                     showAddNewTagDialog();
                 } else {
-                    startActivity(new Intent(getActivity(), AuthUiActivity.class));
+                    startActivity(new Intent(getActivity(), RegisterActivity.class));
                 }
 
             }
@@ -100,7 +98,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     @Override
     public void onResume() {
         super.onResume();
-        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+        if (SyncUser.currentUser() != null) {
             mAdapter = null;
             try {
                 mRealm = Realm.getDefaultInstance();
@@ -143,7 +141,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 //        inflater.inflate(R.menu.menu_tag_list, menu);
 //        MenuItem search = menu.findItem(R.id.action_search);
-
+        getActivity().invalidateOptionsMenu();
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -154,18 +152,10 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         int id = item.getItemId();
         switch (id){
             case R.id.action_add:
-                if (getActivity() != null) {
-                    if (ProntoDiaryApplication.isCloudSyncEnabled()) {
-                        showAddNewTagDialog();
-                    } else {
-                        boolean registeredUser = SettingsHelper.getHelper(getActivity()).isRegisteredUser();
-                        if (registeredUser){
-                            startActivity(new Intent(getActivity(), SignInActivity.class));
-                        }else {
-                            startActivity(new Intent(getActivity(), AuthUiActivity.class));
-                        }
-
-                    }
+                if (SyncUser.currentUser() != null) {
+                    showAddNewTagDialog();
+                } else {
+                    startActivity(new Intent(getActivity(), RegisterActivity.class));
                 }
                 break;
 

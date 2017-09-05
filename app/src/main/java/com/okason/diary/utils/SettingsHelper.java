@@ -76,4 +76,29 @@ public class SettingsHelper {
     SharedPreferences.Editor editor = getSharedPreferences().edit();
     editor.putBoolean(Constants.REGISTERED_USER, registered).apply();
   }
+
+  public void saveProfile(String name, String email, String photoUrl, String provider){
+    SharedPreferences.Editor editor = getSharedPreferences().edit();
+    editor.putString(Constants.DISPLAY_NAME, name).apply();
+    editor.putString(Constants.EMAIL_ADDRESSS, email).apply();
+    editor.putString(Constants.PHOTO_URL, photoUrl).apply();
+    editor.putString(Constants.LOGIN_PROVIDER, provider).apply();
+  }
+
+  public String getDisplayName() {
+    return getSharedPreferences().getString(Constants.DISPLAY_NAME, "");
+  }
+
+  public String getEmailAddress() {
+    return getSharedPreferences().getString(Constants.EMAIL_ADDRESSS, "");
+  }
+
+
+  public String getLoginProvider() {
+    return getSharedPreferences().getString(Constants.LOGIN_PROVIDER, "");
+  }
+
+  public String getPhotoUrl() {
+    return getSharedPreferences().getString(Constants.PHOTO_URL, "");
+  }
 }

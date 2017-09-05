@@ -123,16 +123,16 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
     private void loginComplete(SyncUser user) {
         UserManager.setActiveUser(user);
 
-        Intent listActivity = new Intent(this, NoteListActivity.class);
-        Intent tasksActivity = new Intent(this, NoteListActivity.class);
-        startActivities(new Intent[] { listActivity, tasksActivity} );
+        Intent intent = new Intent(this, NoteListActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         finish();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         final MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.menu_signin, menu);
+       // menuInflater.inflate(R.menu.menu_signin, menu);
         return true;
     }
 

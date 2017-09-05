@@ -30,7 +30,6 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.data.TagRealmRepository;
@@ -38,7 +37,7 @@ import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.attachment.GalleryActivity;
-import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.auth.RegisterActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
 
@@ -51,6 +50,7 @@ import io.realm.Case;
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
+import io.realm.SyncUser;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -147,7 +147,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         mListAdapter = null;
 
         //Only show content if user is logged in
-        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+        if (SyncUser.currentUser() != null) {
             try {
                 //Instantiate Realm
                 mRealm = Realm.getDefaultInstance();
@@ -191,6 +191,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        getActivity().invalidateOptionsMenu();
         inflater.inflate(R.menu.menu_note_list, menu);
         MenuItem search = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
@@ -242,12 +243,10 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         int id = item.getItemId();
         switch (id) {
             case R.id.action_add:
-                if (getActivity() != null) {
-                    if (ProntoDiaryApplication.isCloudSyncEnabled()) {
-                        startActivity(new Intent(getActivity(), AddNoteActivity.class));
-                    } else {
-                        startActivity(new Intent(getActivity(), AuthUiActivity.class));
-                    }
+                if (SyncUser.currentUser() != null) {
+                    startActivity(new Intent(getActivity(), AddNoteActivity.class));
+                } else {
+                    startActivity(new Intent(getActivity(), RegisterActivity.class));
                 }
                 break;
 

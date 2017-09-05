@@ -21,12 +21,11 @@ import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.data.FolderRealmRepository;
 import com.okason.diary.models.Folder;
-import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.auth.RegisterActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -40,6 +39,7 @@ import io.realm.Case;
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
+import io.realm.SyncUser;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -95,7 +95,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     @Override
     public void onResume() {
         super.onResume();
-        if (ProntoDiaryApplication.isCloudSyncEnabled()) {
+        if (SyncUser.currentUser() != null) {
             mAdapter = null;
             try {
                 mRealm = Realm.getDefaultInstance();
@@ -135,6 +135,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        getActivity().invalidateOptionsMenu();
         inflater.inflate(R.menu.menu_folder_list, menu);
         MenuItem search = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
@@ -151,12 +152,10 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         int id = item.getItemId();
         switch (id){
             case R.id.action_add:
-                if (getActivity() != null) {
-                    if (ProntoDiaryApplication.isCloudSyncEnabled()) {
-                        showAddNewFolderDialog();
-                    } else {
-                        startActivity(new Intent(getActivity(), AuthUiActivity.class));
-                    }
+                if (SyncUser.currentUser() != null) {
+                    showAddNewFolderDialog();
+                } else {
+                    startActivity(new Intent(getActivity(), RegisterActivity.class));
                 }
                 break;
         }

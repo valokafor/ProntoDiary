@@ -24,7 +24,6 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.common.Scopes;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
 import com.okason.diary.core.services.HandleRealmLoginService;
 import com.okason.diary.utils.Constants;
@@ -178,13 +177,11 @@ public class AuthUiActivity extends AppCompatActivity {
 
         if (resultCode == RESULT_CANCELED) {
             makeToast(getString(R.string.sign_in_cancelled));
-            ProntoDiaryApplication.setCloudSyncEnabled(false);
             return;
         }
 
         if (response.getErrorCode() == ErrorCodes.NO_NETWORK) {
             makeToast(getString(R.string.no_internet_connection));
-            ProntoDiaryApplication.setCloudSyncEnabled(false);
             return;
         }
 
