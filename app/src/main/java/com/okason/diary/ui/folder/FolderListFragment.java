@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -63,6 +64,8 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     private Realm mRealm;
     private RealmResults<Folder> mFolders;
 
+    private FloatingActionButton floatingActionButton;
+
 
 
 
@@ -89,6 +92,18 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
+
+        floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (SyncUser.currentUser() != null) {
+                    showAddNewFolderDialog();
+                } else {
+                    startActivity(new Intent(getActivity(), RegisterActivity.class));
+                }
+            }
+        });
         return  mRootView;
     }
 
@@ -135,7 +150,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        getActivity().invalidateOptionsMenu();
+        menu.clear();
         inflater.inflate(R.menu.menu_folder_list, menu);
         MenuItem search = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
@@ -149,16 +164,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     public boolean onOptionsItemSelected(MenuItem item) {
 
 
-        int id = item.getItemId();
-        switch (id){
-            case R.id.action_add:
-                if (SyncUser.currentUser() != null) {
-                    showAddNewFolderDialog();
-                } else {
-                    startActivity(new Intent(getActivity(), RegisterActivity.class));
-                }
-                break;
-        }
+
         return super.onOptionsItemSelected(item);
     }
 

@@ -141,7 +141,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 //        inflater.inflate(R.menu.menu_tag_list, menu);
 //        MenuItem search = menu.findItem(R.id.action_search);
-        getActivity().invalidateOptionsMenu();
+        menu.clear();
         super.onCreateOptionsMenu(menu, inflater);
     }
 

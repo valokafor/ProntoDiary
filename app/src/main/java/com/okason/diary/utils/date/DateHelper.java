@@ -17,9 +17,7 @@
 package com.okason.diary.utils.date;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.text.format.DateUtils;
-import android.text.format.Time;
 import android.util.Log;
 
 import com.okason.diary.R;
@@ -32,9 +30,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-
-import be.billington.calendar.recurrencepicker.EventRecurrence;
-import be.billington.calendar.recurrencepicker.EventRecurrenceFormatter;
 
 
 
@@ -177,22 +172,6 @@ public class DateHelper {
     }
 
 
-    public static String formatRecurrence(Context mContext, String recurrenceRule) {
-        if (!TextUtils.isEmpty(recurrenceRule)) {
-            EventRecurrence recurrenceEvent = new EventRecurrence();
-            recurrenceEvent.setStartDate(new Time("" + new Date().getTime()));
-            recurrenceEvent.parse(recurrenceRule);
-            return EventRecurrenceFormatter.getRepeatString(mContext.getApplicationContext(),
-                    mContext.getResources(), recurrenceEvent, true);
-        } else {
-            return "";
-        }
-    }
-
-
-    public static Long nextReminderFromRecurrenceRule(long reminder, String recurrenceRule) {
-        return nextReminderFromRecurrenceRule(reminder, Calendar.getInstance().getTimeInMillis(), recurrenceRule);
-    }
 
 
     public static Long nextReminderFromRecurrenceRule(long reminder, long currentTime, String recurrenceRule) {
@@ -220,10 +199,6 @@ public class DateHelper {
     }
 
 
-    public static String getNoteRecurrentReminderText(long reminder, String rrule) {
-        return DateHelper.formatRecurrence(ProntoDiaryApplication.getAppContext(), rrule) + " " + ProntoDiaryApplication.getAppContext().getString
-                (R.string.starting_from) + " " + DateHelper.getDateTimeShort(ProntoDiaryApplication.getAppContext(), reminder);
-    }
 
 
 //	public static String getFormattedDate(Long timestamp, boolean prettified) {

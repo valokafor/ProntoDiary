@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -56,6 +57,8 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @BindView(R.id.empty_text)
     TextView mEmptyText;
 
+    private FloatingActionButton floatingActionButton;
+
 
     public TaskListFragment() {
         // Required empty public constructor
@@ -76,6 +79,18 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         presenter = new TaskPresenter(this);
+
+        floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (SyncUser.currentUser() != null) {
+                    startActivity(new Intent(getActivity(), AddTaskActivity.class));
+                } else {
+                    startActivity(new Intent(getActivity(), RegisterActivity.class));
+                }
+            }
+        });
         return mRootView;
     }
 
@@ -125,7 +140,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        getActivity().invalidateOptionsMenu();
+        menu.clear();
         inflater.inflate(R.menu.menu_todo_list, menu);
         MenuItem search = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
@@ -143,11 +158,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         int id = item.getItemId();
         switch (id){
             case R.id.action_add:
-                if (SyncUser.currentUser() != null) {
-                    startActivity(new Intent(getActivity(), AddTaskActivity.class));
-                } else {
-                    startActivity(new Intent(getActivity(), RegisterActivity.class));
-                }
+
                 break;
 
         }

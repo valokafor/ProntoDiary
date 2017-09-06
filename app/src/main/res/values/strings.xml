@@ -296,7 +296,6 @@
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
 
-
     <string name="pref_title_new_message_notifications">New message notifications</string>
 
     <string name="pref_title_ringtone">Ringtone</string>
@@ -398,6 +397,8 @@
     <string name="accessibility_logo">Accessibility Logo</string>
     <string name="unknown_error">Unknown Error</string>
     <string name="menu_item_register">Register</string>
+    <string name="title_activity_folder_list">FolderListActivity</string>
+    <string name="title_activity_tag_list">TagListActivity</string>
 
 
 </resources>

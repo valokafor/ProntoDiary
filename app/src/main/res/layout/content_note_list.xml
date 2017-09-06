@@ -20,6 +20,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/white"
         android:layout_alignParentBottom="true"
+        android:visibility="gone"
         app:popupTheme="@style/AppTheme.PopupOverlay">
 
         <LinearLayout

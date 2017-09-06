@@ -19,16 +19,12 @@ package com.okason.diary.utils.date;
 import android.content.Context;
 import android.util.Log;
 
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.utils.Constants;
-
-import org.ocpsoft.prettytime.PrettyTime;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 
 
@@ -170,26 +166,5 @@ public class DateUtils {
     }
 
 
-	public static String prettyTime(String timeInMillisec) {
-		if (timeInMillisec == null) {
-			return "";
-		}
-		return prettyTime(Long.parseLong(timeInMillisec), ProntoDiaryApplication.getAppContext().getResources().getConfiguration().locale);
-	}
 
-
-	public static String prettyTime(Long timeInMillisec) {
-		return prettyTime(timeInMillisec, ProntoDiaryApplication.getAppContext().getResources().getConfiguration().locale);
-	}
-
-
-	public static String prettyTime(Long timeInMillisec, Locale locale) {
-		if (timeInMillisec == null) return "";
-		Date d = new Date(timeInMillisec);
-		PrettyTime pt = new PrettyTime();
-		if (locale != null) {
-			pt.setLocale(locale);
-		}
-		return pt.format(d);
-	}
 }

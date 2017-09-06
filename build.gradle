@@ -45,7 +45,7 @@ ext {
     firebaseVersion = '11.0.4'
 
     // App dependencies
-    supportLibraryVersion = '25.4.0'
+    supportLibraryVersion = '26.0.2'
     guavaVersion = '18.0'
     glideVersion = '3.6.1'
     junitVersion = '4.12'

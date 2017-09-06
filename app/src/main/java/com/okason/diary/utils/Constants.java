@@ -63,11 +63,14 @@ public class Constants {
     public static final int PRIORITY_TOP = 3;
 
     public final static int NOTES = 1;
-    public final static int CATEGORIES = 2;
+    public final static int FOLDERS = 2;
     public final static int SETTINGS = 3;
     public final static int LOGOUT = 4;
     public final static int DELETE = 5;
-    public final static int TODOLIST = 6;
+    public final static int LOGIN = 6;
+    public final static int TAGS = 7;
+    public final static int TODO_LIST = 8;
+
 
     public final static String PREFERENCE_FILE = "preference_file";
 

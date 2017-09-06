@@ -191,7 +191,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        getActivity().invalidateOptionsMenu();
+        menu.clear();
         inflater.inflate(R.menu.menu_note_list, menu);
         MenuItem search = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);

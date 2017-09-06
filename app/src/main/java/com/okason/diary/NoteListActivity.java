@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -33,18 +32,27 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
+import com.mikepenz.materialdrawer.AccountHeader;
+import com.mikepenz.materialdrawer.AccountHeaderBuilder;
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IProfile;
+import com.mikepenz.materialdrawer.model.interfaces.Nameable;
+import com.mikepenz.materialdrawer.util.KeyboardUtil;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.DisplayFragmentEvent;
-import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
 import com.okason.diary.ui.auth.RegisterActivity;
-import com.okason.diary.ui.auth.SignInActivity;
-import com.okason.diary.ui.auth.UserManager;
-import com.okason.diary.ui.folder.AccountFragment;
+import com.okason.diary.ui.folder.FolderListActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
-import com.okason.diary.ui.todolist.TaskListFragment;
+import com.okason.diary.ui.tag.TagListFragment;
+import com.okason.diary.ui.todolist.TodoListActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
 
@@ -54,7 +62,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import io.realm.SyncUser;
 
 public class NoteListActivity extends AppCompatActivity {
@@ -62,6 +69,7 @@ public class NoteListActivity extends AppCompatActivity {
     SharedPreferences.Editor editor;
     private boolean unregisteredUser = false;
     private Activity mActivity;
+    private Toolbar toolbar;
     private FirebaseAuth mAuth;
     private FirebaseUser mFirebaseUser;
     private DatabaseReference mDatabase;
@@ -73,8 +81,19 @@ public class NoteListActivity extends AppCompatActivity {
     public static final String ACTION_IGNORE_CURRENT_USER = "action.ignoreCurrentUser";
     public static final String TAG = "NoteListActivity";
 
-    private String currentFragmentTag = "";
-    private String currentFragmentTitle = "";
+
+    public static final String ANONYMOUS = "anonymous";
+    public static final String ANONYMOUS_PHOTO_URL = "https://firebasestorage.googleapis.com/v0/b/prontonotepad-65983.appspot.com/o/annonymous_user.jpg";
+    public static final String ANONYMOUS_EMAIL = "anonymous@noemail.com";
+    private static final String LOG_TAG = "NoteListActivity";
+
+    private String username;
+    private String photoUrl;
+    private String emailAddress;
+
+    private AccountHeader header = null;
+    private Drawer drawer = null;
+
 
     @BindView(R.id.root)
     View mRootView;
@@ -125,7 +144,6 @@ public class NoteListActivity extends AppCompatActivity {
     @BindView(R.id.linear_layout_folder)
     LinearLayout folderLayout;
 
-    @BindView(R.id.toolbar_title) TextView toolbarTitle;
 
     private MaterialDialog progressDialog;
 
@@ -138,14 +156,86 @@ public class NoteListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_list);
         ButterKnife.bind(this);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         mActivity = this;
         mAuth = FirebaseAuth.getInstance();
 
+
+        setupNavigationDrawer(savedInstanceState);
+
     }
 
+    private void setupNavigationDrawer(Bundle savedInstanceState) {
+
+        SettingsHelper settingsHelper = SettingsHelper.getHelper(mActivity);
+
+        username = TextUtils.isEmpty(settingsHelper.getDisplayName()) ? ANONYMOUS : settingsHelper.getDisplayName();
+        emailAddress = TextUtils.isEmpty(settingsHelper.getEmailAddress()) ? ANONYMOUS_EMAIL : settingsHelper.getEmailAddress();
+        photoUrl = TextUtils.isEmpty(settingsHelper.getPhotoUrl()) ? ANONYMOUS_PHOTO_URL : settingsHelper.getPhotoUrl();
+
+        IProfile  profile = new ProfileDrawerItem()
+                .withName(username)
+                .withEmail(emailAddress)
+                .withIcon(photoUrl)
+                .withIdentifier(102);
+
+        header = new AccountHeaderBuilder()
+                .withActivity(this)
+                .withHeaderBackground(R.drawable.nav_bar_header_dark)
+                .addProfiles(profile)
+                .build();
+        drawer = new DrawerBuilder()
+                .withAccountHeader(header)
+                .withActivity(this)
+                .withToolbar(toolbar)
+                .withActionBarDrawerToggle(true)
+                .addDrawerItems(
+                        new PrimaryDrawerItem().withName("Journals").withIcon(GoogleMaterial.Icon.gmd_calendar_note).withIdentifier(Constants.NOTES),
+                        new PrimaryDrawerItem().withName("Todo List").withIcon(GoogleMaterial.Icon.gmd_format_list_bulleted).withIdentifier(Constants.TODO_LIST),
+                        new PrimaryDrawerItem().withName("Folders").withIcon(GoogleMaterial.Icon.gmd_folder).withIdentifier(Constants.FOLDERS),
+                        new PrimaryDrawerItem().withName("Tags").withIcon(GoogleMaterial.Icon.gmd_tag).withIdentifier(Constants.TAGS),
+                        new PrimaryDrawerItem().withName("Settings").withIcon(GoogleMaterial.Icon.gmd_settings).withIdentifier(Constants.SETTINGS)
+                )
+                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                    @Override
+                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                        if (drawerItem != null && drawerItem instanceof Nameable){
+                            String name = ((Nameable) drawerItem).getName().getText(mActivity);
+                            toolbar.setTitle(name);
+                        }
+
+                        if (drawerItem != null){
+                            //handle on navigation drawer item
+                            onTouchDrawer((int) drawerItem.getIdentifier());
+                        }
+                        return false;
+                    }
+                })
+                .withOnDrawerListener(new Drawer.OnDrawerListener() {
+                    @Override
+                    public void onDrawerOpened(View drawerView) {
+                        KeyboardUtil.hideKeyboard(mActivity);
+                    }
+
+                    @Override
+                    public void onDrawerClosed(View drawerView) {
+
+                    }
+
+                    @Override
+                    public void onDrawerSlide(View drawerView, float slideOffset) {
+
+                    }
+                })
+                .withFireOnInitialOnClick(true)
+                .withSavedInstance(savedInstanceState)
+                .build();
+        drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Login").withIcon(GoogleMaterial.Icon.gmd_lock_open).withIdentifier(Constants.LOGIN));
+        drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Logout").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.LOGOUT));
+
+    }
 
 
     @Override
@@ -153,45 +243,19 @@ public class NoteListActivity extends AppCompatActivity {
         finish();
     }
 
-//    private void checkLoginStatus() {
-//        //Check Firebase User status,
-//
-//        final SyncUser user = SyncUser.currentUser();
-//        if (user == null) {
-//            //Check to see if the user has registered before
-//            //if yes, check to see if the user is not logged in, show login
-//            boolean registeredUser = SettingsHelper.getHelper(mActivity).isRegisteredUser();
-//            if (!registeredUser){
-//                //Show Anonymous Login
-//                Realm.setDefaultConfiguration(UserManager.getLocalConfig());
-//               // realm = Realm.getDefaultInstance();
-//                loginLayout.setVisibility(View.VISIBLE);
-//                settingsLayout.setVisibility(View.GONE);
-//                updateUI(null);
-//            }else {
-//                //User has registered before, show login page
-//                startActivity(new Intent(this, SignInActivity.class));}
-//        }else {
-//            UserManager.setActiveUser(user);
-//            loginLayout.setVisibility(View.GONE);
-//            settingsLayout.setVisibility(View.VISIBLE);
-//            updateUI(user);
-//        }
-//    }
 
     private void checkLoginStatus() {
         //Check Firebase User status,
 
-        final SyncUser user = SyncUser.currentUser();
-        if (user != null) {
-            UserManager.setActiveUser(user);
-            loginLayout.setVisibility(View.GONE);
-            settingsLayout.setVisibility(View.VISIBLE);
-            updateUI();
+        //Apply Tag filter is one exist.
+        NoteListFragment fragment = new NoteListFragment();
+        if (getIntent().hasExtra(Constants.TAG_FILTER)){
+            String tagName = getIntent().getStringExtra(Constants.TAG_FILTER);
+            fragment.setArguments(getIntent().getExtras());
+            String title = getString(R.string.label_tag) + ": " + tagName;
+            openFragment(new NoteListFragment(), title);
         }else {
-            loginLayout.setVisibility(View.VISIBLE);
-            settingsLayout.setVisibility(View.GONE);
-            updateUI();
+            openFragment(fragment, getString(R.string.label_journals));
         }
         //SampleData.addSampleNotes();
     }
@@ -216,11 +280,10 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (getIntent() != null && getIntent().hasExtra(Constants.FRAGMENT_TAG)){
-            String tag = getIntent().getStringExtra(Constants.FRAGMENT_TAG);
-            if (tag.equals(Constants.TODO_LIST_FRAGMENT_TAG)){
-                openFragment(new TaskListFragment(), getString(R.string.title_todo_list), Constants.TODO_LIST_FRAGMENT_TAG);
-            }
+        if (SyncUser.currentUser() != null){
+            drawer.removeStickyFooterItemAtPosition(0);
+        } else {
+            drawer.removeStickyFooterItemAtPosition(1);
         }
         checkNetworkConnected();
 
@@ -232,124 +295,6 @@ public class NoteListActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    @OnClick(R.id.image_button_notes)
-    public void onNoteIconClicked(View view){
-        handleNoteButtonClicked();
-    }
-
-    @OnClick(R.id.notes_text_view)
-    public void onNoteTextClicked(View view){
-        handleNoteButtonClicked();
-    }
-
-    @OnClick(R.id.image_button_todo_list)
-    public void onTodoListIconClicked(View view){
-        handleTodoListButtonClicked();
-    }
-
-    @OnClick(R.id.todo_list_text_view)
-    public void onTodoListTextClicked(View view){
-        handleTodoListButtonClicked();
-    }
-
-    @OnClick(R.id.image_button_folder)
-    public void onFolderIconClicked(View view){
-        handleFolderButtonClicked();
-    }
-
-    @OnClick(R.id.folder_text_view)
-    public void onFolderTextClicked(View view){
-        handleFolderButtonClicked();
-    }
-
-    @OnClick(R.id.image_button_settings)
-    public void onSettingsIconClicked(View view){
-        handleSettingsButtonClicked();
-    }
-
-    @OnClick(R.id.settings_text_view)
-    public void onSettingsTextClicked(View view){
-        handleSettingsButtonClicked();
-    }
-
-    @OnClick(R.id.image_button_login)
-    public void onLoginIconClicked(View view){
-        handleLoginButtonClicked();
-    }
-
-    @OnClick(R.id.login_text_view)
-    public void onLoginTextClicked(View view){
-        handleLoginButtonClicked();
-    }
-
-
-    private void handleTodoListButtonClicked() {
-        resetBottomNavigationIcons();
-        todoListButton.setImageResource(R.drawable.ic_task_list_dark_green);
-        todoListTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
-        todoListTextView.setTypeface(todoListTextView.getTypeface(), Typeface.BOLD);
-        openFragment(new TaskListFragment(), getString(R.string.title_todo_list), Constants.TODO_LIST_FRAGMENT_TAG);
-
-    }
-
-    private void handleFolderButtonClicked() {
-        resetBottomNavigationIcons();
-        folderButton.setImageResource(R.drawable.ic_folder_dark_green);
-        folderTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
-        folderTextView.setTypeface(folderTextView.getTypeface(), Typeface.BOLD);
-        openFragment(new AccountFragment(), getString(R.string.label_folders), Constants.FOLDER_FRAGMENT_TAG);
-    }
-
-
-    private void handleSettingsButtonClicked() {
-        resetBottomNavigationIcons();
-        settingsButton.setImageResource(R.drawable.ic_settings_dark_green);
-        settingsTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
-        settingsTextView.setTypeface(settingsTextView.getTypeface(), Typeface.BOLD);
-        startActivity(new Intent(mActivity, SettingsActivity.class));
-       // openFragment(new AccountFragment(), getString(R.string.label_account), Constants.ACCOUNT_TAG);
-    }
-
-    private void handleLoginButtonClicked(){
-        resetBottomNavigationIcons();
-        loginButton.setImageResource(R.drawable.ic_login_gray);
-        loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
-        loginTextView.setTypeface(loginTextView.getTypeface(), Typeface.BOLD);
-        if (SettingsHelper.getHelper(mActivity).isRegisteredUser()) {
-            startActivity(new Intent(mActivity, SignInActivity.class));
-        }else {
-            startActivity(new Intent(mActivity, RegisterActivity.class));
-        }
-
-    }
-
-    private void handleNoteButtonClicked() {
-        resetBottomNavigationIcons();
-        noteButton.setImageResource(R.drawable.ic_post_it_dark_green);
-        noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.primary_dark));
-        noteTextView.setTypeface(noteTextView.getTypeface(), Typeface.BOLD);
-
-        //Apply Tag filter is one exist.
-        NoteListFragment fragment = new NoteListFragment();
-        if (getIntent().hasExtra(Constants.TAG_FILTER)){
-            String tagName = getIntent().getStringExtra(Constants.TAG_FILTER);
-            fragment.setArguments(getIntent().getExtras());
-            String title = getString(R.string.label_tag) + ": " + tagName;
-            openFragment(new NoteListFragment(), title, Constants.NOTE_LIST_FRAGMENT_TAG);
-        }else {
-            openFragment(fragment, getString(R.string.label_journals), Constants.NOTE_LIST_FRAGMENT_TAG);
-        }
-
-
-    }
-
-
-    private void updateUI() {
-        addDefaultData();
-        handleNoteButtonClicked();
-
-    }
-
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -357,9 +302,9 @@ public class NoteListActivity extends AppCompatActivity {
 
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(event.getTag());
         if (fragment != null){
-            openFragment(fragment, event.getTitle(), event.getTag());
+            openFragment(fragment, event.getTitle());
         }else {
-            openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list), Constants.NOTE_LIST_FRAGMENT_TAG);
+            openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list));
         }
     }
 
@@ -368,54 +313,20 @@ public class NoteListActivity extends AppCompatActivity {
 
         Fragment fragment = event.getFragment();
         if (fragment != null){
-            openFragment(fragment, event.getTitle(), event.getTitle());
+            openFragment(fragment, event.getTitle());
         }else {
-            openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list), Constants.NOTE_LIST_FRAGMENT_TAG);
+            openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list));
         }
     }
 
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRealmDatabaseRegistrationComplete(RealmDatabaseRegistrationCompletedEvent event){
-        if (event.isInProgress()){
-            progressDialog = new MaterialDialog.Builder(mActivity)
-                    .title(getString(R.string.please_wait))
-                    .content(getString(R.string.syncing_data))
-                    .positiveText(getString(R.string.label_yes))
-                    .show();
-        }else {
-            progressDialog.dismiss();
-            checkLoginStatus();
-        }
-
-    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAddDefaultDataEvent(AddDefaultDataEvent event){
         addDefaultData();
     }
 
-    private void resetBottomNavigationIcons() {
-        noteButton.setImageResource(R.drawable.ic_post_it_gray);
-        noteTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
-        noteTextView.setTypeface(noteTextView.getTypeface(), Typeface.NORMAL);
 
-        folderButton.setImageResource(R.drawable.ic_folder_gray);
-        folderTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
-        folderTextView.setTypeface(folderTextView.getTypeface(), Typeface.NORMAL);
-
-        todoListButton.setImageResource(R.drawable.ic_task_gray);
-        todoListTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
-        todoListTextView.setTypeface(todoListTextView.getTypeface(), Typeface.NORMAL);
-
-        loginButton.setImageResource(R.drawable.ic_login_gray);
-        loginTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
-        loginTextView.setTypeface(loginTextView.getTypeface(), Typeface.NORMAL);
-
-        settingsButton.setImageResource(R.drawable.ic_settings_gray);
-        settingsTextView.setTextColor(ContextCompat.getColor(mActivity, R.color.secondary_text));
-        settingsTextView.setTypeface(settingsTextView.getTypeface(), Typeface.NORMAL);
-    }
 
     private void makeToast(String message){
         Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
@@ -426,16 +337,14 @@ public class NoteListActivity extends AppCompatActivity {
         snackbar.show();
     }
 
-    public void openFragment(Fragment fragment, String screenTitle, String tag){
+    public void openFragment(Fragment fragment, String screenTitle){
         getSupportFragmentManager()
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .replace(R.id.container, fragment, tag)
+                .replace(R.id.container, fragment)
                 .addToBackStack(screenTitle)
                 .commit();
-        toolbarTitle.setVisibility(View.GONE);
         getSupportActionBar().setTitle(screenTitle);
-       // toolbarTitle.setText(screenTitle);
     }
 
 
@@ -531,6 +440,42 @@ public class NoteListActivity extends AppCompatActivity {
         }
 
         checkLoginStatus();
+
+    }
+
+
+    private void onTouchDrawer(int position) {
+        switch (position){
+            case Constants.NOTES:
+                //Do Nothing, we are already on Notes
+                openFragment(new NoteListFragment(), getString(R.string.label_journals));
+                break;
+            case Constants.FOLDERS:
+                //Go To Folders Screen
+                startActivity(new Intent(mActivity, FolderListActivity.class));
+                break;
+            case Constants.TAGS:
+                //Go To TAGS Screen
+                openFragment(new TagListFragment(), getString(R.string.label_tag));
+                break;
+            case Constants.SETTINGS:
+                //Go To Settings Screen
+                startActivity(new Intent(mActivity, SettingsActivity.class));
+                break;
+            case Constants.LOGOUT:
+               // logout();
+                break;
+            case Constants.LOGIN:
+                startActivity(new Intent(mActivity, RegisterActivity.class));
+                break;
+            case Constants.DELETE:
+                //Delete Account
+              //  deleteAccountClicked();
+                break;
+            case Constants.TODO_LIST:
+                startActivity(new Intent(mActivity, TodoListActivity.class));
+                break;
+        }
 
     }
 

@@ -42,4 +42,6 @@
 
     <color name="colorTextWhite">#ffffffff</color>
     <color name="colorMonthText">#ffcccccc</color>
+    <!--<color name="material_drawer_dark_header_">@color/primary_dark</color>-->
+    <!--<color name="material_drawer_header_selection_text">#33691E</color>-->
 </resources>
