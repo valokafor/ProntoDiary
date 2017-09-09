@@ -27,6 +27,7 @@ public class ProntoDiaryApplication extends Application {
     public static final String COMMON_REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/common";
 
     private static Context mContext;
+    private static boolean premiumUser;
 
 
 
@@ -85,7 +86,11 @@ public class ProntoDiaryApplication extends Application {
         return ProntoDiaryApplication.mContext;
     }
 
+    public static boolean isPremiumUser() {
+        return premiumUser;
+    }
 
-
-
+    public static void setPremiumUser(boolean premiumUser) {
+        ProntoDiaryApplication.premiumUser = premiumUser;
+    }
 }

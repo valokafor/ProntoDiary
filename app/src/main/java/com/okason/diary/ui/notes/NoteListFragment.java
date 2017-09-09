@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -26,10 +27,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.data.TagRealmRepository;
@@ -80,8 +84,10 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     RecyclerView mRecyclerView;
     @BindView(R.id.empty_text)
     TextView mEmptyText;
-//    @BindView(R.id.adView)
-//    AdView mAdView;
+    @BindView(R.id.adView)
+    AdView mAdView;
+
+    private FloatingActionButton floatingActionButton;
 
 
     public NoteListFragment() {
@@ -127,9 +133,19 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
+
+        floatingActionButton = getActivity().findViewById(R.id.fab);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (SyncUser.currentUser() != null) {
+                    startActivity(new Intent(getActivity(), AddNoteActivity.class));
+                } else {
+                    startActivity(new Intent(getActivity(), RegisterActivity.class));
+                }
+            }
+        });
         return mRootView;
     }
 
@@ -173,6 +189,12 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             }
         } else {
             showEmptyText(true);
+        }
+
+        if (!ProntoDiaryApplication.isPremiumUser()){
+            mAdView.setVisibility(View.VISIBLE);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
         }
     }
 

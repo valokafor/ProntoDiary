@@ -25,21 +25,26 @@ import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.SignInButton;
-import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.core.services.HandleRealmLoginService;
-import com.okason.diary.utils.Constants;
+import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.utils.SettingsHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.UUID;
+
 import io.realm.ObjectServerError;
+import io.realm.Realm;
+import io.realm.SyncConfiguration;
 import io.realm.SyncCredentials;
 import io.realm.SyncUser;
+import io.realm.permissions.PermissionChange;
 
 import static android.text.TextUtils.isEmpty;
 import static com.okason.diary.core.ProntoDiaryApplication.AUTH_URL;
+import static com.okason.diary.core.ProntoDiaryApplication.COMMON_REALM_URL;
 
 
 public class RegisterActivity extends AppCompatActivity implements SyncUser.Callback {
@@ -53,6 +58,14 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
     private FacebookAuth facebookAuth;
     private GoogleAuth googleAuth;
     private Activity activity;
+
+    private static final String EMAIL = "tempemail@prontodiary.com";
+    private static final String PASSWORD = "abc1234";
+
+    private String email = "";
+    private String  displayName = "";
+    private String photoUrl = "";
+    private String provider = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,18 +125,11 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
                                 Log.v("LoginActivity Response ", response.toString());
 
                                 try {
-                                    String name = object.getString("name");
-                                    String email = object.getString("email");
+                                    displayName = object.getString("name");
+                                    email = object.getString("email");
                                     String  userId = object.getString("id");
-                                    String photoUrl = "https://graph.facebook.com/" + userId+ "/picture?type=large";
-
-                                    Intent completeRegisterIntent = new Intent(activity, HandleRealmLoginService.class);
-                                    completeRegisterIntent.putExtra(Constants.DISPLAY_NAME, name);
-                                    completeRegisterIntent.putExtra(Constants.EMAIL_ADDRESSS, email);
-                                    completeRegisterIntent.putExtra(Constants.PHOTO_URL, photoUrl);
-                                    completeRegisterIntent.putExtra(Constants.LOGIN_PROVIDER, "Facebook");
-                                    startService(completeRegisterIntent);
-                                    Log.d(NoteListActivity.TAG, "Name: " + name + ", Email: " + email + ", UserId: " + userId + ", Photo Url: " + photoUrl);
+                                    photoUrl = "https://graph.facebook.com/" + userId+ "/picture?type=large";
+                                    provider = "Facebook";
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -143,15 +149,15 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             public void onRegistrationComplete(GoogleSignInResult result) {
                 UserManager.setAuthMode(UserManager.AUTH_MODE.GOOGLE);
                 GoogleSignInAccount acct = result.getSignInAccount();
-                Intent completeRegisterIntent = new Intent(activity, HandleRealmLoginService.class);
 
-                completeRegisterIntent.putExtra(Constants.DISPLAY_NAME, acct.getDisplayName());
-                completeRegisterIntent.putExtra(Constants.EMAIL_ADDRESSS, acct.getEmail());
+
+                displayName = acct.getDisplayName();
+                email = acct.getEmail();
                 if (acct.getPhotoUrl() != null) {
-                    completeRegisterIntent.putExtra(Constants.PHOTO_URL, acct.getPhotoUrl().toString());
+                    photoUrl =  acct.getPhotoUrl().toString();
                 }
-                completeRegisterIntent.putExtra(Constants.LOGIN_PROVIDER, "Google");
-                startService(completeRegisterIntent);
+                provider = "Google";
+
                 SyncCredentials credentials = SyncCredentials.google(acct.getIdToken());
                 SyncUser.loginAsync(credentials, AUTH_URL, RegisterActivity.this);
             }
@@ -207,12 +213,10 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             SyncUser.loginAsync(SyncCredentials.usernamePassword(username, password, true), AUTH_URL, new SyncUser.Callback() {
                 @Override
                 public void onSuccess(SyncUser user) {
-                    Intent completeRegisterIntent = new Intent(activity, HandleRealmLoginService.class);
-                    completeRegisterIntent.putExtra(Constants.DISPLAY_NAME, "");
-                    completeRegisterIntent.putExtra(Constants.EMAIL_ADDRESSS, usernameView.getText());
-                    completeRegisterIntent.putExtra(Constants.PHOTO_URL, "");
-                    completeRegisterIntent.putExtra(Constants.LOGIN_PROVIDER, "Email");
-                    startService(completeRegisterIntent);
+
+                    email = username;
+                    provider = "Email";
+
                     registrationComplete(user);
                 }
 
@@ -231,12 +235,62 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
         }
     }
 
-    private void registrationComplete(SyncUser user) {
-        UserManager.setActiveUser(user);
-        SettingsHelper.getHelper(RegisterActivity.this).setRegisteredUser(true);
-        Intent intent = new Intent(this, SignInActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+    private void registrationComplete(final SyncUser registeredUser) {
+
+
+        final SyncCredentials syncCredentials = SyncCredentials.usernamePassword(EMAIL, PASSWORD, false);
+        SyncUser.loginAsync(syncCredentials, ProntoDiaryApplication.AUTH_URL, new SyncUser.Callback() {
+            @Override
+            public void onSuccess(final SyncUser user) {
+                final SyncConfiguration syncConfiguration = new SyncConfiguration.Builder(user, ProntoDiaryApplication.COMMON_REALM_URL).build();
+                final Realm commonRealm = Realm.getInstance(syncConfiguration);
+                Realm managementRealm = user.getManagementRealm();
+                managementRealm.executeTransactionAsync(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        PermissionChange permissionChange = new PermissionChange(COMMON_REALM_URL, "*", true, true, false);
+                        realm.copyToRealm(permissionChange);
+                    }
+                }, new Realm.Transaction.OnSuccess() {
+                    @Override
+                    public void onSuccess() {
+                        commonRealm.executeTransactionAsync(new Realm.Transaction() {
+                            @Override
+                            public void execute(Realm realm) {
+                                ProntoDiaryUser prontoDiaryUser = realm.createObject(ProntoDiaryUser.class, UUID.randomUUID().toString());
+                                prontoDiaryUser.setEmailAddress(email);
+                                prontoDiaryUser.setDisplayName(displayName);
+                                prontoDiaryUser.setLoginProvider(provider);
+                                prontoDiaryUser.setFcmToken(SettingsHelper.getHelper(getApplication()).getMessagingToken());
+                                prontoDiaryUser.setPhotoUrl(photoUrl);
+                                prontoDiaryUser.setRealmUserId(registeredUser.getIdentity());
+                            }
+                        }, new Realm.Transaction.OnSuccess() {
+                            @Override
+                            public void onSuccess() {
+                                user.logout();
+                                UserManager.setActiveUser(registeredUser);
+
+                                SettingsHelper.getHelper(RegisterActivity.this).setRegisteredUser(true);
+                                Intent intent = new Intent(RegisterActivity.this, SignInActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
+                        });
+                    }
+                });
+
+
+
+            }
+
+            @Override
+            public void onError(ObjectServerError error) {
+                Log.d("RegisterActivity", "Admin login failed " + error.getLocalizedMessage());
+            }
+        });
+
+
     }
 
     private void showProgress(final boolean show) {

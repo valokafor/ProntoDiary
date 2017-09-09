@@ -1,12 +1,17 @@
 package com.okason.diary.models;
 
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
 /**
  * Created by valokafor on 6/1/17.
  */
 
-public class ProntoDiaryUser {
+public class ProntoDiaryUser extends RealmObject{
+
+    @PrimaryKey
     private String id;
-    private String firebaseUid;
+    private String realmUserId;
     private String fcmToken;
     private String displayName;
     private String emailAddress;
@@ -14,7 +19,6 @@ public class ProntoDiaryUser {
     private long totalFileSize;
     private boolean isPremium;
     private String upgradeMethod;
-    private String realmPassword;
     private String loginProvider;
     private String photoUrl;
 
@@ -33,14 +37,6 @@ public class ProntoDiaryUser {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getFirebaseUid() {
-        return firebaseUid;
-    }
-
-    public void setFirebaseUid(String firebaseUid) {
-        this.firebaseUid = firebaseUid;
     }
 
     public String getFcmToken() {
@@ -99,19 +95,19 @@ public class ProntoDiaryUser {
         this.loginProvider = loginProvider;
     }
 
-    public String getRealmPassword() {
-        return realmPassword;
-    }
-
-    public void setRealmPassword(String realmPassword) {
-        this.realmPassword = realmPassword;
-    }
-
     public String getPhotoUrl() {
         return photoUrl;
     }
 
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    public String getRealmUserId() {
+        return realmUserId;
+    }
+
+    public void setRealmUserId(String realmUserId) {
+        this.realmUserId = realmUserId;
     }
 }

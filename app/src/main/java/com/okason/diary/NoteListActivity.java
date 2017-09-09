@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -21,6 +22,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -30,7 +32,12 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.dynamiclinks.DynamicLink;
+import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.mikepenz.materialdrawer.AccountHeader;
@@ -43,15 +50,18 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.mikepenz.materialdrawer.model.interfaces.Nameable;
 import com.mikepenz.materialdrawer.util.KeyboardUtil;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.core.services.AddSampleDataIntentService;
+import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
-import com.okason.diary.ui.tag.TagListFragment;
+import com.okason.diary.ui.tag.TagListActivity;
 import com.okason.diary.ui.todolist.TodoListActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
@@ -62,6 +72,8 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Realm;
+import io.realm.SyncConfiguration;
 import io.realm.SyncUser;
 
 public class NoteListActivity extends AppCompatActivity {
@@ -93,6 +105,8 @@ public class NoteListActivity extends AppCompatActivity {
 
     private AccountHeader header = null;
     private Drawer drawer = null;
+    private SettingsHelper settingsHelper;
+    private Uri mInvitationUrl;
 
 
     @BindView(R.id.root)
@@ -146,6 +160,7 @@ public class NoteListActivity extends AppCompatActivity {
 
 
     private MaterialDialog progressDialog;
+    private Bundle savedInstanceBundle;
 
 
 
@@ -160,10 +175,12 @@ public class NoteListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         mActivity = this;
+        settingsHelper = SettingsHelper.getHelper(mActivity);
         mAuth = FirebaseAuth.getInstance();
 
 
-        setupNavigationDrawer(savedInstanceState);
+        savedInstanceBundle = savedInstanceState;
+
 
     }
 
@@ -171,9 +188,21 @@ public class NoteListActivity extends AppCompatActivity {
 
         SettingsHelper settingsHelper = SettingsHelper.getHelper(mActivity);
 
-        username = TextUtils.isEmpty(settingsHelper.getDisplayName()) ? ANONYMOUS : settingsHelper.getDisplayName();
-        emailAddress = TextUtils.isEmpty(settingsHelper.getEmailAddress()) ? ANONYMOUS_EMAIL : settingsHelper.getEmailAddress();
-        photoUrl = TextUtils.isEmpty(settingsHelper.getPhotoUrl()) ? ANONYMOUS_PHOTO_URL : settingsHelper.getPhotoUrl();
+        if (SyncUser.currentUser() != null){
+            SyncConfiguration syncConfiguration = new SyncConfiguration.Builder(SyncUser.currentUser(), ProntoDiaryApplication.COMMON_REALM_URL).build();
+            Realm commonRealm = Realm.getInstance(syncConfiguration);
+            ProntoDiaryUser prontoDiaryUser = commonRealm.where(ProntoDiaryUser.class).equalTo("realmUserId", SyncUser.currentUser().getIdentity()).findFirst();
+            if (prontoDiaryUser != null){
+                username = prontoDiaryUser.getDisplayName();
+                emailAddress = prontoDiaryUser.getEmailAddress();
+                photoUrl = prontoDiaryUser.getPhotoUrl();
+            }
+            commonRealm.close();
+        }
+
+        username = TextUtils.isEmpty(username) ? ANONYMOUS : username;
+        emailAddress = TextUtils.isEmpty(emailAddress) ? ANONYMOUS_EMAIL : emailAddress;
+        photoUrl = TextUtils.isEmpty(photoUrl) ? ANONYMOUS_PHOTO_URL : photoUrl;
 
         IProfile  profile = new ProfileDrawerItem()
                 .withName(username)
@@ -196,6 +225,7 @@ public class NoteListActivity extends AppCompatActivity {
                         new PrimaryDrawerItem().withName("Todo List").withIcon(GoogleMaterial.Icon.gmd_format_list_bulleted).withIdentifier(Constants.TODO_LIST),
                         new PrimaryDrawerItem().withName("Folders").withIcon(GoogleMaterial.Icon.gmd_folder).withIdentifier(Constants.FOLDERS),
                         new PrimaryDrawerItem().withName("Tags").withIcon(GoogleMaterial.Icon.gmd_tag).withIdentifier(Constants.TAGS),
+                        new PrimaryDrawerItem().withName("Share App").withIcon(GoogleMaterial.Icon.gmd_share).withIdentifier(Constants.SHARE_APP),
                         new PrimaryDrawerItem().withName("Settings").withIcon(GoogleMaterial.Icon.gmd_settings).withIdentifier(Constants.SETTINGS)
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
@@ -234,6 +264,11 @@ public class NoteListActivity extends AppCompatActivity {
                 .build();
         drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Login").withIcon(GoogleMaterial.Icon.gmd_lock_open).withIdentifier(Constants.LOGIN));
         drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Logout").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.LOGOUT));
+        if (SyncUser.currentUser() != null){
+            drawer.removeStickyFooterItemAtPosition(0);
+        } else {
+            drawer.removeStickyFooterItemAtPosition(1);
+        }
 
     }
 
@@ -246,7 +281,10 @@ public class NoteListActivity extends AppCompatActivity {
 
     private void checkLoginStatus() {
         //Check Firebase User status,
-
+        final SyncUser user = SyncUser.currentUser();
+        if (user != null) {
+            UserManager.setActiveUser(user);
+        }
         //Apply Tag filter is one exist.
         NoteListFragment fragment = new NoteListFragment();
         if (getIntent().hasExtra(Constants.TAG_FILTER)){
@@ -258,6 +296,7 @@ public class NoteListActivity extends AppCompatActivity {
             openFragment(fragment, getString(R.string.label_journals));
         }
         //SampleData.addSampleNotes();
+        setupNavigationDrawer(savedInstanceBundle);
     }
 
 
@@ -280,11 +319,6 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (SyncUser.currentUser() != null){
-            drawer.removeStickyFooterItemAtPosition(0);
-        } else {
-            drawer.removeStickyFooterItemAtPosition(1);
-        }
         checkNetworkConnected();
 
 
@@ -348,7 +382,7 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
 
-    /**
+    /**r
      * Check network conenctivity and direct user to settings if no network.
      */
     private void checkNetworkConnected() {
@@ -456,14 +490,14 @@ public class NoteListActivity extends AppCompatActivity {
                 break;
             case Constants.TAGS:
                 //Go To TAGS Screen
-                openFragment(new TagListFragment(), getString(R.string.label_tag));
+                startActivity(new Intent(mActivity, TagListActivity.class));
                 break;
             case Constants.SETTINGS:
                 //Go To Settings Screen
                 startActivity(new Intent(mActivity, SettingsActivity.class));
                 break;
             case Constants.LOGOUT:
-               // logout();
+                logout();
                 break;
             case Constants.LOGIN:
                 startActivity(new Intent(mActivity, RegisterActivity.class));
@@ -475,18 +509,117 @@ public class NoteListActivity extends AppCompatActivity {
             case Constants.TODO_LIST:
                 startActivity(new Intent(mActivity, TodoListActivity.class));
                 break;
+            case Constants.SHARE_APP:
+                generateInviteLink();
+                break;
         }
 
     }
 
+    private void logout() {
+        android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(mActivity, R.style.dialog);
+        LayoutInflater inflater = getLayoutInflater();
+        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        titleText.setText(getString(R.string.please_attention));
+        alertDialog.setCustomTitle(titleView);
 
+        alertDialog.setMessage("You logged in with " + SettingsHelper.getHelper(mActivity).getLoginProvider() +
+                ". Please use the same login method to sign-in again next time to access your data");
+        alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                UserManager.logoutActiveUser();
+                //User is logging out, erased saved Profile info so that they do no show in the Nav Drawer
+                //When user is not logged in
+                settingsHelper.saveProfile("", "", "", "");
+                startActivity(new Intent(mActivity, RegisterActivity.class));
+            }
+        });
+        alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
 
+    private void buildDynamicLink(){
+        DynamicLink dynamicLink = FirebaseDynamicLinks.getInstance().createDynamicLink()
+                .setLink(Uri.parse("http://prontodiary.com/"))
+                .setDynamicLinkDomain(Constants.DYNAMIC_LINK_DOMAIN)
+                // Open links with this app on Android
+                .setAndroidParameters(new DynamicLink.AndroidParameters.Builder().build())
+                .buildDynamicLink();
 
+        mInvitationUrl = dynamicLink.getUri();
+    }
 
+    private void generateInviteLink(){
 
+        SyncUser user = SyncUser.currentUser();
+        String uid = user.getIdentity();
+        String link = "https://invite.prontodiary.com/?invitedby=" + uid;
 
+        if (mFirebaseUser != null && SyncUser.currentUser() != null){
+            mProntoDiaryUserRef.orderByChild("realmUserId").equalTo(SyncUser.currentUser().getIdentity()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        try {
+                            DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
+                            ProntoDiaryUser prontoDiaryUser = snapshot.getValue(ProntoDiaryUser.class);
+                            sendInvite(prontoDiaryUser.getRealmUserId(), prontoDiaryUser.getDisplayName());
+                        } catch (Exception e) {
+                            //Failed to retrieve Pronto Diary User object
+                            e.printStackTrace();
+                            Log.d(NoteListActivity.TAG, e.getLocalizedMessage());
+                            return;
+                        }
+                    }
+                }
 
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
+                }
+            });
+
+        }
+
+    }
+
+    private void sendInvite(String realmUserId, String displayName){
+
+        String link = "https://invite.prontodiary.com/?invitedby=" + realmUserId;
+
+        DynamicLink dynamicLink = FirebaseDynamicLinks.getInstance().createDynamicLink()
+                .setLink(Uri.parse(link))
+                .setDynamicLinkDomain(Constants.DYNAMIC_LINK_DOMAIN)
+                // Open links with this app on Android
+                .setAndroidParameters(new DynamicLink.AndroidParameters.Builder().build())
+                .buildDynamicLink();
+
+        mInvitationUrl = dynamicLink.getUri();
+
+       // String referrerName = SettingsHelper.getHelper(mActivity).getDisplayName();
+        String subject = String.format("%s wants you to try Pronto Diary App!", displayName);
+        String invitationLink = mInvitationUrl.toString();
+        String msg = "Capture important thoughts and moments with Pronto Diary App! Use my referrer link: "
+                + invitationLink;
+        String msgHtml = String.format("<p>Start Journaling with Pronto Diary's! Use my "
+                + "<a href=\"%s\">referrer link</a>!</p>", invitationLink);
+
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(Intent.EXTRA_TEXT, msg);
+        intent.putExtra(Intent.EXTRA_HTML_TEXT, msgHtml);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
 
 
 }

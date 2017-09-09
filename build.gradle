@@ -9,7 +9,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:2.3.3'
         classpath 'io.realm:realm-gradle-plugin:4.0.0-BETA2-afe7114-SNAPSHOT'
         classpath 'com.google.gms:google-services:3.0.0'
 

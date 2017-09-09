@@ -2,10 +2,12 @@ package com.okason.diary.ui.auth;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +20,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -26,6 +32,9 @@ import com.google.android.gms.common.SignInButton;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import io.realm.ObjectServerError;
 import io.realm.SyncCredentials;
@@ -43,11 +52,14 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
     private View loginFormView;
     private FacebookAuth facebookAuth;
     private GoogleAuth googleAuth;
+    private Activity activity;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+        activity = this;
 
         //noinspection ConstantConditions
         getSupportActionBar().setTitle(R.string.activity_sign_in_label);
@@ -92,6 +104,34 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
             public void onRegistrationComplete(final LoginResult loginResult) {
                 UserManager.setAuthMode(UserManager.AUTH_MODE.FACEBOOK);
                 SyncCredentials credentials = SyncCredentials.facebook(loginResult.getAccessToken().getToken());
+
+                final AccessToken accessToken = loginResult.getAccessToken();
+                Profile profile = Profile.getCurrentProfile();
+                GraphRequest request = GraphRequest.newMeRequest(
+                        loginResult.getAccessToken(),
+                        new GraphRequest.GraphJSONObjectCallback() {
+                            @Override
+                            public void onCompleted(
+                                    JSONObject object,
+                                    GraphResponse response) {
+                                Log.v("LoginActivity Response ", response.toString());
+
+                                try {
+                                    String name = object.getString("name");
+                                    String email = object.getString("email");
+                                    String  userId = object.getString("id");
+                                    String photoUrl = "https://graph.facebook.com/" + userId+ "/picture?type=large";
+                                    Log.d(NoteListActivity.TAG, "Name: " + name + ", Email: " + email + ", UserId: " + userId + ", Photo Url: " + photoUrl);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                Bundle parameters = new Bundle();
+                parameters.putString("fields", "id,name,email");
+                request.setParameters(parameters);
+                request.executeAsync();
+
                 SyncUser.loginAsync(credentials, AUTH_URL, SignInActivity.this);
             }
         };
@@ -126,7 +166,8 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
         Intent intent = new Intent(this, NoteListActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
-        finish();
+
+
     }
 
     @Override

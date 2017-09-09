@@ -25,9 +25,6 @@ import com.google.android.gms.common.Scopes;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
-import com.okason.diary.core.services.HandleRealmLoginService;
-import com.okason.diary.utils.Constants;
-import com.okason.diary.utils.SettingsHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -161,15 +158,6 @@ public class AuthUiActivity extends AppCompatActivity {
                progressView = findViewById(R.id.register_progress);
                 showProgress(true);
             }
-
-
-
-            Intent realmIntent = new Intent(mActivity, HandleRealmLoginService.class);
-            if (response != null){
-                realmIntent.putExtra(Constants.LOGIN_PROVIDER, response.getProviderType());
-            }
-            startService(realmIntent);
-            SettingsHelper.getHelper(mActivity).setRegisteredUser(true);
 
             showSnackbar(R.string.syncing_data);
             return;
