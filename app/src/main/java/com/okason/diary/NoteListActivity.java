@@ -12,7 +12,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -54,7 +53,6 @@ import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
-import com.okason.diary.core.services.AddSampleDataIntentService;
 import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.ui.auth.RegisterActivity;
 import com.okason.diary.ui.auth.UserManager;
@@ -72,9 +70,14 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.ObjectServerError;
 import io.realm.Realm;
 import io.realm.SyncConfiguration;
+import io.realm.SyncCredentials;
 import io.realm.SyncUser;
+import io.realm.permissions.PermissionChange;
+
+import static com.okason.diary.core.ProntoDiaryApplication.COMMON_REALM_URL;
 
 public class NoteListActivity extends AppCompatActivity {
     private SharedPreferences preferences;
@@ -86,6 +89,10 @@ public class NoteListActivity extends AppCompatActivity {
     private FirebaseUser mFirebaseUser;
     private DatabaseReference mDatabase;
     private DatabaseReference mProntoDiaryUserRef;
+
+    private static final String EMAIL = "tempemail@prontodiary.com";
+    private static final String PASSWORD = "abc1234";
+
 
     private ConnectivityManager connectivityManager;
 
@@ -180,6 +187,8 @@ public class NoteListActivity extends AppCompatActivity {
 
 
         savedInstanceBundle = savedInstanceState;
+        addDefaultData();
+
 
 
     }
@@ -189,7 +198,7 @@ public class NoteListActivity extends AppCompatActivity {
         SettingsHelper settingsHelper = SettingsHelper.getHelper(mActivity);
 
         if (SyncUser.currentUser() != null){
-            SyncConfiguration syncConfiguration = new SyncConfiguration.Builder(SyncUser.currentUser(), ProntoDiaryApplication.COMMON_REALM_URL).build();
+            SyncConfiguration syncConfiguration = UserManager.getPublicConfig(SyncUser.currentUser());
             Realm commonRealm = Realm.getInstance(syncConfiguration);
             ProntoDiaryUser prontoDiaryUser = commonRealm.where(ProntoDiaryUser.class).equalTo("realmUserId", SyncUser.currentUser().getIdentity()).findFirst();
             if (prontoDiaryUser != null){
@@ -296,7 +305,6 @@ public class NoteListActivity extends AppCompatActivity {
             openFragment(fragment, getString(R.string.label_journals));
         }
         //SampleData.addSampleNotes();
-        setupNavigationDrawer(savedInstanceBundle);
     }
 
 
@@ -320,7 +328,7 @@ public class NoteListActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         checkNetworkConnected();
-
+        setupNavigationDrawer(savedInstanceBundle);
 
     }
 
@@ -453,11 +461,44 @@ public class NoteListActivity extends AppCompatActivity {
     //Checks if this is the first time this app is running and then
     //starts an Intent Services that adds some default data
     private void addDefaultData() {
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences = getSharedPreferences(TAG, MODE_PRIVATE);
 
-        editor = preferences.edit();
-        if (preferences.getBoolean(Constants.FIRST_RUN, true)) {
-            startService(new Intent(this, AddSampleDataIntentService.class));
+
+        boolean firstRun = preferences.getBoolean(Constants.FIRST_RUN, true);
+        if (firstRun) {
+            //startService(new Intent(this, AddSampleDataIntentService.class));
+            editor = preferences.edit();
+            final SyncCredentials syncCredentials = SyncCredentials.usernamePassword(EMAIL, PASSWORD, false);
+            SyncUser.loginAsync(syncCredentials, ProntoDiaryApplication.AUTH_URL, new SyncUser.Callback() {
+                @Override
+                public void onSuccess(final SyncUser adminUser) {
+
+                    final Realm managementRealm = adminUser.getManagementRealm();
+                    managementRealm.executeTransactionAsync(new Realm.Transaction() {
+                        @Override
+                        public void execute(Realm realm) {
+                            PermissionChange permissionChange = new PermissionChange(COMMON_REALM_URL, "*", true, true, false);
+                            realm.copyToRealm(permissionChange);
+                        }
+                    }, new Realm.Transaction.OnSuccess() {
+                        @Override
+                        public void onSuccess() {
+                            adminUser.logout();
+                            managementRealm.close();
+                            Log.d(TAG, "Admin Credentials updated");
+                        }
+                    });
+
+                }
+
+                @Override
+                public void onError(ObjectServerError error) {
+                    Log.d("RegisterActivity", "Admin login failed " + error.getLocalizedMessage());
+                }
+            });
+
+
+
             editor.putBoolean(Constants.FIRST_RUN, false).commit();
         }
 

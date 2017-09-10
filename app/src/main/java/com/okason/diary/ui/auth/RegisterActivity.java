@@ -26,7 +26,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.SignInButton;
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.utils.SettingsHelper;
 
@@ -40,11 +39,9 @@ import io.realm.Realm;
 import io.realm.SyncConfiguration;
 import io.realm.SyncCredentials;
 import io.realm.SyncUser;
-import io.realm.permissions.PermissionChange;
 
 import static android.text.TextUtils.isEmpty;
 import static com.okason.diary.core.ProntoDiaryApplication.AUTH_URL;
-import static com.okason.diary.core.ProntoDiaryApplication.COMMON_REALM_URL;
 
 
 public class RegisterActivity extends AppCompatActivity implements SyncUser.Callback {
@@ -236,59 +233,31 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
     }
 
     private void registrationComplete(final SyncUser registeredUser) {
-
-
-        final SyncCredentials syncCredentials = SyncCredentials.usernamePassword(EMAIL, PASSWORD, false);
-        SyncUser.loginAsync(syncCredentials, ProntoDiaryApplication.AUTH_URL, new SyncUser.Callback() {
+        UserManager.setActiveUser(registeredUser);
+        SyncConfiguration syncConfiguration = UserManager.getPublicConfig(registeredUser);
+        final Realm commonRealm = Realm.getInstance(syncConfiguration);
+        commonRealm.executeTransactionAsync(new Realm.Transaction() {
             @Override
-            public void onSuccess(final SyncUser user) {
-                final SyncConfiguration syncConfiguration = new SyncConfiguration.Builder(user, ProntoDiaryApplication.COMMON_REALM_URL).build();
-                final Realm commonRealm = Realm.getInstance(syncConfiguration);
-                Realm managementRealm = user.getManagementRealm();
-                managementRealm.executeTransactionAsync(new Realm.Transaction() {
-                    @Override
-                    public void execute(Realm realm) {
-                        PermissionChange permissionChange = new PermissionChange(COMMON_REALM_URL, "*", true, true, false);
-                        realm.copyToRealm(permissionChange);
-                    }
-                }, new Realm.Transaction.OnSuccess() {
-                    @Override
-                    public void onSuccess() {
-                        commonRealm.executeTransactionAsync(new Realm.Transaction() {
-                            @Override
-                            public void execute(Realm realm) {
-                                ProntoDiaryUser prontoDiaryUser = realm.createObject(ProntoDiaryUser.class, UUID.randomUUID().toString());
-                                prontoDiaryUser.setEmailAddress(email);
-                                prontoDiaryUser.setDisplayName(displayName);
-                                prontoDiaryUser.setLoginProvider(provider);
-                                prontoDiaryUser.setFcmToken(SettingsHelper.getHelper(getApplication()).getMessagingToken());
-                                prontoDiaryUser.setPhotoUrl(photoUrl);
-                                prontoDiaryUser.setRealmUserId(registeredUser.getIdentity());
-                            }
-                        }, new Realm.Transaction.OnSuccess() {
-                            @Override
-                            public void onSuccess() {
-                                user.logout();
-                                UserManager.setActiveUser(registeredUser);
-
-                                SettingsHelper.getHelper(RegisterActivity.this).setRegisteredUser(true);
-                                Intent intent = new Intent(RegisterActivity.this, SignInActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
-                            }
-                        });
-                    }
-                });
-
-
-
+            public void execute(Realm realm) {
+                ProntoDiaryUser prontoDiaryUser = realm.createObject(ProntoDiaryUser.class, UUID.randomUUID().toString());
+                prontoDiaryUser.setEmailAddress(email);
+                prontoDiaryUser.setDisplayName(displayName);
+                prontoDiaryUser.setLoginProvider(provider);
+                prontoDiaryUser.setFcmToken(SettingsHelper.getHelper(getApplication()).getMessagingToken());
+                prontoDiaryUser.setPhotoUrl(photoUrl);
+                prontoDiaryUser.setRealmUserId(registeredUser.getIdentity());
             }
-
+        }, new Realm.Transaction.OnSuccess() {
             @Override
-            public void onError(ObjectServerError error) {
-                Log.d("RegisterActivity", "Admin login failed " + error.getLocalizedMessage());
+            public void onSuccess() {
+                commonRealm.close();
+                SettingsHelper.getHelper(RegisterActivity.this).setRegisteredUser(true);
+                Intent intent = new Intent(RegisterActivity.this, SignInActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
             }
         });
+
 
 
     }
