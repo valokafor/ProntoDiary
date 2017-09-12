@@ -13,6 +13,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -29,14 +30,15 @@ import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.dynamiclinks.DynamicLink;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
+import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
+import com.google.firebase.dynamiclinks.ShortDynamicLink;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.mikepenz.materialdrawer.AccountHeader;
@@ -72,7 +74,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.ObjectServerError;
 import io.realm.Realm;
-import io.realm.SyncConfiguration;
 import io.realm.SyncCredentials;
 import io.realm.SyncUser;
 import io.realm.permissions.PermissionChange;
@@ -189,24 +190,23 @@ public class NoteListActivity extends AppCompatActivity {
         savedInstanceBundle = savedInstanceState;
         addDefaultData();
 
-
-
     }
+
+
 
     private void setupNavigationDrawer(Bundle savedInstanceState) {
 
-        SettingsHelper settingsHelper = SettingsHelper.getHelper(mActivity);
-
         if (SyncUser.currentUser() != null){
-            SyncConfiguration syncConfiguration = UserManager.getPublicConfig(SyncUser.currentUser());
-            Realm commonRealm = Realm.getInstance(syncConfiguration);
-            ProntoDiaryUser prontoDiaryUser = commonRealm.where(ProntoDiaryUser.class).equalTo("realmUserId", SyncUser.currentUser().getIdentity()).findFirst();
-            if (prontoDiaryUser != null){
-                username = prontoDiaryUser.getDisplayName();
-                emailAddress = prontoDiaryUser.getEmailAddress();
-                photoUrl = prontoDiaryUser.getPhotoUrl();
+            try {
+                ProntoDiaryUser prontoDiaryUser = UserManager.getProntoDiaryUser(SyncUser.currentUser());
+                if (prontoDiaryUser != null) {
+                    username = prontoDiaryUser.getDisplayName();
+                    emailAddress = prontoDiaryUser.getEmailAddress();
+                    photoUrl = prontoDiaryUser.getPhotoUrl();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            commonRealm.close();
         }
 
         username = TextUtils.isEmpty(username) ? ANONYMOUS : username;
@@ -329,6 +329,7 @@ public class NoteListActivity extends AppCompatActivity {
         super.onResume();
         checkNetworkConnected();
         setupNavigationDrawer(savedInstanceBundle);
+        checkForDynamicLinkInvite(getIntent());
 
     }
 
@@ -586,80 +587,95 @@ public class NoteListActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    private void buildDynamicLink(){
-        DynamicLink dynamicLink = FirebaseDynamicLinks.getInstance().createDynamicLink()
-                .setLink(Uri.parse("http://prontodiary.com/"))
-                .setDynamicLinkDomain(Constants.DYNAMIC_LINK_DOMAIN)
-                // Open links with this app on Android
-                .setAndroidParameters(new DynamicLink.AndroidParameters.Builder().build())
-                .buildDynamicLink();
-
-        mInvitationUrl = dynamicLink.getUri();
-    }
 
     private void generateInviteLink(){
-
-        SyncUser user = SyncUser.currentUser();
-        String uid = user.getIdentity();
-        String link = "https://invite.prontodiary.com/?invitedby=" + uid;
-
-        if (mFirebaseUser != null && SyncUser.currentUser() != null){
-            mProntoDiaryUserRef.orderByChild("realmUserId").equalTo(SyncUser.currentUser().getIdentity()).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        try {
-                            DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
-                            ProntoDiaryUser prontoDiaryUser = snapshot.getValue(ProntoDiaryUser.class);
-                            sendInvite(prontoDiaryUser.getRealmUserId(), prontoDiaryUser.getDisplayName());
-                        } catch (Exception e) {
-                            //Failed to retrieve Pronto Diary User object
-                            e.printStackTrace();
-                            Log.d(NoteListActivity.TAG, e.getLocalizedMessage());
-                            return;
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-
+        if (SyncUser.currentUser() != null){
+            ProntoDiaryUser prontoDiaryUser = UserManager.getProntoDiaryUser(SyncUser.currentUser());
+            String uid = prontoDiaryUser.getRealmUserId();
+            String name = prontoDiaryUser.getDisplayName();
+            sendInvite(uid, name);
+        }else {
+            makeToast(getString(R.string.login_required));
         }
-
     }
 
-    private void sendInvite(String realmUserId, String displayName){
+    private void sendInvite(String realmUserId, final String displayName){
 
         String link = "https://invite.prontodiary.com/?invitedby=" + realmUserId;
 
         DynamicLink dynamicLink = FirebaseDynamicLinks.getInstance().createDynamicLink()
                 .setLink(Uri.parse(link))
-                .setDynamicLinkDomain(Constants.DYNAMIC_LINK_DOMAIN)
-                // Open links with this app on Android
+                .setDynamicLinkDomain("by3kf.app.goo.gl")
                 .setAndroidParameters(new DynamicLink.AndroidParameters.Builder().build())
                 .buildDynamicLink();
 
-        mInvitationUrl = dynamicLink.getUri();
 
-       // String referrerName = SettingsHelper.getHelper(mActivity).getDisplayName();
-        String subject = String.format("%s wants you to try Pronto Diary App!", displayName);
-        String invitationLink = mInvitationUrl.toString();
-        String msg = "Capture important thoughts and moments with Pronto Diary App! Use my referrer link: "
-                + invitationLink;
-        String msgHtml = String.format("<p>Start Journaling with Pronto Diary's! Use my "
-                + "<a href=\"%s\">referrer link</a>!</p>", invitationLink);
 
-        Intent intent = new Intent(Intent.ACTION_SENDTO);
-        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
-        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-        intent.putExtra(Intent.EXTRA_TEXT, msg);
-        intent.putExtra(Intent.EXTRA_HTML_TEXT, msgHtml);
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-        }
+
+
+        com.google.android.gms.tasks.Task<ShortDynamicLink> shortLinkTask = FirebaseDynamicLinks.getInstance().createDynamicLink()
+                .setLongLink(dynamicLink.getUri())
+                .buildShortDynamicLink()
+                .addOnCompleteListener(mActivity, new OnCompleteListener<ShortDynamicLink>() {
+                    @Override
+                    public void onComplete(@NonNull com.google.android.gms.tasks.Task<ShortDynamicLink> task) {
+                        if (task.isSuccessful()){
+                            Uri shortLink = task.getResult().getShortLink();
+
+                            // String referrerName = SettingsHelper.getHelper(mActivity).getDisplayName();
+                            String subject = String.format("%s wants you to try Pronto Diary App!", displayName);
+                            String invitationLink = shortLink.toString();
+                            String msg = "Capture important thoughts and moments with Pronto Diary App! Use my referrer link: "
+                                    + invitationLink;
+                            String msgHtml = String.format("<p>Start Journaling with Pronto Diary's! Use my "
+                                    + "<a href=\"%s\">referrer link</a>!</p>", invitationLink);
+
+                            Intent intent = new Intent(Intent.ACTION_SENDTO);
+                            intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+                            intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+                            intent.putExtra(Intent.EXTRA_TEXT, msg);
+                            intent.putExtra(Intent.EXTRA_HTML_TEXT, msgHtml);
+                            if (intent.resolveActivity(getPackageManager()) != null) {
+                                startActivity(intent);
+                            }
+                        }else {
+                            String errorMessage = task.getException().getCause().getMessage();
+                            makeToast("Short link task is not successful");
+                        }
+
+                    }
+                });
+
+
+
+       // mInvitationUrl = dynamicLink.getUri();
+
+
+    }
+
+    private void checkForDynamicLinkInvite(Intent intent) {
+        FirebaseDynamicLinks.getInstance()
+                .getDynamicLink(intent)
+                .addOnSuccessListener(mActivity, new OnSuccessListener<PendingDynamicLinkData>() {
+                    @Override
+                    public void onSuccess(PendingDynamicLinkData pendingDynamicLinkData) {
+                        Uri deepLink = null;
+                        if (pendingDynamicLinkData != null){
+                            deepLink = pendingDynamicLinkData.getLink();
+
+                            if (deepLink != null && deepLink.getBooleanQueryParameter("invitedby", false)){
+                                String referrerUid = deepLink.getQueryParameter("invitedby");
+                                if (!TextUtils.isEmpty(referrerUid)){
+                                    ProntoDiaryUser referrer = UserManager.getProntoDiaryUserById(referrerUid);
+                                    if (referrer != null){
+                                        makeToast("Welcome " + referrer.getDisplayName() + " friend!");
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                });
     }
 
 

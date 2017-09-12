@@ -20,10 +20,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
-import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -32,11 +30,17 @@ import com.google.android.gms.common.SignInButton;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.models.ProntoDiaryUser;
+import com.okason.diary.utils.SettingsHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.UUID;
+
 import io.realm.ObjectServerError;
+import io.realm.Realm;
+import io.realm.SyncConfiguration;
 import io.realm.SyncCredentials;
 import io.realm.SyncUser;
 
@@ -53,6 +57,11 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
     private FacebookAuth facebookAuth;
     private GoogleAuth googleAuth;
     private Activity activity;
+
+    private String email = "";
+    private String  displayName = "";
+    private String photoUrl = "";
+    private String provider = "";
 
 
     @Override
@@ -105,8 +114,6 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
                 UserManager.setAuthMode(UserManager.AUTH_MODE.FACEBOOK);
                 SyncCredentials credentials = SyncCredentials.facebook(loginResult.getAccessToken().getToken());
 
-                final AccessToken accessToken = loginResult.getAccessToken();
-                Profile profile = Profile.getCurrentProfile();
                 GraphRequest request = GraphRequest.newMeRequest(
                         loginResult.getAccessToken(),
                         new GraphRequest.GraphJSONObjectCallback() {
@@ -117,11 +124,11 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
                                 Log.v("LoginActivity Response ", response.toString());
 
                                 try {
-                                    String name = object.getString("name");
-                                    String email = object.getString("email");
+                                    displayName = object.getString("name");
+                                    email = object.getString("email");
                                     String  userId = object.getString("id");
-                                    String photoUrl = "https://graph.facebook.com/" + userId+ "/picture?type=large";
-                                    Log.d(NoteListActivity.TAG, "Name: " + name + ", Email: " + email + ", UserId: " + userId + ", Photo Url: " + photoUrl);
+                                    photoUrl = "https://graph.facebook.com/" + userId+ "/picture?type=large";
+                                    provider = "Facebook";
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -142,6 +149,14 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
             public void onRegistrationComplete(GoogleSignInResult result) {
                 UserManager.setAuthMode(UserManager.AUTH_MODE.GOOGLE);
                 GoogleSignInAccount acct = result.getSignInAccount();
+
+                displayName = acct.getDisplayName();
+                email = acct.getEmail();
+                if (acct.getPhotoUrl() != null) {
+                    photoUrl =  acct.getPhotoUrl().toString();
+                }
+                provider = "Google";
+
                 SyncCredentials credentials = SyncCredentials.google(acct.getIdToken());
                 SyncUser.loginAsync(credentials, AUTH_URL, SignInActivity.this);
             }
@@ -160,8 +175,33 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
         facebookAuth.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void loginComplete(SyncUser user) {
-        UserManager.setActiveUser(user);
+    private void loginComplete(final SyncUser registeredUser) {
+        UserManager.setActiveUser(registeredUser);
+
+        SyncConfiguration syncConfiguration = UserManager.getPublicConfig(registeredUser);
+        final Realm commonRealm = Realm.getInstance(syncConfiguration);
+        commonRealm.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                ProntoDiaryUser prontoDiaryUser = realm.createObject(ProntoDiaryUser.class, UUID.randomUUID().toString());
+                prontoDiaryUser.setEmailAddress(email);
+                prontoDiaryUser.setDisplayName(displayName);
+                prontoDiaryUser.setLoginProvider(provider);
+                prontoDiaryUser.setFcmToken(SettingsHelper.getHelper(getApplication()).getMessagingToken());
+                prontoDiaryUser.setPhotoUrl(photoUrl);
+                prontoDiaryUser.setRealmUserId(registeredUser.getIdentity());
+            }
+        }, new Realm.Transaction.OnSuccess() {
+            @Override
+            public void onSuccess() {
+                commonRealm.close();
+                SettingsHelper.getHelper(activity).setRegisteredUser(true);
+                Intent intent = new Intent(activity, NoteListActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
+
 
         Intent intent = new Intent(this, NoteListActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -190,7 +230,7 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
         usernameView.setError(null);
         passwordView.setError(null);
 
-        final String email = usernameView.getText().toString();
+        email = usernameView.getText().toString();
         final String password = passwordView.getText().toString();
 
         boolean cancel = false;
@@ -212,6 +252,7 @@ public class SignInActivity extends AppCompatActivity implements SyncUser.Callba
             focusView.requestFocus();
         } else {
             showProgress(true);
+            provider = "Email";
             SyncUser.loginAsync(SyncCredentials.usernamePassword(email, password, false), ProntoDiaryApplication.AUTH_URL, this);
         }
     }

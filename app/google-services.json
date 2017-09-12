@@ -57,50 +57,6 @@
           "status": 2
         }
       }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:498554407152:android:00f06e025abfb2f5",
-        "android_client_info": {
-          "package_name": "com.okason.journal"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "498554407152-5segne91pfv0rabh65e0p9h70al9q4ou.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.okason.journal",
-            "certificate_hash": "27196e386b875e76adf700e7ea84e4c6eee33dfa"
-          }
-        },
-        {
-          "client_id": "498554407152-49454rjtf4o83jkhejfk5kgvc90kru2b.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyA0oKriBwSfssABGQBf1oq7oDFqwyTU7tI"
-        }
-      ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
-        "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "498554407152-49454rjtf4o83jkhejfk5kgvc90kru2b.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        },
-        "ads_service": {
-          "status": 2
-        }
-      }
     }
   ],
   "configuration_version": "1"

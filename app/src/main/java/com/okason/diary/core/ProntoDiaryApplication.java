@@ -13,6 +13,7 @@ import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerUIUtils;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.R;
+import com.okason.diary.models.ProntoDiaryUser;
 import com.squareup.leakcanary.LeakCanary;
 
 import io.realm.Realm;
@@ -27,7 +28,8 @@ public class ProntoDiaryApplication extends Application {
     public static final String COMMON_REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/public_info";
 
     private static Context mContext;
-    private static boolean premiumUser;
+    private static ProntoDiaryUser prontoDiaryUser;
+
 
 
 
@@ -86,11 +88,11 @@ public class ProntoDiaryApplication extends Application {
         return ProntoDiaryApplication.mContext;
     }
 
-    public static boolean isPremiumUser() {
-        return premiumUser;
+    public static ProntoDiaryUser getProntoDiaryUser() {
+        return prontoDiaryUser;
     }
 
-    public static void setPremiumUser(boolean premiumUser) {
-        ProntoDiaryApplication.premiumUser = premiumUser;
+    public static void setProntoDiaryUser(ProntoDiaryUser prontoDiaryUser) {
+        ProntoDiaryApplication.prontoDiaryUser = prontoDiaryUser;
     }
 }

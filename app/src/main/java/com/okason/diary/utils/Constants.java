@@ -7,7 +7,7 @@ import android.text.TextUtils;
  */
 public class Constants {
 
-    public static final String DYNAMIC_LINK_DOMAIN = "https://by3kf.app.goo.gl/";
+    public static final String DYNAMIC_LINK_DOMAIN = "by3kf.app.goo.gl/";
 
     public static final String REALM_DATABASE = "pronto_notepad.realm";
     public static final String ANONYMOUS_ACCOUNT_USER_ID = "anonymous_account_id";

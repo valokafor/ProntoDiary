@@ -399,6 +399,7 @@
     <string name="menu_item_register">Register</string>
     <string name="title_activity_folder_list">FolderListActivity</string>
     <string name="title_activity_tag_list">TagListActivity</string>
+    <string name="login_required">You not signed in</string>
 
 
 </resources>

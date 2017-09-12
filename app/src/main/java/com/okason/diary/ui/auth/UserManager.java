@@ -20,6 +20,7 @@ import com.facebook.login.LoginManager;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.models.CommonModule;
 import com.okason.diary.models.PrivateModule;
+import com.okason.diary.models.ProntoDiaryUser;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -39,6 +40,36 @@ public class UserManager {
     public static RealmConfiguration getConfig() {
         SyncUser  user = SyncUser.currentUser();
         return getSyncConfig(user);
+    }
+
+    public static ProntoDiaryUser getProntoDiaryUser(SyncUser user) {
+        try {
+            ProntoDiaryUser prontoDiaryUser = null;
+            SyncConfiguration syncConfiguration = UserManager.getPublicConfig(user);
+            Realm commonRealm = Realm.getInstance(syncConfiguration);
+            prontoDiaryUser = commonRealm.where(ProntoDiaryUser.class).equalTo("realmUserId", SyncUser.currentUser().getIdentity()).findFirst();
+            prontoDiaryUser = commonRealm.copyFromRealm(prontoDiaryUser);
+            commonRealm.close();
+            return prontoDiaryUser;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static ProntoDiaryUser getProntoDiaryUserById(String referrerUid) {
+        ProntoDiaryUser prontoDiaryUser;
+        try {
+            SyncConfiguration syncConfiguration = UserManager.getPublicConfig(SyncUser.currentUser());
+            Realm commonRealm = Realm.getInstance(syncConfiguration);
+            prontoDiaryUser = commonRealm.where(ProntoDiaryUser.class).equalTo("realmUserId", referrerUid).findFirst();
+            prontoDiaryUser = commonRealm.copyFromRealm(prontoDiaryUser);
+            commonRealm.close();
+            return prontoDiaryUser;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     // Supported authentication mode
@@ -88,7 +119,6 @@ public class UserManager {
     }
 
     public static SyncConfiguration getPublicConfig(SyncUser user) {
-        String identityToken = user.getAccessToken().identity();
         SyncConfiguration commonConfig = new SyncConfiguration.Builder(user, ProntoDiaryApplication.COMMON_REALM_URL)
                 .name("user_info.realm")
                 .modules(new CommonModule())

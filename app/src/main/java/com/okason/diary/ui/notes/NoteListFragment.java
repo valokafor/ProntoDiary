@@ -33,7 +33,6 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.data.TagRealmRepository;
@@ -42,6 +41,7 @@ import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
 
@@ -191,7 +191,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             showEmptyText(true);
         }
 
-        if (!ProntoDiaryApplication.isPremiumUser()){
+        if (UserManager.getProntoDiaryUser(SyncUser.currentUser()) != null &&
+                !UserManager.getProntoDiaryUser(SyncUser.currentUser()).isPremium()){
             mAdView.setVisibility(View.VISIBLE);
             AdRequest adRequest = new AdRequest.Builder().build();
             mAdView.loadAd(adRequest);

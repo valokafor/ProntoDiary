@@ -29,11 +29,24 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".NoteListActivity"
+            android:clearTaskOnLaunch="true"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:clearTaskOnLaunch="true"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <data
+                    android:host="invite.prontodiary.com"
+                    android:scheme="http"/>
+                <data
+                    android:host="invite.prontodiary.com"
+                    android:scheme="https"/>
+            </intent-filter>
         </activity>
         <activity
             android:name=".ui.auth.AuthUiActivity"
@@ -102,17 +115,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
-        <service
-            android:name=".core.services.HandleRealmLoginService"
-            android:exported="false">
-        </service>
-
         <activity
             android:name=".ui.settings.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".NoteListActivity"
             android:launchMode="singleTask"
+            android:parentActivityName=".NoteListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -189,6 +196,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.okason.diary.NoteListActivity"/>
         </activity>
+
+        <service
+            android:name=".core.services.InviteRewardIntentService"
+            android:exported="false">
+        </service>
     </application>
 
 </manifest>
