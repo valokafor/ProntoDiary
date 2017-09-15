@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
-import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.data.NoteRealmRepository;
@@ -53,14 +52,7 @@ public class NoteDetailActivity extends AppCompatActivity {
         }
     }
 
-    public Note getCurrentNote(String serializedNote){
-        if (!serializedNote.isEmpty()){
-            Gson gson = new Gson();
-            Note note = gson.fromJson(serializedNote, Note.class);
-            return note;
-        }
-        return null;
-    }
+
 
     @Override
     public void onStart() {

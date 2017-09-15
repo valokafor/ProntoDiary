@@ -29,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -57,6 +58,7 @@ import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
@@ -91,8 +93,10 @@ public class NoteListActivity extends AppCompatActivity {
     private DatabaseReference mDatabase;
     private DatabaseReference mProntoDiaryUserRef;
 
+
     private static final String EMAIL = "tempemail@prontodiary.com";
     private static final String PASSWORD = "abc1234";
+    private static final int REQUEST_INVITE = 0;
 
 
     private ConnectivityManager connectivityManager;
@@ -169,6 +173,7 @@ public class NoteListActivity extends AppCompatActivity {
 
     private MaterialDialog progressDialog;
     private Bundle savedInstanceBundle;
+    private static final String LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/prontodiary-bee92.appspot.com/o/pronto_diary_high_res.png";
 
 
 
@@ -190,6 +195,32 @@ public class NoteListActivity extends AppCompatActivity {
         savedInstanceBundle = savedInstanceState;
         addDefaultData();
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkNetworkConnected();
+        setupNavigationDrawer(savedInstanceBundle);
+        checkForDynamicLinkInvite(getIntent());
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
 
@@ -273,11 +304,13 @@ public class NoteListActivity extends AppCompatActivity {
                 .build();
         drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Login").withIcon(GoogleMaterial.Icon.gmd_lock_open).withIdentifier(Constants.LOGIN));
         drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Logout").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.LOGOUT));
-        if (SyncUser.currentUser() != null){
+
+        if (settingsHelper.isRegisteredUser()){
             drawer.removeStickyFooterItemAtPosition(0);
         } else {
             drawer.removeStickyFooterItemAtPosition(1);
         }
+
 
     }
 
@@ -289,11 +322,43 @@ public class NoteListActivity extends AppCompatActivity {
 
 
     private void checkLoginStatus() {
-        //Check Firebase User status,
+        //Check Sync User status,
         final SyncUser user = SyncUser.currentUser();
         if (user != null) {
             UserManager.setActiveUser(user);
+            ProntoDiaryApplication.setDataAccessAllowed(true);
+            settingsHelper.setRegisteredUser(true);
+        }else {
+            //Is the user registered?
+            if (settingsHelper.isRegisteredUser()){
+                //If user is registered, show login screen
+                startActivity(new Intent(mActivity, SignInActivity.class));
+            } else {
+                //Else login anonymously
+                String tempUserName = settingsHelper.getTempUserName();
+                String temppPassword = settingsHelper.getTempPassword();
+
+                final SyncCredentials syncCredentials = SyncCredentials.usernamePassword(tempUserName, temppPassword, true);
+                SyncUser.loginAsync(syncCredentials, ProntoDiaryApplication.AUTH_URL, new SyncUser.Callback() {
+                    @Override
+                    public void onSuccess(final SyncUser user) {
+                        UserManager.setActiveUser(user);
+                        settingsHelper.setRegisteredUser(false);
+                        ProntoDiaryApplication.setDataAccessAllowed(true);
+                        settingsHelper.setRegisteredUser(true);
+                    }
+
+                    @Override
+                    public void onError(ObjectServerError error) {
+                        Log.d(TAG, "Anonymous Login Failed " + error.getLocalizedMessage());
+                        ProntoDiaryApplication.setDataAccessAllowed(false);
+                        settingsHelper.setRegisteredUser(false);
+                    }
+                });
+
+            }
         }
+
         //Apply Tag filter is one exist.
         NoteListFragment fragment = new NoteListFragment();
         if (getIntent().hasExtra(Constants.TAG_FILTER)){
@@ -304,40 +369,10 @@ public class NoteListActivity extends AppCompatActivity {
         }else {
             openFragment(fragment, getString(R.string.label_journals));
         }
-        //SampleData.addSampleNotes();
-    }
 
 
-
-
-
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        checkNetworkConnected();
-        setupNavigationDrawer(savedInstanceBundle);
-        checkForDynamicLinkInvite(getIntent());
 
     }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -566,7 +601,7 @@ public class NoteListActivity extends AppCompatActivity {
         titleText.setText(getString(R.string.please_attention));
         alertDialog.setCustomTitle(titleView);
 
-        alertDialog.setMessage("You logged in with " + SettingsHelper.getHelper(mActivity).getLoginProvider() +
+        alertDialog.setMessage("You logged in with " + settingsHelper.getLoginProvider() +
                 ". Please use the same login method to sign-in again next time to access your data");
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
@@ -622,22 +657,20 @@ public class NoteListActivity extends AppCompatActivity {
                         if (task.isSuccessful()){
                             Uri shortLink = task.getResult().getShortLink();
 
-                            // String referrerName = SettingsHelper.getHelper(mActivity).getDisplayName();
-                            String subject = String.format("%s wants you to try Pronto Diary App!", displayName);
+                            // String referrerName = settingsHelper.getDisplayName();
+                            String subject = String.format("Try Pronto Diary App!", displayName);
                             String invitationLink = shortLink.toString();
-                            String msg = "Capture important thoughts and moments with Pronto Diary App! Use my referrer link: "
-                                    + invitationLink;
+                            String msg = "Capture important thoughts and moments with Pronto Diary App!";
                             String msgHtml = String.format("<p>Start Journaling with Pronto Diary's! Use my "
                                     + "<a href=\"%s\">referrer link</a>!</p>", invitationLink);
 
-                            Intent intent = new Intent(Intent.ACTION_SENDTO);
-                            intent.setData(Uri.parse("mailto:")); // only email apps should handle this
-                            intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-                            intent.putExtra(Intent.EXTRA_TEXT, msg);
-                            intent.putExtra(Intent.EXTRA_HTML_TEXT, msgHtml);
-                            if (intent.resolveActivity(getPackageManager()) != null) {
-                                startActivity(intent);
-                            }
+                            Intent intent = new AppInviteInvitation.IntentBuilder(subject)
+                                    .setMessage(msg)
+                                    .setDeepLink(shortLink)
+                                    .setCustomImage(Uri.parse(LOGO_URL))
+                                    .setCallToActionText(getString(R.string.invitation_cta))
+                                    .build();
+                            startActivityForResult(intent, REQUEST_INVITE);
                         }else {
                             String errorMessage = task.getException().getCause().getMessage();
                             makeToast("Short link task is not successful");

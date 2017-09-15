@@ -18,6 +18,8 @@
     <string name="facebook_login_protocol_scheme" translatable="false">fb1084180085015342</string>
     <string name="banner_ad_unit_id" translatable="false">ca-app-pub-0685840031635412/8579377308</string>
     <string name="server_client_id" translatable="false">498554407152-49454rjtf4o83jkhejfk5kgvc90kru2b.apps.googleusercontent.com</string>
+    <string name="invitation_custom_image">https://developers.google.com/identity/images/g-logo.png</string>
+    <string name="invitation_cta">Install</string>
 
     <!--Errors and Warning-->
     <string name="no_todo_list_found">No Todo List Item found, use + button to start</string>

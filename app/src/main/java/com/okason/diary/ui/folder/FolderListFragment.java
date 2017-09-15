@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.data.FolderRealmRepository;
@@ -40,7 +41,6 @@ import io.realm.Case;
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
-import io.realm.SyncUser;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -97,7 +97,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (SyncUser.currentUser() != null) {
+                if (ProntoDiaryApplication.isDataAccessAllowed()) {
                     showAddNewFolderDialog();
                 } else {
                     startActivity(new Intent(getActivity(), RegisterActivity.class));
@@ -110,7 +110,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     @Override
     public void onResume() {
         super.onResume();
-        if (SyncUser.currentUser() != null) {
+        if (ProntoDiaryApplication.isDataAccessAllowed()) {
             mAdapter = null;
             try {
                 mRealm = Realm.getDefaultInstance();

@@ -251,6 +251,7 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
             @Override
             public void onSuccess() {
                 commonRealm.close();
+
                 SettingsHelper.getHelper(RegisterActivity.this).setRegisteredUser(true);
                 Intent intent = new Intent(RegisterActivity.this, SignInActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

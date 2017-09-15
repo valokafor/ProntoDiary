@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
@@ -98,7 +99,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     @Override
     public void onResume() {
         super.onResume();
-        if (SyncUser.currentUser() != null) {
+        if (ProntoDiaryApplication.isDataAccessAllowed()) {
             mAdapter = null;
             try {
                 mRealm = Realm.getDefaultInstance();

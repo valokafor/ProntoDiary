@@ -201,6 +201,10 @@
             android:name=".core.services.InviteRewardIntentService"
             android:exported="false">
         </service>
+        <service
+            android:name=".core.services.CopyLocalFileToCloudIntentService"
+            android:exported="false">
+        </service>
     </application>
 
 </manifest>

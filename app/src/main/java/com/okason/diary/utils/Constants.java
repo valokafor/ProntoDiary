@@ -41,6 +41,8 @@ public class Constants {
     public static final String ALARM_NOTIFICATION = "alarm_notification";
     public static final String REGISTERED_USER = "registered_user";
     public static final String PHONE_NUMBER = "phone_number";
+    public static final String TEMP_USER_NAME = "temp_user_name";
+    public static final String TEMP_PASSWORD = "temp_password";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

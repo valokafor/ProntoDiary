@@ -21,6 +21,7 @@ import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.models.CommonModule;
 import com.okason.diary.models.PrivateModule;
 import com.okason.diary.models.ProntoDiaryUser;
+import com.okason.diary.utils.Constants;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -28,14 +29,14 @@ import io.realm.SyncConfiguration;
 import io.realm.SyncUser;
 
 public class UserManager {
-//    public static RealmConfiguration getLocalConfig() {
-//        RealmConfiguration configuration  = new RealmConfiguration.Builder()
-//                .name(Constants.REALM_DATABASE)
-//                .schemaVersion(5)
-//                .deleteRealmIfMigrationNeeded()
-//                .build();
-//        return configuration;
-//    }
+    public static RealmConfiguration getLocalConfig() {
+        RealmConfiguration configuration  = new RealmConfiguration.Builder()
+                .name(Constants.REALM_DATABASE)
+                .schemaVersion(5)
+                .deleteRealmIfMigrationNeeded()
+                .build();
+        return configuration;
+    }
 
     public static RealmConfiguration getConfig() {
         SyncUser  user = SyncUser.currentUser();

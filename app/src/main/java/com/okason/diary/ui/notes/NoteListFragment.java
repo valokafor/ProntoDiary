@@ -33,6 +33,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.data.NoteRealmRepository;
 import com.okason.diary.data.TagRealmRepository;
@@ -139,7 +140,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (SyncUser.currentUser() != null) {
+                if (ProntoDiaryApplication.isDataAccessAllowed()) {
                     startActivity(new Intent(getActivity(), AddNoteActivity.class));
                 } else {
                     startActivity(new Intent(getActivity(), RegisterActivity.class));
@@ -163,7 +164,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         mListAdapter = null;
 
         //Only show content if user is logged in
-        if (SyncUser.currentUser() != null) {
+        if (ProntoDiaryApplication.isDataAccessAllowed()) {
             try {
                 //Instantiate Realm
                 mRealm = Realm.getDefaultInstance();
@@ -194,7 +195,9 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         if (UserManager.getProntoDiaryUser(SyncUser.currentUser()) != null &&
                 !UserManager.getProntoDiaryUser(SyncUser.currentUser()).isPremium()){
             mAdView.setVisibility(View.VISIBLE);
-            AdRequest adRequest = new AdRequest.Builder().build();
+            AdRequest adRequest = new AdRequest.Builder()
+                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                    .build();
             mAdView.loadAd(adRequest);
         }
     }

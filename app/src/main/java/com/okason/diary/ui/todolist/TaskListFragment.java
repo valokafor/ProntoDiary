@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.TaskItemListener;
 import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.Task;
@@ -35,7 +36,6 @@ import io.realm.Case;
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
-import io.realm.SyncUser;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -84,7 +84,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (SyncUser.currentUser() != null) {
+                if (ProntoDiaryApplication.isDataAccessAllowed()) {
                     startActivity(new Intent(getActivity(), AddTaskActivity.class));
                 } else {
                     startActivity(new Intent(getActivity(), RegisterActivity.class));
@@ -97,7 +97,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public void onResume() {
         super.onResume();
-        if (SyncUser.currentUser() != null) {
+        if (ProntoDiaryApplication.isDataAccessAllowed()) {
             mListAdapter = null;
             try {
                 mRealm = Realm.getDefaultInstance();

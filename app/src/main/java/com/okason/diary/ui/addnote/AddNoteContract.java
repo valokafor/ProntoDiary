@@ -1,7 +1,5 @@
 package com.okason.diary.ui.addnote;
 
-import android.content.Context;
-
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -23,7 +21,6 @@ public interface AddNoteContract {
         void showProgressDialog();
         void hideProgressDialog();
         void goBackToParent();
-        Context getContext();
         String getTitle();
         String getContent();
     }

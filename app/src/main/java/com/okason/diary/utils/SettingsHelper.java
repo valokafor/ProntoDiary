@@ -3,6 +3,9 @@ package com.okason.diary.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.provider.Settings;
+import android.text.TextUtils;
+
+import java.util.UUID;
 
 /**
  * Singleton for app settings.
@@ -100,5 +103,31 @@ public class SettingsHelper {
 
   public String getPhotoUrl() {
     return getSharedPreferences().getString(Constants.PHOTO_URL, "");
+  }
+
+  public String getTempUserName() {
+    String tempUserName = getSharedPreferences().getString(Constants.TEMP_USER_NAME, "");
+    if (TextUtils.isEmpty(tempUserName)){
+      String randomUid = UUID.randomUUID().toString();
+      randomUid.replaceAll("[\\s\\-()]", "");
+      String firstTenChars = randomUid.substring(0, Math.max(10, randomUid.length()));
+      tempUserName = "temp_" + firstTenChars;
+      tempUserName = tempUserName + "@prontodiary.com";
+      SharedPreferences.Editor editor = getSharedPreferences().edit();
+      editor.putString(Constants.TEMP_USER_NAME, tempUserName).apply();
+      return tempUserName;
+    }
+    return tempUserName;
+  }
+
+  public String getTempPassword() {
+    String tempPassword = getSharedPreferences().getString(Constants.TEMP_PASSWORD, "");
+    if (TextUtils.isEmpty(tempPassword)){
+      tempPassword = UUID.randomUUID().toString();
+      SharedPreferences.Editor editor = getSharedPreferences().edit();
+      editor.putString(Constants.TEMP_PASSWORD, tempPassword).apply();
+      return tempPassword;
+    }
+    return tempPassword;
   }
 }
