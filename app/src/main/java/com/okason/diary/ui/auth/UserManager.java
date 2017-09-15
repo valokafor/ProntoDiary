@@ -100,7 +100,11 @@ public class UserManager {
                 break;
             }
         }
-        SyncUser.currentUser().logout();
+        try {
+            SyncUser.currentUser().logout();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // Configure Realm for the current active user

@@ -26,6 +26,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.SignInButton;
 import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.utils.SettingsHelper;
 
@@ -253,6 +254,7 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
                 commonRealm.close();
 
                 SettingsHelper.getHelper(RegisterActivity.this).setRegisteredUser(true);
+                ProntoDiaryApplication.setDataAccessAllowed(true);
                 Intent intent = new Intent(RegisterActivity.this, SignInActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
@@ -292,6 +294,8 @@ public class RegisterActivity extends AppCompatActivity implements SyncUser.Call
 
     @Override
     public void onError(ObjectServerError error) {
+        SettingsHelper.getHelper(RegisterActivity.this).setRegisteredUser(false);
+        ProntoDiaryApplication.setDataAccessAllowed(false);
         String errorMsg;
         switch (error.getErrorCode()) {
             case EXISTING_ACCOUNT: errorMsg = "Account already exists"; break;

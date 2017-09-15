@@ -48,7 +48,6 @@ public class ProntoDiaryApplication extends Application {
         mContext = getApplicationContext();
         LeakCanary.install(this);
         Realm.init(this);
-        dataAccessAllowed = true;
 
     }
 

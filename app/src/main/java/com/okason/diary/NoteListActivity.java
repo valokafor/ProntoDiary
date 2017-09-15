@@ -58,7 +58,6 @@ import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.models.ProntoDiaryUser;
 import com.okason.diary.ui.auth.RegisterActivity;
-import com.okason.diary.ui.auth.SignInActivity;
 import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.folder.FolderListActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
@@ -323,41 +322,15 @@ public class NoteListActivity extends AppCompatActivity {
 
     private void checkLoginStatus() {
         //Check Sync User status,
+
         final SyncUser user = SyncUser.currentUser();
         if (user != null) {
             UserManager.setActiveUser(user);
             ProntoDiaryApplication.setDataAccessAllowed(true);
-            settingsHelper.setRegisteredUser(true);
         }else {
-            //Is the user registered?
-            if (settingsHelper.isRegisteredUser()){
-                //If user is registered, show login screen
-                startActivity(new Intent(mActivity, SignInActivity.class));
-            } else {
-                //Else login anonymously
-                String tempUserName = settingsHelper.getTempUserName();
-                String temppPassword = settingsHelper.getTempPassword();
-
-                final SyncCredentials syncCredentials = SyncCredentials.usernamePassword(tempUserName, temppPassword, true);
-                SyncUser.loginAsync(syncCredentials, ProntoDiaryApplication.AUTH_URL, new SyncUser.Callback() {
-                    @Override
-                    public void onSuccess(final SyncUser user) {
-                        UserManager.setActiveUser(user);
-                        settingsHelper.setRegisteredUser(false);
-                        ProntoDiaryApplication.setDataAccessAllowed(true);
-                        settingsHelper.setRegisteredUser(true);
-                    }
-
-                    @Override
-                    public void onError(ObjectServerError error) {
-                        Log.d(TAG, "Anonymous Login Failed " + error.getLocalizedMessage());
-                        ProntoDiaryApplication.setDataAccessAllowed(false);
-                        settingsHelper.setRegisteredUser(false);
-                    }
-                });
-
-            }
+            ProntoDiaryApplication.setDataAccessAllowed(false);
         }
+
 
         //Apply Tag filter is one exist.
         NoteListFragment fragment = new NoteListFragment();
