@@ -1,23 +1,18 @@
 package com.okason.diary.models;
 
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
+import java.util.List;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Folder extends RealmObject{
+public class Folder{
 
-    @PrimaryKey
     private String id;
     private String folderName;
     private long dateCreated;
     private long dateModified;
-
-    private RealmList<Note> notes;
-    private RealmList<Task> tasks;
+    private List<String> notesIds;
 
     public String getId() {
         return id;
@@ -51,19 +46,11 @@ public class Folder extends RealmObject{
         this.dateModified = dateModified;
     }
 
-    public RealmList<Task> getTasks() {
-        return tasks;
+    public List<String> getNotesIds() {
+        return notesIds;
     }
 
-    public void setTasks(RealmList<Task> tasks) {
-        this.tasks = tasks;
-    }
-
-    public RealmList<Note> getNotes() {
-        return notes;
-    }
-
-    public void setNotes(RealmList<Note> notes) {
-        this.notes = notes;
+    public void setNotesIds(List<String> notesIds) {
+        this.notesIds = notesIds;
     }
 }

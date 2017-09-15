@@ -11,17 +11,12 @@ import com.okason.diary.utils.Constants;
 
 import java.io.File;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Attachment extends RealmObject{
+public class Attachment{
 
-
-    @PrimaryKey
     private String id;
     private String localFilePath;
     private String cloudFilePath;

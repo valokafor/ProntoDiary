@@ -1,27 +1,25 @@
 package com.okason.diary.models;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Tag extends RealmObject{
+public class Tag {
 
-    @PrimaryKey
     private String id;
     private String tagName;
     private long dateCreated;
     private long dateModified;
 
-    private RealmList<Note> notes;
-    private RealmList<Task> todoLists;
+    private List<String> noteIds;
+    private List<String> taskIds;
 
     public Tag(){
+        noteIds = new ArrayList<>();
+        taskIds = new ArrayList<>();
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
 
@@ -33,7 +31,6 @@ public class Tag extends RealmObject{
         dateModified = System.currentTimeMillis();
 
     }
-
 
 
     public String getId() {
@@ -68,19 +65,20 @@ public class Tag extends RealmObject{
         this.dateModified = dateModified;
     }
 
-    public RealmList<Note> getNotes() {
-        return notes;
+
+    public List<String> getNoteIds() {
+        return noteIds;
     }
 
-    public void setNotes(RealmList<Note> notes) {
-        this.notes = notes;
+    public void setNoteIds(List<String> noteIds) {
+        this.noteIds = noteIds;
     }
 
-    public List<Task> getTodoLists() {
-        return todoLists;
+    public List<String> getTaskIds() {
+        return taskIds;
     }
 
-    public void setTodoLists(RealmList<Task> todoLists) {
-        this.todoLists = todoLists;
+    public void setTaskIds(List<String> taskIds) {
+        this.taskIds = taskIds;
     }
 }
