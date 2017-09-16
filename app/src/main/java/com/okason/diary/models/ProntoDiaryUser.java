@@ -1,15 +1,12 @@
 package com.okason.diary.models;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-
 /**
  * Created by valokafor on 6/1/17.
  */
 
-public class ProntoDiaryUser extends RealmObject{
+public class ProntoDiaryUser {
 
-    @PrimaryKey
+
     private String id;
     private String realmUserId;
     private String fcmToken;

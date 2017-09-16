@@ -15,7 +15,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.data.TagRealmRepository;
 import com.okason.diary.models.Tag;
 import com.okason.diary.utils.Constants;
 
@@ -56,7 +55,7 @@ public class AddTagDialogFragment extends DialogFragment {
         if (getArguments() != null && getArguments().containsKey(Constants.TAG_ID)){
             String tagId = getArguments().getString(Constants.TAG_ID);
             if (!TextUtils.isEmpty(tagId)){
-                mTag = new TagRealmRepository().getTagById(tagId);
+                mTag = new Tag();
 
             }
         }
@@ -153,10 +152,7 @@ public class AddTagDialogFragment extends DialogFragment {
 
     private void saveTag() {
         final String tagName = tagEditText.getText().toString().trim();
-        if (mTag == null){
-            mTag = new TagRealmRepository().createNewTag();
-        }
-        new TagRealmRepository().updatedTagTitle(mTag.getId(), tagName);
+
     }
 
 

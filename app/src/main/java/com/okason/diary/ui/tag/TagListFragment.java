@@ -17,15 +17,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.data.TagRealmRepository;
 import com.okason.diary.models.Tag;
-import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
+import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -35,10 +38,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.Realm;
-import io.realm.RealmChangeListener;
-import io.realm.RealmResults;
-import io.realm.SyncUser;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -58,8 +57,14 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     FloatingActionButton addTagbutton;
 
     private AddTagDialogFragment addTagDialog;
-    private Realm mRealm;
-    private RealmResults<Tag> mTags;
+    private List<Tag> unFilteredTag;
+    private List<Tag> filteredTag;
+
+
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference database;
+    private DatabaseReference tagCloudReference;
 
 
     public TagListFragment() {
@@ -82,13 +87,18 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        database = FirebaseDatabase.getInstance().getReference();
+        tagCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
+
         addTagbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (SyncUser.currentUser() != null) {
+                if (firebaseUser != null) {
                     showAddNewTagDialog();
                 } else {
-                    startActivity(new Intent(getActivity(), RegisterActivity.class));
+                    startActivity(new Intent(getActivity(), AuthUiActivity.class));
                 }
 
             }
@@ -99,24 +109,15 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     @Override
     public void onResume() {
         super.onResume();
-        if (ProntoDiaryApplication.isDataAccessAllowed()) {
-            mAdapter = null;
-            try {
-                mRealm = Realm.getDefaultInstance();
-                mTags = mRealm.where(Tag.class).findAll();
-                mTags.addChangeListener(new RealmChangeListener<RealmResults<Tag>>() {
-                    @Override
-                    public void onChange(RealmResults<Tag> tags) {
-                        showTags(tags);
-                    }
-                });
-                showTags(mTags);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        if (firebaseUser != null) {
+            populateTagList();
         } else {
             showEmptyText();
         }
+
+    }
+
+    private void populateTagList() {
 
     }
 
@@ -130,11 +131,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     public void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
-        try {
-            mRealm.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
     }
 
 
@@ -148,19 +145,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-
         int id = item.getItemId();
-        switch (id){
-            case R.id.action_add:
-                if (SyncUser.currentUser() != null) {
-                    showAddNewTagDialog();
-                } else {
-                    startActivity(new Intent(getActivity(), RegisterActivity.class));
-                }
-                break;
-
-        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -258,8 +243,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                new TagRealmRepository().deleteTag(clickedTag.getId());
-
+                tagCloudReference.child(clickedTag.getId()).removeValue();
             }
         });
         alertDialog.setNegativeButton(R.string.label_cancel, new DialogInterface.OnClickListener() {

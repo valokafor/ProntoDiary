@@ -1,21 +1,17 @@
 package com.okason.diary.models;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-
 /**
  * Created by valokafor on 7/4/17.
  */
 
-public class SubTask extends RealmObject {
+public class SubTask {
 
-    @PrimaryKey
     private String id;
     private String title;
     private long dateCreated;
     private long dateModified;
     private boolean checked;
-    private Task task;
+    private String parentTaskName;
 
     public String getId() {
         return id;
@@ -57,11 +53,11 @@ public class SubTask extends RealmObject {
         this.checked = checked;
     }
 
-    public Task getTask() {
-        return task;
+    public String getParentTaskName() {
+        return parentTaskName;
     }
 
-    public void setTask(Task task) {
-        this.task = task;
+    public void setParentTaskName(String parentTaskName) {
+        this.parentTaskName = parentTaskName;
     }
 }

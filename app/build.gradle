@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-apply plugin: 'realm-android'
+
 
 android {
     compileSdkVersion 26
@@ -16,23 +16,7 @@ android {
         resConfigs "auto"
     }
 
-    buildTypes {
-        def host = "138.197.217.118"
-        debug {
-            // This will automatically detect the IP address of the machine building RealmTasks.
-            // It is assumed that this machine is also running the Object Server.
-            // If not, replace 'host' with the IP of the machine hosting the server.
-            buildConfigField "String", "OBJECT_SERVER_IP", "\"${host}\""
-        }
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            // This will automatically detect the IP address of the machine building RealmTasks.
-            // It is assumed that this machine is also running the Object Server.
-            // If not, replace 'host' with the IP of the machine hosting the server.
-            buildConfigField "String", "OBJECT_SERVER_IP", "\"${host}\""
-        }
-    }
+
 
     signingConfigs {
         config {
@@ -50,9 +34,7 @@ android {
     }
 }
 
-realm {
-    syncEnabled = true
-}
+
 
 configurations {
     all*.exclude group: 'commons-logging', module: 'commons-logging'

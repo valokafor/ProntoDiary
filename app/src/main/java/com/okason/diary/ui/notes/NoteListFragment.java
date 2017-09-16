@@ -3,11 +3,13 @@ package com.okason.diary.ui.notes;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -29,50 +31,59 @@ import android.widget.TextView;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
-import com.okason.diary.data.NoteRealmRepository;
-import com.okason.diary.data.TagRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
+import com.okason.diary.models.SampleData;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.attachment.GalleryActivity;
-import com.okason.diary.ui.auth.RegisterActivity;
-import com.okason.diary.ui.auth.UserManager;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.Case;
-import io.realm.Realm;
-import io.realm.RealmChangeListener;
-import io.realm.RealmResults;
-import io.realm.SyncUser;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class NoteListFragment extends Fragment implements SearchView.OnQueryTextListener, SearchView.OnCloseListener {
 
-    private FirebaseAnalytics mFirebaseAnalytics;
+    private FirebaseAnalytics firebaseAnalytics;
 
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
-    private Realm mRealm;
-    private RealmResults<Note> mNotes;
-    private List<Note> mNotes2;
+
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference database;
+    private DatabaseReference journalCloudReference;
+
+    private List<Note> unFilteredNotes;
+    private List<Note> filteredNotes;
 
 
     private MediaPlayer mPlayer = null;
     private boolean isAudioPlaying = false;
+
+    private SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
+
+    private String sortColumn = "";
 
 
     private View mRootView;
@@ -119,10 +130,6 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             isDualScreen = args.getBoolean(Constants.IS_DUAL_SCREEN);
         }
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-
-
     }
 
     @Override
@@ -134,19 +141,41 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
+        firebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
 
-        floatingActionButton = getActivity().findViewById(R.id.fab);
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (ProntoDiaryApplication.isDataAccessAllowed()) {
-                    startActivity(new Intent(getActivity(), AddNoteActivity.class));
-                } else {
-                    startActivity(new Intent(getActivity(), RegisterActivity.class));
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+
+        filteredNotes = new ArrayList<>();
+        unFilteredNotes = new ArrayList<>();
+        if (firebaseUser != null){
+            database = FirebaseDatabase.getInstance().getReference();
+            journalCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+
+            sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(getString(R.string.label_title),
+                    getString(R.string.label_title));
+
+
+            floatingActionButton = getActivity().findViewById(R.id.fab);
+            floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (firebaseUser != null) {
+                        startActivity(new Intent(getActivity(), AddNoteActivity.class));
+                    } else {
+                        makeToast(getString(R.string.login_required));
+                    }
                 }
+            });
+
+            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+            editor = sharedPreferences.edit();
+            if (sharedPreferences.getBoolean(Constants.FIRST_RUN, true)) {
+                addInitialNotesToFirebase();
+
+                editor.putBoolean(Constants.FIRST_RUN, false).commit();
             }
-        });
+        }
         return mRootView;
     }
 
@@ -164,36 +193,15 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         mListAdapter = null;
 
         //Only show content if user is logged in
-        if (ProntoDiaryApplication.isDataAccessAllowed()) {
-            try {
-                //Instantiate Realm
-                mRealm = Realm.getDefaultInstance();
-                //Check to see if a Tag name was passed in, and if yes, filter the result to only show
-                //The Note for that Tag
-                if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)) {
-                    String tagName = getArguments().getString(Constants.TAG_FILTER);
-                    mNotes2 = new TagRealmRepository().getNotesForTag(tagName);
-                    showNotes(mNotes2);
-                } else {
-                    mNotes = mRealm.where(Note.class).findAll();
-                    mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
-                        @Override
-                        public void onChange(RealmResults<Note> notes) {
-                            showNotes(mRealm.copyFromRealm(mNotes));
-                        }
-                    });
-                    showNotes(mRealm.copyFromRealm(mNotes));
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        if (firebaseUser != null) {
+            populateNoteList();
         } else {
             showEmptyText(true);
         }
 
-        if (UserManager.getProntoDiaryUser(SyncUser.currentUser()) != null &&
-                !UserManager.getProntoDiaryUser(SyncUser.currentUser()).isPremium()){
+        if (ProntoDiaryApplication.getProntoDiaryUser() != null && ProntoDiaryApplication.getProntoDiaryUser().isPremium()){
+            //Do not show Ad
+        }else {
             mAdView.setVisibility(View.VISIBLE);
             AdRequest adRequest = new AdRequest.Builder()
                     .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
@@ -202,12 +210,33 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         }
     }
 
+    private void populateNoteList() {
+        journalCloudReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    unFilteredNotes.clear();
+                    for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()){
+                        Note note = noteSnapshot.getValue(Note.class);
+                        unFilteredNotes.add(note);
+                    }
+                    showNotes(unFilteredNotes);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                makeToast("Error fetching data " + databaseError.getMessage());
+            }
+        });
+
+
+    }
+
     @Override
     public void onPause() {
         super.onPause();
-        if (mRealm != null && !mRealm.isClosed()) {
-            mRealm.close();
-        }
+
         if (mPlayer != null) {
             mPlayer.release();
             mPlayer = null;
@@ -235,11 +264,15 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (query.length() > 0) {
-            mNotes = mRealm.where(Note.class).contains("content", query, Case.INSENSITIVE).or().contains("title", query, Case.INSENSITIVE).findAll();
-            showNotes(mRealm.copyFromRealm(mNotes));
+            filteredNotes = filterNotes(query);
+            showNotes(filteredNotes);
             return true;
         }
         return true;
+    }
+
+    private List<Note> filterNotes(String query) {
+        return null;
     }
 
     @Override
@@ -250,33 +283,14 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     @Override
     public boolean onClose() {
-        mNotes = mRealm.where(Note.class).findAll();
-        mNotes.addChangeListener(new RealmChangeListener<RealmResults<Note>>() {
-            @Override
-            public void onChange(RealmResults<Note> notes) {
-                showNotes(mRealm.copyFromRealm(mNotes));
-            }
-        });
-        showNotes(mRealm.copyFromRealm(mNotes));
+        showNotes(unFilteredNotes);
         return false;
     }
 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-
         int id = item.getItemId();
-        switch (id) {
-            case R.id.action_add:
-                if (SyncUser.currentUser() != null) {
-                    startActivity(new Intent(getActivity(), AddNoteActivity.class));
-                } else {
-                    startActivity(new Intent(getActivity(), RegisterActivity.class));
-                }
-                break;
-
-        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -363,9 +377,16 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
     private void deleteNote(Note note) {
-        if (!TextUtils.isEmpty(note.getId())) {
-            new NoteRealmRepository().deleteNote(note.getId());
-        }
+        journalCloudReference.child(note.getId()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    //makeToast(getString(R.string.delet));
+                }else {
+                     makeToast("Unable to delete NoteDto");
+                }
+            }
+        });
     }
 
 
@@ -401,7 +422,16 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                deleteNote(note);
+                if (!TextUtils.isEmpty(note.getId())) {
+                    journalCloudReference.child(note.getId()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            if (mListAdapter.getItemCount() < 1){
+                                showEmptyText(true);
+                            }
+                        }
+                    });
+                }
             }
         });
         alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
@@ -457,6 +487,17 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(Uri.parse(attachment.getFilePath()), attachment.getMime_type());
         startActivity(intent);
+    }
+
+    private void addInitialNotesToFirebase() {
+
+        List<Note> sampleNotes = SampleData.getSampleNotes();
+        for (Note note : sampleNotes) {
+            String key = journalCloudReference.push().getKey();
+            note.setId(key);
+            journalCloudReference.child(key).setValue(note);
+        }
+
     }
 
 

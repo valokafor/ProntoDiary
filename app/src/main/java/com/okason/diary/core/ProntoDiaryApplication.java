@@ -11,21 +11,16 @@ import com.mikepenz.iconics.IconicsDrawable;
 import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerUIUtils;
-import com.okason.diary.BuildConfig;
 import com.okason.diary.R;
 import com.okason.diary.models.ProntoDiaryUser;
 import com.squareup.leakcanary.LeakCanary;
-
-import io.realm.Realm;
 
 /**
  * Created by Valentine on 4/20/2017.
  */
 
 public class ProntoDiaryApplication extends Application {
-    public static final String AUTH_URL = "http://" + BuildConfig.OBJECT_SERVER_IP + ":9080/auth";
-    public static final String REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/~/private_info";
-    public static final String COMMON_REALM_URL = "realm://" + BuildConfig.OBJECT_SERVER_IP + ":9080/public_info";
+
 
     private static Context mContext;
     private static ProntoDiaryUser prontoDiaryUser;
@@ -47,7 +42,7 @@ public class ProntoDiaryApplication extends Application {
         initDrawer();
         mContext = getApplicationContext();
         LeakCanary.install(this);
-        Realm.init(this);
+        dataAccessAllowed = true;
 
     }
 

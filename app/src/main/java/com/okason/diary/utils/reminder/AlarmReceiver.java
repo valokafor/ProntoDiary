@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.okason.diary.NoteListActivity;
-import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.Task;
 import com.okason.diary.utils.Constants;
 
@@ -25,7 +24,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String taskId = intent.getStringExtra(Constants.TASK_ID);
-        Task task = new TaskRealmRepository().getTaskById(taskId);
+        Task task = new Task();
         Notification notification = intent.getParcelableExtra(Constants.ALARM_NOTIFICATION);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, Integer.parseInt(taskId), intent, PendingIntent.FLAG_UPDATE_CURRENT);
 

@@ -41,22 +41,29 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.core.events.AttachingFileCompleteEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
-import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.events.OnAttachmentAddedToNoteEvent;
 import com.okason.diary.core.events.UpdateTagLayoutEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.core.services.UploadFileToFirebaseIntentService;
-import com.okason.diary.data.FolderRealmRepository;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -92,13 +99,27 @@ import butterknife.OnClick;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NoteEditorFragment extends Fragment implements
-        AddNoteContract.View {
+public class NoteEditorFragment extends Fragment{
 
     private final static String LOG_TAG = "NoteEditorFragment";
 
     private View mRootView;
-    private AddNoteContract.Action mPresenter;
+
+    private Note currentNote = null;
+    private Folder currentFolder = null;
+    private List<Folder> folderList;
+    private List<Tag> tagList;
+    private List<Attachment> attachmentList;
+
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+
+    private DatabaseReference database;
+    private DatabaseReference noteCloudReference;
+    private DatabaseReference folderCloudReference;
+    private StorageReference firebaseStorageReference;
+    private StorageReference attachmentReference;
+
     private SelectFolderDialogFragment selectFolderDialogFragment;
     private SelectTagDialogFragment selectTagDialogFragment;
     private AddFolderDialogFragment addFolderDialogFragment;
@@ -115,6 +136,9 @@ public class NoteEditorFragment extends Fragment implements
     private String mLocalVideoPath = null;
     private String mLocalSketchPath = null;
     private Calendar mReminderTime;
+
+    private boolean dataChanged = false;
+    private boolean isInEditMode = false;
 
 
     @BindView(R.id.edit_text_category)
@@ -172,25 +196,31 @@ public class NoteEditorFragment extends Fragment implements
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        getPassedInNote();
     }
 
-    private String getPassedInNoteId() {
-        if (getArguments() != null && getArguments().containsKey(Constants.NOTE_ID)){
-            String noteId = getArguments().getString(Constants.NOTE_ID);
-            return noteId;
+     private void getPassedInNote() {
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(Constants.SERIALIZED_NOTE)){
+            String serializedNote = args.getString(Constants.SERIALIZED_NOTE, "");
+            if (!serializedNote.isEmpty()){
+                Gson gson = new Gson();
+                mCurrentNote = gson.fromJson(serializedNote, new TypeToken<Note>(){}.getType());
+                if (mCurrentNote != null & !TextUtils.isEmpty(mCurrentNote.getId())){
+                    isInEditMode = true;
+                }
+            }
         }
-        return "";
 
     }
 
-    public static NoteEditorFragment newInstance(String noteId){
+    public static NoteEditorFragment newInstance(String content){
         NoteEditorFragment fragment = new NoteEditorFragment();
-        if (!TextUtils.isEmpty(noteId)){
+        if (!TextUtils.isEmpty(content)){
             Bundle args = new Bundle();
-            args.putString(Constants.NOTE_ID, noteId);
+            args.putString(Constants.SERIALIZED_NOTE, content);
             fragment.setArguments(args);
         }
-
         return fragment;
     }
 
@@ -202,15 +232,21 @@ public class NoteEditorFragment extends Fragment implements
         mRootView = inflater.inflate(R.layout.fragment_note_editor, container, false);
         ButterKnife.bind(this, mRootView);
 
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        folderList = new ArrayList<>();
+        attachmentList = new ArrayList<>();
 
-//        mFirebaseAuth = FirebaseAuth.getInstance();
-//        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-//        mFirebaseStorage = FirebaseStorage.getInstance();
-//        mFirebaseStorageReference = mFirebaseStorage.getReferenceFromUrl(Constants.FIREBASE_STORAGE_BUCKET);
-//        mAttachmentStorageReference = mFirebaseStorageReference.child("users/" + mFirebaseUser.getUid() + "/attachments");
+        //Gets the root of out Datbase
+        database = FirebaseDatabase.getInstance().getReference();
+        noteCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+        folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+
+        firebaseStorageReference = FirebaseStorage.getInstance().getReference();
+        attachmentReference = firebaseStorageReference.child("attachments");
 
 
-        mPresenter = new AddNotePresenter(this, getPassedInNoteId());
+
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         mTitle.addTextChangedListener(new TextWatcher() {
@@ -226,8 +262,7 @@ public class NoteEditorFragment extends Fragment implements
 
             @Override
             public void afterTextChanged(Editable editable) {
-                String title = mTitle.getText().toString();
-                mPresenter.onTitleChange(title);
+               dataChanged = true;
 
             }
         });
@@ -245,8 +280,7 @@ public class NoteEditorFragment extends Fragment implements
 
             @Override
             public void afterTextChanged(Editable editable) {
-                String content = mContent.getText().toString();
-                mPresenter.onNoteContentChange(content);
+                dataChanged = true;
 
             }
         });
@@ -258,7 +292,7 @@ public class NoteEditorFragment extends Fragment implements
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
-       // mPresenter.updateUI();
+        populateFolderList();
     }
 
     @Override
@@ -292,13 +326,20 @@ public class NoteEditorFragment extends Fragment implements
                 showSelectAttachmentDialog();
                 break;
             case R.id.action_delete:
-                mPresenter.onDeleteNoteButtonClicked();
+                if (isInEditMode && mCurrentNote != null) {
+                    promptForDelete(mCurrentNote);
+                } else {
+                    promptForDiscard();
+                }
                 break;
             case R.id.action_share:
-                displayShareIntent(mPresenter.getCurrentNote());
+                displayShareIntent(mCurrentNote);
                 break;
             case android.R.id.home:
-                mPresenter.onSaveAndExit();
+                if (dataChanged){
+                    Toast.makeText(getContext(), getString(R.string.saving_journal), Toast.LENGTH_SHORT);
+                    saveJournal();
+                }
                 break;
             case R.id.action_tag:
                 showSelectTag();
@@ -311,25 +352,31 @@ public class NoteEditorFragment extends Fragment implements
 
     private void showSelectTag() {
         selectTagDialogFragment = SelectTagDialogFragment.newInstance();
-        selectTagDialogFragment.setTags(mPresenter.getAllTags());
+        selectTagDialogFragment.setTags(tagList);
 
         //Pass the current Note Id to the SelectTagDialog Fragment
         //This Id will be passed to the Adapter, so that if there is a Tag that
         //Has already been added to this Note, that Tag checkbox will be checked
-        if (!TextUtils.isEmpty(mPresenter.getCurrentNoteId())){
-            selectTagDialogFragment.setNoteId(mPresenter.getCurrentNoteId());
+        if (!TextUtils.isEmpty(currentNote.getId())){
+            selectTagDialogFragment.setNoteId(currentNote.getId());
         }
 
 
         selectTagDialogFragment.setListener(new OnTagSelectedListener() {
             @Override
             public void onTagChecked(Tag selectedTag) {
-                mPresenter.onTagAdded(selectedTag);
+                tagList.add(selectedTag);
             }
 
             @Override
             public void onTagUnChecked(Tag unSelectedTag) {
-                mPresenter.onTagRemoved(unSelectedTag);
+                for (int i = 0; i<tagList.size(); i++){
+                    Tag tempTag = tagList.get(i);
+                    if (tempTag.getId().equals(unSelectedTag.getId())){
+                        tagList.remove(i);
+                        break;
+                    }
+                }
             }
 
             @Override
@@ -356,50 +403,30 @@ public class NoteEditorFragment extends Fragment implements
     }
 
 
-
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onItemDeletedEvent(ItemDeletedEvent event) {
-        if (event.getResult().equals(Constants.RESULT_OK)) {
-            //When a Note is Deleted, go to the Note List
-            startActivity(new Intent(getActivity(), NoteListActivity.class));
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onAttachmentAdded(AttachingFileCompleteEvent event) {
-        if (event.isResultOk()) {
-            //Attachment was created successfully
-            //hideProgressDialog();
-            mPresenter.onAttachmentAdded(event.getAttachment());
-        }
-    }
-
-
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAttachmentAddedToNote(OnAttachmentAddedToNoteEvent event) {
         hideProgressDialog();
         populateNote(event.getUpdatedNote());
-
-        Intent uploadIntent = new Intent(getActivity(),
-                UploadFileToFirebaseIntentService.class);
-        uploadIntent.putExtra(Constants.ATTACHMENT_ID, event.getAttachmentId());
-        getActivity().startService(uploadIntent);
+//
+//        Intent uploadIntent = new Intent(getActivity(),
+//                UploadFileToFirebaseIntentService.class);
+//        uploadIntent.putExtra(Constants.ATTACHMENT_ID, event.getAttachmentId());
+//        getActivity().startService(uploadIntent);
     }
 
+
+    /**
+     * This event will be called when a user adds a new Folder
+     * @param event - containing the new Folder
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAddNewCategory(FolderAddedEvent event){
         addFolderDialogFragment.dismiss();
-        String folderId = event.getAddedFolderId();
-        Folder selectedFolder = new FolderRealmRepository().getFolderById(folderId);
 
-        if (selectedFolder != null){
-            String folderName = selectedFolder.getFolderName();
-            mCategory.setText(folderName);
+        if (event.getFolder() != null){
+            mCategory.setText(event.getFolder().getFolderName());
+            currentFolder = event.getFolder();
         }
-        mPresenter.onFolderChange(event.getAddedFolderId());
-
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -411,7 +438,7 @@ public class NoteEditorFragment extends Fragment implements
 
     @OnClick(R.id.edit_text_category)
     public void showSelectFolder(){
-        showChooseFolderDialog(mPresenter.getAllFolders());
+        showChooseFolderDialog(folderList);
     }
 
     private void showChooseFolderDialog(List<Folder> folders) {
@@ -423,8 +450,7 @@ public class NoteEditorFragment extends Fragment implements
             public void onCategorySelected(Folder selectedCategory) {
                 selectFolderDialogFragment.dismiss();
                 mCategory.setText(selectedCategory.getFolderName());
-                mCategory.setText(selectedCategory.getFolderName());
-                mPresenter.onFolderChange(selectedCategory.getId());
+                currentFolder = selectedCategory;
             }
 
             @Override
@@ -475,12 +501,28 @@ public class NoteEditorFragment extends Fragment implements
     }
 
 
-    @Override
-    public void showMessage(String message) {
-        makeToast(message);
+    private void populateFolderList() {
+        folderCloudReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    folderList.clear();
+                    for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
+                        Folder folder = folderSnapshot.getValue(Folder.class);
+                        folderList.add(folder);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                makeToast("Error fetching folder " + databaseError.getMessage());
+            }
+        });
+
     }
 
-    @Override
+
     public void populateNote(Note note) {
 
         mTitle.setHint(R.string.placeholder_journal_title);
@@ -497,18 +539,18 @@ public class NoteEditorFragment extends Fragment implements
             e.printStackTrace();
         }
 
-        if (note.getFolder() != null) {
-            mCategory.setText(note.getFolder().getFolderName());
+        if (TextUtils.isEmpty(note.getFolderName())) {
+            mCategory.setText(note.getFolderName());
         } else {
             mCategory.setText(Constants.DEFAULT_CATEGORY);
         }
         mContent.requestFocus();
-        initViewAttachments(note.getAttachments());
+        attachmentList = note.getAttachments();
+        initViewAttachments(attachmentList);
 
-
-        initTagLayout(note.getTags());
+        tagList = note.getTags();
+        initTagLayout(tagList);
        
-
     }
 
     private void initTagLayout(List<Tag> tags) {
@@ -528,7 +570,7 @@ public class NoteEditorFragment extends Fragment implements
         }
     }
 
-    @Override
+
     public void showProgressDialog() {
         mDialog = new MaterialDialog.Builder(getActivity())
                 .title(R.string.please_wait)
@@ -538,7 +580,7 @@ public class NoteEditorFragment extends Fragment implements
                 .show();
     }
 
-    @Override
+
     public void hideProgressDialog() {
         if (mDialog != null) {
             mDialog.dismiss();
@@ -546,17 +588,13 @@ public class NoteEditorFragment extends Fragment implements
 
     }
 
-    @Override
-    public void goBackToParent() {
-        startActivity(new Intent(getActivity(), NoteListActivity.class));
-    }
 
-    @Override
+
+
     public String getTitle() {
         return mTitle.getText().toString();
     }
 
-    @Override
     public String getContent() {
         return mContent.getText().toString();
     }
@@ -612,7 +650,7 @@ public class NoteEditorFragment extends Fragment implements
 
                 } else {
                     Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-                    galleryIntent.putExtra(Constants.NOTE_ID, mPresenter.getCurrentNoteId());
+                    galleryIntent.putExtra(Constants.NOTE_ID, currentNote.getId());
                     galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
                     startActivity(galleryIntent);
                 }
@@ -983,7 +1021,7 @@ public class NoteEditorFragment extends Fragment implements
             mRecorder = null;
 
             Attachment attachment = new Attachment(attachmentUri, mLocalAudioFilePath, Constants.MIME_TYPE_AUDIO);
-            mPresenter.onAttachmentAdded(attachment);
+            attachmentList.add(attachment);
 
         }
 
@@ -1051,11 +1089,11 @@ public class NoteEditorFragment extends Fragment implements
                 case IMAGE_CAPTURE_REQUEST:
                     attachment = new Attachment(attachmentUri, mLocalImagePath, Constants.MIME_TYPE_IMAGE);
                     addPhotoToGallery(mLocalImagePath);
-                    mPresenter.onAttachmentAdded(attachment);
+                    attachmentList.add(attachment);
                     break;
                 case VIDEO_CAPTURE_REQUEST:
                     attachment = new Attachment(attachmentUri, mLocalVideoPath, Constants.MIME_TYPE_VIDEO);
-                    mPresenter.onAttachmentAdded(attachment);
+                    attachmentList.add(attachment);
                     break;
                 case FILE_PICK_REQUEST:
                     handleFilePickIntent(data);
@@ -1068,7 +1106,7 @@ public class NoteEditorFragment extends Fragment implements
                             sketchFile);
                     if (!TextUtils.isEmpty(sketchFilePath)) {
                         attachment = new Attachment(fileUri, sketchFilePath, Constants.MIME_TYPE_SKETCH);
-                        mPresenter.onAttachmentAdded(attachment);
+                        attachmentList.add(attachment);
                     } else {
                         makeToast(getString(R.string.error_sketch_is_empty));
                     }
@@ -1289,5 +1327,120 @@ public class NoteEditorFragment extends Fragment implements
         }
 
     }
+
+    private void resetFields() {
+        mCategory.setText("");
+        mTitle.setText("");
+        mContent.setText("");
+    }
+
+    private void promptForDelete(Note note){
+        String title = "Delete " + note.getTitle();
+        String message =  "Are you sure you want to delete note " + note.getTitle() + "?";
+
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        titleText.setText(title);
+        alertDialog.show();
+        alertDialog.setCustomTitle(titleView);
+
+        alertDialog.setMessage(message);
+        alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                startActivity(new Intent(getActivity(), NoteListActivity.class));
+            }
+        });
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+    }
+
+    public void promptForDiscard(){
+        String title = "Discard Note";
+        String message =  "Are you sure you want to discard note ";
+
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        titleText.setText(title);
+        alertDialog.setCustomTitle(titleView);
+
+        alertDialog.setMessage(message);
+        alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                resetFields();
+                startActivity(new Intent(getActivity(), NoteListActivity.class));
+            }
+        });
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+
+
+    private void saveJournal() {
+
+        if (currentNote == null){
+            currentNote = new Note();
+            String key = noteCloudReference.push().getKey();
+            currentNote.setId(key);
+        }
+
+        if (currentFolder != null) {
+            currentNote.setFolderName(currentFolder.getFolderName());
+            currentNote.setFolderId(currentFolder.getId());
+        }else {
+            currentNote.setFolderName(Constants.DEFAULT_CATEGORY);
+            currentNote.setFolderId(getFolderId(Constants.DEFAULT_CATEGORY));
+        }
+
+        if (tagList != null && tagList.size() > 0){
+            currentNote.setTags(tagList);
+        }
+
+        currentNote.setContent(mContent.getText().toString());
+        currentNote.setTitle(mTitle.getText().toString());
+        currentNote.setDateModified(System.currentTimeMillis());
+
+        currentNote.setAttachments(attachmentList);
+        noteCloudReference.child(currentNote.getId()).setValue(currentNote);
+    }
+
+    private String getFolderId(String folderName) {
+        for (Folder folder: folderList){
+            if (!TextUtils.isEmpty(folder.getId()) && folder.getFolderName().equals(folderName)){
+                return folder.getId();
+            }
+        }
+        return addFolderToFirebase(folderName);
+    }
+
+
+    private String addFolderToFirebase(String folderName) {
+        Folder folder = new Folder();
+        folder.setFolderName(folderName);
+        String key = folderCloudReference.push().getKey();
+        folder.setId(key);
+        folderCloudReference.child(key).setValue(folder);
+        return key;
+    }
+
+
+
+
 
 }

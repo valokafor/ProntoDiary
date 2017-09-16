@@ -28,9 +28,6 @@ import com.okason.diary.utils.reminder.Reminder;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.realm.Realm;
-import io.realm.RealmChangeListener;
-import io.realm.RealmModel;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -53,10 +50,8 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     RecyclerView mRecyclerView;
     @BindView(R.id.empty_text) TextView mEmptyText;
 
-    private TaskContract.Actions presenter;
     private SubTaskListAdapter subTaskListAdapter;
     private boolean shouldUpdateAdapter = true;
-    private Realm realm;
     private Task parentTask;
 
 
@@ -83,7 +78,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         if (getArguments() != null && getArguments().containsKey(Constants.TASK_ID)){
             String taskId = getArguments().getString(Constants.TASK_ID);
             if (!TextUtils.isEmpty(taskId)){
-                presenter.setCurrentTaskId(taskId);
+
             }
         }
     }
@@ -96,7 +91,6 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         rootView = inflater.inflate(R.layout.fragment_add_sub_task, container, false);
 
         ButterKnife.bind(this, rootView);
-        presenter = new TaskPresenter(null);
         getParentTask();
 
         mRecyclerView.setHasFixedSize(true);
@@ -107,35 +101,18 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     @Override
     public void onResume() {
         super.onResume();
-        //Show the details of this Task is the Task is not empty
-        if (presenter != null && presenter.getCurrentTask() != null){
-            populateTaskDetails(presenter.getCurrentTask());
-        }
+
 
         //Show the Sub Tasks of this Task
         if (ProntoDiaryApplication.isDataAccessAllowed()) {
-            subTaskListAdapter = null;
-            try {
-                realm = Realm.getDefaultInstance();
-                parentTask = realm.where(Task.class).equalTo("id", presenter.getCurrentTaskId()).findFirst();
-                parentTask.addChangeListener(new RealmChangeListener<RealmModel>() {
-                    @Override
-                    public void onChange(RealmModel realmModel) {
-                        if (shouldUpdateAdapter) {
-                            showSubTasks((Task) realmModel);
-                        }else {
-                            shouldUpdateAdapter = true;
-                        }
-
-                    }
-                });
-                showSubTasks(parentTask);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            populateSubTasks();
         } else {
             showEmptyText(true);
         }
+
+    }
+
+    private void populateSubTasks() {
 
     }
 
@@ -156,7 +133,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
             addSubTaskEditText.setError(getString(R.string.required));
             return;
         }
-        presenter.addSubTaskTask(addSubTaskEditText.getText().toString());
+        //presenter.addSubTaskTask(addSubTaskEditText.getText().toString());
         addSubTaskEditText.setText("");
     }
 
@@ -215,7 +192,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
         String folderName = null;
         try {
-            folderName = parentTask.getFolder().getFolderName();
+            folderName = parentTask.getFolderName();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -229,9 +206,9 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
     @OnClick(R.id.text_view_edit_task_label)
     public void onClickEditTaskTextView(View view){
-        if (presenter.getCurrentTask() != null){
+        if (parentTask != null){
             Intent editTaskIntent = new Intent(getActivity(), AddTaskActivity.class);
-            editTaskIntent.putExtra(Constants.TASK_ID, presenter.getCurrentTaskId());
+            editTaskIntent.putExtra(Constants.TASK_ID, parentTask.getId());
             startActivity(editTaskIntent);
         }else {
             makeToast(getString(R.string.no_parent_task_found));
@@ -266,20 +243,32 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     @Override
     public void onSubTaskChecked(String taskId, String subTaskId) {
         shouldUpdateAdapter = false;
-        presenter.onMarkSubTaskAsComplete(taskId, subTaskId);
+        onMarkSubTaskAsComplete(taskId, subTaskId);
+
+    }
+
+    private void onMarkSubTaskAsComplete(String taskId, String subTaskId) {
 
     }
 
     @Override
     public void onSubTaskUnChecked(String taskId, String subTaskId) {
         shouldUpdateAdapter = false;
-        presenter.onMarkSubTaskAsInComplete(taskId, subTaskId);
+         onMarkSubTaskAsInComplete(taskId, subTaskId);
+
+    }
+
+    private void onMarkSubTaskAsInComplete(String taskId, String subTaskId) {
 
     }
 
     @Override
     public void onSubTaskDeleted(String taskId, String subTaskId) {
-        presenter.deleteSubTask(taskId, subTaskId);
+       deleteSubTask(taskId, subTaskId);
+    }
+
+    private void deleteSubTask(String taskId, String subTaskId) {
+
     }
 
     @Override

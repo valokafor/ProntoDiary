@@ -1,15 +1,12 @@
 package com.okason.diary.models;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class PeopleJournal extends RealmObject{
+public class PeopleJournal {
 
-    @PrimaryKey
+
     private long id;
     private String name;
     private String phoneNumher;

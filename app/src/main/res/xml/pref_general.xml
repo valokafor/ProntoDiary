@@ -2,23 +2,23 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
-        android:title="Editor" >
+        android:title="Editor">
         <SwitchPreference
-            android:title="Delete"
+            android:defaultValue="true"
             android:key="prompt_for_delete"
             android:summary="Toogle to prompt for Confirm delete"
-            android:defaultValue="true"/>
+            android:title="Delete"/>
     </PreferenceCategory>
 
     <!--<PreferenceCategory-->
-        <!--android:title="Default Sort" >-->
-        <!--<ListPreference-->
-            <!--android:key="sort_options"-->
-            <!--android:title="Sort Options"-->
-            <!--android:dialogTitle="Select Sort Option"-->
-            <!--android:entries="@array/sortOptionsEntries"-->
-            <!--android:entryValues="@array/sortOptionsValues"-->
-            <!--android:defaultValue="@string/label_title" />-->
+    <!--android:title="Default Sort" >-->
+    <!--<ListPreference-->
+    <!--android:key="sort_options"-->
+    <!--android:title="Sort Options"-->
+    <!--android:dialogTitle="Select Sort Option"-->
+    <!--android:entries="@array/sortOptionsEntries"-->
+    <!--android:entryValues="@array/sortOptionsValues"-->
+    <!--android:defaultValue="@string/label_title" />-->
     <!--</PreferenceCategory>-->
 
 
@@ -30,10 +30,10 @@
             android:key="@string/pref_vibration_key"
             android:title="@string/pref_vibration_title"/>
 
-        <RingtonePreference
-            android:defaultValue="content://settings/system/notification_sound"
-            android:key="@string/pref_sound_key"
-            android:title="@string/pref_sound_title"/>
+        <!--<RingtonePreference-->
+        <!--android:defaultValue="content://settings/system/notification_sound"-->
+        <!--android:key="@string/pref_sound_key"-->
+        <!--android:title="@string/pref_sound_title"/>-->
 
         <ListPreference
             android:defaultValue="0"
@@ -57,9 +57,17 @@
             android:title="@string/pref_time_title"/>
     </PreferenceCategory>
 
+    <PreferenceCategory
+        android:title="Default Sort">
+        <ListPreference
+            android:defaultValue="@string/label_title"
+            android:dialogTitle="Select Sort Option"
+            android:entries="@array/sortOptionsEntries"
+            android:entryValues="@array/sortOptionsValues"
+            android:key="sort_options"
+            android:title="Sort Options"/>
 
-
-
+    </PreferenceCategory>
 
 
 </PreferenceScreen>

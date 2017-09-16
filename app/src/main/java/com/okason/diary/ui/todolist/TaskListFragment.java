@@ -3,11 +3,14 @@ package com.okason.diary.ui.todolist;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,35 +23,42 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.TaskItemListener;
-import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.Task;
-import com.okason.diary.ui.auth.RegisterActivity;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.utils.Constants;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.Case;
-import io.realm.Realm;
-import io.realm.RealmChangeListener;
-import io.realm.RealmResults;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class TaskListFragment extends Fragment implements TaskItemListener,
-        TaskContract.View, SearchView.OnCloseListener, SearchView.OnQueryTextListener{
+         SearchView.OnCloseListener, SearchView.OnQueryTextListener{
 
-    private Realm mRealm;
-    private RealmResults<Task> mTasks;
+
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference database;
+    private DatabaseReference taskCloudReference;
+
+    private List<Task> allTasks;
+    private List<Task> filteredTasks;
     private TaskListAdapter mListAdapter;
     private View mRootView;
     private boolean shouldUpdateAdapter = true;
-    private TaskContract.Actions presenter;
+
 
 
 
@@ -78,16 +88,21 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         ButterKnife.bind(this, mRootView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        presenter = new TaskPresenter(this);
+
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        database = FirebaseDatabase.getInstance().getReference();
+        taskCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TASK_CLOUD_END_POINT);
 
         floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (ProntoDiaryApplication.isDataAccessAllowed()) {
+                if (firebaseUser != null) {
                     startActivity(new Intent(getActivity(), AddTaskActivity.class));
                 } else {
-                    startActivity(new Intent(getActivity(), RegisterActivity.class));
+                    startActivity(new Intent(getActivity(), AuthUiActivity.class));
                 }
             }
         });
@@ -97,41 +112,41 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public void onResume() {
         super.onResume();
-        if (ProntoDiaryApplication.isDataAccessAllowed()) {
-            mListAdapter = null;
-            try {
-                mRealm = Realm.getDefaultInstance();
-                mTasks = mRealm.where(Task.class).findAll();
-                mTasks.addChangeListener(new RealmChangeListener<RealmResults<Task>>() {
-                    @Override
-                    public void onChange(RealmResults<Task> tasks) {
-                        if (shouldUpdateAdapter) {
-                            showTodoLists(tasks);
-                        }else {
-                            shouldUpdateAdapter = true;
-                        }
-                    }
-                });
-                showTodoLists(mTasks);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        if (firebaseUser != null) {
+            populateTaskList();
+
         } else {
             showEmptyText(true);
         }
-
-        // addSampleTodoList();
-
     }
 
+    private void populateTaskList() {
+        taskCloudReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    allTasks.clear();
+                    for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
+                        Task task = folderSnapshot.getValue(Task.class);
+                        allTasks.add(task);
+                    }
+                    showTodoLists(allTasks);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                makeToast("Error fetching data " + databaseError.getMessage());
+            }
+        });
+
+    }
 
 
     @Override
     public void onPause() {
         super.onPause();
-        if (mRealm != null && !mRealm.isClosed()) {
-            mRealm.close();
-        }
+
 
     }
 
@@ -167,28 +182,14 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     @Override
     public boolean onClose() {
-        mTasks = mRealm.where(Task.class).findAll();
-        mTasks.addChangeListener(new RealmChangeListener<RealmResults<Task>>() {
-            @Override
-            public void onChange(RealmResults<Task> tasks) {
-                if (shouldUpdateAdapter) {
-                    showTodoLists(tasks);
-                }else {
-                    shouldUpdateAdapter = true;
-                }
-            }
-        });
-        showTodoLists(mTasks);
+
+        showTodoLists(allTasks);
         return false;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if (query.length() > 0) {
-            mTasks = mRealm.where(Task.class).contains("title", query, Case.INSENSITIVE).findAll();
-            showTodoLists(mRealm.copyFromRealm(mTasks));
-            return true;
-        }
+        showTodoLists(filteredTasks);
         return true;
     }
 
@@ -196,10 +197,6 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     public boolean onQueryTextChange(String newText) {
         return true;
     }
-
-
-
-
 
 
     private void showTodoLists(List<Task> tasks) {
@@ -211,8 +208,6 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         }else {
             showEmptyText(true);
         }
-
-
     }
 
     public void showEmptyText(boolean showText) {
@@ -245,8 +240,12 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         if (shouldPromptForDelete) {
             promptForDelete(clickedTask);
         } else {
-            presenter.deleteTask(clickedTask);
+            deleteTask(clickedTask);
         }
+
+    }
+
+    private void deleteTask(Task clickedTask) {
 
     }
 
@@ -261,14 +260,22 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public void onTaskChecked(Task task) {
         shouldUpdateAdapter = false;
-        presenter.onMarkTaskAsComplete(task);
+        onMarkTaskAsComplete(task);
+
+    }
+
+    private void onMarkTaskAsComplete(Task task) {
 
     }
 
     @Override
     public void onTaskUnChecked(Task task) {
         shouldUpdateAdapter = false;
-        presenter.onMarkTaskAsInComplete(task);
+        onMarkTaskAsInComplete(task);
+    }
+
+    private void onMarkTaskAsInComplete(Task task) {
+
     }
 
     private void promptForDelete(final Task clickedTask) {
@@ -287,7 +294,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                new TaskRealmRepository().deleteTask(clickedTask.getId());
+                taskCloudReference.child(clickedTask.getId()).removeValue();
             }
         });
         alertDialog.setNegativeButton(R.string.label_cancel, new DialogInterface.OnClickListener() {
@@ -299,25 +306,16 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         alertDialog.show();
     }
 
-    @Override
-    public void showTaskDetail(Task task) {
-    //NA
+
+    private void makeToast(String message) {
+        Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
+        View snackBarView = snackbar.getView();
+        snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
+        TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+        tv.setTextColor(Color.WHITE);
+        snackbar.show();
     }
 
-    @Override
-    public void showEditTaskItem(Task todoList) {
-        //NA
-    }
-
-    @Override
-    public void showMessage(String message) {
-
-    }
-
-    @Override
-    public void goBackToParent() {
-        getActivity().onBackPressed();
-    }
 
 
 }
