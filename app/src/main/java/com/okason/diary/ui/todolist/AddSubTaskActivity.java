@@ -8,8 +8,9 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
-import com.okason.diary.data.TaskRealmRepository;
 import com.okason.diary.models.Task;
 import com.okason.diary.utils.Constants;
 
@@ -25,19 +26,19 @@ public class AddSubTaskActivity extends AppCompatActivity {
 
         //Only start the Add Sub Task Fragment if a valid Task object was passed in
         if (savedInstanceState == null) {
-            if (getIntent() != null && getIntent().hasExtra(Constants.TASK_ID)) {
-                String taskId = getIntent().getStringExtra(Constants.TASK_ID);
-                if (!TextUtils.isEmpty(taskId)) {
-                    Task task = new TaskRealmRepository().getTaskById(taskId);
+            if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_TASK)) {
+                String serializedTask = getIntent().getStringExtra(Constants.SERIALIZED_TASK);
+                if (!TextUtils.isEmpty(serializedTask)){
+                    Gson gson = new Gson();
+                    Task task = gson.fromJson(serializedTask, new TypeToken<Task>(){}.getType());
                     if (task != null) {
-                        AddSubTaskFragment fragment = AddSubTaskFragment.newInstance(taskId);
+                        AddSubTaskFragment fragment = AddSubTaskFragment.newInstance(serializedTask);
                         openFragment(fragment, task.getTitle());
                     } else {
                         finish();
                     }
-                } else {
-                    finish();
                 }
+
             } else {
                 finish();
             }

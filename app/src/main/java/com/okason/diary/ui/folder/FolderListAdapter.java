@@ -9,10 +9,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.models.Folder;
-import com.okason.diary.models.Task;
 
 import java.util.List;
 
@@ -46,26 +44,18 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        Folder category = mFolders.get(position);
-        String categoryName = category.getFolderName();
-        holder.categoryName.setText(categoryName);
+        Folder folder = mFolders.get(position);
+        String folderName = folder.getFolderName();
+        holder.folderName.setText(folderName);
 
-        int numNote = category.getNotes().size();
+        int numNote = folder.getNotesIds().size();
         String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
         holder.noteCountTextView.setText(numNote + " " + notes);
 
 
-        String taskLabel = ProntoDiaryApplication.getAppContext().getString(R.string.zero_task);
-
-        if (category.getTasks() != null && category.getTasks().size() > 0){
-            int taskCount = 0;
-            for (Task task: category.getTasks()){
-                taskCount += task.getTaskCount();
-            }
-            taskLabel = taskCount > 1 ? taskCount
-                    + " " + mContext.getString(R.string.label_tasks) : taskCount
-                    + " " + mContext.getString(R.string.label_task) ;
-        }
+        int taskCount = folder.getTaskIds().size();
+        String taskLabel = taskCount > 1 ? "Tasks" : "Task";
+        holder.taskCountTextView.setText(taskCount + " " + taskLabel);
 
         holder.taskCountTextView.setText(taskLabel);
     }
@@ -85,23 +75,23 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.image_button_edit_category) ImageButton editCategory;
-        @BindView(R.id.image_button_delete_category) ImageButton deleteCategory;
-        @BindView(R.id.text_view_folder_name)  TextView categoryName;
+        @BindView(R.id.image_button_edit_category) ImageButton editFolder;
+        @BindView(R.id.image_button_delete_category) ImageButton deleteFolder;
+        @BindView(R.id.text_view_folder_name)  TextView folderName;
         @BindView(R.id.text_view_note_count) TextView noteCountTextView;
         @BindView(R.id.text_view_task_count) TextView taskCountTextView;
 
         public ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-            editCategory.setOnClickListener(new View.OnClickListener() {
+            editFolder.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Folder categoryToBeEdited = mFolders.get(getLayoutPosition());
                     mListener.onEditCategoryButtonClicked(categoryToBeEdited);
                 }
             });
-            deleteCategory.setOnClickListener(new View.OnClickListener() {
+            deleteFolder.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Folder categoryToBeEdited = mFolders.get(getLayoutPosition());

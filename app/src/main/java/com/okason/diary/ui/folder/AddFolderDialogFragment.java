@@ -14,10 +14,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
-import com.okason.diary.data.FolderRealmRepository;
+import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.models.Folder;
 import com.okason.diary.utils.Constants;
+
+import org.greenrobot.eventbus.EventBus;
 
 
 /**
@@ -26,6 +34,11 @@ import com.okason.diary.utils.Constants;
 public class AddFolderDialogFragment extends DialogFragment {
     private EditText mFolderEditText;
     private Folder mFolder = null;
+
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference database;
+    private DatabaseReference folderCloudReference;
 
 
 
@@ -37,17 +50,22 @@ public class AddFolderDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        database = FirebaseDatabase.getInstance().getReference();
+        folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
 
     }
 
 
 
 
-    public static AddFolderDialogFragment newInstance(String folderId){
+    public static AddFolderDialogFragment newInstance(String content){
         AddFolderDialogFragment dialogFragment = new AddFolderDialogFragment();
-        if (!TextUtils.isEmpty(folderId)) {
-            Bundle args = new Bundle();
-            args.putString(Constants.FOLDER_ID, folderId);
+        Bundle args = new Bundle();
+
+        if (!TextUtils.isEmpty(content)){
+            args.putString(Constants.SERIALIZED_FOLDER, content);
             dialogFragment.setArguments(args);
         }
         return dialogFragment;
@@ -57,11 +75,12 @@ public class AddFolderDialogFragment extends DialogFragment {
      * The method gets the Folder that was passed in
      */
     public void getCurrentFolder(){
-        if (getArguments() != null && getArguments().containsKey(Constants.FOLDER_ID)){
-            String folderId = getArguments().getString(Constants.FOLDER_ID);
-            if (!TextUtils.isEmpty(folderId)){
-                mFolder = new FolderRealmRepository().getFolderById(folderId);
-
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(Constants.SERIALIZED_FOLDER)){
+            String serializedFolder = args.getString(Constants.SERIALIZED_FOLDER, "");
+            if (!TextUtils.isEmpty(serializedFolder)){
+                Gson gson = new Gson();
+                mFolder = gson.fromJson(serializedFolder, new TypeToken<Folder>(){}.getType());
             }
         }
 
@@ -102,8 +121,6 @@ public class AddFolderDialogFragment extends DialogFragment {
 
                 }
             });
-
-
 
             if (mFolder != null && !TextUtils.isEmpty(mFolder.getFolderName())){
                 populateFields(mFolder);
@@ -160,9 +177,15 @@ public class AddFolderDialogFragment extends DialogFragment {
         final String categoryName = mFolderEditText.getText().toString().trim();
         if (!TextUtils.isEmpty(categoryName)) {
             if (mFolder == null){
-                mFolder = new FolderRealmRepository().createNewFolder();
+                mFolder = new Folder();
+                mFolder.setFolderName(categoryName);
+                mFolder.setId(folderCloudReference.push().getKey());
+            }else {
+                mFolder.setFolderName(categoryName);
             }
-            new FolderRealmRepository().updatedFolderTitle(mFolder.getId(), categoryName);
+            folderCloudReference.child(mFolder.getId()).setValue(mFolder);
+            EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+
         }
 
     }

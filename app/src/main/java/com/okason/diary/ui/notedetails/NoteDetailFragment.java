@@ -34,16 +34,19 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.gson.Gson;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
-import com.okason.diary.data.NoteRealmRepository;
+import com.okason.diary.core.listeners.OnEditNoteButtonClickedListener;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Note;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
@@ -102,10 +105,19 @@ public class NoteDetailFragment extends Fragment{
 
     private AttachmentListAdapter attachmentListAdapter;
 
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+
+    private DatabaseReference database;
+    private DatabaseReference noteCloudReference;
     private FirebaseStorage mFirebaseStorage;
 
+    private OnEditNoteButtonClickedListener editNoteistener;
+
+
+    public void setEditNoteistener(OnEditNoteButtonClickedListener editNoteistener) {
+        this.editNoteistener = editNoteistener;
+    }
 
     private Note mCurrentNote = null;
 
@@ -115,30 +127,31 @@ public class NoteDetailFragment extends Fragment{
         // Required empty public constructor
     }
 
-    private String getPassedInNoteId() {
-        if (getArguments() != null && getArguments().containsKey(Constants.NOTE_ID)){
-            String noteId = getArguments().getString(Constants.NOTE_ID);
-            return noteId;
-        }
-        return "";
 
+    public static NoteDetailFragment newInstance(String serializedNote){
+        NoteDetailFragment fragment = new NoteDetailFragment();
+        Bundle arguments = new Bundle();
+        arguments.putString(Constants.SERIALIZED_NOTE, serializedNote);
+        fragment.setArguments(arguments);
+        return fragment;
     }
 
-    public static NoteDetailFragment newInstance(String noteId){
-        NoteDetailFragment fragment = new NoteDetailFragment();
-        if (!TextUtils.isEmpty(noteId)){
-            Bundle args = new Bundle();
-            args.putString(Constants.NOTE_ID, noteId);
-            fragment.setArguments(args);
+    public void getCurrentNote(){
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(Constants.SERIALIZED_NOTE)){
+            String serializedNote = args.getString(Constants.SERIALIZED_NOTE);
+            if (!TextUtils.isEmpty(serializedNote)){
+                Gson gson = new Gson();
+                mCurrentNote = gson.fromJson(serializedNote, Note.class);
+            }
         }
-
-        return fragment;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        getCurrentNote();
     }
 
     @Override
@@ -148,12 +161,13 @@ public class NoteDetailFragment extends Fragment{
         mRootView = inflater.inflate(R.layout.fragment_note_editor, container, false);
         ButterKnife.bind(this, mRootView);
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        database = FirebaseDatabase.getInstance().getReference();
+        noteCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
         mFirebaseStorage = FirebaseStorage.getInstance();
 
-        String noteId = getPassedInNoteId();
-        mCurrentNote = new NoteRealmRepository().getNoteById(noteId);
+
         if (mCurrentNote != null) {
             displayNote(mCurrentNote);
         }
@@ -247,7 +261,7 @@ public class NoteDetailFragment extends Fragment{
 
     public void displayNote(Note note) {
         try {
-            mCategory.setText(note.getFolder().getFolderName());
+            mCategory.setText(note.getFolderName());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -488,7 +502,7 @@ public class NoteDetailFragment extends Fragment{
 
     private void deleteNote(Note note) {
         if (!TextUtils.isEmpty(note.getId())) {
-            new NoteRealmRepository().deleteNote(note.getId());
+            noteCloudReference.child(note.getId()).removeValue();
         }
         displayPreviousActivity();
     }

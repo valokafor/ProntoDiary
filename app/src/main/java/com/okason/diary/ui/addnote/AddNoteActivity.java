@@ -15,11 +15,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.data.NoteRealmRepository;
-import com.okason.diary.models.Note;
-import com.okason.diary.ui.notedetails.NoteDetailFragment;
 import com.okason.diary.utils.Constants;
-import com.okason.diary.utils.date.TimeUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -47,15 +43,14 @@ public class AddNoteActivity extends AppCompatActivity {
 
 
         if (savedInstanceState == null) {
-            if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
-                String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
-                Note passedInNote = new NoteRealmRepository().getNoteById(noteId);
-                NoteDetailFragment fragment = NoteDetailFragment.newInstance(noteId);
-                openFragment(NoteEditorFragment.newInstance(noteId),
-                        TimeUtils.getReadableDateWithoutTime(passedInNote.getDateModified()));
-            } else {
+
+            if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)){
+                String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_NOTE);
+                openFragment(NoteEditorFragment.newInstance(serializedNote), getString(R.string.edit_journal));
+            }else {
                 openFragment(NoteEditorFragment.newInstance(""), getString(R.string.add_new_journal));
             }
+
         }
 
     }

@@ -22,17 +22,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -53,13 +54,9 @@ import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.mikepenz.materialdrawer.model.interfaces.Nameable;
 import com.mikepenz.materialdrawer.util.KeyboardUtil;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.core.events.AddDefaultDataEvent;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.ShowFragmentEvent;
-import com.okason.diary.models.ProntoDiaryUser;
-import com.okason.diary.ui.auth.RegisterActivity;
-import com.okason.diary.ui.auth.SignInActivity;
-import com.okason.diary.ui.auth.UserManager;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.folder.FolderListActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
@@ -74,13 +71,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.ObjectServerError;
-import io.realm.Realm;
-import io.realm.SyncCredentials;
-import io.realm.SyncUser;
-import io.realm.permissions.PermissionChange;
-
-import static com.okason.diary.core.ProntoDiaryApplication.COMMON_REALM_URL;
 
 public class NoteListActivity extends AppCompatActivity {
     private SharedPreferences preferences;
@@ -188,12 +178,13 @@ public class NoteListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         mActivity = this;
+        mAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mAuth.getCurrentUser();
         settingsHelper = SettingsHelper.getHelper(mActivity);
         mAuth = FirebaseAuth.getInstance();
 
 
         savedInstanceBundle = savedInstanceState;
-        addDefaultData();
 
     }
 
@@ -227,17 +218,15 @@ public class NoteListActivity extends AppCompatActivity {
 
     private void setupNavigationDrawer(Bundle savedInstanceState) {
 
-        if (SyncUser.currentUser() != null){
+        if (mFirebaseUser != null) {
             try {
-                ProntoDiaryUser prontoDiaryUser = UserManager.getProntoDiaryUser(SyncUser.currentUser());
-                if (prontoDiaryUser != null) {
-                    username = prontoDiaryUser.getDisplayName();
-                    emailAddress = prontoDiaryUser.getEmailAddress();
-                    photoUrl = prontoDiaryUser.getPhotoUrl();
-                }
+                username = mFirebaseUser.getDisplayName();
+                emailAddress = mFirebaseUser.getEmail();
+                photoUrl = mFirebaseUser.getPhotoUrl().getPath();
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
         }
 
         username = TextUtils.isEmpty(username) ? ANONYMOUS : username;
@@ -305,7 +294,7 @@ public class NoteListActivity extends AppCompatActivity {
         drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Login").withIcon(GoogleMaterial.Icon.gmd_lock_open).withIdentifier(Constants.LOGIN));
         drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Logout").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.LOGOUT));
 
-        if (settingsHelper.isRegisteredUser()){
+        if (mFirebaseUser != null){
             drawer.removeStickyFooterItemAtPosition(0);
         } else {
             drawer.removeStickyFooterItemAtPosition(1);
@@ -322,41 +311,12 @@ public class NoteListActivity extends AppCompatActivity {
 
 
     private void checkLoginStatus() {
-        //Check Sync User status,
-        final SyncUser user = SyncUser.currentUser();
-        if (user != null) {
-            UserManager.setActiveUser(user);
-            ProntoDiaryApplication.setDataAccessAllowed(true);
+        if (mFirebaseUser == null){
+            ProntoDiaryApplication.setDataAccessAllowed(false);
             settingsHelper.setRegisteredUser(true);
         }else {
-            //Is the user registered?
-            if (settingsHelper.isRegisteredUser()){
-                //If user is registered, show login screen
-                startActivity(new Intent(mActivity, SignInActivity.class));
-            } else {
-                //Else login anonymously
-                String tempUserName = settingsHelper.getTempUserName();
-                String temppPassword = settingsHelper.getTempPassword();
-
-                final SyncCredentials syncCredentials = SyncCredentials.usernamePassword(tempUserName, temppPassword, true);
-                SyncUser.loginAsync(syncCredentials, ProntoDiaryApplication.AUTH_URL, new SyncUser.Callback() {
-                    @Override
-                    public void onSuccess(final SyncUser user) {
-                        UserManager.setActiveUser(user);
-                        settingsHelper.setRegisteredUser(false);
-                        ProntoDiaryApplication.setDataAccessAllowed(true);
-                        settingsHelper.setRegisteredUser(true);
-                    }
-
-                    @Override
-                    public void onError(ObjectServerError error) {
-                        Log.d(TAG, "Anonymous Login Failed " + error.getLocalizedMessage());
-                        ProntoDiaryApplication.setDataAccessAllowed(false);
-                        settingsHelper.setRegisteredUser(false);
-                    }
-                });
-
-            }
+            ProntoDiaryApplication.setDataAccessAllowed(true);
+            settingsHelper.setRegisteredUser(false);
         }
 
         //Apply Tag filter is one exist.
@@ -398,11 +358,6 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
 
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onAddDefaultDataEvent(AddDefaultDataEvent event){
-        addDefaultData();
-    }
 
 
 
@@ -494,51 +449,7 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
 
-    //Checks if this is the first time this app is running and then
-    //starts an Intent Services that adds some default data
-    private void addDefaultData() {
-        preferences = getSharedPreferences(TAG, MODE_PRIVATE);
 
-
-        boolean firstRun = preferences.getBoolean(Constants.FIRST_RUN, true);
-        if (firstRun) {
-            //startService(new Intent(this, AddSampleDataIntentService.class));
-            editor = preferences.edit();
-            final SyncCredentials syncCredentials = SyncCredentials.usernamePassword(EMAIL, PASSWORD, false);
-            SyncUser.loginAsync(syncCredentials, ProntoDiaryApplication.AUTH_URL, new SyncUser.Callback() {
-                @Override
-                public void onSuccess(final SyncUser adminUser) {
-
-                    final Realm managementRealm = adminUser.getManagementRealm();
-                    managementRealm.executeTransactionAsync(new Realm.Transaction() {
-                        @Override
-                        public void execute(Realm realm) {
-                            PermissionChange permissionChange = new PermissionChange(COMMON_REALM_URL, "*", true, true, false);
-                            realm.copyToRealm(permissionChange);
-                        }
-                    }, new Realm.Transaction.OnSuccess() {
-                        @Override
-                        public void onSuccess() {
-                            adminUser.logout();
-                            managementRealm.close();
-                            Log.d(TAG, "Admin Credentials updated");
-                        }
-                    });
-
-                }
-
-                @Override
-                public void onError(ObjectServerError error) {
-                    Log.d("RegisterActivity", "Admin login failed " + error.getLocalizedMessage());
-                }
-            });
-
-
-
-            editor.putBoolean(Constants.FIRST_RUN, false).commit();
-        }
-
-    }
 
 
     private void setupMessagingService() {
@@ -577,7 +488,7 @@ public class NoteListActivity extends AppCompatActivity {
                 logout();
                 break;
             case Constants.LOGIN:
-                startActivity(new Intent(mActivity, RegisterActivity.class));
+                startActivity(new Intent(mActivity, AuthUiActivity.class));
                 break;
             case Constants.DELETE:
                 //Delete Account
@@ -594,40 +505,28 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
     private void logout() {
-        android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(mActivity, R.style.dialog);
-        LayoutInflater inflater = getLayoutInflater();
-        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
-        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
-        titleText.setText(getString(R.string.please_attention));
-        alertDialog.setCustomTitle(titleView);
+        AuthUI.getInstance()
+                .signOut(this)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            startActivity(new Intent(mActivity, AuthUiActivity.class));
+                            finish();
+                        } else {
+                            makeToast(getString(R.string.sign_out_failed));
+                        }
+                    }
+                });
 
-        alertDialog.setMessage("You logged in with " + settingsHelper.getLoginProvider() +
-                ". Please use the same login method to sign-in again next time to access your data");
-        alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                UserManager.logoutActiveUser();
-                //User is logging out, erased saved Profile info so that they do no show in the Nav Drawer
-                //When user is not logged in
-                settingsHelper.saveProfile("", "", "", "");
-                startActivity(new Intent(mActivity, RegisterActivity.class));
-            }
-        });
-        alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        alertDialog.show();
     }
 
 
     private void generateInviteLink(){
-        if (SyncUser.currentUser() != null){
-            ProntoDiaryUser prontoDiaryUser = UserManager.getProntoDiaryUser(SyncUser.currentUser());
-            String uid = prontoDiaryUser.getRealmUserId();
-            String name = prontoDiaryUser.getDisplayName();
+        if (mFirebaseUser != null){
+
+            String uid = mFirebaseUser.getUid();
+            String name = mFirebaseUser.getDisplayName();
             sendInvite(uid, name);
         }else {
             makeToast(getString(R.string.login_required));
@@ -699,10 +598,10 @@ public class NoteListActivity extends AppCompatActivity {
                             if (deepLink != null && deepLink.getBooleanQueryParameter("invitedby", false)){
                                 String referrerUid = deepLink.getQueryParameter("invitedby");
                                 if (!TextUtils.isEmpty(referrerUid)){
-                                    ProntoDiaryUser referrer = UserManager.getProntoDiaryUserById(referrerUid);
-                                    if (referrer != null){
-                                        makeToast("Welcome " + referrer.getDisplayName() + " friend!");
-                                    }
+//                                    ProntoDiaryUser referrer = UserManager.getProntoDiaryUserById(referrerUid);
+//                                    if (referrer != null){
+//                                        makeToast("Welcome " + referrer.getDisplayName() + " friend!");
+//                                    }
                                 }
                             }
                         }

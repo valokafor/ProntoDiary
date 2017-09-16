@@ -32,11 +32,18 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.okason.diary.NoteListActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
-import com.okason.diary.data.FolderRealmRepository;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Task;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
@@ -57,13 +64,11 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.realm.Realm;
-import io.realm.RealmResults;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AddTaskFragment extends Fragment implements TaskContract.View{
+public class AddTaskFragment extends Fragment{
     private View mRootView;
 
     private FolderListAdapter mAdapter;
@@ -108,6 +113,15 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     RadioButton highPriorityButton;
 
 
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private List<Folder> folderList;
+    private DatabaseReference database;
+    private DatabaseReference folderCloudReference;
+    private DatabaseReference taskCloudReference;
+
+
+
 
 
     @BindView(R.id.image_button_add_reminder_options)
@@ -115,8 +129,8 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     private SelectFolderDialogFragment selectFolderDialogFragment;
     private AddFolderDialogFragment addFolderDialogFragment;
 
-    private RealmResults<Folder> mFolders;
-    private Realm mRealm;
+  ;
+    private Task currentTast = null;
 
     private Reminder repeatFrequency;
     private int priority = Constants.PRIORITY_LOW;
@@ -127,7 +141,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     //Flag that indicates if the Add Sub Task screen should be opened
     private boolean shouldAddSubTasks = false;
 
-    private TaskContract.Actions presenter;
+
 
 
     @BindView(R.id.edit_text_category)
@@ -142,20 +156,23 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     }
 
 
-    private String getPassedInTaskId() {
-        if (getArguments() != null && getArguments().containsKey(Constants.TASK_ID)){
-            String taskId = getArguments().getString(Constants.TASK_ID);
-            return taskId;
+    private void getPassedInTask() {
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(Constants.SERIALIZED_TASK)){
+            String serializedTask = args.getString(Constants.SERIALIZED_TASK, "");
+            if (!TextUtils.isEmpty(serializedTask)){
+                Gson gson = new Gson();
+                currentTast = gson.fromJson(serializedTask, new TypeToken<Task>(){}.getType());
+            }
         }
-        return "";
 
     }
 
-    public static AddTaskFragment newInstance(String taskId){
+    public static AddTaskFragment newInstance(String content){
         AddTaskFragment fragment = new AddTaskFragment();
-        if (!TextUtils.isEmpty(taskId)){
+        if (!TextUtils.isEmpty(content)){
             Bundle args = new Bundle();
-            args.putString(Constants.TASK_ID, taskId);
+            args.putString(Constants.SERIALIZED_TASK, content);
             fragment.setArguments(args);
         }
 
@@ -168,6 +185,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        getPassedInTask();
     }
 
 
@@ -177,12 +195,10 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_add_task, container, false);
         ButterKnife.bind(this, mRootView);
-        presenter = new TaskPresenter(this);
-        String taskId = getPassedInTaskId();
-        if (!TextUtils.isEmpty(taskId)) {
-            presenter.setCurrentTaskId(taskId);
-        } else {
-            //Set Defaults
+
+
+        if (currentTast == null) {
+
             oneTimeEventButton.performClick();
 
             //Show Today date on Task Due Date
@@ -193,7 +209,6 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
             String formattedDueTime = DateHelper.getTimeShort(getActivity(), mReminderTime.getTimeInMillis());
             timeTextView.setText(formattedDueTime);
-
 
         }
         priorityRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -212,6 +227,14 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
                 }
             }
         });
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        database = FirebaseDatabase.getInstance().getReference();
+        taskCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TASK_CLOUD_END_POINT);
+        folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+
+
         return mRootView;
     }
 
@@ -219,13 +242,6 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
-
-        try {
-            mRealm = Realm.getDefaultInstance();
-            mFolders = mRealm.where(Folder.class).findAll();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -238,10 +254,6 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
-        if (!mRealm.isClosed()) {
-            mRealm.close();
-        }
-
 
     }
 
@@ -263,6 +275,13 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
     }
 
     private void onSaveTaskButtonClicked(){
+        if (currentTast == null){
+            currentTast = new Task();
+            String key = taskCloudReference.push().getKey();
+            currentTast.setId(key);
+        }
+
+
         if (TextUtils.isEmpty(taskNameEditText.getText())){
             taskNameEditText.setError(getString(R.string.required));
             return;
@@ -272,9 +291,11 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
             repeatFrequency = Reminder.NO;
         }
 
-        if (selectedFolder == null){
-            selectedFolder = new FolderRealmRepository().getOrCreateFolder(getString(R.string.general));
+        if (selectedFolder == null) {
+            selectedFolder = getDefaultFolder(Constants.DEFAULT_CATEGORY);
         }
+        currentTast.setFolderName(selectedFolder.getFolderName());
+        currentTast.setFolderId(selectedFolder.getId());
 
         if (mReminderTime == null){
             mReminderTime = Calendar.getInstance();
@@ -285,25 +306,37 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
             repeatEndDate = Calendar.getInstance();
             repeatEndDate.setTimeInMillis(System.currentTimeMillis());
         }
-        presenter.onSaveAndExit(priority,
-                taskNameEditText.getText().toString(),
-                mReminderTime.getTimeInMillis(),
-                repeatFrequency,
-                repeatEndDate.getTimeInMillis(),
-                selectedFolder.getId(),
-                shouldAddSubTasks);
+
+        currentTast.setPriority(priority);
+        currentTast.setTitle(taskNameEditText.getText().toString());
+        currentTast.setDueDateAndTime(mReminderTime.getTimeInMillis());
+        currentTast.setRepeatFrequency(repeatFrequency);
+        currentTast.setRepeatEndDate(repeatEndDate.getTimeInMillis());
+        currentTast.setFolderName(selectedFolder.getFolderName());
+        currentTast.setFolderId(selectedFolder.getId());
+        taskCloudReference.child(currentTast.getId()).setValue(currentTast);
+
+        if (shouldAddSubTasks){
+            Gson gson = new Gson();
+            String serializedTask = gson.toJson(currentTast);
+            Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
+            addSubTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
+            addSubTaskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(addSubTaskIntent);
+        }else {
+            goBackToParent();
+        }
 
     }
+
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAddNewFolder(FolderAddedEvent event){
         addFolderDialogFragment.dismiss();
-        String folderId = event.getAddedFolderId();
-        Folder selectedFolder = new FolderRealmRepository().getFolderById(folderId);
-
-        if (selectedFolder != null){
-            String folderName = selectedFolder.getFolderName();
-            mFolder.setText(folderName);
+        if (event.getFolder() != null){
+            mFolder.setText(event.getFolder().getFolderName());
+            selectedFolder = event.getFolder();
         }
 
     }
@@ -321,7 +354,7 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
     @OnClick(R.id.edit_text_category)
     public void showSelectFolder(){
-        showChooseFolderDialog(mFolders);
+        showChooseFolderDialog(folderList);
     }
 
     @OnClick(R.id.edit_text_repeat_end_date)
@@ -516,10 +549,10 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
             @Override
-            public void onCategorySelected(Folder selectedCategory) {
+            public void onCategorySelected(Folder selectedFolder) {
                 selectFolderDialogFragment.dismiss();
-                mFolder.setText(selectedCategory.getFolderName());
-                selectedFolder = new FolderRealmRepository().getFolderById(selectedCategory.getId());
+                mFolder.setText(selectedFolder.getFolderName());
+                selectedFolder = selectedFolder;
             }
 
             @Override
@@ -555,7 +588,6 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
      * When it is in Edit mode
      * @param task - the passed in Task
      */
-    @Override
     public void showTaskDetail(Task task) {
         try {
             taskNameEditText.setText(task.getTitle());
@@ -630,8 +662,8 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
         }
 
         try {
-            mFolder.setText(task.getFolder().getFolderName());
-            selectedFolder = task.getFolder();
+            mFolder.setText(task.getFolderName());
+            getFolderById(task.getId());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -649,15 +681,33 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
     }
 
-    @Override
-    public void showEditTaskItem(Task todoList) {
+    private void getFolderById(String id) {
+        if (folderList != null && folderList.size() > 0){
+            //Get Folder from the List of retreived folders
+            for (Folder folder: folderList){
+                if (folder.getId().equals(id)){
+                    selectedFolder = folder;
+                    break;
+                }
+            }
+        }else {
+            //Get Folder from cloud
+            folderCloudReference.orderByChild("id").equalTo(id).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()){
+                        selectedFolder = dataSnapshot.getValue(Folder.class);
+                    }
+                }
 
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
     }
 
-    @Override
-    public void showMessage(String message) {
-
-    }
 
 
     public void showReminderDate() {
@@ -750,9 +800,9 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
 
     }
 
-    @Override
+
     public void goBackToParent() {
-        Intent parentIntent = new Intent(getActivity(), NoteListActivity.class);
+        Intent parentIntent = new Intent(getActivity(), TodoListActivity.class);
         parentIntent.putExtra(Constants.FRAGMENT_TAG, Constants.TODO_LIST_FRAGMENT_TAG);
         startActivity(parentIntent);
     }
@@ -790,4 +840,31 @@ public class AddTaskFragment extends Fragment implements TaskContract.View{
         }
 
     }
+
+    private Folder getDefaultFolder(String defaultCategory) {
+        Folder folder = new Folder();
+        folder.setId(getFolderId(defaultCategory));
+        folder.setFolderName(defaultCategory);
+        return folder;
+    }
+
+    private String getFolderId(String folderName) {
+        for (Folder folder: folderList){
+            if (!TextUtils.isEmpty(folder.getId()) && folder.getFolderName().equals(folderName)){
+                return folder.getId();
+            }
+        }
+        return addFolderToFirebase(folderName);
+    }
+
+
+    private String addFolderToFirebase(String folderName) {
+        Folder folder = new Folder();
+        folder.setFolderName(folderName);
+        String key = folderCloudReference.push().getKey();
+        folder.setId(key);
+        folderCloudReference.child(key).setValue(folder);
+        return key;
+    }
+
 }

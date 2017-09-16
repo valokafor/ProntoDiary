@@ -13,6 +13,7 @@ public class Folder{
     private long dateCreated;
     private long dateModified;
     private List<String> notesIds;
+    private List<String> taskIds;
 
     public String getId() {
         return id;
@@ -52,5 +53,13 @@ public class Folder{
 
     public void setNotesIds(List<String> notesIds) {
         this.notesIds = notesIds;
+    }
+
+    public List<String> getTaskIds() {
+        return taskIds;
+    }
+
+    public void setTaskIds(List<String> taskIds) {
+        this.taskIds = taskIds;
     }
 }

@@ -13,7 +13,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
-import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
@@ -58,7 +57,6 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         final Note note = mNotes.get(position);
         if (note != null && !TextUtils.isEmpty(note.getContent()) && !TextUtils.isEmpty(note.getTitle())) {
             String firstLetter;
-            ColorGenerator generator;
             TextDrawable drawable;
             int color;
 
@@ -66,16 +64,11 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             holder.contentSummary.setText(note.getContent().substring(0, Math.min(100, note.getContent().length())));
             holder.date.setText(TimeUtils.getReadableModifiedDateWithTime(note.getDateModified()));
 
-            if (note.getTasks() != null && note.getTasks().size() > 0){
-                Glide.with(mContext).load(R.drawable.appointment_reminder).into(holder.firstLetterIcon);
-            }else {
-                firstLetter = note.getTitle().substring(0, 1);
-                generator = ColorGenerator.MATERIAL;
-                color = Color.GRAY;
-                drawable = TextDrawable.builder()
-                        .buildRound(firstLetter, color);
-                holder.firstLetterIcon.setImageDrawable(drawable);
-            }
+            firstLetter = note.getTitle().substring(0, 1);
+            color = Color.GRAY;
+            drawable = TextDrawable.builder()
+                    .buildRound(firstLetter, color);
+            holder.firstLetterIcon.setImageDrawable(drawable);
 
             //Check to see if this Note has Attachments, if it does check if the attachment is image
             //If it is then show the thumbnail

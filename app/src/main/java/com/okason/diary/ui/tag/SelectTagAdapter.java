@@ -15,7 +15,6 @@ import android.widget.LinearLayout;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.models.Note;
 import com.okason.diary.models.Tag;
 
 import java.util.List;
@@ -59,7 +58,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
         if (!TextUtils.isEmpty(selectedTag.getTagName())){
             holder.tagCheckbox.setText(selectedTag.getTagName());
 
-            int count = selectedTag.getNotes().size();
+            int count = selectedTag.getNoteIds().size();
             int color = ContextCompat.getColor(mContext, R.color.primary_text);
             TextDrawable drawable = TextDrawable.builder()
                     .beginConfig()
@@ -69,13 +68,13 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
             holder.tagCountImage.setImageDrawable(drawable);
         }
 
-        if (selectedTag.getNotes().size() > 0){
-            for (Note note : selectedTag.getNotes()){
-                if (note.getId().equals(noteId)){
-                    holder.tagCheckbox.setChecked(true);
-                    break;
-                }
-            }
+        if (selectedTag.getNoteIds().size() > 0){
+//            for (Note note : selectedTag.getNotes()){
+//                if (note.getId().equals(noteId)){
+//                    holder.tagCheckbox.setChecked(true);
+//                    break;
+//                }
+//            }
         }
 
     }

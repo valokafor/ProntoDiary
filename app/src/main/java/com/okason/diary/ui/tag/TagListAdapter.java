@@ -48,7 +48,7 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         String tagName = tag.getTagName();
         holder.tagName.setText(tagName);
 
-        int numNote = tag.getNotes().size();
+        int numNote = tag.getNoteIds().size();
         String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
         holder.noteCountTextView.setText(numNote + " " + notes);
 
