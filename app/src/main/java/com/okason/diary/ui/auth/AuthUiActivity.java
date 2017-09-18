@@ -24,11 +24,6 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.common.Scopes;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.core.events.RealmDatabaseRegistrationCompletedEvent;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,34 +144,34 @@ public class AuthUiActivity extends AppCompatActivity {
     private void handleSignInResponse(int resultCode, final Intent data) {
         IdpResponse response = IdpResponse.fromResultIntent(data);
 
-
+        // Successfully signed in
         if (resultCode == RESULT_OK) {
-
-            if (progressView != null){
-                showProgress(true);
-            } else{
-               progressView = findViewById(R.id.register_progress);
-                showProgress(true);
+            Intent restartIntent = new Intent(mActivity, NoteListActivity.class);
+            restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(restartIntent);
+            finish();
+            return;
+        } else {
+            // Sign in failed
+            if (response == null) {
+                // User pressed back button
+                showSnackbar(R.string.sign_in_cancelled);
+                return;
             }
 
-            showSnackbar(R.string.syncing_data);
-            return;
+            if (response.getErrorCode() == ErrorCodes.NO_NETWORK) {
+                showSnackbar(R.string.no_internet_connection);
+                return;
+            }
+
+            if (response.getErrorCode() == ErrorCodes.UNKNOWN_ERROR) {
+                showSnackbar(R.string.unknown_error);
+                return;
+            }
         }
 
-        if (resultCode == RESULT_CANCELED) {
-            makeToast(getString(R.string.sign_in_cancelled));
-            return;
-        }
-
-        if (response.getErrorCode() == ErrorCodes.NO_NETWORK) {
-            makeToast(getString(R.string.no_internet_connection));
-            return;
-        }
-
-        if (response.getErrorCode() == ErrorCodes.UNKNOWN_ERROR) {
-            showSnackbar(R.string.unknown_error);
-            return;
-        }
+        showSnackbar(R.string.unknown_sign_in_response);
 
     }
 
@@ -213,32 +208,6 @@ public class AuthUiActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRealmDatabaseRegistrationComplete(RealmDatabaseRegistrationCompletedEvent event){
-        if (event.isInProgress()){
-            showProgress(true);
-        }else {
-            showProgress(false);
-            //Restart
-            Intent restartIntent = new Intent(mActivity, NoteListActivity.class);
-            restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(restartIntent);
-        }
-
-    }
 
     public static Intent createIntent(Context context) {
         Intent in = new Intent();

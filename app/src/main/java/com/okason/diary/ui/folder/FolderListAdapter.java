@@ -48,16 +48,26 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
         String folderName = folder.getFolderName();
         holder.folderName.setText(folderName);
 
-        int numNote = folder.getNotesIds().size();
+        int numNote = 0;
+        try {
+            numNote = folder.getNotesIds().size();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
         holder.noteCountTextView.setText(numNote + " " + notes);
 
 
-        int taskCount = folder.getTaskIds().size();
+        int taskCount = 0;
+        try {
+            taskCount = folder.getTaskIds().size();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         String taskLabel = taskCount > 1 ? "Tasks" : "Task";
         holder.taskCountTextView.setText(taskCount + " " + taskLabel);
 
-        holder.taskCountTextView.setText(taskLabel);
+
     }
 
     public void replaceData(List<Folder> categories){

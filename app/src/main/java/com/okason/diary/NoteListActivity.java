@@ -222,7 +222,7 @@ public class NoteListActivity extends AppCompatActivity {
             try {
                 username = mFirebaseUser.getDisplayName();
                 emailAddress = mFirebaseUser.getEmail();
-                photoUrl = mFirebaseUser.getPhotoUrl().getPath();
+                photoUrl = mFirebaseUser.getPhotoUrl().toString() ;
             } catch (Exception e) {
                 e.printStackTrace();
             }

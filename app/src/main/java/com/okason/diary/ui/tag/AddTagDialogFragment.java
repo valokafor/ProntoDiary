@@ -14,6 +14,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
 import com.okason.diary.models.Tag;
 import com.okason.diary.utils.Constants;
@@ -26,6 +32,11 @@ public class AddTagDialogFragment extends DialogFragment {
     private EditText tagEditText;
     private Tag mTag = null;
 
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference database;
+    private DatabaseReference tagCloudReference;
+
 
 
     public AddTagDialogFragment() {
@@ -35,31 +46,35 @@ public class AddTagDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        database = FirebaseDatabase.getInstance().getReference();
+        tagCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
 
     }
 
-    public static AddTagDialogFragment newInstance(String tagId){
+    public static AddTagDialogFragment newInstance(String content){
         AddTagDialogFragment dialogFragment = new AddTagDialogFragment();
-        if (!TextUtils.isEmpty(tagId)) {
+        if (!TextUtils.isEmpty(content)) {
             Bundle args = new Bundle();
-            args.putString(Constants.TAG_ID, tagId);
+            args.putString(Constants.SERIALIZED_TAG, content);
             dialogFragment.setArguments(args);
         }
         return dialogFragment;
     }
 
     /**
-     * The method gets the Folder that was passed in, in the form of serialized String
+     * The method gets the Tag that was passed in, in the form of serialized String
      */
     public void getCurrentTag(){
-        if (getArguments() != null && getArguments().containsKey(Constants.TAG_ID)){
-            String tagId = getArguments().getString(Constants.TAG_ID);
-            if (!TextUtils.isEmpty(tagId)){
-                mTag = new Tag();
-
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(Constants.SERIALIZED_TAG)){
+            String serializedTag = args.getString(Constants.SERIALIZED_TAG, "");
+            if (!TextUtils.isEmpty(serializedTag)){
+                Gson gson = new Gson();
+                mTag = gson.fromJson(serializedTag, new TypeToken<Tag>(){}.getType());
             }
         }
-
     }
 
     @Override
@@ -152,6 +167,18 @@ public class AddTagDialogFragment extends DialogFragment {
 
     private void saveTag() {
         final String tagName = tagEditText.getText().toString().trim();
+        if (!TextUtils.isEmpty(tagName)) {
+            if (mTag == null){
+                mTag = new Tag();
+                mTag.setTagName(tagName);
+                mTag.setId(tagCloudReference.push().getKey());
+            }else {
+                mTag.setTagName(tagName);
+            }
+            tagCloudReference.child(mTag.getId()).setValue(mTag);
+
+        }
+
 
     }
 

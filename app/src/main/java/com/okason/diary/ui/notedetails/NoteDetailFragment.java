@@ -43,7 +43,6 @@ import com.google.gson.Gson;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnEditNoteButtonClickedListener;
@@ -227,7 +226,7 @@ public class NoteDetailFragment extends Fragment{
         int id = item.getItemId();
         switch (id){
             case R.id.action_edit:
-                EventBus.getDefault().post(new EditNoteButtonClickedEvent(mCurrentNote.getId()));
+                editNoteistener.onEditNote(mCurrentNote);
                 break;
             case R.id.action_delete:
                 showDeleteConfirmation(mCurrentNote);
@@ -321,7 +320,6 @@ public class NoteDetailFragment extends Fragment{
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 deleteNote(mCurrentNote);
-                displayPreviousActivity();
             }
         });
         alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
@@ -334,11 +332,6 @@ public class NoteDetailFragment extends Fragment{
 
     }
 
-
-    public void displayPreviousActivity() {
-        getActivity().onBackPressed();
-
-    }
 
 
     public void showMessage(String message) {
@@ -394,8 +387,11 @@ public class NoteDetailFragment extends Fragment{
 
                 }else {
                     Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-                    galleryIntent.putExtra(Constants.NOTE_ID, mCurrentNote.getId());
+                    Gson gson = new Gson();
+                    String attachmentJson = gson.toJson(attachmentList);
+                    galleryIntent.putExtra(Constants.SERIALIZED_ATTACHMENT_ID, attachmentJson);
                     galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
+                    galleryIntent.putExtra(Constants.NOTE_TITLE, mTitle.getText());
                     startActivity(galleryIntent);
                 }
             }
@@ -504,7 +500,7 @@ public class NoteDetailFragment extends Fragment{
         if (!TextUtils.isEmpty(note.getId())) {
             noteCloudReference.child(note.getId()).removeValue();
         }
-        displayPreviousActivity();
+        startActivity(new Intent(getActivity(), NoteListActivity.class));
     }
 
 }

@@ -11,9 +11,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
 import com.okason.diary.models.Attachment;
-import com.okason.diary.models.Note;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
@@ -30,10 +31,8 @@ public class GalleryActivity extends AppCompatActivity {
     ViewPager mViewPager;
 
     private List<Attachment> attachments;
-
-
-    //This Id is used to go back to the Note that has this attachment
-    private Note parentNote;
+    private List<Attachment> imageOnlyAttachments;
+    private String title = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +41,8 @@ public class GalleryActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         //Pass in the Note as a JSON to avoid having to query for the Note from Firebase
-        if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
-            getPassedInNote();
-            initViews();
-            initData();
+        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_ATTACHMENT_ID)) {
+            getPassedInAttachments();
         } else {
             finish();
         }
@@ -54,10 +51,20 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     //Get the Note object that was passed in
-    private void getPassedInNote() {
-        if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)){
-            String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
-
+    private void getPassedInAttachments() {
+        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_ATTACHMENT_ID)){
+            String serialized = getIntent().getStringExtra(Constants.SERIALIZED_ATTACHMENT_ID);
+            Gson gson = new Gson();
+            attachments = gson.fromJson(serialized, new TypeToken<List<Attachment>>(){}.getType());
+            if (attachments != null && attachments.size() > 0){
+                if (getIntent().hasExtra(Constants.NOTE_TITLE)){
+                    title = getIntent().getStringExtra(Constants.NOTE_TITLE);
+                }
+                initViews();
+                initData();
+            } else {
+                finish();
+            }
         }
 
     }
@@ -66,44 +73,39 @@ public class GalleryActivity extends AppCompatActivity {
         String selectAttachmentPath = getIntent().getStringExtra(Constants.FILE_PATH);
         int selectedPosition = 0;
 
-        if (parentNote != null) {
-            //Create an Arraylist to hold Ids of Attachments that are image or Video
-            attachments = new ArrayList<Attachment>();
+        //Get the list of attachments in the Note
+        imageOnlyAttachments = new ArrayList<>();
+        for (Attachment attachment : attachments) {
+            if (Constants.MIME_TYPE_IMAGE.equals(attachment.getMime_type())
+                    || Constants.MIME_TYPE_SKETCH.equals(attachment.getMime_type())
+                    || Constants.MIME_TYPE_VIDEO.equals(attachment.getMime_type())) {
+                imageOnlyAttachments.add(attachment);
 
-            //Get the list of attachments in the Note
-            for (Attachment attachment : parentNote.getAttachments()) {
-                if (Constants.MIME_TYPE_IMAGE.equals(attachment.getMime_type())
-                        || Constants.MIME_TYPE_SKETCH.equals(attachment.getMime_type())
-                        || Constants.MIME_TYPE_VIDEO.equals(attachment.getMime_type())) {
-                    attachments.add(attachment);
-
-                }
             }
-
-
-            //Identify the attachment that was clicked in the list
-            for (int i = 0; i < attachments.size(); i++) {
-                if (attachments.get(i).getLocalFilePath().equals(selectAttachmentPath)) {
-                    selectedPosition = i;
-                    break;
-                }
-            }
-
-
-            //Create a View Pager adapter to show the attachments
-            AttachmentPagerAdapter pagerAdapter = new AttachmentPagerAdapter(getSupportFragmentManager(), attachments);
-            mViewPager.setOffscreenPageLimit(3);
-            mViewPager.setAdapter(pagerAdapter);
-            mViewPager.setCurrentItem(selectedPosition);
-
-            getSupportActionBar().setTitle(parentNote.getTitle());
-            getSupportActionBar().setSubtitle("(" + (selectedPosition + 1) + "/" + attachments.size() + ")");
-
         }
 
 
+        //Identify the attachment that was clicked in the list
+        for (int i = 0; i < imageOnlyAttachments.size(); i++) {
+            if (imageOnlyAttachments.get(i).getLocalFilePath().equals(selectAttachmentPath)) {
+                selectedPosition = i;
+                break;
+            }
+        }
+
+
+        //Create a View Pager adapter to show the attachments
+        AttachmentPagerAdapter pagerAdapter = new AttachmentPagerAdapter(getSupportFragmentManager(), imageOnlyAttachments);
+        mViewPager.setOffscreenPageLimit(3);
+        mViewPager.setAdapter(pagerAdapter);
+        mViewPager.setCurrentItem(selectedPosition);
+
+        getSupportActionBar().setTitle(title);
+        getSupportActionBar().setSubtitle("(" + (selectedPosition + 1) + "/" + imageOnlyAttachments.size() + ")");
+
+
         //If selected attachment is a video it will be immediately played
-        if (attachments.get(selectedPosition).getMime_type().equals(Constants.MIME_TYPE_VIDEO)) {
+        if (imageOnlyAttachments.get(selectedPosition).getMime_type().equals(Constants.MIME_TYPE_VIDEO)) {
             viewMedia();
         }
 
@@ -153,7 +155,7 @@ public class GalleryActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                getSupportActionBar().setSubtitle("(" + (position + 1) + "/" + attachments.size() + ")");
+                getSupportActionBar().setSubtitle("(" + (position + 1) + "/" + imageOnlyAttachments.size() + ")");
             }
 
             @Override
@@ -166,7 +168,7 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     private void viewMedia() {
-        Attachment attachment = attachments.get(mViewPager.getCurrentItem());
+        Attachment attachment = imageOnlyAttachments.get(mViewPager.getCurrentItem());
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(Uri.parse(attachment.getLocalFilePath()), attachment.getMime_type());
         startActivity(intent);

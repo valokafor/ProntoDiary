@@ -174,14 +174,14 @@ public class AddFolderDialogFragment extends DialogFragment {
 
 
     private void saveFolder() {
-        final String categoryName = mFolderEditText.getText().toString().trim();
-        if (!TextUtils.isEmpty(categoryName)) {
+        final String folderName = mFolderEditText.getText().toString().trim();
+        if (!TextUtils.isEmpty(folderName)) {
             if (mFolder == null){
                 mFolder = new Folder();
-                mFolder.setFolderName(categoryName);
+                mFolder.setFolderName(folderName);
                 mFolder.setId(folderCloudReference.push().getKey());
             }else {
-                mFolder.setFolderName(categoryName);
+                mFolder.setFolderName(folderName);
             }
             folderCloudReference.child(mFolder.getId()).setValue(mFolder);
             EventBus.getDefault().post(new FolderAddedEvent(mFolder));

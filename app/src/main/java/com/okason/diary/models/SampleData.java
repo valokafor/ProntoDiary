@@ -12,18 +12,26 @@ import java.util.List;
 public class SampleData {
 
     public static List<String> getSampleCategories() {
-        List<String> categoryNames = new ArrayList<>();
+        List<String> folderNames = new ArrayList<>();
 
-        categoryNames.add("Family");
-        categoryNames.add("Work");
-        categoryNames.add("Productivity");
-        categoryNames.add("Personal");
-        categoryNames.add("Finance");
-        categoryNames.add("Fitness");
-        categoryNames.add("Blog Posts");
-        categoryNames.add("Social Media");
-        return categoryNames;
+        folderNames.add("Family");
+        folderNames.add("Work");
+        folderNames.add("Productivity");
+        folderNames.add("Finance");
+        folderNames.add("Fitness");
+        return folderNames;
+    }
 
+
+    public static List<String> getSampleTags() {
+        List<String> tagNames = new ArrayList<>();
+
+        tagNames.add("Urgent");
+        tagNames.add("Funny");
+        tagNames.add("Important");
+        tagNames.add("Maybe");
+        tagNames.add("Interesting");
+        return tagNames;
     }
 
 

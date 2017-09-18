@@ -42,12 +42,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.models.Attachment;
+import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 import com.okason.diary.models.SampleData;
+import com.okason.diary.models.Tag;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
@@ -72,6 +75,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     private FirebaseUser firebaseUser;
     private DatabaseReference database;
     private DatabaseReference journalCloudReference;
+    private DatabaseReference folderCloudReference;
+    private DatabaseReference tagCloudReference;
 
     private List<Note> unFilteredNotes;
     private List<Note> filteredNotes;
@@ -151,22 +156,11 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         if (firebaseUser != null){
             database = FirebaseDatabase.getInstance().getReference();
             journalCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+            folderCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+            tagCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
 
             sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(getString(R.string.label_title),
                     getString(R.string.label_title));
-
-
-            floatingActionButton = getActivity().findViewById(R.id.fab);
-            floatingActionButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (firebaseUser != null) {
-                        startActivity(new Intent(getActivity(), AddNoteActivity.class));
-                    } else {
-                        makeToast(getString(R.string.login_required));
-                    }
-                }
-            });
 
             sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
             editor = sharedPreferences.edit();
@@ -176,14 +170,29 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
                 editor.putBoolean(Constants.FIRST_RUN, false).commit();
             }
         }
+
+        floatingActionButton = getActivity().findViewById(R.id.fab);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (firebaseUser != null) {
+                    startActivity(new Intent(getActivity(), AddNoteActivity.class));
+                } else {
+                    makeToast(getString(R.string.login_required));
+                }
+            }
+        });
         return mRootView;
     }
 
 
     private void goToImageGallery(Note clickedNote, Attachment clickedAttachment) {
         Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-        galleryIntent.putExtra(Constants.NOTE_ID, clickedNote.getId());
+        Gson gson = new Gson();
+        String attachmentJson = gson.toJson(clickedNote.getAttachments());
+        galleryIntent.putExtra(Constants.SERIALIZED_ATTACHMENT_ID, attachmentJson);
         galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
+        galleryIntent.putExtra(Constants.NOTE_TITLE, clickedNote.getTitle());
         startActivity(galleryIntent);
     }
 
@@ -322,7 +331,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
                 @Override
                 public void onAttachmentClicked(Note clickedNote, int position) {
                     //An attachment in the Note list has been clicked
-                    Attachment clickedAttachment = clickedNote.getAttachments().get(clickedNote.getAttachments().size() - 1);
+                    List<Attachment> attachmentList = clickedNote.getAttachments();
+                    Attachment clickedAttachment = attachmentList.get(attachmentList.size() - 1);
                     if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)) {
                         //Play Audio
                         startPlaying(clickedAttachment, position);
@@ -391,8 +401,11 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
 
     public void showSingleDetailUi(Note selectedNote) {
-        String id = selectedNote.getId();
-        startActivity(NoteDetailActivity.getStartIntent(getContext(), id));
+        Gson gson = new Gson();
+        String serializedNote = gson.toJson(selectedNote);
+        Intent intent = new Intent(getActivity(), NoteDetailActivity.class);
+        intent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
+        startActivity(intent);
     }
 
 
@@ -497,6 +510,26 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             note.setId(key);
             journalCloudReference.child(key).setValue(note);
         }
+
+        List<String> sampleFolderNames = SampleData.getSampleCategories();
+        for (String name : sampleFolderNames) {
+            String key = folderCloudReference.push().getKey();
+            Folder folder = new Folder();
+            folder.setId(key);
+            folder.setFolderName(name);
+            folderCloudReference.child(key).setValue(folder);
+        }
+
+        List<String> sampleTagNames = SampleData.getSampleTags();
+        for (String name : sampleTagNames) {
+            String key = tagCloudReference.push().getKey();
+            Tag tag = new Tag();
+            tag.setId(key);
+            tag.setTagName(name);
+            tagCloudReference.child(key).setValue(tag);
+        }
+
+
 
     }
 

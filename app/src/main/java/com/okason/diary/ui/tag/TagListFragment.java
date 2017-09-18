@@ -3,10 +3,13 @@ package com.okason.diary.ui.tag;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -19,8 +22,12 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
@@ -34,6 +41,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -89,8 +97,14 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        database = FirebaseDatabase.getInstance().getReference();
-        tagCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
+
+        unFilteredTag = new ArrayList<>();
+        filteredTag = new ArrayList<>();
+
+        if (firebaseUser != null) {
+            database = FirebaseDatabase.getInstance().getReference();
+            tagCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
+        }
 
         addTagbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,6 +132,24 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     }
 
     private void populateTagList() {
+        tagCloudReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    unFilteredTag.clear();
+                    for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
+                        Tag tag = folderSnapshot.getValue(Tag.class);
+                        unFilteredTag.add(tag);
+                    }
+                    showTags(unFilteredTag);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                makeToast("Error fetching data " + databaseError.getMessage());
+            }
+        });
 
     }
 
@@ -218,7 +250,9 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     }
 
     private void showEditTagForm(Tag clickedTag) {
-        addTagDialog = AddTagDialogFragment.newInstance(clickedTag.getId());
+        Gson gson = new Gson();
+        String serializedTag = gson.toJson(clickedTag);
+        addTagDialog = AddTagDialogFragment.newInstance(serializedTag);
         addTagDialog.show(getActivity().getFragmentManager(), "Dialog");
     }
 
@@ -253,5 +287,14 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
             }
         });
         alertDialog.show();
+    }
+
+    private void makeToast(String message) {
+        Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
+        View snackBarView = snackbar.getView();
+        snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
+        TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+        tv.setTextColor(Color.WHITE);
+        snackbar.show();
     }
 }

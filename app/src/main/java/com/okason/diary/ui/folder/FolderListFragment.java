@@ -29,6 +29,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
@@ -40,6 +41,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -96,10 +98,15 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        unFilteredFolders = new ArrayList<>();
+        filteredFolders = new ArrayList<>();
+
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        database = FirebaseDatabase.getInstance().getReference();
-        folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+        if (firebaseUser != null) {
+            database = FirebaseDatabase.getInstance().getReference();
+            folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+        }
 
 
         floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
@@ -222,6 +229,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     public void showFolders(List<Folder> folders) {
         if (folders.size() > 0){
             hideEmptyText();
+            mAdapter = null;
             mAdapter = new FolderListAdapter(getContext(),folders, this);
             mRecyclerView.setAdapter(mAdapter);
         }else {
@@ -253,7 +261,9 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
 
     public void showEditCategoryForm(Folder folder) {
-        addCategoryDialog = AddFolderDialogFragment.newInstance(folder.getId());
+        Gson gson = new Gson();
+        String serializedFolder = gson.toJson(folder);
+        addCategoryDialog = AddFolderDialogFragment.newInstance(serializedFolder);
         addCategoryDialog.show(getActivity().getFragmentManager(), "Dialog");
     }
 
@@ -270,7 +280,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     public void showConfirmDeleteCategoryPrompt(final Folder folder) {
         String title = getString(R.string.are_you_sure);
-        String message =  getString(R.string.action_delete) + " " + folder.getFolderName();
+        String message =  getString(R.string.action_delete) + " " + folder.getFolderName() + "?";
 
 
         android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext());
@@ -285,10 +295,14 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //Delete Folder
-                int noteCount = folder.getNotesIds().size();
-                int taskCount = folder.getTaskIds().size();
-                if (noteCount > 0 || taskCount > 0){
-                    //Move Note and Folder to default Category
+                try {
+                    int noteCount = folder.getNotesIds().size();
+                    int taskCount = folder.getTaskIds().size();
+                    if (noteCount > 0 || taskCount > 0){
+                        //Move Note and Folder to default Category
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 folderCloudReference.child(folder.getId()).removeValue();
             }

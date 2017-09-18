@@ -1,6 +1,5 @@
 package com.okason.diary.ui.notedetails;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -67,17 +66,6 @@ public class NoteDetailActivity extends AppCompatActivity {
     }
 
 
-    /**
-     * Creates an Intent that is used to start this Activity
-     * @param context - this context
-     * @param serializedNote - Note in serialized format
-     * @return
-     */
-    public static Intent getStartIntent(final Context context, final String serializedNote) {
-        Intent intent = new Intent(context, NoteDetailActivity.class);
-        intent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
-        return intent;
-    }
 
     public void openFragment(Fragment fragment, String screenTitle){
         getSupportFragmentManager()
