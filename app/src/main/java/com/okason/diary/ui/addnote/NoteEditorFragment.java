@@ -123,6 +123,7 @@ public class NoteEditorFragment extends Fragment{
     private DatabaseReference database;
     private DatabaseReference noteCloudReference;
     private DatabaseReference folderCloudReference;
+    private DatabaseReference tagCloudReference;
     private StorageReference firebaseStorageReference;
     private StorageReference attachmentReference;
 
@@ -243,6 +244,7 @@ public class NoteEditorFragment extends Fragment{
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         folderList = new ArrayList<>();
+        tagList = new ArrayList<>();
         attachmentList = new ArrayList<>();
 
         //Gets the root of out Datbase
@@ -250,6 +252,7 @@ public class NoteEditorFragment extends Fragment{
             database = FirebaseDatabase.getInstance().getReference();
             noteCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
             folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+            tagCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
 
             firebaseStorageReference = FirebaseStorage.getInstance().getReference();
             attachmentReference = firebaseStorageReference.child("attachments");
@@ -310,6 +313,24 @@ public class NoteEditorFragment extends Fragment{
                 makeToast("Error fetching folder " + databaseError.getMessage());
             }
         };
+        tagEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    tagList.clear();
+                    for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
+                        Tag tag = folderSnapshot.getValue(Tag.class);
+                        tagList.add(tag);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d(NoteListActivity.TAG,  "Error fetching folder " + databaseError.getMessage());
+            }
+        };
         return mRootView;
     }
 
@@ -319,6 +340,7 @@ public class NoteEditorFragment extends Fragment{
         super.onResume();
         EventBus.getDefault().register(this);
         folderCloudReference.addValueEventListener(folderEventListener);
+        tagCloudReference.addValueEventListener(tagEventListener);
         if (isInEditMode){
             populateNote(currentNote);
         }
@@ -329,6 +351,7 @@ public class NoteEditorFragment extends Fragment{
         super.onPause();
         EventBus.getDefault().unregister(this);
         folderCloudReference.removeEventListener(folderEventListener);
+        tagCloudReference.removeEventListener(tagEventListener);
         if (mRecorder != null) {
             mRecorder.release();
             mRecorder = null;
@@ -395,7 +418,8 @@ public class NoteEditorFragment extends Fragment{
         selectTagDialogFragment.setListener(new OnTagSelectedListener() {
             @Override
             public void onTagChecked(Tag selectedTag) {
-                tagList.add(selectedTag);
+                currentNote.getTags().add(selectedTag);
+
             }
 
             @Override
@@ -1479,9 +1503,6 @@ public class NoteEditorFragment extends Fragment{
             currentNote.setFolderId(getFolderId(Constants.DEFAULT_CATEGORY));
         }
 
-        if (tagList != null && tagList.size() > 0){
-            currentNote.setTags(tagList);
-        }
 
         currentNote.setContent(mContent.getText().toString());
         currentNote.setTitle(mTitle.getText().toString());
@@ -1491,6 +1512,12 @@ public class NoteEditorFragment extends Fragment{
             currentNote.setAttachments(attachmentList);
         }
         noteCloudReference.child(currentNote.getId()).setValue(currentNote);
+        if (currentNote.getTags().size() > 0){
+            for (Tag tag: currentNote.getTags()){
+                tag.getNoteIds().add(currentNote.getId());
+                tagCloudReference.child(tag.getId()).setValue(tag);
+            }
+        }
         startActivity(new Intent(getActivity(), NoteListActivity.class));
     }
 

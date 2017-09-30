@@ -193,6 +193,19 @@
             android:name=".core.services.HandleNoteDeleteIntentService"
             android:exported="false">
         </service>
+        <service
+            android:name=".core.services.MergeJournalIntentService"
+            android:exported="false">
+        </service>
+        <service
+            android:name=".core.services.MergeTagIntentService"
+            android:exported="false">
+        </service>
+
+        <service
+            android:name=".core.services.MergeFolderIntentService"
+            android:exported="false">
+        </service>
     </application>
 
 </manifest>

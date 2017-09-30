@@ -196,7 +196,7 @@ public class NoteListActivity extends AppCompatActivity {
 
     private void setupNavigationDrawer(Bundle savedInstanceState) {
 
-        if (firebaseUser != null) {
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             try {
                 username = firebaseUser.getDisplayName();
                 emailAddress = firebaseUser.getEmail();
@@ -205,23 +205,30 @@ public class NoteListActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
+            username = TextUtils.isEmpty(username) ? ANONYMOUS : username;
+            emailAddress = TextUtils.isEmpty(emailAddress) ? ANONYMOUS_EMAIL : emailAddress;
+            photoUrl = TextUtils.isEmpty(photoUrl) ? ANONYMOUS_PHOTO_URL : photoUrl;
+
+            IProfile profile = new ProfileDrawerItem()
+                    .withName(username)
+                    .withEmail(emailAddress)
+                    .withIcon(photoUrl)
+                    .withIdentifier(102);
+
+            header = new AccountHeaderBuilder()
+                    .withActivity(this)
+                    .withHeaderBackground(R.drawable.nav_bar_header_dark)
+                    .addProfiles(profile)
+                    .build();
+
+        }else {
+            header = new AccountHeaderBuilder()
+                    .withActivity(this)
+                    .withHeaderBackground(R.drawable.nav_bar_header_dark)
+                    .build();
         }
 
-        username = TextUtils.isEmpty(username) ? ANONYMOUS : username;
-        emailAddress = TextUtils.isEmpty(emailAddress) ? ANONYMOUS_EMAIL : emailAddress;
-        photoUrl = TextUtils.isEmpty(photoUrl) ? ANONYMOUS_PHOTO_URL : photoUrl;
 
-        IProfile profile = new ProfileDrawerItem()
-                .withName(username)
-                .withEmail(emailAddress)
-                .withIcon(photoUrl)
-                .withIdentifier(102);
-
-        header = new AccountHeaderBuilder()
-                .withActivity(this)
-                .withHeaderBackground(R.drawable.nav_bar_header_dark)
-                .addProfiles(profile)
-                .build();
         drawer = new DrawerBuilder()
                 .withAccountHeader(header)
                 .withActivity(this)
@@ -425,7 +432,11 @@ public class NoteListActivity extends AppCompatActivity {
                 startActivity(new Intent(mActivity, TodoListActivity.class));
                 break;
             case Constants.SHARE_APP:
-                generateInviteLink();
+                if (settingsHelper.isRegisteredUser() && firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+                    generateInviteLink();
+                } else {
+                    startActivity(new Intent(mActivity, AuthUiActivity.class));
+                }
                 break;
         }
 
@@ -433,7 +444,7 @@ public class NoteListActivity extends AppCompatActivity {
 
     private void logout() {
         AuthUI.getInstance()
-                .signOut(this)
+                .signOut(NoteListActivity.this)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {

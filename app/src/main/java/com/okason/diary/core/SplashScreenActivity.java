@@ -19,6 +19,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
@@ -128,6 +129,12 @@ public class SplashScreenActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 // Sign in success, update UI with the signed-in user's information
                                 Log.d(TAG, "signInAnonymously:success");
+                                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                                if (user != null){
+                                    SettingsHelper.getHelper(SplashScreenActivity.this).setRegisteredUser(false);
+                                    SettingsHelper.getHelper(SplashScreenActivity.this).saveAnonymousUserId(user.getUid());
+                                }
+
                                 Intent intent = new Intent(SplashScreenActivity.this, NoteListActivity.class);
                                 startActivity(intent);
                                 finish();

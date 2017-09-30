@@ -110,6 +110,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     AdView mAdView;
 
     private FloatingActionButton floatingActionButton;
+    private ValueEventListener valueEventListener;
 
 
 
