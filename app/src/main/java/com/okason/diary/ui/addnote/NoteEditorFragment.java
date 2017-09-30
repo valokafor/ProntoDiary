@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
@@ -44,6 +45,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -53,6 +57,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.okason.diary.BuildConfig;
@@ -85,6 +90,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -240,12 +246,14 @@ public class NoteEditorFragment extends Fragment{
         attachmentList = new ArrayList<>();
 
         //Gets the root of out Datbase
-        database = FirebaseDatabase.getInstance().getReference();
-        noteCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
-        folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+        if (firebaseUser != null) {
+            database = FirebaseDatabase.getInstance().getReference();
+            noteCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+            folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
 
-        firebaseStorageReference = FirebaseStorage.getInstance().getReference();
-        attachmentReference = firebaseStorageReference.child("attachments");
+            firebaseStorageReference = FirebaseStorage.getInstance().getReference();
+            attachmentReference = firebaseStorageReference.child("attachments");
+        }
 
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
@@ -428,14 +436,23 @@ public class NoteEditorFragment extends Fragment{
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAttachmentAddedToNote(AttachingFileCompleteEvent event) {
         hideProgressDialog();
-        attachmentList.add(event.getAttachment());
-        initViewAttachments(attachmentList);
+        updateAttachmentList(event.getAttachment());
         dataChanged = true;
 //
 //        Intent uploadIntent = new Intent(getActivity(),
 //                UploadFileToFirebaseIntentService.class);
 //        uploadIntent.putExtra(Constants.ATTACHMENT_ID, event.getAttachmentId());
 //        getActivity().startService(uploadIntent);
+    }
+
+    private void updateAttachmentList(Attachment attachment) {
+        attachmentList.add(attachment);
+        initViewAttachments(attachmentList);
+        try {
+            uploadFileToCloud(attachment);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -556,7 +573,19 @@ public class NoteEditorFragment extends Fragment{
         mContent.requestFocus();
         try {
             attachmentList = note.getAttachments();
-            initViewAttachments(attachmentList);
+            if (attachmentList != null && attachmentList.size() == 1){
+                mImageAttachment.setVisibility(View.VISIBLE);
+                attachmentContainer.setVisibility(View.GONE);
+                Glide.with(getContext())
+                        .load(attachmentList.get(0).getFilePath())
+                        .centerCrop()
+                        .crossFade()
+                        .placeholder(R.drawable.image_broken)
+                        .into(mImageAttachment);
+            }else {
+                initViewAttachments(attachmentList);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -624,6 +653,7 @@ public class NoteEditorFragment extends Fragment{
      * @param attachmentList - the list of attachments for this Note
      */
     private void initViewAttachments(final List<Attachment> attachmentList) {
+        mImageAttachment.setVisibility(View.GONE);
 
         attachmentContainer.setVisibility(View.VISIBLE);
         attachmentRecyclerView = (RecyclerView) mRootView.findViewById(R.id.attachment_list_recyclerview);
@@ -937,6 +967,7 @@ public class NoteEditorFragment extends Fragment{
 
     }
 
+
     private void startRecording() {
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -1109,14 +1140,12 @@ public class NoteEditorFragment extends Fragment{
                 case IMAGE_CAPTURE_REQUEST:
                     attachment = new Attachment(attachmentUri, mLocalImagePath, Constants.MIME_TYPE_IMAGE);
                     addPhotoToGallery(mLocalImagePath);
-                    attachmentList.add(attachment);
-                    initViewAttachments(attachmentList);
+                    updateAttachmentList(attachment);
                     dataChanged = true;
                     break;
                 case VIDEO_CAPTURE_REQUEST:
                     attachment = new Attachment(attachmentUri, mLocalVideoPath, Constants.MIME_TYPE_VIDEO);
-                    attachmentList.add(attachment);
-                    initViewAttachments(attachmentList);
+                    updateAttachmentList(attachment);
                     dataChanged = true;
                     break;
                 case FILE_PICK_REQUEST:
@@ -1130,8 +1159,7 @@ public class NoteEditorFragment extends Fragment{
                             sketchFile);
                     if (!TextUtils.isEmpty(sketchFilePath)) {
                         attachment = new Attachment(fileUri, sketchFilePath, Constants.MIME_TYPE_SKETCH);
-                        attachmentList.add(attachment);
-                        initViewAttachments(attachmentList);
+                        updateAttachmentList(attachment);
                         dataChanged = true;
                     } else {
                         makeToast(getString(R.string.error_sketch_is_empty));
@@ -1146,40 +1174,57 @@ public class NoteEditorFragment extends Fragment{
         }
     }
 
-    private void uploadFileToCloud(final Attachment attachment) {
-//        String filePath = attachment.getLocalFilePath();
-//        String fileType = attachment.getMime_type();
-//        final long[] size = new long[1];
-//
+    private void uploadFileToCloud(final Attachment attachment) throws IOException {
+        String filePath = attachment.getLocalFilePath();
+        String fileType = attachment.getMime_type();
+        final long[] size = new long[1];
+
 //        final StorageMetadata metadata = new StorageMetadata.Builder()
 //                .setContentType(fileType)
 //                .build();
-//
-//        Uri fileToUpload = Uri.fromFile(new File(filePath));
-//
-//        final String fileName = fileToUpload.getLastPathSegment();
-//
-//        StorageReference imageRef = mAttachmentStorageReference.child(fileName);
-//
-//        final UploadTask uploadTask = imageRef.putFile(fileToUpload, metadata);
-//        uploadTask.addOnFailureListener(new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//                makeToast("Unable to upload file to cloud" + e.getLocalizedMessage());
-//                mPresenter.onAttachmentAdded(attachment);
-//            }
-//        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-//            @SuppressWarnings("VisibleForTests")
-//            @Override
-//            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-//                long size = taskSnapshot.getMetadata().getSizeBytes();
-//                String downloadUrl = taskSnapshot.getDownloadUrl().toString();
-//                attachment.setCloudFilePath(downloadUrl);
-//                mPresenter.onAttachmentAdded(attachment);
-//
-//
-//            }
-//        });
+
+        Uri fileToUpload = Uri.fromFile(new File(filePath));
+
+        final String fileName = fileToUpload.getLastPathSegment();
+
+        StorageReference imageRef = firebaseStorageReference.child(fileName);
+        final UploadTask uploadTask;
+
+
+        if (attachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)) {
+            //Compress Image
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), fileToUpload);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 25, byteArrayOutputStream);
+            byte[] data = byteArrayOutputStream.toByteArray();
+            uploadTask = firebaseStorageReference.child(fileToUpload.getLastPathSegment()).putBytes(data);
+        } else {
+            //Upload File
+            uploadTask = firebaseStorageReference.child(fileToUpload.getLastPathSegment()).putFile(fileToUpload);
+
+        }
+
+
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                makeToast("Unable to upload file to cloud" + e.getLocalizedMessage());
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @SuppressWarnings("VisibleForTests")
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                long size = taskSnapshot.getMetadata().getSizeBytes();
+                String downloadUrl = taskSnapshot.getDownloadUrl().toString();
+                for (int i=0; i<attachmentList.size(); i++){
+                    Attachment item = attachmentList.get(i);
+                    if (item.getLocalFilePath().equals(attachment.getLocalFilePath())){
+                        attachmentList.get(i).setCloudFilePath(downloadUrl);
+                        break;
+                    }
+                }
+            }
+        });
 
     }
 

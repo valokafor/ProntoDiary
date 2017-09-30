@@ -29,9 +29,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".NoteListActivity"
-            android:clearTaskOnLaunch="true"
             android:label="@string/app_name"
-            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -102,11 +100,6 @@
         <activity android:name=".ui.sketch.SketchActivity">
         </activity>
         <activity
-            android:name=".ui.auth.RegisterActivity"
-            android:windowSoftInputMode="stateHidden">
-        </activity>
-        <activity android:name=".ui.auth.SignInActivity"/>
-        <activity
             android:name=".core.SplashScreenActivity"
             android:theme="@style/SplashTheme">
             <intent-filter>
@@ -159,11 +152,6 @@
         </activity>
 
         <service
-            android:name=".core.services.UploadFileToFirebaseIntentService"
-            android:enabled="true"
-            android:exported="false">
-        </service>
-        <service
             android:name=".core.services.DownloadFileFromFireaseIntentService"
             android:exported="false">
         </service>
@@ -202,7 +190,7 @@
             android:exported="false">
         </service>
         <service
-            android:name=".core.services.CopyLocalFileToCloudIntentService"
+            android:name=".core.services.HandleNoteDeleteIntentService"
             android:exported="false">
         </service>
     </application>

@@ -24,7 +24,7 @@ public class ProntoDiaryApplication extends Application {
 
     private static Context mContext;
     private static ProntoDiaryUser prontoDiaryUser;
-    private static boolean dataAccessAllowed;
+
 
 
 
@@ -42,7 +42,7 @@ public class ProntoDiaryApplication extends Application {
         initDrawer();
         mContext = getApplicationContext();
         LeakCanary.install(this);
-        dataAccessAllowed = true;
+
 
     }
 
@@ -92,11 +92,5 @@ public class ProntoDiaryApplication extends Application {
         ProntoDiaryApplication.prontoDiaryUser = prontoDiaryUser;
     }
 
-    public static boolean isDataAccessAllowed() {
-        return dataAccessAllowed;
-    }
 
-    public static void setDataAccessAllowed(boolean dataAccessAllowed) {
-        ProntoDiaryApplication.dataAccessAllowed = dataAccessAllowed;
-    }
 }

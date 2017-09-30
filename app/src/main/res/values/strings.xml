@@ -36,7 +36,7 @@
     <string name="sync_reason_4">Peace of mind, if something happens to your device, be rest assured that your data will be waiting for you on your next device.</string>
     <string name="sync_reason_5">Your app will continue to work 100% offline. Only syncs when you have internet access.</string>
 
-    <string name="sync_reason">  Welcome to Pronto Diary \n \nLogin or create an account to save your Diaries, Journal and Todo List. You can access them from any Android device. It\'s free. Always!.</string>
+    <string name="sync_reason">  Welcome to Pronto Diary! \n Enable Cloud Backup \n\nLogin or create an account and enable secure, cloud backup of your Diaries, Journal and Todo List. You can access them from any Android device. It\'s free. Always!.</string>
 
 
     <!--Account Register and Login Related-->
@@ -57,22 +57,6 @@
     <string name="anonymous_account_failed_error">Anonymous Login Failed, check internet</string>
     <string name="title_activity_auth_ui">Register or Sign In</string>
 
-
-    <!--<string name="prompt_username">Email Address</string>-->
-    <!--<string name="prompt_password">Password</string>-->
-    <!--<string name="prompt_password_conformation">Confirm Password</string>-->
-
-
-    <!--<string name="action_register">Register</string>-->
-    <!--<string name="error_invalid_email">Username required</string>-->
-    <!--<string name="error_invalid_password">Password required</string>-->
-    <!--<string name="error_incorrect_password">This password is incorrect</string>-->
-    <!--<string name="error_field_required">This field is required</string>-->
-    <!--<string name="permission_rationale">"Contacts permissions are needed for providing email completions."</string>-->
-
-    <!--<string name="title_deleted">Deleted</string>-->
-    <!--<string name="release_to_create_item">Release to Create Item</string>-->
-    <!--<string name="pull_to_create_item">Pull to Create Item</string>-->
 
     <string name="unknown_response">Unexpected onActivityResult response code</string>
     <string name="unknown_sign_in_response">Unknown response from AuthUI sign-in</string>
@@ -96,7 +80,7 @@
     <string name="action_search">Search</string>
     <string name="action_edit">Edit</string>
     <string name="action_play">Play</string>
-    <string name="note_detail">Note Detail</string>
+    <string name="note_detail">Journal Detail</string>
     <string name="action_send">Send</string>
     <string name="action_nfc">NFC Beam</string>
     <string name="action_record">Record</string>

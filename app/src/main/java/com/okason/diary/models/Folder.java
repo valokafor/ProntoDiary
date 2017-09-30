@@ -1,5 +1,6 @@
 package com.okason.diary.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,6 +15,11 @@ public class Folder{
     private long dateModified;
     private List<String> notesIds;
     private List<String> taskIds;
+
+    public Folder(){
+        notesIds = new ArrayList<>();
+        taskIds = new ArrayList<>();
+    }
 
     public String getId() {
         return id;

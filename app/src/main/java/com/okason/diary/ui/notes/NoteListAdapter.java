@@ -2,7 +2,6 @@ package com.okason.diary.ui.notes;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -96,9 +95,9 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 } else if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
                     //Attachment is file, show a PDF icon, if the attachment is a PDF else
                     //Show a document icon
-                    String name = FileHelper.getNameFromUri(mContext, Uri.parse(lastAttachment.getUri()));
-                    String extension = FileHelper.getFileExtension(name).toLowerCase();
-                    if (extension.equals(".pdf")){
+
+                    String extension = FileHelper.getFileExtension(lastAttachment.getFilePath()).toLowerCase();
+                    if (extension.contains("pdf")){
                         Glide.with(mContext)
                                 .load(R.drawable.pdf_icon_2)
                                 .placeholder(R.drawable.default_image)

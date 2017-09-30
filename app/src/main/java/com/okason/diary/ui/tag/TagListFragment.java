@@ -28,13 +28,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
+import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.core.events.DisplayFragmentEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.models.Tag;
-import com.okason.diary.ui.auth.AuthUiActivity;
-import com.okason.diary.ui.notes.NoteListFragment;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
@@ -73,6 +71,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     private FirebaseUser firebaseUser;
     private DatabaseReference database;
     private DatabaseReference tagCloudReference;
+    private ValueEventListener valueEventListener;
 
 
     public TagListFragment() {
@@ -109,30 +108,11 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         addTagbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (firebaseUser != null) {
-                    showAddNewTagDialog();
-                } else {
-                    startActivity(new Intent(getActivity(), AuthUiActivity.class));
-                }
-
+                showAddNewTagDialog();
             }
         });
-        return mRootView;
-    }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (firebaseUser != null) {
-            populateTagList();
-        } else {
-            showEmptyText();
-        }
-
-    }
-
-    private void populateTagList() {
-        tagCloudReference.addValueEventListener(new ValueEventListener() {
+        valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -142,6 +122,8 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
                         unFilteredTag.add(tag);
                     }
                     showTags(unFilteredTag);
+                } else {
+                    showEmptyText();
                 }
             }
 
@@ -149,8 +131,20 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
             public void onCancelled(DatabaseError databaseError) {
                 makeToast("Error fetching data " + databaseError.getMessage());
             }
-        });
+        };
+        return mRootView;
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        tagCloudReference.addValueEventListener(valueEventListener);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        tagCloudReference.removeEventListener(valueEventListener);
     }
 
     @Override
@@ -236,11 +230,9 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
     @Override
     public void onTagClicked(Tag clickedTag) {
-
-        NoteListFragment fragment = NoteListFragment.newInstance(false, clickedTag.getTagName());
-        String title = getString(R.string.action_tag) + ": " + clickedTag.getTagName();
-        EventBus.getDefault().post(new DisplayFragmentEvent(fragment, title));
-
+        Intent tagIntent = new Intent(getActivity(), NoteListActivity.class);
+        tagIntent.putExtra(Constants.TAG_FILTER, clickedTag.getTagName());
+        startActivity(tagIntent);
     }
 
     @Override
@@ -290,11 +282,15 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     }
 
     private void makeToast(String message) {
-        Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
-        View snackBarView = snackbar.getView();
-        snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
-        TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
-        tv.setTextColor(Color.WHITE);
-        snackbar.show();
+        try {
+            Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
+            View snackBarView = snackbar.getView();
+            snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
+            TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+            tv.setTextColor(Color.WHITE);
+            snackbar.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -2,7 +2,6 @@ package com.okason.diary.ui.folder;
 
 
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -34,7 +33,6 @@ import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.models.Folder;
-import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
@@ -74,6 +72,8 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     private FloatingActionButton floatingActionButton;
 
+    private ValueEventListener valueEventListener;
+
 
 
 
@@ -106,6 +106,28 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         if (firebaseUser != null) {
             database = FirebaseDatabase.getInstance().getReference();
             folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+            valueEventListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        unFilteredFolders.clear();
+                        for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
+                            Folder folder = folderSnapshot.getValue(Folder.class);
+                            unFilteredFolders.add(folder);
+                        }
+                        showFolders(unFilteredFolders);
+                    } else {
+                        showEmptyText();
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    makeToast("Error fetching data " + databaseError.getMessage());
+
+                }
+            };
         }
 
 
@@ -113,47 +135,26 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (firebaseUser != null) {
-                    showAddNewFolderDialog();
-                } else {
-                    startActivity(new Intent(getActivity(), AuthUiActivity.class));
-                }
+                showAddNewFolderDialog();
             }
         });
+
+
         return  mRootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (firebaseUser != null) {
-            populateFolderList();
-        } else {
-            showEmptyText();
-        }
-
+        folderCloudReference.addValueEventListener(valueEventListener);
     }
 
-    private void populateFolderList() {
-        folderCloudReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    unFilteredFolders.clear();
-                    for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
-                        Folder folder = folderSnapshot.getValue(Folder.class);
-                        unFilteredFolders.add(folder);
-                    }
-                    showFolders(unFilteredFolders);
-                }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                makeToast("Error fetching data " + databaseError.getMessage());
-            }
-        });
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        folderCloudReference.removeEventListener(valueEventListener);
     }
 
     @Override

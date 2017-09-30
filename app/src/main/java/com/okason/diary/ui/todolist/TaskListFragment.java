@@ -33,9 +33,9 @@ import com.google.firebase.database.ValueEventListener;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.TaskItemListener;
 import com.okason.diary.models.Task;
-import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.utils.Constants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -89,23 +89,23 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        allTasks = new ArrayList<>();
+        filteredTasks = new ArrayList<>();
+
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         if (firebaseUser != null) {
             database = FirebaseDatabase.getInstance().getReference();
             taskCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TASK_CLOUD_END_POINT);
+            populateTaskList();
         }
 
         floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (firebaseUser != null) {
-                    startActivity(new Intent(getActivity(), AddTaskActivity.class));
-                } else {
-                    startActivity(new Intent(getActivity(), AuthUiActivity.class));
-                }
+                startActivity(new Intent(getActivity(), AddTaskActivity.class));
             }
         });
         return mRootView;
@@ -114,12 +114,6 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public void onResume() {
         super.onResume();
-        if (firebaseUser != null) {
-            populateTaskList();
-
-        } else {
-            showEmptyText(true);
-        }
     }
 
     private void populateTaskList() {
@@ -133,6 +127,8 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
                         allTasks.add(task);
                     }
                     showTodoLists(allTasks);
+                }else {
+                    showEmptyText(true);
                 }
             }
 
@@ -148,11 +144,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public void onPause() {
         super.onPause();
-
-
     }
-
-
 
 
     @Override
@@ -310,12 +302,16 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
 
     private void makeToast(String message) {
-        Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
-        View snackBarView = snackbar.getView();
-        snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
-        TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
-        tv.setTextColor(Color.WHITE);
-        snackbar.show();
+        try {
+            Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
+            View snackBarView = snackbar.getView();
+            snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
+            TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+            tv.setTextColor(Color.WHITE);
+            snackbar.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

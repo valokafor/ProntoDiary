@@ -1,18 +1,11 @@
 package com.okason.diary;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -27,21 +20,19 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.appinvite.AppInviteInvitation;
-import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.dynamiclinks.DynamicLink;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 import com.google.firebase.dynamiclinks.ShortDynamicLink;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
@@ -53,9 +44,6 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.mikepenz.materialdrawer.model.interfaces.Nameable;
 import com.mikepenz.materialdrawer.util.KeyboardUtil;
-import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.core.events.DisplayFragmentEvent;
-import com.okason.diary.core.events.ShowFragmentEvent;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.folder.FolderListActivity;
 import com.okason.diary.ui.notes.NoteListFragment;
@@ -64,10 +52,6 @@ import com.okason.diary.ui.tag.TagListActivity;
 import com.okason.diary.ui.todolist.TodoListActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -78,10 +62,10 @@ public class NoteListActivity extends AppCompatActivity {
     private boolean unregisteredUser = false;
     private Activity mActivity;
     private Toolbar toolbar;
-    private FirebaseAuth mAuth;
-    private FirebaseUser mFirebaseUser;
-    private DatabaseReference mDatabase;
-    private DatabaseReference mProntoDiaryUserRef;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private FirebaseAnalytics firebaseAnalytics;
+
 
 
     private static final String EMAIL = "tempemail@prontodiary.com";
@@ -89,7 +73,7 @@ public class NoteListActivity extends AppCompatActivity {
     private static final int REQUEST_INVITE = 0;
 
 
-    private ConnectivityManager connectivityManager;
+
 
 
     public static final String ACTION_IGNORE_CURRENT_USER = "action.ignoreCurrentUser";
@@ -136,7 +120,7 @@ public class NoteListActivity extends AppCompatActivity {
     TextView todoListTextView;
 
     @BindView(R.id.folder_text_view)
-    TextView  folderTextView;
+    TextView folderTextView;
 
     @BindView(R.id.settings_text_view)
     TextView settingsTextView;
@@ -161,12 +145,8 @@ public class NoteListActivity extends AppCompatActivity {
     LinearLayout folderLayout;
 
 
-    private MaterialDialog progressDialog;
     private Bundle savedInstanceBundle;
     private static final String LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/prontodiary-bee92.appspot.com/o/pronto_diary_high_res.png";
-
-
-
 
 
     @Override
@@ -176,36 +156,35 @@ public class NoteListActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
         mActivity = this;
-        mAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mAuth.getCurrentUser();
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
         settingsHelper = SettingsHelper.getHelper(mActivity);
-        mAuth = FirebaseAuth.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseAnalytics = FirebaseAnalytics.getInstance(mActivity);
 
 
-        savedInstanceBundle = savedInstanceState;
-
+        setupNavigationDrawer(savedInstanceBundle);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        EventBus.getDefault().register(this);
+      //  EventBus.getDefault().register(this);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        EventBus.getDefault().unregister(this);
+      //  EventBus.getDefault().unregister(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        checkNetworkConnected();
-        setupNavigationDrawer(savedInstanceBundle);
-        checkForDynamicLinkInvite(getIntent());
+       checkLoginStatus();
+      //  checkForDynamicLinkInvite(getIntent());
 
     }
 
@@ -215,14 +194,13 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
 
-
     private void setupNavigationDrawer(Bundle savedInstanceState) {
 
-        if (mFirebaseUser != null) {
+        if (firebaseUser != null) {
             try {
-                username = mFirebaseUser.getDisplayName();
-                emailAddress = mFirebaseUser.getEmail();
-                photoUrl = mFirebaseUser.getPhotoUrl().toString() ;
+                username = firebaseUser.getDisplayName();
+                emailAddress = firebaseUser.getEmail();
+                photoUrl = firebaseUser.getPhotoUrl().toString();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -233,7 +211,7 @@ public class NoteListActivity extends AppCompatActivity {
         emailAddress = TextUtils.isEmpty(emailAddress) ? ANONYMOUS_EMAIL : emailAddress;
         photoUrl = TextUtils.isEmpty(photoUrl) ? ANONYMOUS_PHOTO_URL : photoUrl;
 
-        IProfile  profile = new ProfileDrawerItem()
+        IProfile profile = new ProfileDrawerItem()
                 .withName(username)
                 .withEmail(emailAddress)
                 .withIcon(photoUrl)
@@ -260,12 +238,12 @@ public class NoteListActivity extends AppCompatActivity {
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
                     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                        if (drawerItem != null && drawerItem instanceof Nameable){
+                        if (drawerItem != null && drawerItem instanceof Nameable) {
                             String name = ((Nameable) drawerItem).getName().getText(mActivity);
                             toolbar.setTitle(name);
                         }
 
-                        if (drawerItem != null){
+                        if (drawerItem != null) {
                             //handle on navigation drawer item
                             onTouchDrawer((int) drawerItem.getIdentifier());
                         }
@@ -294,7 +272,7 @@ public class NoteListActivity extends AppCompatActivity {
         drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Login").withIcon(GoogleMaterial.Icon.gmd_lock_open).withIdentifier(Constants.LOGIN));
         drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Logout").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.LOGOUT));
 
-        if (mFirebaseUser != null){
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             drawer.removeStickyFooterItemAtPosition(0);
         } else {
             drawer.removeStickyFooterItemAtPosition(1);
@@ -311,66 +289,95 @@ public class NoteListActivity extends AppCompatActivity {
 
 
     private void checkLoginStatus() {
-        if (mFirebaseUser == null){
-            ProntoDiaryApplication.setDataAccessAllowed(false);
-            settingsHelper.setRegisteredUser(true);
+        if (firebaseUser != null) {
+            showNoteListFragment();
         }else {
-            ProntoDiaryApplication.setDataAccessAllowed(true);
-            settingsHelper.setRegisteredUser(false);
+            startActivity(AuthUiActivity.createIntent(mActivity));
         }
 
+    }
+
+    private void showNoteListFragment() {
         //Apply Tag filter is one exist.
-        NoteListFragment fragment = new NoteListFragment();
-        if (getIntent().hasExtra(Constants.TAG_FILTER)){
+
+        boolean exist = getIntent() != null;
+        boolean hasTag = getIntent().hasExtra(Constants.TAG_FILTER);
+        if (exist && hasTag) {
             String tagName = getIntent().getStringExtra(Constants.TAG_FILTER);
-            fragment.setArguments(getIntent().getExtras());
-            String title = getString(R.string.label_tag) + ": " + tagName;
-            openFragment(new NoteListFragment(), title);
-        }else {
-            openFragment(fragment, getString(R.string.label_journals));
+            NoteListFragment fragment = NoteListFragment.newInstance(false, tagName);
+            String title = "#" + tagName;
+            openFragment(fragment, title);
+        } else {
+            openFragment(new NoteListFragment(), getString(R.string.label_journals));
         }
-
 
 
     }
 
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onShowFragmentEvent(ShowFragmentEvent event){
-
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(event.getTag());
-        if (fragment != null){
-            openFragment(fragment, event.getTitle());
-        }else {
-            openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list));
+    private void loginAnonymously() {
+        String savedUserId = settingsHelper.getAnonymousUserId();
+        if (!TextUtils.isEmpty(savedUserId)){
+            firebaseUser = firebaseAuth.getCurrentUser();
+            return;
         }
+
+        firebaseAuth.signInAnonymously()
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInAnonymously:success");
+                            firebaseUser = firebaseAuth.getCurrentUser();
+                            settingsHelper.saveAnonymousUserId(firebaseUser.getUid());
+                            if (firebaseUser != null){
+                                showNoteListFragment();
+                            }
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInAnonymously:failure", task.getException());
+                            makeToast("Authentication failed.");
+                        }
+
+                    }
+                });
+
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDisplayFragmentEvent(DisplayFragmentEvent event){
 
-        Fragment fragment = event.getFragment();
-        if (fragment != null){
-            openFragment(fragment, event.getTitle());
-        }else {
-            openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list));
-        }
-    }
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onShowFragmentEvent(ShowFragmentEvent event) {
+//
+//        Fragment fragment = getSupportFragmentManager().findFragmentByTag(event.getTag());
+//        if (fragment != null) {
+//            openFragment(fragment, event.getTitle());
+//        } else {
+//            openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list));
+//        }
+//    }
+//
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onDisplayFragmentEvent(DisplayFragmentEvent event) {
+//
+//        Fragment fragment = event.getFragment();
+//        if (fragment != null) {
+//            openFragment(fragment, event.getTitle());
+//        } else {
+//            openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list));
+//        }
+//    }
 
 
-
-
-
-    private void makeToast(String message){
+    private void makeToast(String message) {
         Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
         View snackBarView = snackbar.getView();
         snackBarView.setBackgroundColor(ContextCompat.getColor(mActivity, R.color.primary));
-        TextView tv = (TextView)snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+        TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
         tv.setTextColor(Color.WHITE);
         snackbar.show();
     }
 
-    public void openFragment(Fragment fragment, String screenTitle){
+    public void openFragment(Fragment fragment, String screenTitle) {
         getSupportFragmentManager()
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
@@ -381,93 +388,13 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
 
-    /**r
-     * Check network conenctivity and direct user to settings if no network.
-     */
-    private void checkNetworkConnected() {
-        if (!isActiveNetworkConnected()) {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.error)
-                    .setMessage(R.string.noNetwork)
-                    .setPositiveButton(R.string.fixNetworking, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                        }
-                    })
-                    .setNeutralButton(R.string.label_cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finish();
-                        }
-                    })
-                    .setCancelable(false)
-                    .create()
-                    .show();
-        } else {
-            // next check google play
-            checkPlayServices();
-        }
-    }
-
-
-    private boolean isActiveNetworkConnected() {
-        NetworkInfo info = connectivityManager.getActiveNetworkInfo();
-        return (info != null && info.isConnected());
-    }
-
-    /**
-     * Check Google Play services and provide a fix-it dialog if not up to date.
-     */
-    private void checkPlayServices() {
-        GoogleApiAvailability api = GoogleApiAvailability.getInstance();
-        int result = api.isGooglePlayServicesAvailable(this);
-        if (result == 0) {
-            // next step start service
-            setupMessagingService();
-            return;
-        }
-
-        if (api.isUserResolvableError(result)) {
-            // show the fix-it dialog
-            Dialog dialog = api.getErrorDialog(this, result, 0);
-            dialog.show();
-        } else {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.error)
-                    .setMessage(R.string.playServicesError)
-                    .setNeutralButton(R.string.label_cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finish();
-                        }
-                    })
-                    .setCancelable(false)
-                    .create()
-                    .show();
-        }
-    }
 
 
 
-
-
-    private void setupMessagingService() {
-        String token = SettingsHelper.getHelper(this).getMessagingToken();
-        if (TextUtils.isEmpty(token)) {
-            // need to retrieve a messaging token
-            Log.d(TAG, "No FCM token defined. Requesting new token.");
-            token = FirebaseInstanceId.getInstance().getToken();
-            SettingsHelper.getHelper(getApplicationContext()).setMessagingToken(token);
-        }
-
-        checkLoginStatus();
-
-    }
 
 
     private void onTouchDrawer(int position) {
-        switch (position){
+        switch (position) {
             case Constants.NOTES:
                 //Do Nothing, we are already on Notes
                 openFragment(new NoteListFragment(), getString(R.string.label_journals));
@@ -492,7 +419,7 @@ public class NoteListActivity extends AppCompatActivity {
                 break;
             case Constants.DELETE:
                 //Delete Account
-              //  deleteAccountClicked();
+                //  deleteAccountClicked();
                 break;
             case Constants.TODO_LIST:
                 startActivity(new Intent(mActivity, TodoListActivity.class));
@@ -522,18 +449,18 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
 
-    private void generateInviteLink(){
-        if (mFirebaseUser != null){
+    private void generateInviteLink() {
+        if (firebaseUser != null) {
 
-            String uid = mFirebaseUser.getUid();
-            String name = mFirebaseUser.getDisplayName();
+            String uid = firebaseUser.getUid();
+            String name = firebaseUser.getDisplayName();
             sendInvite(uid, name);
-        }else {
+        } else {
             makeToast(getString(R.string.login_required));
         }
     }
 
-    private void sendInvite(String realmUserId, final String displayName){
+    private void sendInvite(String realmUserId, final String displayName) {
 
         String link = "https://invite.prontodiary.com/?invitedby=" + realmUserId;
 
@@ -544,16 +471,13 @@ public class NoteListActivity extends AppCompatActivity {
                 .buildDynamicLink();
 
 
-
-
-
         com.google.android.gms.tasks.Task<ShortDynamicLink> shortLinkTask = FirebaseDynamicLinks.getInstance().createDynamicLink()
                 .setLongLink(dynamicLink.getUri())
                 .buildShortDynamicLink()
                 .addOnCompleteListener(mActivity, new OnCompleteListener<ShortDynamicLink>() {
                     @Override
                     public void onComplete(@NonNull com.google.android.gms.tasks.Task<ShortDynamicLink> task) {
-                        if (task.isSuccessful()){
+                        if (task.isSuccessful()) {
                             Uri shortLink = task.getResult().getShortLink();
 
                             // String referrerName = settingsHelper.getDisplayName();
@@ -570,7 +494,7 @@ public class NoteListActivity extends AppCompatActivity {
                                     .setCallToActionText(getString(R.string.invitation_cta))
                                     .build();
                             startActivityForResult(intent, REQUEST_INVITE);
-                        }else {
+                        } else {
                             String errorMessage = task.getException().getCause().getMessage();
                             makeToast("Short link task is not successful");
                         }
@@ -579,8 +503,7 @@ public class NoteListActivity extends AppCompatActivity {
                 });
 
 
-
-       // mInvitationUrl = dynamicLink.getUri();
+        // mInvitationUrl = dynamicLink.getUri();
 
 
     }
@@ -592,12 +515,12 @@ public class NoteListActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(PendingDynamicLinkData pendingDynamicLinkData) {
                         Uri deepLink = null;
-                        if (pendingDynamicLinkData != null){
+                        if (pendingDynamicLinkData != null) {
                             deepLink = pendingDynamicLinkData.getLink();
 
-                            if (deepLink != null && deepLink.getBooleanQueryParameter("invitedby", false)){
+                            if (deepLink != null && deepLink.getBooleanQueryParameter("invitedby", false)) {
                                 String referrerUid = deepLink.getQueryParameter("invitedby");
-                                if (!TextUtils.isEmpty(referrerUid)){
+                                if (!TextUtils.isEmpty(referrerUid)) {
 //                                    ProntoDiaryUser referrer = UserManager.getProntoDiaryUserById(referrerUid);
 //                                    if (referrer != null){
 //                                        makeToast("Welcome " + referrer.getDisplayName() + " friend!");
@@ -609,6 +532,9 @@ public class NoteListActivity extends AppCompatActivity {
                     }
                 });
     }
+
+
+
 
 
 }

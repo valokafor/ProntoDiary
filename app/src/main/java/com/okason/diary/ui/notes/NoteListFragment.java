@@ -1,6 +1,7 @@
 package com.okason.diary.ui.notes;
 
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -32,7 +33,6 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
@@ -43,9 +43,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
+import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
+import com.okason.diary.core.services.HandleNoteDeleteIntentService;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
@@ -62,6 +64,8 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static com.okason.diary.R.style.dialog;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -89,6 +93,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     SharedPreferences.Editor editor;
 
     private String sortColumn = "";
+    private  String tagName = "";
 
 
     private View mRootView;
@@ -105,6 +110,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     AdView mAdView;
 
     private FloatingActionButton floatingActionButton;
+
 
 
     public NoteListFragment() {
@@ -150,36 +156,20 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
+        if (firebaseUser == null){
+            //User must be logged in to proceed
+            startActivity(new Intent(getActivity(), NoteListActivity.class));
+        }
 
         filteredNotes = new ArrayList<>();
         unFilteredNotes = new ArrayList<>();
-        if (firebaseUser != null){
-            database = FirebaseDatabase.getInstance().getReference();
-            journalCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
-            folderCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
-            tagCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
 
-            sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(getString(R.string.label_title),
-                    getString(R.string.label_title));
-
-            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-            editor = sharedPreferences.edit();
-            if (sharedPreferences.getBoolean(Constants.FIRST_RUN, true)) {
-                addInitialNotesToFirebase();
-
-                editor.putBoolean(Constants.FIRST_RUN, false).commit();
-            }
-        }
 
         floatingActionButton = getActivity().findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (firebaseUser != null) {
-                    startActivity(new Intent(getActivity(), AddNoteActivity.class));
-                } else {
-                    makeToast(getString(R.string.login_required));
-                }
+                startActivity(new Intent(getActivity(), AddNoteActivity.class));
             }
         });
         return mRootView;
@@ -199,15 +189,26 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public void onResume() {
         super.onResume();
-        mListAdapter = null;
+        if (firebaseUser != null){
+            database = FirebaseDatabase.getInstance().getReference();
+            journalCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
+            folderCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+            tagCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
 
-        //Only show content if user is logged in
-        if (firebaseUser != null) {
+            sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(getString(R.string.label_title),
+                    getString(R.string.label_title));
+
+            sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+            editor = sharedPreferences.edit();
+            boolean first_run = sharedPreferences.getBoolean(Constants.FIRST_RUN, true);
+            if (first_run) {
+                addInitialNotesToFirebase();
+
+                editor.putBoolean(Constants.FIRST_RUN, false).commit();
+            }
             populateNoteList();
-        } else {
-            showEmptyText(true);
-        }
 
+        }
         if (ProntoDiaryApplication.getProntoDiaryUser() != null && ProntoDiaryApplication.getProntoDiaryUser().isPremium()){
             //Do not show Ad
         }else {
@@ -219,7 +220,12 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         }
     }
 
+
     private void populateNoteList() {
+
+        if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
+             tagName = getArguments().getString(Constants.TAG_FILTER);
+        }
         journalCloudReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -227,9 +233,20 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
                     unFilteredNotes.clear();
                     for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()){
                         Note note = noteSnapshot.getValue(Note.class);
-                        unFilteredNotes.add(note);
+                        if (TextUtils.isEmpty(tagName)) {
+                            unFilteredNotes.add(note);
+                        } else {
+                            for (Tag tag: note.getTags()){
+                                if (tag.getTagName().equals(tagName)){
+                                    unFilteredNotes.add(note);
+                                    break;
+                                }
+                            }
+                        }
                     }
                     showNotes(unFilteredNotes);
+                }else {
+                    showEmptyText(true);
                 }
             }
 
@@ -387,13 +404,15 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
     private void deleteNote(Note note) {
+        final Intent deleteNoteIntent = new Intent(getContext(), HandleNoteDeleteIntentService.class);
+        deleteNoteIntent.putExtra(Constants.NOTE_ID, note.getId());
         journalCloudReference.child(note.getId()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()){
-                    //makeToast(getString(R.string.delet));
+                    getActivity().startService(deleteNoteIntent);
                 }else {
-                     makeToast("Unable to delete NoteDto");
+                     makeToast("Unable to delete Note");
                 }
             }
         });
@@ -424,7 +443,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         String message = getString(R.string.label_delete) + " " + content.substring(0, Math.min(content.length(), 50)) + "  ... ?";
 
 
-        android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext(), R.style.dialog);
+        android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext(), dialog);
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View titleView = (View) inflater.inflate(R.layout.dialog_title, null);
         TextView titleText = (TextView) titleView.findViewById(R.id.text_view_dialog_title);
@@ -435,16 +454,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (!TextUtils.isEmpty(note.getId())) {
-                    journalCloudReference.child(note.getId()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            if (mListAdapter.getItemCount() < 1){
-                                showEmptyText(true);
-                            }
-                        }
-                    });
-                }
+               deleteNote(note);
             }
         });
         alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
@@ -457,12 +467,16 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
     private void makeToast(String message) {
-        Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
-        View snackBarView = snackbar.getView();
-        snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
-        TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
-        tv.setTextColor(Color.WHITE);
-        snackbar.show();
+        try {
+            Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
+            View snackBarView = snackbar.getView();
+            snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
+            TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+            tv.setTextColor(Color.WHITE);
+            snackbar.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void startPlaying(Attachment attachment, final int position) {
@@ -503,13 +517,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
     private void addInitialNotesToFirebase() {
-
-        List<Note> sampleNotes = SampleData.getSampleNotes();
-        for (Note note : sampleNotes) {
-            String key = journalCloudReference.push().getKey();
-            note.setId(key);
-            journalCloudReference.child(key).setValue(note);
-        }
+        List<Folder> folders = new ArrayList<>();
+        List<com.okason.diary.models.Tag> tags = new ArrayList<>();
 
         List<String> sampleFolderNames = SampleData.getSampleCategories();
         for (String name : sampleFolderNames) {
@@ -518,6 +527,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             folder.setId(key);
             folder.setFolderName(name);
             folderCloudReference.child(key).setValue(folder);
+            folders.add(folder);
         }
 
         List<String> sampleTagNames = SampleData.getSampleTags();
@@ -527,11 +537,39 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             tag.setId(key);
             tag.setTagName(name);
             tagCloudReference.child(key).setValue(tag);
+            tags.add(tag);
+        }
+
+        List<Note> sampleNotes = SampleData.getSampleNotes();
+        for (int i =0; i < sampleNotes.size(); i++) {
+            Note note = sampleNotes.get(i);
+            String key = journalCloudReference.push().getKey();
+            note.setId(key);
+
+            Folder selectedFolder = folders.get(i);
+
+            note.setFolderId(selectedFolder.getId());
+            note.setFolderName(selectedFolder.getFolderName());
+
+            Tag selectedTag = tags.get(i);
+            note.getTags().add(selectedTag);
+            journalCloudReference.child(key).setValue(note);
+
+            selectedFolder.getNotesIds().add(note.getId());
+            folderCloudReference.child(selectedFolder.getId()).setValue(selectedFolder);
+
+            selectedTag.getNoteIds().add(note.getId());
+            tagCloudReference.child(selectedTag.getId()).setValue(selectedTag);
+
         }
 
 
 
     }
+
+
+
+
 
 
 }

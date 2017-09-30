@@ -35,7 +35,7 @@ public class NoteDetailActivity extends AppCompatActivity {
         if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)){
             String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_NOTE);
             Note passedInNote = gson.fromJson(serializedNote, Note.class);
-            String title = passedInNote != null ? passedInNote.getTitle() : getString(R.string.note_detail);
+            String title = getString(R.string.note_detail);
             NoteDetailFragment fragment = NoteDetailFragment.newInstance(serializedNote);
             fragment.setEditNoteistener(new OnEditNoteButtonClickedListener() {
                 @Override
@@ -53,7 +53,10 @@ public class NoteDetailActivity extends AppCompatActivity {
         }
     }
 
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
     @Override
     public void onBackPressed() {

@@ -17,7 +17,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.SubTaskItemListener;
 import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
@@ -92,6 +91,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
         ButterKnife.bind(this, rootView);
         getParentTask();
+        populateSubTasks();
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -102,13 +102,6 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     public void onResume() {
         super.onResume();
 
-
-        //Show the Sub Tasks of this Task
-        if (ProntoDiaryApplication.isDataAccessAllowed()) {
-            populateSubTasks();
-        } else {
-            showEmptyText(true);
-        }
 
     }
 

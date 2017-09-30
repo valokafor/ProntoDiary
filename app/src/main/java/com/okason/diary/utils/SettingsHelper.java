@@ -3,9 +3,6 @@ package com.okason.diary.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.provider.Settings;
-import android.text.TextUtils;
-
-import java.util.UUID;
 
 /**
  * Singleton for app settings.
@@ -80,54 +77,18 @@ public class SettingsHelper {
     editor.putBoolean(Constants.REGISTERED_USER, registered).apply();
   }
 
-  public void saveProfile(String name, String email, String photoUrl, String provider){
+  public void saveAnonymousUserId(String userId){
     SharedPreferences.Editor editor = getSharedPreferences().edit();
-    editor.putString(Constants.DISPLAY_NAME, name).apply();
-    editor.putString(Constants.EMAIL_ADDRESSS, email).apply();
-    editor.putString(Constants.PHOTO_URL, photoUrl).apply();
-    editor.putString(Constants.LOGIN_PROVIDER, provider).apply();
+    editor.putString(Constants.ANONYMOUS_ACCOUNT_USER_ID, userId).apply();
+
   }
 
-  public String getDisplayName() {
-    return getSharedPreferences().getString(Constants.DISPLAY_NAME, "");
-  }
-
-  public String getEmailAddress() {
-    return getSharedPreferences().getString(Constants.EMAIL_ADDRESSS, "");
+  public String getAnonymousUserId(){
+    String userId = getSharedPreferences().getString(Constants.ANONYMOUS_ACCOUNT_USER_ID, "");
+    return userId;
   }
 
 
-  public String getLoginProvider() {
-    return getSharedPreferences().getString(Constants.LOGIN_PROVIDER, "");
-  }
 
-  public String getPhotoUrl() {
-    return getSharedPreferences().getString(Constants.PHOTO_URL, "");
-  }
 
-  public String getTempUserName() {
-    String tempUserName = getSharedPreferences().getString(Constants.TEMP_USER_NAME, "");
-    if (TextUtils.isEmpty(tempUserName)){
-      String randomUid = UUID.randomUUID().toString();
-      randomUid.replaceAll("[\\s\\-()]", "");
-      String firstTenChars = randomUid.substring(0, Math.max(10, randomUid.length()));
-      tempUserName = "temp_" + firstTenChars;
-      tempUserName = tempUserName + "@prontodiary.com";
-      SharedPreferences.Editor editor = getSharedPreferences().edit();
-      editor.putString(Constants.TEMP_USER_NAME, tempUserName).apply();
-      return tempUserName;
-    }
-    return tempUserName;
-  }
-
-  public String getTempPassword() {
-    String tempPassword = getSharedPreferences().getString(Constants.TEMP_PASSWORD, "");
-    if (TextUtils.isEmpty(tempPassword)){
-      tempPassword = UUID.randomUUID().toString();
-      SharedPreferences.Editor editor = getSharedPreferences().edit();
-      editor.putString(Constants.TEMP_PASSWORD, tempPassword).apply();
-      return tempPassword;
-    }
-    return tempPassword;
-  }
 }

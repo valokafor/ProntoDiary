@@ -58,6 +58,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -140,6 +141,7 @@ public class AddTaskFragment extends Fragment{
 
     //Flag that indicates if the Add Sub Task screen should be opened
     private boolean shouldAddSubTasks = false;
+    private ValueEventListener folderEventListener;
 
 
 
@@ -195,6 +197,7 @@ public class AddTaskFragment extends Fragment{
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_add_task, container, false);
         ButterKnife.bind(this, mRootView);
+        folderList = new ArrayList<>();
 
 
         if (currentTast == null) {
@@ -230,9 +233,32 @@ public class AddTaskFragment extends Fragment{
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        database = FirebaseDatabase.getInstance().getReference();
-        taskCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TASK_CLOUD_END_POINT);
-        folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+        if (firebaseUser != null) {
+            database = FirebaseDatabase.getInstance().getReference();
+            taskCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TASK_CLOUD_END_POINT);
+            folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+        }
+
+        folderEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    folderList.clear();
+                    for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
+                        Folder folder = folderSnapshot.getValue(Folder.class);
+                        folderList.add(folder);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        folderCloudReference.addValueEventListener(folderEventListener);
 
 
         return mRootView;
@@ -242,6 +268,7 @@ public class AddTaskFragment extends Fragment{
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
+
     }
 
     @Override
@@ -254,6 +281,7 @@ public class AddTaskFragment extends Fragment{
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
+        folderCloudReference.removeEventListener(folderEventListener);
 
     }
 

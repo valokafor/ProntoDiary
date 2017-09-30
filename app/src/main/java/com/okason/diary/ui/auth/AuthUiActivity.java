@@ -24,6 +24,7 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.common.Scopes;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.utils.SettingsHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,7 @@ public class AuthUiActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         mActivity = this;
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("Enable Cloud Backup");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         progressView = findViewById(R.id.register_progress);
@@ -146,6 +148,8 @@ public class AuthUiActivity extends AppCompatActivity {
 
         // Successfully signed in
         if (resultCode == RESULT_OK) {
+            SettingsHelper.getHelper(mActivity).setRegisteredUser(true);
+
             Intent restartIntent = new Intent(mActivity, NoteListActivity.class);
             restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
             restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
