@@ -15,7 +15,6 @@ import android.widget.LinearLayout;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.models.Note;
 import com.okason.diary.models.Tag;
 
 import java.util.List;
@@ -53,7 +52,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         final Tag selectedTag = mTags.get(position);
 
         if (!TextUtils.isEmpty(selectedTag.getTagName())){
@@ -77,6 +76,20 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
                 }
             }
         }
+
+        holder.tagCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    Tag checkedTag = mTags.get(position);
+                    mListener.onTagChecked(checkedTag);
+                }else {
+                    Tag unCheckedTag = mTags.get(position);
+                    mListener.onTagUnChecked(unCheckedTag);
+                }
+               notifyDataSetChanged();
+            }
+        });
 
     }
 
@@ -109,18 +122,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
         public ViewHolder(LinearLayout container) {
             super(container);
             ButterKnife.bind(this, container);
-            tagCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked){
-                        Tag checkedTag = mTags.get(getLayoutPosition());
-                        mListener.onTagChecked(checkedTag);
-                    }else {
-                        Tag unCheckedTag = mTags.get(getLayoutPosition());
-                        mListener.onTagUnChecked(unCheckedTag);
-                    }
-                }
-            });
+
         }
 
 

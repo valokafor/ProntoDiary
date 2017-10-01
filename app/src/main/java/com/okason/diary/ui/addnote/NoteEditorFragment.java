@@ -114,7 +114,8 @@ public class NoteEditorFragment extends Fragment{
     private Note currentNote = null;
     private Folder currentFolder = null;
     private List<Folder> folderList;
-    private List<Tag> tagList;
+    private List<Tag> allTagList;
+    private List<Tag> currentTagList;
     private List<Attachment> attachmentList;
 
     private FirebaseAuth firebaseAuth;
@@ -244,7 +245,8 @@ public class NoteEditorFragment extends Fragment{
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         folderList = new ArrayList<>();
-        tagList = new ArrayList<>();
+        allTagList = new ArrayList<>();
+        currentTagList = new ArrayList<>();
         attachmentList = new ArrayList<>();
 
         //Gets the root of out Datbase
@@ -317,10 +319,10 @@ public class NoteEditorFragment extends Fragment{
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    tagList.clear();
+                    allTagList.clear();
                     for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
                         Tag tag = folderSnapshot.getValue(Tag.class);
-                        tagList.add(tag);
+                        allTagList.add(tag);
                     }
                 }
 
@@ -392,6 +394,8 @@ public class NoteEditorFragment extends Fragment{
                 if (dataChanged){
                     Toast.makeText(getContext(), getString(R.string.saving_journal), Toast.LENGTH_SHORT);
                     saveJournal();
+                } else {
+                    getActivity().onBackPressed();
                 }
                 break;
             case R.id.action_tag:
@@ -405,7 +409,7 @@ public class NoteEditorFragment extends Fragment{
 
     private void showSelectTag() {
         selectTagDialogFragment = SelectTagDialogFragment.newInstance();
-        selectTagDialogFragment.setTags(tagList);
+        selectTagDialogFragment.setTags(allTagList);
 
         //Pass the current Note Id to the SelectTagDialog Fragment
         //This Id will be passed to the Adapter, so that if there is a Tag that
@@ -418,19 +422,32 @@ public class NoteEditorFragment extends Fragment{
         selectTagDialogFragment.setListener(new OnTagSelectedListener() {
             @Override
             public void onTagChecked(Tag selectedTag) {
-                currentNote.getTags().add(selectedTag);
+                if (!isAlreadyAddedToList(selectedTag, currentTagList)) {
+                    currentTagList.add(selectedTag);
+                }
+                initTagLayout(currentTagList);
 
             }
 
             @Override
             public void onTagUnChecked(Tag unSelectedTag) {
-                for (int i = 0; i<tagList.size(); i++){
-                    Tag tempTag = tagList.get(i);
-                    if (tempTag.getId().equals(unSelectedTag.getId())){
-                        tagList.remove(i);
+                for (int i = 0; i<currentTagList.size(); i++){
+                    Tag tempTag = currentTagList.get(i);
+                    if (tempTag.getId().equals(unSelectedTag.getId()) || tempTag.getTagName().equals(unSelectedTag.getTagName())){
+                        currentTagList.remove(i);
                         break;
                     }
                 }
+                String noteId = currentNote.getId();
+                for (int j = 0; j<unSelectedTag.getNoteIds().size(); j++){
+                    String tempId = unSelectedTag.getNoteIds().get(j);
+                    if (noteId.equals(tempId)){
+                        unSelectedTag.getNoteIds().remove(j);
+                        break;
+                    }
+                }
+                tagCloudReference.child(unSelectedTag.getId()).setValue(unSelectedTag);
+                initTagLayout(currentTagList);
             }
 
             @Override
@@ -454,6 +471,19 @@ public class NoteEditorFragment extends Fragment{
             }
         });
         selectTagDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
+    }
+
+    private boolean isAlreadyAddedToList(Tag selectedTag, List<Tag> currentTagList) {
+        boolean result = false;
+
+        for (Tag tag: currentTagList){
+            if (tag.getTagName().equals(selectedTag.getTagName()) || tag.getId().equals(selectedTag.getId())){
+                result = true;
+                break;
+            }
+        }
+
+        return result;
     }
 
 
@@ -615,8 +645,8 @@ public class NoteEditorFragment extends Fragment{
         }
 
         try {
-            tagList = note.getTags();
-            initTagLayout(tagList);
+            currentTagList = currentNote.getTags();
+            initTagLayout(currentTagList);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1512,10 +1542,15 @@ public class NoteEditorFragment extends Fragment{
             currentNote.setAttachments(attachmentList);
         }
         noteCloudReference.child(currentNote.getId()).setValue(currentNote);
-        if (currentNote.getTags().size() > 0){
-            for (Tag tag: currentNote.getTags()){
-                tag.getNoteIds().add(currentNote.getId());
-                tagCloudReference.child(tag.getId()).setValue(tag);
+        if (currentTagList.size() > 0){
+            currentNote.setTags(currentTagList);
+
+            //The Id of the Journal also need to be added to the
+            for (Tag tag: currentTagList){
+                if (!tag.getNoteIds().contains(currentNote.getId())) {
+                    tag.getNoteIds().add(currentNote.getId());
+                    tagCloudReference.child(tag.getId()).setValue(tag);
+                }
             }
         }
         startActivity(new Intent(getActivity(), NoteListActivity.class));

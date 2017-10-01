@@ -66,8 +66,7 @@ public class AddNoteActivity extends AppCompatActivity {
         getSupportFragmentManager()
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .replace(R.id.container, fragment)
-                .addToBackStack(null)
+                .add(R.id.container, fragment)
                 .commit();
         getSupportActionBar().setTitle(screenTitle);
     }
