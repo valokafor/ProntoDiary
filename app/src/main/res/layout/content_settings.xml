@@ -9,27 +9,11 @@
                 tools:showIn="@layout/activity_add_note">
 
     <fragment
-        android:id="@+id/profile"
-        android:name="com.okason.diary.ui.settings.ProfileFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:layout="@layout/fragment_profile"/>
-
-    <View
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_below="@+id/profile"
-        android:background="@color/accent" />
-
-    <fragment
         android:id="@+id/fragment"
         android:name="com.okason.diary.ui.settings.SettingsFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:layout_below="@+id/divider"
         tools:layout="@layout/fragment_settings"/>
 
 

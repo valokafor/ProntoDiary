@@ -17,6 +17,7 @@ import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
 import com.okason.diary.models.Tag;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.SettingsHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -177,6 +178,8 @@ public class MergeJournalIntentService extends IntentService {
 
 
             noteRef.child(newKey).setValue(note);
+            SettingsHelper.getHelper(getApplicationContext()).saveAnonymousUserId("");
+
         }
 
     }
