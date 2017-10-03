@@ -16,8 +16,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.firebase.ui.auth.AuthUI;
@@ -97,53 +95,6 @@ public class NoteListActivity extends AppCompatActivity {
 
     @BindView(R.id.root)
     View mRootView;
-
-    @BindView(R.id.image_button_notes)
-    ImageButton noteButton;
-
-    @BindView(R.id.image_button_todo_list)
-    ImageButton todoListButton;
-
-    @BindView(R.id.image_button_folder)
-    ImageButton folderButton;
-
-    @BindView(R.id.image_button_settings)
-    ImageButton settingsButton;
-
-    @BindView(R.id.image_button_login)
-    ImageButton loginButton;
-
-    @BindView(R.id.notes_text_view)
-    TextView noteTextView;
-
-    @BindView(R.id.todo_list_text_view)
-    TextView todoListTextView;
-
-    @BindView(R.id.folder_text_view)
-    TextView folderTextView;
-
-    @BindView(R.id.settings_text_view)
-    TextView settingsTextView;
-
-    @BindView(R.id.login_text_view)
-    TextView loginTextView;
-
-
-    @BindView(R.id.linear_layout_settings)
-    LinearLayout settingsLayout;
-
-    @BindView(R.id.linear_layout_login)
-    LinearLayout loginLayout;
-
-    @BindView(R.id.linear_layout_todo_list)
-    LinearLayout todoListLayout;
-
-    @BindView(R.id.linear_layout_notes)
-    LinearLayout notesLayout;
-
-    @BindView(R.id.linear_layout_folder)
-    LinearLayout folderLayout;
-
 
     private Bundle savedInstanceBundle;
     private static final String LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/prontodiary-bee92.appspot.com/o/pronto_diary_high_res.png";

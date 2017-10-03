@@ -99,7 +99,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="end|center_vertical"
                 android:background="@null"
-                app:srcCompat="@drawable/ic_radio_microphone_green"/>
+                app:srcCompat="@drawable/ic_action_microphone"/>
         </LinearLayout>
 
         <View
@@ -145,7 +145,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="end|center_vertical"
                     android:background="@null"
-                    app:srcCompat="@drawable/ic_calendar_green"/>
+                    android:src="@drawable/ic_action_date"/>
             </LinearLayout>
 
 
@@ -184,7 +184,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="end|center_vertical"
                     android:background="@null"
-                    app:srcCompat="@drawable/ic_clock_green"/>
+                    android:src="@drawable/ic_action_time"/>
             </LinearLayout>
 
         </LinearLayout>
@@ -214,7 +214,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    app:srcCompat="@drawable/ic_angle_arrow_pointing_to_right_green"
+                    app:srcCompat="@drawable/ic_action_right_arrow"
                     android:scaleType="fitEnd"
                     android:layout_gravity="end|center_vertical"
                     android:background="@null"
@@ -311,7 +311,7 @@
                             android:background="@null"
                             android:scaleType="fitCenter"
                             android:visibility="gone"
-                            app:srcCompat="@drawable/ic_add_circle_green"/>
+                            android:src="@drawable/ic_action_alarm"/>
 
 
 
@@ -352,7 +352,7 @@
                     android:layout_marginLeft="@dimen/margin_padding_tiny"
                     android:background="@android:color/transparent"
                     android:clickable="true"
-                    android:drawableLeft="@drawable/ic_calendar_icon"
+                    android:drawableLeft="@drawable/ic_action_date"
                     android:drawablePadding="@dimen/margin_padding_xtiny"
                     android:focusable="false"
                     android:hint="@string/select_reminder_end_date"
@@ -386,7 +386,7 @@
                 android:layout_marginLeft="@dimen/margin_padding_tiny"
                 android:background="@android:color/transparent"
                 android:clickable="true"
-                android:drawableLeft="@drawable/ic_folder_green"
+                android:drawableLeft="@drawable/ic_action_folder_open"
                 android:drawablePadding="@dimen/margin_padding_xtiny"
                 android:focusable="false"
                 android:hint="@string/select_folder"
@@ -417,7 +417,7 @@
                     android:layout_margin="@dimen/activity_horizontal_margin"
                     android:background="@null"
                     android:layout_gravity="center_vertical"
-                    app:srcCompat="@drawable/ic_task_list_dark_green"/>
+                    app:srcCompat="@drawable/ic_action_list"/>
 
                 <TextView
                     android:id="@+id/text_view_add_sub_tasks"

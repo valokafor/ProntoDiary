@@ -22,7 +22,7 @@
             android:layout_weight="0.5"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            card_view:srcCompat="@drawable/ic_up_down_arrow"
+            android:src="@drawable/ic_action_drag_handle"
             android:background="@null"/>
 
         <CheckBox
@@ -47,7 +47,7 @@
             android:layout_weight="0.5"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            card_view:srcCompat="@drawable/delete"
+            android:src="@drawable/ic_action_delete_forever"
             android:background="@null"/>
 
     </LinearLayout>

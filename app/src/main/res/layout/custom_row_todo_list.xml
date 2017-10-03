@@ -42,7 +42,7 @@
             android:id="@+id/image_view_detail"
             android:layout_width="@dimen/vector_icon_size"
             android:layout_height="@dimen/vector_icon_size"
-            app:srcCompat="@drawable/ic_angle_arrow_pointing_to_right"
+            android:src="@drawable/ic_action_right_arrow"
             android:layout_marginLeft="@dimen/margin_padding_small"
             android:padding="@dimen/margin_padding_tiny" />
     </LinearLayout>
@@ -54,8 +54,7 @@
         android:background="@color/primary"
         android:layout_gravity="bottom"
         android:layout_marginLeft="@dimen/margin_padding_small"
-        android:layout_marginRight="@dimen/margin_padding_small"
-        >
+        android:layout_marginRight="@dimen/margin_padding_small">
     </View>
 
 
