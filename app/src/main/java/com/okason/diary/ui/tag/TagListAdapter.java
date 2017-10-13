@@ -1,6 +1,7 @@
 package com.okason.diary.ui.tag;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,11 +9,17 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.models.Tag;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -27,11 +34,15 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     private List<Tag> mTags;
     private final OnTagSelectedListener mListener;
     private final Context mContext;
+    private FirebaseFirestore db;
+    private Map<String, Integer> tagCount;
 
     public TagListAdapter(Context mContext, List<Tag> mTags, OnTagSelectedListener mListener) {
         this.mTags = mTags;
         this.mContext = mContext;
         this.mListener = mListener;
+        db = FirebaseFirestore.getInstance();
+        tagCount = new HashMap<>();
     }
 
     @Override
@@ -42,15 +53,30 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
 
-        Tag tag = mTags.get(position);
+        final Tag tag = mTags.get(position);
         String tagName = tag.getTagName();
         holder.tagName.setText(tagName);
 
-        int numNote = tag.getNoteIds().size();
-        String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
-        holder.noteCountTextView.setText(numNote + " " + notes);
+        String tagPath = "filterTags." + tagName;
+
+        db.collection("notes")
+                .whereEqualTo(tagPath, true)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()){
+                            int numNote = task.getResult().size();
+                            String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
+                            holder.noteCountTextView.setText(numNote + " " + notes);
+                           // notifyItemChanged(position);
+
+                        }
+                    }
+                });
+
 
     }
 

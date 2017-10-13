@@ -1,6 +1,7 @@
 package com.okason.diary.ui.tag;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -13,6 +14,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.amulyakhare.textdrawable.TextDrawable;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.models.Tag;
@@ -26,20 +32,34 @@ import butterknife.ButterKnife;
  * Created by valokafor on 6/18/17.
  */
 
-public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.ViewHolder>  {
+public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.ViewHolder> {
     private List<Tag> mTags;
+    private List<String> selectTags;
     private final Context mContext;
     private final OnTagSelectedListener mListener;
-
-    //The id of the calling Note
-    private final String noteId;
+    private FirebaseFirestore db;
 
 
-    public SelectTagAdapter(List<Tag> tags, Context context, OnTagSelectedListener listener, String noteId) {
-        mTags = tags;
+    public SelectTagAdapter(final List<String> tags, Context context, OnTagSelectedListener listener) {
+        selectTags = tags;
         mContext = context;
         mListener = listener;
-        this.noteId = noteId;
+        db = FirebaseFirestore.getInstance();
+
+        //Get all Tags
+        db.collection("tags")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()){
+                            for (DocumentSnapshot document: task.getResult()){
+                                Tag tag = document.toObject(Tag.class);
+                                mTags.add(tag);
+                            }
+                        }
+                    }
+                });
     }
 
 
@@ -48,46 +68,72 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
         View todoListView = inflater.inflate(R.layout.custom_layout_select_tag_list, parent, false);
-        return new ViewHolder((LinearLayout)todoListView);
+        return new ViewHolder((LinearLayout) todoListView);
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         final Tag selectedTag = mTags.get(position);
 
-        if (!TextUtils.isEmpty(selectedTag.getTagName())){
+        if (!TextUtils.isEmpty(selectedTag.getTagName())) {
             holder.tagCheckbox.setText(selectedTag.getTagName());
 
-            int count = selectedTag.getNoteIds().size();
-            int color = ContextCompat.getColor(mContext, R.color.primary_text);
-            TextDrawable drawable = TextDrawable.builder()
-                    .beginConfig()
-                    .bold()
-                    .endConfig()
-                    .buildRound(String.valueOf(count), color);
-            holder.tagCountImage.setImageDrawable(drawable);
+            String tagPath = "filterTags." + selectedTag.getTagName();
+
+            db.collection("notes")
+                    .whereEqualTo(tagPath, true)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                int count = task.getResult().size();
+                                int color = ContextCompat.getColor(mContext, R.color.primary_text);
+                                TextDrawable drawable = TextDrawable.builder()
+                                        .beginConfig()
+                                        .bold()
+                                        .endConfig()
+                                        .buildRound(String.valueOf(count), color);
+                                holder.tagCountImage.setImageDrawable(drawable);
+
+                            }
+                        }
+                    });
+
+
         }
 
-        if (selectedTag.getNoteIds().size() > 0){
-            for (String id : selectedTag.getNoteIds()){
-                if (id.equals(noteId)){
-                    holder.tagCheckbox.setChecked(true);
-                    break;
-                }
+        //Selec Checkbox for Tags that have already been added to the
+        //Journal
+        for (String tag : selectTags) {
+            if (selectedTag.getTagName().equals(tag)) {
+                holder.tagCheckbox.setChecked(true);
+                break;
             }
         }
 
         holder.tagCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked){
+                if (isChecked) {
                     Tag checkedTag = mTags.get(position);
-                    mListener.onTagChecked(checkedTag);
-                }else {
+                    if (!selectTags.contains(checkedTag.getTagName())){
+                        selectTags.add(checkedTag.getTagName());
+                        mListener.onTagListUpdated(selectTags);
+                    }
+
+                } else {
                     Tag unCheckedTag = mTags.get(position);
-                    mListener.onTagUnChecked(unCheckedTag);
+                    for (int i = 0; i < selectTags.size(); i++){
+                        String tagName = selectTags.get(i);
+                        if (tagName.equals(unCheckedTag.getTagName())){
+                            selectTags.remove(i);
+                            break;
+                        }
+                    }
+                    mListener.onTagListUpdated(selectTags);
                 }
-               notifyDataSetChanged();
+                notifyDataSetChanged();
             }
         });
 
@@ -95,9 +141,9 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
 
     @Override
     public int getItemCount() {
-        if (mTags != null){
+        if (mTags != null) {
             return mTags.size();
-        }else {
+        } else {
             return 0;
         }
     }
@@ -108,15 +154,13 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
     }
 
 
-
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder {
         public LinearLayout container;
 
         @BindView(R.id.check_box_tag)
         CheckBox tagCheckbox;
         @BindView(R.id.image_view_note_count)
         ImageView tagCountImage;
-
 
 
         public ViewHolder(LinearLayout container) {

@@ -33,6 +33,7 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
@@ -42,6 +43,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
@@ -60,7 +63,9 @@ import com.okason.diary.utils.Constants;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -518,6 +523,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
     private void addInitialNotesToFirebase() {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
         List<Folder> folders = new ArrayList<>();
         List<com.okason.diary.models.Tag> tags = new ArrayList<>();
 
@@ -543,24 +549,30 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
         List<Note> sampleNotes = SampleData.getSampleNotes();
         for (int i =0; i < sampleNotes.size(); i++) {
-            Note note = sampleNotes.get(i);
+
+            final Note note = sampleNotes.get(i);
             String key = journalCloudReference.push().getKey();
             note.setId(key);
-
             Folder selectedFolder = folders.get(i);
+            note.setFolder(selectedFolder);
 
-            note.setFolderId(selectedFolder.getId());
-            note.setFolderName(selectedFolder.getFolderName());
 
-            Tag selectedTag = tags.get(i);
-            note.getTags().add(selectedTag);
-            journalCloudReference.child(key).setValue(note);
 
-            selectedFolder.getNotesIds().add(note.getId());
-            folderCloudReference.child(selectedFolder.getId()).setValue(selectedFolder);
+            Tag selectedTag = tags.get(0);
 
-            selectedTag.getNoteIds().add(note.getId());
-            tagCloudReference.child(selectedTag.getId()).setValue(selectedTag);
+            Map<String, Boolean> addedTags = new HashMap<>();
+            addedTags.put(selectedTag.getTagName(), true);
+            note.setFilterTags(addedTags);
+
+            db.collection("notes").add(note).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                @Override
+                public void onSuccess(DocumentReference documentReference) {
+                    String key = documentReference.getId();
+                    note.setId(key);
+                    db.collection("notes").document(key).set(note);
+                }
+            });
+
 
         }
 

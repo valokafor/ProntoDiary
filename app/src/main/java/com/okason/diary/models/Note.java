@@ -1,7 +1,9 @@
 package com.okason.diary.models;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Valentine on 4/10/2017.
@@ -18,6 +20,8 @@ public class Note {
     private List<Tag> tags;
     private String folderId;
     private String folderName;
+    private Folder folder;
+    private Map<String, Boolean> filterTags;
 
 
     public Note(){
@@ -25,6 +29,7 @@ public class Note {
         tags = new ArrayList<>();
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
+        filterTags = new HashMap<>();
     }
 
 
@@ -100,5 +105,19 @@ public class Note {
         this.folderName = folderName;
     }
 
+    public Map<String, Boolean> getFilterTags() {
+        return filterTags;
+    }
 
+    public void setFilterTags(Map<String, Boolean> filterTags) {
+        this.filterTags = filterTags;
+    }
+
+    public Folder getFolder() {
+        return folder;
+    }
+
+    public void setFolder(Folder folder) {
+        this.folder = folder;
+    }
 }

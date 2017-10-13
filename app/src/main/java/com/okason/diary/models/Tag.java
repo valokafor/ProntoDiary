@@ -1,8 +1,5 @@
 package com.okason.diary.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by Valentine on 4/10/2017.
  */
@@ -14,12 +11,8 @@ public class Tag {
     private long dateCreated;
     private long dateModified;
 
-    private List<String> noteIds;
-    private List<String> taskIds;
 
     public Tag(){
-        noteIds = new ArrayList<>();
-        taskIds = new ArrayList<>();
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
 
@@ -66,19 +59,5 @@ public class Tag {
     }
 
 
-    public List<String> getNoteIds() {
-        return noteIds;
-    }
 
-    public void setNoteIds(List<String> noteIds) {
-        this.noteIds = noteIds;
-    }
-
-    public List<String> getTaskIds() {
-        return taskIds;
-    }
-
-    public void setTaskIds(List<String> taskIds) {
-        this.taskIds = taskIds;
-    }
 }
