@@ -44,9 +44,9 @@ public class AddNoteActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
 
-            if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)){
-                String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_NOTE);
-                openFragment(NoteEditorFragment.newInstance(serializedNote), getString(R.string.edit_journal));
+            if (getIntent() != null && getIntent().hasExtra(Constants.JOURNAL_ID)){
+                String journalId = getIntent().getStringExtra(Constants.JOURNAL_ID);
+                openFragment(NoteEditorFragment.newInstance(journalId), getString(R.string.edit_journal));
             }else {
                 openFragment(NoteEditorFragment.newInstance(""), getString(R.string.add_new_journal));
             }

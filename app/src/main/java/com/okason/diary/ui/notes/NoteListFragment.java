@@ -10,7 +10,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -32,40 +31,31 @@ import android.widget.TextView;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.events.JournalListChangeEvent;
 import com.okason.diary.core.listeners.NoteItemListener;
-import com.okason.diary.core.services.HandleNoteDeleteIntentService;
 import com.okason.diary.models.Attachment;
-import com.okason.diary.models.Folder;
 import com.okason.diary.models.Note;
-import com.okason.diary.models.SampleData;
-import com.okason.diary.models.Tag;
 import com.okason.diary.ui.addnote.AddNoteActivity;
+import com.okason.diary.ui.addnote.DataAccessManager;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -82,10 +72,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
-    private DatabaseReference database;
-    private DatabaseReference journalCloudReference;
-    private DatabaseReference folderCloudReference;
-    private DatabaseReference tagCloudReference;
+    private DataAccessManager dataAccessManager;
+
 
     private List<Note> unFilteredNotes;
     private List<Note> filteredNotes;
@@ -149,6 +137,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     }
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -195,12 +185,10 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public void onResume() {
         super.onResume();
+        EventBus.getDefault().register(this);
         if (firebaseUser != null){
-            database = FirebaseDatabase.getInstance().getReference();
-            journalCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
-            folderCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
-            tagCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
 
+            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
             sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(getString(R.string.label_title),
                     getString(R.string.label_title));
 
@@ -208,11 +196,11 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             editor = sharedPreferences.edit();
             boolean first_run = sharedPreferences.getBoolean(Constants.FIRST_RUN, true);
             if (first_run) {
-                addInitialNotesToFirebase();
+                dataAccessManager.addInitialNotesToFirebase();
 
                 editor.putBoolean(Constants.FIRST_RUN, false).commit();
             }
-            populateNoteList();
+            dataAccessManager.getAllJournal();
 
         }
         if (ProntoDiaryApplication.getProntoDiaryUser() != null && ProntoDiaryApplication.getProntoDiaryUser().isPremium()){
@@ -226,49 +214,57 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         }
     }
 
-
-    private void populateNoteList() {
-
-        if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
-             tagName = getArguments().getString(Constants.TAG_FILTER);
-        }
-        journalCloudReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    unFilteredNotes.clear();
-                    for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()){
-                        Note note = noteSnapshot.getValue(Note.class);
-                        if (TextUtils.isEmpty(tagName)) {
-                            unFilteredNotes.add(note);
-                        } else {
-                            for (Tag tag: note.getTags()){
-                                if (tag.getTagName().equals(tagName)){
-                                    unFilteredNotes.add(note);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    showNotes(unFilteredNotes);
-                }else {
-                    showEmptyText(true);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                makeToast("Error fetching data " + databaseError.getMessage());
-            }
-        });
-
-
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onJournalListChange(JournalListChangeEvent event){
+        showNotes(event.getJournalList());
     }
+
+
+
+
+
+//    private void populateNoteList() {
+//
+//        if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
+//             tagName = getArguments().getString(Constants.TAG_FILTER);
+//        }
+//        journalCloudReference.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                if (dataSnapshot.exists()) {
+//                    unFilteredNotes.clear();
+//                    for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()){
+//                        Note note = noteSnapshot.getValue(Note.class);
+//                        if (TextUtils.isEmpty(tagName)) {
+//                            unFilteredNotes.add(note);
+//                        } else {
+////                            for (Tag tag: note.getTags()){
+////                                if (tag.getTagName().equals(tagName)){
+////                                    unFilteredNotes.add(note);
+////                                    break;
+////                                }
+////                            }
+//                        }
+//                    }
+//                    showNotes(unFilteredNotes);
+//                }else {
+//                    showEmptyText(true);
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//                makeToast("Error fetching data " + databaseError.getMessage());
+//            }
+//        });
+//
+//
+//    }
 
     @Override
     public void onPause() {
         super.onPause();
-
+        EventBus.getDefault().unregister(this);
         if (mPlayer != null) {
             mPlayer.release();
             mPlayer = null;
@@ -410,18 +406,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
     private void deleteNote(Note note) {
-        final Intent deleteNoteIntent = new Intent(getContext(), HandleNoteDeleteIntentService.class);
-        deleteNoteIntent.putExtra(Constants.NOTE_ID, note.getId());
-        journalCloudReference.child(note.getId()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    getActivity().startService(deleteNoteIntent);
-                }else {
-                     makeToast("Unable to delete Note");
-                }
-            }
-        });
+        dataAccessManager.deleteNote(note.getId());
     }
 
 
@@ -522,63 +507,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         startActivity(intent);
     }
 
-    private void addInitialNotesToFirebase() {
-        final FirebaseFirestore db = FirebaseFirestore.getInstance();
-        List<Folder> folders = new ArrayList<>();
-        List<com.okason.diary.models.Tag> tags = new ArrayList<>();
 
-        List<String> sampleFolderNames = SampleData.getSampleCategories();
-        for (String name : sampleFolderNames) {
-            String key = folderCloudReference.push().getKey();
-            Folder folder = new Folder();
-            folder.setId(key);
-            folder.setFolderName(name);
-            folderCloudReference.child(key).setValue(folder);
-            folders.add(folder);
-        }
-
-        List<String> sampleTagNames = SampleData.getSampleTags();
-        for (String name : sampleTagNames) {
-            String key = tagCloudReference.push().getKey();
-            Tag tag = new Tag();
-            tag.setId(key);
-            tag.setTagName(name);
-            tagCloudReference.child(key).setValue(tag);
-            tags.add(tag);
-        }
-
-        List<Note> sampleNotes = SampleData.getSampleNotes();
-        for (int i =0; i < sampleNotes.size(); i++) {
-
-            final Note note = sampleNotes.get(i);
-            String key = journalCloudReference.push().getKey();
-            note.setId(key);
-            Folder selectedFolder = folders.get(i);
-            note.setFolder(selectedFolder);
-
-
-
-            Tag selectedTag = tags.get(0);
-
-            Map<String, Boolean> addedTags = new HashMap<>();
-            addedTags.put(selectedTag.getTagName(), true);
-            note.setFilterTags(addedTags);
-
-            db.collection("notes").add(note).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                @Override
-                public void onSuccess(DocumentReference documentReference) {
-                    String key = documentReference.getId();
-                    note.setId(key);
-                    db.collection("notes").document(key).set(note);
-                }
-            });
-
-
-        }
-
-
-
-    }
 
 
 

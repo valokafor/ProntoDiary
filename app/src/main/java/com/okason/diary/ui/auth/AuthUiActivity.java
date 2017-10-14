@@ -13,8 +13,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,8 +24,6 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.common.Scopes;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.core.services.MergeFolderIntentService;
-import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
 
 import java.util.ArrayList;
@@ -155,12 +151,7 @@ public class AuthUiActivity extends AppCompatActivity {
             SettingsHelper.getHelper(mActivity).setRegisteredUser(true);
             String anonyhmousUserId = SettingsHelper.getHelper(mActivity).getAnonymousUserId();
 
-            if (!TextUtils.isEmpty(anonyhmousUserId)) {
-                Log.d(NoteListActivity.TAG, "Launching MergeFolder Intent");
-                Intent migrateIntent = new Intent(mActivity, MergeFolderIntentService.class);
-                migrateIntent.putExtra(Constants.ANONYMOUS_ACCOUNT_USER_ID, anonyhmousUserId);
-                startService(migrateIntent);
-            }
+          
 
             Intent restartIntent = new Intent(mActivity, NoteListActivity.class);
             restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -322,8 +322,8 @@ public class AddTaskFragment extends Fragment{
         if (selectedFolder == null) {
             selectedFolder = getDefaultFolder(Constants.DEFAULT_CATEGORY);
         }
-        currentTast.setFolderName(selectedFolder.getFolderName());
-        currentTast.setFolderId(selectedFolder.getId());
+        currentTast.setFolder(selectedFolder);
+
 
         if (mReminderTime == null){
             mReminderTime = Calendar.getInstance();
@@ -340,8 +340,7 @@ public class AddTaskFragment extends Fragment{
         currentTast.setDueDateAndTime(mReminderTime.getTimeInMillis());
         currentTast.setRepeatFrequency(repeatFrequency);
         currentTast.setRepeatEndDate(repeatEndDate.getTimeInMillis());
-        currentTast.setFolderName(selectedFolder.getFolderName());
-        currentTast.setFolderId(selectedFolder.getId());
+        currentTast.setFolder(selectedFolder);
         taskCloudReference.child(currentTast.getId()).setValue(currentTast);
 
         if (shouldAddSubTasks){
@@ -573,7 +572,7 @@ public class AddTaskFragment extends Fragment{
 
     private void showChooseFolderDialog(List<Folder> folders) {
         selectFolderDialogFragment = selectFolderDialogFragment.newInstance();
-        selectFolderDialogFragment.setCategories(folders);
+
 
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
             @Override
@@ -690,7 +689,7 @@ public class AddTaskFragment extends Fragment{
         }
 
         try {
-            mFolder.setText(task.getFolderName());
+            mFolder.setText(task.getFolder().getFolderName());
             getFolderById(task.getId());
         } catch (Exception e) {
             e.printStackTrace();

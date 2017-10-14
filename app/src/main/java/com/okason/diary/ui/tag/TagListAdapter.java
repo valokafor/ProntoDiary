@@ -11,15 +11,15 @@ import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.models.Tag;
+import com.okason.diary.ui.addnote.DataAccessManager;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -33,16 +33,23 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
 
     private List<Tag> mTags;
     private final OnTagSelectedListener mListener;
+    private DataAccessManager dataAccessManager;
     private final Context mContext;
-    private FirebaseFirestore db;
-    private Map<String, Integer> tagCount;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
 
     public TagListAdapter(Context mContext, List<Tag> mTags, OnTagSelectedListener mListener) {
         this.mTags = mTags;
         this.mContext = mContext;
         this.mListener = mListener;
-        db = FirebaseFirestore.getInstance();
-        tagCount = new HashMap<>();
+
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+
+        if (firebaseUser != null){
+            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
+        }
     }
 
     @Override
@@ -59,23 +66,25 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
         String tagName = tag.getTagName();
         holder.tagName.setText(tagName);
 
-        String tagPath = "filterTags." + tagName;
+        String tagPath = "tags." + tagName;
 
-        db.collection("notes")
-                .whereEqualTo(tagPath, true)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()){
-                            int numNote = task.getResult().size();
-                            String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
-                            holder.noteCountTextView.setText(numNote + " " + notes);
-                           // notifyItemChanged(position);
+        if (dataAccessManager != null) {
+            dataAccessManager.getJournalCloudPath()
+                    .whereEqualTo(tagPath, true)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()){
+                                int numNote = task.getResult().size();
+                                String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
+                                holder.noteCountTextView.setText(numNote + " " + notes);
+                               // notifyItemChanged(position);
 
+                            }
                         }
-                    }
-                });
+                    });
+        }
 
 
     }

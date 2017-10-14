@@ -268,7 +268,7 @@ public class NoteDetailFragment extends Fragment{
 
     public void displayNote(Note note) {
         try {
-            mCategory.setText(note.getFolderName());
+            mCategory.setText(note.getFolder().getFolderName());
         } catch (Exception e) {
             e.printStackTrace();
         }

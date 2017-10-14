@@ -43,9 +43,9 @@ public class HandleNoteDeleteIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (intent != null && intent.hasExtra(Constants.NOTE_ID)) {
+        if (intent != null && intent.hasExtra(Constants.JOURNAL_ID)) {
 
-            final String deletedNoteId = intent.getStringExtra(Constants.NOTE_ID);
+            final String deletedNoteId = intent.getStringExtra(Constants.JOURNAL_ID);
 
             firebaseAuth = FirebaseAuth.getInstance();
             firebaseUser = firebaseAuth.getCurrentUser();
@@ -67,17 +67,7 @@ public class HandleNoteDeleteIntentService extends IntentService {
                                 Tag tag = folderSnapshot.getValue(Tag.class);
                                 allTags.add(tag);
                             }
-                            for (int i = 0; i < allTags.size(); i++){
-                                Tag tag = allTags.get(i);
-                                List<String> noteIds = tag.getNoteIds();
-                                for (int j = 0; j < noteIds.size(); j++){
-                                    String noteId = noteIds.get(j);
-                                    if (noteId.equals(deletedNoteId)){
-                                        tag.getNoteIds().remove(j);
-                                        tagCloudReference.child(tag.getId()).setValue(tag);
-                                    }
-                                }
-                            }
+
                         }
                     }
 
@@ -96,17 +86,7 @@ public class HandleNoteDeleteIntentService extends IntentService {
                                 Folder folder = folderSnapshot.getValue(Folder.class);
                                 allFolders.add(folder);
                             }
-                            for (int i = 0; i < allFolders.size(); i++){
-                                Folder folder = allFolders.get(i);
-                                List<String> noteIds = folder.getNotesIds();
-                                for (int j = 0; j < noteIds.size(); j++){
-                                    String noteId = noteIds.get(j);
-                                    if (noteId.equals(deletedNoteId)){
-                                        folder.getNotesIds().remove(j);
-                                        folderCloudReference.child(folder.getId()).setValue(folder);
-                                    }
-                                }
-                            }
+
                         }
                     }
 

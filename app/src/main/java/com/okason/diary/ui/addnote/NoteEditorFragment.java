@@ -9,7 +9,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
@@ -46,20 +45,9 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
@@ -90,13 +78,13 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -111,22 +99,13 @@ public class NoteEditorFragment extends Fragment{
 
     private View mRootView;
 
-    private Note currentNote = null;
-    private Folder currentFolder = null;
-    private List<Folder> folderList;
-    private List<Tag> allTagList;
-    private List<Tag> currentTagList;
+    private Note currentJournal = null;
     private List<Attachment> attachmentList;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
 
-    private DatabaseReference database;
-    private DatabaseReference noteCloudReference;
-    private DatabaseReference folderCloudReference;
-    private DatabaseReference tagCloudReference;
-    private StorageReference firebaseStorageReference;
-    private StorageReference attachmentReference;
+
 
     private SelectFolderDialogFragment selectFolderDialogFragment;
     private SelectTagDialogFragment selectTagDialogFragment;
@@ -134,6 +113,7 @@ public class NoteEditorFragment extends Fragment{
     private AddTagDialogFragment addTagDialogFragment;
 
     private AttachmentListAdapter attachmentListAdapter;
+    private DataAccessManager journalManager;
 
 
 
@@ -193,9 +173,7 @@ public class NoteEditorFragment extends Fragment{
     private long audioRecordingTimeStart;
     private long audioRecordingTime;
     private MaterialDialog mDialog;
-    private ValueEventListener tagEventListener;
-    private ValueEventListener journalEventListener;
-    private ValueEventListener folderEventListener;
+
 
 
     public NoteEditorFragment() {
@@ -206,17 +184,16 @@ public class NoteEditorFragment extends Fragment{
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        getPassedInNote();
+
     }
 
-     private void getPassedInNote() {
+     private void getPassedInJournal() {
         Bundle args = getArguments();
-        if (args != null && args.containsKey(Constants.SERIALIZED_NOTE)){
-            String serializedNote = args.getString(Constants.SERIALIZED_NOTE, "");
-            if (!serializedNote.isEmpty()){
-                Gson gson = new Gson();
-                currentNote = gson.fromJson(serializedNote, new TypeToken<Note>(){}.getType());
-                if (currentNote != null & !TextUtils.isEmpty(currentNote.getId())){
+        if (args != null && args.containsKey(Constants.JOURNAL_ID)){
+            String journalId = args.getString(Constants.JOURNAL_ID, "");
+            if (!journalId.isEmpty()){
+                currentJournal = journalManager.getNoteById(journalId);
+                if (currentJournal != null & !TextUtils.isEmpty(currentJournal.getId())){
                     isInEditMode = true;
                 }
             }
@@ -224,11 +201,11 @@ public class NoteEditorFragment extends Fragment{
 
     }
 
-    public static NoteEditorFragment newInstance(String content){
+    public static NoteEditorFragment newInstance(String journalId){
         NoteEditorFragment fragment = new NoteEditorFragment();
-        if (!TextUtils.isEmpty(content)){
+        if (!TextUtils.isEmpty(journalId)){
             Bundle args = new Bundle();
-            args.putString(Constants.SERIALIZED_NOTE, content);
+            args.putString(Constants.JOURNAL_ID, journalId);
             fragment.setArguments(args);
         }
         return fragment;
@@ -244,20 +221,13 @@ public class NoteEditorFragment extends Fragment{
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        folderList = new ArrayList<>();
-        allTagList = new ArrayList<>();
-        currentTagList = new ArrayList<>();
         attachmentList = new ArrayList<>();
 
         //Gets the root of out Datbase
         if (firebaseUser != null) {
-            database = FirebaseDatabase.getInstance().getReference();
-            noteCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.NOTE_CLOUD_END_POINT);
-            folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
-            tagCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
+            journalManager = new DataAccessManager(firebaseUser.getUid());
+            getPassedInJournal();
 
-            firebaseStorageReference = FirebaseStorage.getInstance().getReference();
-            attachmentReference = firebaseStorageReference.child("attachments");
         }
 
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -298,41 +268,6 @@ public class NoteEditorFragment extends Fragment{
             }
         });
 
-        folderEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    folderList.clear();
-                    for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
-                        Folder folder = folderSnapshot.getValue(Folder.class);
-                        folderList.add(folder);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                makeToast("Error fetching folder " + databaseError.getMessage());
-            }
-        };
-        tagEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    allTagList.clear();
-                    for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
-                        Tag tag = folderSnapshot.getValue(Tag.class);
-                        allTagList.add(tag);
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.d(NoteListActivity.TAG,  "Error fetching folder " + databaseError.getMessage());
-            }
-        };
         return mRootView;
     }
 
@@ -341,10 +276,8 @@ public class NoteEditorFragment extends Fragment{
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
-        folderCloudReference.addValueEventListener(folderEventListener);
-        tagCloudReference.addValueEventListener(tagEventListener);
         if (isInEditMode){
-            populateNote(currentNote);
+            populateNote(currentJournal);
         }
     }
 
@@ -352,8 +285,6 @@ public class NoteEditorFragment extends Fragment{
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
-        folderCloudReference.removeEventListener(folderEventListener);
-        tagCloudReference.removeEventListener(tagEventListener);
         if (mRecorder != null) {
             mRecorder.release();
             mRecorder = null;
@@ -381,19 +312,19 @@ public class NoteEditorFragment extends Fragment{
                 showSelectAttachmentDialog();
                 break;
             case R.id.action_delete:
-                if (isInEditMode && currentNote != null) {
-                    promptForDelete(currentNote);
+                if (isInEditMode && currentJournal != null) {
+                    promptForDelete(currentJournal);
                 } else {
                     promptForDiscard();
                 }
                 break;
             case R.id.action_share:
-                displayShareIntent(currentNote);
+                displayShareIntent(currentJournal);
                 break;
             case android.R.id.home:
                 if (dataChanged){
                     Toast.makeText(getContext(), getString(R.string.saving_journal), Toast.LENGTH_SHORT);
-                    saveJournal();
+                    journalManager.addNote(currentJournal);
                 } else {
                     getActivity().onBackPressed();
                 }
@@ -409,46 +340,44 @@ public class NoteEditorFragment extends Fragment{
 
     private void showSelectTag() {
         selectTagDialogFragment = SelectTagDialogFragment.newInstance();
-        selectTagDialogFragment.setTags(allTagList);
-
-        //Pass the current Note Id to the SelectTagDialog Fragment
-        //This Id will be passed to the Adapter, so that if there is a Tag that
-        //Has already been added to this Note, that Tag checkbox will be checked
-        if (!TextUtils.isEmpty(currentNote.getId())){
-            selectTagDialogFragment.setNoteId(currentNote.getId());
+        List<String> existingTags = new ArrayList<>();
+        if (isInEditMode) {
+            for (Map.Entry<String, Boolean> entry : currentJournal.getTags().entrySet()) {
+                String key = entry.getKey();
+                boolean value = entry.getValue();
+                if (value){
+                    existingTags.add(key);
+                }
+            }
         }
+        selectTagDialogFragment.setTags(existingTags);
+
 
 
         selectTagDialogFragment.setListener(new OnTagSelectedListener() {
             @Override
             public void onTagChecked(Tag selectedTag) {
-                if (!isAlreadyAddedToList(selectedTag, currentTagList)) {
-                    currentTagList.add(selectedTag);
+                if (currentJournal == null){
+                    currentJournal = new Note();
                 }
-                initTagLayout(currentTagList);
+                if (!currentJournal.getTags().containsKey(selectedTag.getTagName())){
+                    currentJournal.getTags().put(selectedTag.getTagName(), true);
+                }
+
 
             }
 
             @Override
             public void onTagUnChecked(Tag unSelectedTag) {
-                for (int i = 0; i<currentTagList.size(); i++){
-                    Tag tempTag = currentTagList.get(i);
-                    if (tempTag.getId().equals(unSelectedTag.getId()) || tempTag.getTagName().equals(unSelectedTag.getTagName())){
-                        currentTagList.remove(i);
-                        break;
+                if (currentJournal != null){
+                    if (currentJournal.getTags().containsKey(unSelectedTag.getTagName())){
+                        currentJournal.getTags().remove(unSelectedTag.getTagName());
+                        //currentJournal.getTags().put(unSelectedTag.getTagName(), false);
                     }
                 }
-                String noteId = currentNote.getId();
-                for (int j = 0; j<unSelectedTag.getNoteIds().size(); j++){
-                    String tempId = unSelectedTag.getNoteIds().get(j);
-                    if (noteId.equals(tempId)){
-                        unSelectedTag.getNoteIds().remove(j);
-                        break;
-                    }
-                }
-                tagCloudReference.child(unSelectedTag.getId()).setValue(unSelectedTag);
-                initTagLayout(currentTagList);
+                initTagLayout(currentJournal.getTags());
             }
+
 
             @Override
             public void onAddTagButtonClicked() {
@@ -473,18 +402,7 @@ public class NoteEditorFragment extends Fragment{
         selectTagDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
     }
 
-    private boolean isAlreadyAddedToList(Tag selectedTag, List<Tag> currentTagList) {
-        boolean result = false;
 
-        for (Tag tag: currentTagList){
-            if (tag.getTagName().equals(selectedTag.getTagName()) || tag.getId().equals(selectedTag.getId())){
-                result = true;
-                break;
-            }
-        }
-
-        return result;
-    }
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -503,7 +421,7 @@ public class NoteEditorFragment extends Fragment{
         attachmentList.add(attachment);
         initViewAttachments(attachmentList);
         try {
-            uploadFileToCloud(attachment);
+            journalManager.uploadFileToCloud(attachment);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -520,32 +438,37 @@ public class NoteEditorFragment extends Fragment{
 
         if (event.getFolder() != null){
             mCategory.setText(event.getFolder().getFolderName());
-            currentFolder = event.getFolder();
+            if (currentJournal == null){
+                currentJournal = new Note();
+            }
+            currentJournal.setFolder(event.getFolder());
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUpdatedTagLayout(UpdateTagLayoutEvent event){
         List<Tag> tags = event.getTags();
-        initTagLayout(tags);
+        initTagLayout(currentJournal.getTags());
     }
 
 
     @OnClick(R.id.edit_text_category)
     public void showSelectFolder(){
-        showChooseFolderDialog(folderList);
+        showChooseFolderDialog();
     }
 
-    private void showChooseFolderDialog(List<Folder> folders) {
+    private void showChooseFolderDialog() {
         selectFolderDialogFragment = selectFolderDialogFragment.newInstance();
-        selectFolderDialogFragment.setCategories(folders);
 
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
             @Override
             public void onCategorySelected(Folder selectedCategory) {
                 selectFolderDialogFragment.dismiss();
                 mCategory.setText(selectedCategory.getFolderName());
-                currentFolder = selectedCategory;
+                if (currentJournal == null){
+                    currentJournal = new Note();
+                }
+                currentJournal.setFolder(selectedCategory);
             }
 
             @Override
@@ -619,7 +542,7 @@ public class NoteEditorFragment extends Fragment{
         }
 
         try {
-            mCategory.setText(note.getFolderName());
+            mCategory.setText(note.getFolder().getFolderName());
         } catch (Exception e) {
             mCategory.setText(Constants.DEFAULT_CATEGORY);
         }
@@ -644,23 +567,19 @@ public class NoteEditorFragment extends Fragment{
             e.printStackTrace();
         }
 
-        try {
-            currentTagList = currentNote.getTags();
-            initTagLayout(currentTagList);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
 
     }
 
-    private void initTagLayout(List<Tag> tags) {
+    private void initTagLayout(Map<String, Boolean> tags) {
         if (tags != null && tags.size() > 0){
             mTimeStampLayout.setVisibility(View.VISIBLE);
             dateCreated.setVisibility(View.VISIBLE);
             String tagText = "";
-            for (Tag tag: tags){
-                tagText = tagText + "#" + tag.getTagName() + ", ";
+            for (String tag : tags.keySet()) {
+                tagText = tagText + "#" + tag + ", ";
             }
+
             dateCreated.setText(tagText);
             dateCreated.setTextColor(ContextCompat.getColor(getActivity(), R.color.primary_dark));
             dateCreated.setTypeface(dateCreated.getTypeface(), Typeface.BOLD);
@@ -1228,59 +1147,7 @@ public class NoteEditorFragment extends Fragment{
         }
     }
 
-    private void uploadFileToCloud(final Attachment attachment) throws IOException {
-        String filePath = attachment.getLocalFilePath();
-        String fileType = attachment.getMime_type();
-        final long[] size = new long[1];
 
-//        final StorageMetadata metadata = new StorageMetadata.Builder()
-//                .setContentType(fileType)
-//                .build();
-
-        Uri fileToUpload = Uri.fromFile(new File(filePath));
-
-        final String fileName = fileToUpload.getLastPathSegment();
-
-        StorageReference imageRef = firebaseStorageReference.child(fileName);
-        final UploadTask uploadTask;
-
-
-        if (attachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)) {
-            //Compress Image
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), fileToUpload);
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 25, byteArrayOutputStream);
-            byte[] data = byteArrayOutputStream.toByteArray();
-            uploadTask = firebaseStorageReference.child(fileToUpload.getLastPathSegment()).putBytes(data);
-        } else {
-            //Upload File
-            uploadTask = firebaseStorageReference.child(fileToUpload.getLastPathSegment()).putFile(fileToUpload);
-
-        }
-
-
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                makeToast("Unable to upload file to cloud" + e.getLocalizedMessage());
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @SuppressWarnings("VisibleForTests")
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                long size = taskSnapshot.getMetadata().getSizeBytes();
-                String downloadUrl = taskSnapshot.getDownloadUrl().toString();
-                for (int i=0; i<attachmentList.size(); i++){
-                    Attachment item = attachmentList.get(i);
-                    if (item.getLocalFilePath().equals(attachment.getLocalFilePath())){
-                        attachmentList.get(i).setCloudFilePath(downloadUrl);
-                        break;
-                    }
-                }
-            }
-        });
-
-    }
 
     //Called when a file is picked
     private void handleFilePickIntent(Intent intent) {
@@ -1517,63 +1384,6 @@ public class NoteEditorFragment extends Fragment{
     }
 
 
-    private void saveJournal() {
-
-        if (currentNote == null){
-            currentNote = new Note();
-            String key = noteCloudReference.push().getKey();
-            currentNote.setId(key);
-        }
-
-        if (currentFolder != null) {
-            currentNote.setFolderName(currentFolder.getFolderName());
-            currentNote.setFolderId(currentFolder.getId());
-        }else {
-            currentNote.setFolderName(Constants.DEFAULT_CATEGORY);
-            currentNote.setFolderId(getFolderId(Constants.DEFAULT_CATEGORY));
-        }
-
-
-        currentNote.setContent(mContent.getText().toString());
-        currentNote.setTitle(mTitle.getText().toString());
-        currentNote.setDateModified(System.currentTimeMillis());
-
-        if (attachmentList != null && attachmentList.size() > 0) {
-            currentNote.setAttachments(attachmentList);
-        }
-        noteCloudReference.child(currentNote.getId()).setValue(currentNote);
-        if (currentTagList.size() > 0){
-            currentNote.setTags(currentTagList);
-
-            //The Id of the Journal also need to be added to the
-            for (Tag tag: currentTagList){
-                if (!tag.getNoteIds().contains(currentNote.getId())) {
-                    tag.getNoteIds().add(currentNote.getId());
-                    tagCloudReference.child(tag.getId()).setValue(tag);
-                }
-            }
-        }
-        startActivity(new Intent(getActivity(), NoteListActivity.class));
-    }
-
-    private String getFolderId(String folderName) {
-        for (Folder folder: folderList){
-            if (!TextUtils.isEmpty(folder.getId()) && folder.getFolderName().equals(folderName)){
-                return folder.getId();
-            }
-        }
-        return addFolderToFirebase(folderName);
-    }
-
-
-    private String addFolderToFirebase(String folderName) {
-        Folder folder = new Folder();
-        folder.setFolderName(folderName);
-        String key = folderCloudReference.push().getKey();
-        folder.setId(key);
-        folderCloudReference.child(key).setValue(folder);
-        return key;
-    }
 
 
 

@@ -27,20 +27,11 @@ public class Task {
     private Double longitude;
 
 
-    private String folderId;
-    private String folderName;
+    private Folder folder;
     private List<SubTask> subTask;
 
     public Task(){
         subTask = new ArrayList<>();
-    }
-
-    public int getTaskCount(){
-        if (getSubTask() != null && getSubTask().size() > 0){
-            return getSubTask().size() + 1;
-        }else {
-            return 1;
-        }
     }
 
     public String getId() {
@@ -139,20 +130,16 @@ public class Task {
         this.longitude = longitude;
     }
 
-    public String getFolderId() {
-        return folderId;
+    public void setRepeatFrequency(String repeatFrequency) {
+        this.repeatFrequency = repeatFrequency;
     }
 
-    public void setFolderId(String folderId) {
-        this.folderId = folderId;
+    public Folder getFolder() {
+        return folder;
     }
 
-    public String getFolderName() {
-        return folderName;
-    }
-
-    public void setFolderName(String folderName) {
-        this.folderName = folderName;
+    public void setFolder(Folder folder) {
+        this.folder = folder;
     }
 
     public List<SubTask> getSubTask() {

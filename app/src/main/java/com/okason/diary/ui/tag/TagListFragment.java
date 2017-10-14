@@ -22,24 +22,20 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
+import com.okason.diary.core.events.TagListChangeEvent;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.models.Tag;
+import com.okason.diary.ui.addnote.DataAccessManager;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -63,15 +59,14 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     FloatingActionButton addTagbutton;
 
     private AddTagDialogFragment addTagDialog;
-    private List<Tag> unFilteredTag;
-    private List<Tag> filteredTag;
+
 
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
-    private DatabaseReference database;
-    private DatabaseReference tagCloudReference;
-    private ValueEventListener valueEventListener;
+    private DataAccessManager dataAccessManager;
+
+
 
 
     public TagListFragment() {
@@ -97,12 +92,8 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
 
-        unFilteredTag = new ArrayList<>();
-        filteredTag = new ArrayList<>();
-
         if (firebaseUser != null) {
-            database = FirebaseDatabase.getInstance().getReference();
-            tagCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
+            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
         }
 
         addTagbutton.setOnClickListener(new View.OnClickListener() {
@@ -111,40 +102,22 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
                 showAddNewTagDialog();
             }
         });
-
-        valueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    unFilteredTag.clear();
-                    for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
-                        Tag tag = folderSnapshot.getValue(Tag.class);
-                        unFilteredTag.add(tag);
-                    }
-                    showTags(unFilteredTag);
-                } else {
-                    showEmptyText();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                makeToast("Error fetching data " + databaseError.getMessage());
-            }
-        };
         return mRootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        tagCloudReference.addValueEventListener(valueEventListener);
+        if (dataAccessManager != null){
+            dataAccessManager.getAllTags();
+        }
+
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        tagCloudReference.removeEventListener(valueEventListener);
+
     }
 
     @Override
@@ -179,6 +152,12 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAddNewTag(FolderAddedEvent event){
         addTagDialog.dismiss();
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTagListChange(TagListChangeEvent event){
+        showTags(event.getTaglList());
     }
 
 
@@ -269,7 +248,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                tagCloudReference.child(clickedTag.getId()).removeValue();
+                dataAccessManager.deleteTag(clickedTag.getId());
             }
         });
         alertDialog.setNegativeButton(R.string.label_cancel, new DialogInterface.OnClickListener() {

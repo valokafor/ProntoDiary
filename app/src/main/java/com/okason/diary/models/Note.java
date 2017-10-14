@@ -17,21 +17,16 @@ public class Note {
     private long dateCreated;
     private long dateModified;
     private List<Attachment> attachments;
-    private List<Tag> tags;
-    private String folderId;
-    private String folderName;
     private Folder folder;
-    private Map<String, Boolean> filterTags;
+    private Map<String, Boolean> tags;
 
 
     public Note(){
         attachments = new ArrayList<>();
-        tags = new ArrayList<>();
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
-        filterTags = new HashMap<>();
+        tags = new HashMap<>();
     }
-
 
     public String getId() {
         return id;
@@ -81,43 +76,19 @@ public class Note {
         this.attachments = attachments;
     }
 
-    public List<Tag> getTags() {
-        return tags;
-    }
-
-    public void setTags(List<Tag> tags) {
-        this.tags = tags;
-    }
-
-    public String getFolderId() {
-        return folderId;
-    }
-
-    public void setFolderId(String folderId) {
-        this.folderId = folderId;
-    }
-
-    public String getFolderName() {
-        return folderName;
-    }
-
-    public void setFolderName(String folderName) {
-        this.folderName = folderName;
-    }
-
-    public Map<String, Boolean> getFilterTags() {
-        return filterTags;
-    }
-
-    public void setFilterTags(Map<String, Boolean> filterTags) {
-        this.filterTags = filterTags;
-    }
-
     public Folder getFolder() {
         return folder;
     }
 
     public void setFolder(Folder folder) {
         this.folder = folder;
+    }
+
+    public Map<String, Boolean> getTags() {
+        return tags;
+    }
+
+    public void setTags(Map<String, Boolean> tags) {
+        this.tags = tags;
     }
 }

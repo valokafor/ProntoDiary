@@ -23,17 +23,13 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
+import com.okason.diary.core.events.FolderListChangeEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.models.Folder;
-import com.okason.diary.utils.Constants;
+import com.okason.diary.ui.addnote.DataAccessManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -53,6 +49,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
    // private List<Note> mNotes;
     private FolderListAdapter mAdapter;
+    private DataAccessManager dataAccessManager;
     private View mRootView;
 
     @BindView(R.id.category_recycler_view)
@@ -62,17 +59,17 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     private AddFolderDialogFragment addCategoryDialog;
 
-    private DatabaseReference folderCloudReference;
+
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
 
-    private DatabaseReference database;
+
     private List<Folder> unFilteredFolders;
     private List<Folder> filteredFolders;
 
     private FloatingActionButton floatingActionButton;
 
-    private ValueEventListener valueEventListener;
+
 
 
 
@@ -103,33 +100,6 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        if (firebaseUser != null) {
-            database = FirebaseDatabase.getInstance().getReference();
-            folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
-            valueEventListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        unFilteredFolders.clear();
-                        for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
-                            Folder folder = folderSnapshot.getValue(Folder.class);
-                            unFilteredFolders.add(folder);
-                        }
-                        showFolders(unFilteredFolders);
-                    } else {
-                        showEmptyText();
-                    }
-
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    makeToast("Error fetching data " + databaseError.getMessage());
-
-                }
-            };
-        }
-
 
         floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
@@ -146,15 +116,24 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     @Override
     public void onResume() {
         super.onResume();
-        folderCloudReference.addValueEventListener(valueEventListener);
+        if (firebaseUser != null) {
+            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
+            dataAccessManager.getAllFolder();
+        }
     }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onFolderListChange(FolderListChangeEvent event){
+        showFolders(event.getFolderlList());
+    }
+
 
 
 
     @Override
     public void onPause() {
         super.onPause();
-        folderCloudReference.removeEventListener(valueEventListener);
     }
 
     @Override
@@ -296,16 +275,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //Delete Folder
-                try {
-                    int noteCount = folder.getNotesIds().size();
-                    int taskCount = folder.getTaskIds().size();
-                    if (noteCount > 0 || taskCount > 0){
-                        //Move Note and Folder to default Category
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                folderCloudReference.child(folder.getId()).removeValue();
+                dataAccessManager.deleteFolder(folder.getId());
             }
         });
         alertDialog.setNegativeButton(R.string.label_cancel, new DialogInterface.OnClickListener() {

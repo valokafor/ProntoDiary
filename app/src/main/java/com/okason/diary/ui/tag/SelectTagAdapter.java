@@ -117,21 +117,11 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     Tag checkedTag = mTags.get(position);
-                    if (!selectTags.contains(checkedTag.getTagName())){
-                        selectTags.add(checkedTag.getTagName());
-                        mListener.onTagListUpdated(selectTags);
-                    }
+                    mListener.onTagChecked(checkedTag);
 
                 } else {
                     Tag unCheckedTag = mTags.get(position);
-                    for (int i = 0; i < selectTags.size(); i++){
-                        String tagName = selectTags.get(i);
-                        if (tagName.equals(unCheckedTag.getTagName())){
-                            selectTags.remove(i);
-                            break;
-                        }
-                    }
-                    mListener.onTagListUpdated(selectTags);
+                    mListener.onTagUnChecked(unCheckedTag);
                 }
                 notifyDataSetChanged();
             }

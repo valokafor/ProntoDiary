@@ -1,8 +1,5 @@
 package com.okason.diary.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by Valentine on 4/10/2017.
  */
@@ -13,12 +10,10 @@ public class Folder{
     private String folderName;
     private long dateCreated;
     private long dateModified;
-    private List<String> notesIds;
-    private List<String> taskIds;
+
 
     public Folder(){
-        notesIds = new ArrayList<>();
-        taskIds = new ArrayList<>();
+
     }
 
     public String getId() {
@@ -53,19 +48,5 @@ public class Folder{
         this.dateModified = dateModified;
     }
 
-    public List<String> getNotesIds() {
-        return notesIds;
-    }
 
-    public void setNotesIds(List<String> notesIds) {
-        this.notesIds = notesIds;
-    }
-
-    public List<String> getTaskIds() {
-        return taskIds;
-    }
-
-    public void setTaskIds(List<String> taskIds) {
-        this.taskIds = taskIds;
-    }
 }

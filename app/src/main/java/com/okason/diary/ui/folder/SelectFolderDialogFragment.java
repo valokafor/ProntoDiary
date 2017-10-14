@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,10 +14,19 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.models.Folder;
+import com.okason.diary.utils.Constants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,6 +37,8 @@ public class SelectFolderDialogFragment extends DialogFragment {
     private List<Folder> mCategories;
     private SelectFolderAdapter mCategoryAdapter;
     private OnFolderSelectedListener mCategorySelectedListener;
+    private FirebaseFirestore database;
+    private CollectionReference folderCloudReference;
 
 
     public void setCategorySelectedListener(OnFolderSelectedListener categorySelectedListener) {
@@ -40,6 +52,23 @@ public class SelectFolderDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mCategories = new ArrayList<>();
+        database = FirebaseFirestore.getInstance();
+        folderCloudReference = database.document(Constants.USERS_CLOUD_END_POINT)
+                .collection(FirebaseAuth.getInstance().getCurrentUser().getUid()).document().collection(Constants.FOLDER_CLOUD_END_POINT);
+        folderCloudReference.get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        for (DocumentSnapshot documentSnapshot: task.getResult()){
+                            Folder folder = documentSnapshot.toObject(Folder.class);
+                            if (folder != null){
+                                mCategories.add(folder);
+                            }
+                        }
+
+                    }
+                });
 
 
     }
@@ -48,9 +77,7 @@ public class SelectFolderDialogFragment extends DialogFragment {
         return new SelectFolderDialogFragment();
     }
 
-    public void setCategories(List<Folder> categories) {
-        mCategories = categories;
-    }
+
 
 
 
