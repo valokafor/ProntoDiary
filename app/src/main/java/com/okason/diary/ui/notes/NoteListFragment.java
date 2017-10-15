@@ -200,7 +200,10 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
                 editor.putBoolean(Constants.FIRST_RUN, false).commit();
             }
-            dataAccessManager.getAllJournal();
+            if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
+                tagName = getArguments().getString(Constants.TAG_FILTER);
+            }
+            dataAccessManager.getAllJournal(tagName);
 
         }
         if (ProntoDiaryApplication.getProntoDiaryUser() != null && ProntoDiaryApplication.getProntoDiaryUser().isPremium()){
@@ -225,9 +228,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
 //    private void populateNoteList() {
 //
-//        if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
-//             tagName = getArguments().getString(Constants.TAG_FILTER);
-//        }
+
 //        journalCloudReference.addValueEventListener(new ValueEventListener() {
 //            @Override
 //            public void onDataChange(DataSnapshot dataSnapshot) {
@@ -414,7 +415,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         Gson gson = new Gson();
         String serializedNote = gson.toJson(selectedNote);
         Intent intent = new Intent(getActivity(), NoteDetailActivity.class);
-        intent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
+        intent.putExtra(Constants.SERIALIZED_JOURNAL, serializedNote);
         startActivity(intent);
     }
 

@@ -2,6 +2,7 @@ package com.okason.diary.ui.addnote;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -11,6 +12,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -57,10 +59,10 @@ public class DataAccessManager {
         database = FirebaseFirestore.getInstance();
 
 
-        journalCloudReference = database.collection(Constants.USERS_CLOUD_END_POINT ).document(userId).collection(Constants.NOTE_CLOUD_END_POINT);
-        folderCloudReference = database.collection(Constants.USERS_CLOUD_END_POINT ).document(userId).collection(Constants.FOLDER_CLOUD_END_POINT);
-        tagCloudReference = database.collection(Constants.USERS_CLOUD_END_POINT ).document(userId).collection(Constants.TAG_CLOUD_END_POINT);
-        taskCloudReference = database.collection(Constants.USERS_CLOUD_END_POINT ).document(userId).collection(Constants.TASK_CLOUD_END_POINT);
+        journalCloudReference = database.collection(Constants.USERS_CLOUD_END_POINT).document(userId).collection(Constants.NOTE_CLOUD_END_POINT);
+        folderCloudReference = database.collection(Constants.USERS_CLOUD_END_POINT).document(userId).collection(Constants.FOLDER_CLOUD_END_POINT);
+        tagCloudReference = database.collection(Constants.USERS_CLOUD_END_POINT).document(userId).collection(Constants.TAG_CLOUD_END_POINT);
+        taskCloudReference = database.collection(Constants.USERS_CLOUD_END_POINT).document(userId).collection(Constants.TASK_CLOUD_END_POINT);
 
         String path = journalCloudReference.getPath();
         Log.d(NoteListActivity.TAG, "Cloud Journal Path: " + path);
@@ -70,25 +72,26 @@ public class DataAccessManager {
         attachmentReference = firebaseStorageReference.child("attachments");
     }
 
-    public CollectionReference getTagCloudPath(){
+    public CollectionReference getTagCloudPath() {
         return tagCloudReference;
     }
 
-    public CollectionReference getJournalCloudPath(){
+    public CollectionReference getJournalCloudPath() {
         return journalCloudReference;
     }
 
-    public CollectionReference getTaskPath(){
+    public CollectionReference getTaskPath() {
         return taskCloudReference;
     }
 
-
-
-    public void addNote(Note note){
-
+    public CollectionReference getFolderPath() {
+        return folderCloudReference;
     }
 
-    public void deleteNote(String noteId){
+
+
+
+    public void deleteNote(String noteId) {
 //        final Intent deleteNoteIntent = new Intent(getContext(), HandleNoteDeleteIntentService.class);
 //        deleteNoteIntent.putExtra(Constants.JOURNAL_ID, note.getId());
 //        journalCloudReference.child(note.getId()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -101,29 +104,45 @@ public class DataAccessManager {
 //                }
 //            }
 //        });
+        journalCloudReference.document(noteId).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    getAllJournal("");
+                }
+            }
+        });
     }
 
 
-    public void getAllJournal(){
+    public void getAllJournal(String tagName) {
         final List<Note> journals = new ArrayList<>();
         try {
-            journalCloudReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if (task.isSuccessful()){
-                        for (DocumentSnapshot snapshot: task.getResult()){
-                            Note journal = snapshot.toObject(Note.class);
-                            if (journal != null){
-                                journals.add(journal);
+
+            Query query;
+            if (!TextUtils.isEmpty(tagName)) {
+                query = journalCloudReference.whereEqualTo(tagName, true);
+            } else {
+                query = journalCloudReference;
+            }
+            query.get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                for (DocumentSnapshot snapshot : task.getResult()) {
+                                    Note journal = snapshot.toObject(Note.class);
+                                    if (journal != null) {
+                                        journals.add(journal);
+                                    }
+                                }
+                                EventBus.getDefault().post(new JournalListChangeEvent(journals));
+
+                            } else {
+                                EventBus.getDefault().post(new JournalListChangeEvent(journals));
                             }
                         }
-                        EventBus.getDefault().post(new JournalListChangeEvent(journals));
-
-                    }else {
-                        EventBus.getDefault().post(new JournalListChangeEvent(journals));
-                    }
-                }
-            });
+                    });
         } catch (Exception e) {
             EventBus.getDefault().post(new JournalListChangeEvent(journals));
             Log.d(TAG, "Data access failure: " + e.getLocalizedMessage());
@@ -131,22 +150,22 @@ public class DataAccessManager {
 
     }
 
-    public void getAllFolder(){
+    public void getAllFolder() {
         final List<Folder> folders = new ArrayList<>();
         try {
             folderCloudReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if (task.isSuccessful()){
-                        for (DocumentSnapshot snapshot: task.getResult()){
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot snapshot : task.getResult()) {
                             Folder folder = snapshot.toObject(Folder.class);
-                            if (folder != null){
+                            if (folder != null) {
                                 folders.add(folder);
                             }
                         }
                         EventBus.getDefault().post(new FolderListChangeEvent(folders));
 
-                    }else {
+                    } else {
                         EventBus.getDefault().post(new FolderListChangeEvent(folders));
                     }
                 }
@@ -158,22 +177,22 @@ public class DataAccessManager {
 
     }
 
-    public void getAllTags(){
+    public void getAllTags() {
         final List<Tag> tags = new ArrayList<>();
         try {
             tagCloudReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if (task.isSuccessful()){
-                        for (DocumentSnapshot snapshot: task.getResult()){
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot snapshot : task.getResult()) {
                             Tag tag = snapshot.toObject(Tag.class);
-                            if (tag != null){
+                            if (tag != null) {
                                 tags.add(tag);
                             }
                         }
                         EventBus.getDefault().post(new TagListChangeEvent(tags));
 
-                    }else {
+                    } else {
                         EventBus.getDefault().post(new TagListChangeEvent(tags));
                     }
                 }
@@ -185,67 +204,6 @@ public class DataAccessManager {
 
     }
 
-    public Note getNoteById(String noteId){
-        return null;
-    }
-
-//    private void saveJournal() {
-//
-//        if (currentNote == null){
-//            currentNote = new Note();
-//            String key = noteCloudReference.push().getKey();
-//            currentNote.setId(key);
-//        }
-//
-//        if (currentFolder != null) {
-//            currentNote.setFolderName(currentFolder.getFolderName());
-//            currentNote.setFolderId(currentFolder.getId());
-//        }else {
-//            currentNote.setFolderName(Constants.DEFAULT_CATEGORY);
-//            currentNote.setFolderId(getFolderId(Constants.DEFAULT_CATEGORY));
-//        }
-//
-//
-//        currentNote.setContent(mContent.getText().toString());
-//        currentNote.setTitle(mTitle.getText().toString());
-//        currentNote.setDateModified(System.currentTimeMillis());
-//
-//        if (attachmentList != null && attachmentList.size() > 0) {
-//            currentNote.setAttachments(attachmentList);
-//        }
-//        noteCloudReference.child(currentNote.getId()).setValue(currentNote);
-//        if (currentTagList.size() > 0){
-//            currentNote.setTags(currentTagList);
-//
-//            //The Id of the Journal also need to be added to the
-//            for (Tag tag: currentTagList){
-//                if (!tag.getNoteIds().contains(currentNote.getId())) {
-//                    tag.getNoteIds().add(currentNote.getId());
-//                    tagCloudReference.child(tag.getId()).setValue(tag);
-//                }
-//            }
-//        }
-//        startActivity(new Intent(getActivity(), NoteListActivity.class));
-//    }
-//
-//    private String getFolderId(String folderName) {
-//        for (Folder folder: folderList){
-//            if (!TextUtils.isEmpty(folder.getId()) && folder.getFolderName().equals(folderName)){
-//                return folder.getId();
-//            }
-//        }
-//        return addFolderToFirebase(folderName);
-//    }
-//
-//
-//    private String addFolderToFirebase(String folderName) {
-//        Folder folder = new Folder();
-//        folder.setFolderName(folderName);
-//        String key = folderCloudReference.push().getKey();
-//        folder.setId(key);
-//        folderCloudReference.child(key).setValue(folder);
-//        return key;
-//    }
 
 
     public void uploadFileToCloud(final Attachment attachment) throws IOException {
@@ -347,12 +305,11 @@ public class DataAccessManager {
 
 
         List<Note> sampleNotes = SampleData.getSampleNotes();
-        for (int i =0; i < sampleNotes.size(); i++) {
+        for (int i = 0; i < sampleNotes.size(); i++) {
 
             final Note note = sampleNotes.get(i);
             Folder selectedFolder = folders.get(i);
             note.setFolder(selectedFolder);
-
 
 
             Tag selectedTag = tags.get(i);
@@ -374,7 +331,6 @@ public class DataAccessManager {
         }
 
 
-
     }
 
     public void deleteFolder(String id) {
@@ -384,4 +340,6 @@ public class DataAccessManager {
     public void deleteTag(String id) {
 
     }
+
+
 }

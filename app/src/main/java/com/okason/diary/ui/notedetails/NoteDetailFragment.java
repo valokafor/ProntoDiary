@@ -130,15 +130,15 @@ public class NoteDetailFragment extends Fragment{
     public static NoteDetailFragment newInstance(String serializedNote){
         NoteDetailFragment fragment = new NoteDetailFragment();
         Bundle arguments = new Bundle();
-        arguments.putString(Constants.SERIALIZED_NOTE, serializedNote);
+        arguments.putString(Constants.SERIALIZED_JOURNAL, serializedNote);
         fragment.setArguments(arguments);
         return fragment;
     }
 
     public void getCurrentNote(){
         Bundle args = getArguments();
-        if (args != null && args.containsKey(Constants.SERIALIZED_NOTE)){
-            String serializedNote = args.getString(Constants.SERIALIZED_NOTE);
+        if (args != null && args.containsKey(Constants.SERIALIZED_JOURNAL)){
+            String serializedNote = args.getString(Constants.SERIALIZED_JOURNAL);
             if (!TextUtils.isEmpty(serializedNote)){
                 Gson gson = new Gson();
                 mCurrentNote = gson.fromJson(serializedNote, Note.class);

@@ -32,9 +32,8 @@ public class NoteDetailActivity extends AppCompatActivity {
 
         final Gson gson = new Gson();
 
-        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_NOTE)){
-            String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_NOTE);
-            Note passedInNote = gson.fromJson(serializedNote, Note.class);
+        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_JOURNAL)){
+            String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_JOURNAL);
             String title = getString(R.string.note_detail);
             NoteDetailFragment fragment = NoteDetailFragment.newInstance(serializedNote);
             fragment.setEditNoteistener(new OnEditNoteButtonClickedListener() {
@@ -42,7 +41,7 @@ public class NoteDetailActivity extends AppCompatActivity {
                 public void onEditNote(Note clickedNote) {
                     String serializedNote = gson.toJson(clickedNote);
                     Intent editNoteIntent = new Intent(NoteDetailActivity.this, AddNoteActivity.class);
-                    editNoteIntent.putExtra(Constants.SERIALIZED_NOTE, serializedNote);
+                    editNoteIntent.putExtra(Constants.SERIALIZED_JOURNAL, serializedNote);
                     startActivity(editNoteIntent);
                 }
             });

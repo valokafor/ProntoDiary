@@ -55,10 +55,6 @@ public class Constants {
     public static final String DATE_FORMAT_EXPORT = "yyyy.MM.dd-HH.mm";
 
 
-    public static final String APP_FOLDER = "ProntoNote";
-    public static final String BACKUP_FOLDER = "ProntoNote/Backups";
-    public static final String RECORD_FOLDER = "ProntoNote/Records";
-    public static final String SORT_PREFERENCE = "sort_PREFERENCE";
 
     public static final int PRIORITY_NEGATIVE = -1;
     public static final int PRIORITY_LOW = 1;
@@ -115,13 +111,11 @@ public class Constants {
 
     public static final String JOURNAL_ID = "note_id";
 
-
-
+    public static final String DEFAULT_CATEGORY = "General";
     public static final String ANONYMOUS_USER = "anonymous_user";
     public static final String SERIALIZED_FOLDER = "serialized_folder";
-    public static final String SERIALIZED_NOTE = "serialized_note";
+    public static final String SERIALIZED_JOURNAL = "serialized_note";
     public static final String SERIALIZED_TAG = "serialized_tag";
-    public static final String DEFAULT_CATEGORY = "General";
 
     public static final String NOTE_CLOUD_END_POINT = "notes";
     public static final String TASK_CLOUD_END_POINT = "tasks";

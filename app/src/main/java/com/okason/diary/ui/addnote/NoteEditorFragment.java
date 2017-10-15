@@ -26,9 +26,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -45,9 +43,15 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
@@ -127,6 +131,9 @@ public class NoteEditorFragment extends Fragment{
 
     private boolean dataChanged = false;
     private boolean isInEditMode = false;
+    private String existingTitleText = "";
+    private String existingContentText = "";
+
 
 
     @BindView(R.id.edit_text_category)
@@ -187,12 +194,13 @@ public class NoteEditorFragment extends Fragment{
 
     }
 
-     private void getPassedInJournal() {
+    private void getPassedInJournal() {
         Bundle args = getArguments();
-        if (args != null && args.containsKey(Constants.JOURNAL_ID)){
-            String journalId = args.getString(Constants.JOURNAL_ID, "");
-            if (!journalId.isEmpty()){
-                currentJournal = journalManager.getNoteById(journalId);
+        if (args != null && args.containsKey(Constants.SERIALIZED_JOURNAL)){
+            String serializedNote = args.getString(Constants.SERIALIZED_JOURNAL, "");
+            if (!serializedNote.isEmpty()){
+                Gson gson = new Gson();
+                currentJournal = gson.fromJson(serializedNote, new TypeToken<Note>(){}.getType());
                 if (currentJournal != null & !TextUtils.isEmpty(currentJournal.getId())){
                     isInEditMode = true;
                 }
@@ -201,11 +209,11 @@ public class NoteEditorFragment extends Fragment{
 
     }
 
-    public static NoteEditorFragment newInstance(String journalId){
+    public static NoteEditorFragment newInstance(String content){
         NoteEditorFragment fragment = new NoteEditorFragment();
-        if (!TextUtils.isEmpty(journalId)){
+        if (!TextUtils.isEmpty(content)){
             Bundle args = new Bundle();
-            args.putString(Constants.JOURNAL_ID, journalId);
+            args.putString(Constants.SERIALIZED_JOURNAL, content);
             fragment.setArguments(args);
         }
         return fragment;
@@ -232,41 +240,8 @@ public class NoteEditorFragment extends Fragment{
 
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        mTitle.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-            }
 
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-               dataChanged = true;
-
-            }
-        });
-
-        mContent.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                dataChanged = true;
-
-            }
-        });
 
         return mRootView;
     }
@@ -323,10 +298,12 @@ public class NoteEditorFragment extends Fragment{
                 break;
             case android.R.id.home:
                 if (dataChanged){
-                    Toast.makeText(getContext(), getString(R.string.saving_journal), Toast.LENGTH_SHORT);
-                    journalManager.addNote(currentJournal);
-                } else {
+                    addNote();
+                } else  if (mContent.getText().equals(existingContentText) || mTitle.getText().equals(existingTitleText)){
                     getActivity().onBackPressed();
+                } else {
+                    Toast.makeText(getContext(), getString(R.string.saving_journal), Toast.LENGTH_SHORT);
+                    addNote();
                 }
                 break;
             case R.id.action_tag:
@@ -532,11 +509,13 @@ public class NoteEditorFragment extends Fragment{
 
         try {
             mContent.setText(note.getContent());
+            existingContentText = note.getContent();
         } catch (Exception e) {
             e.printStackTrace();
         }
         try {
             mTitle.setText(note.getTitle());
+            existingTitleText = note.getTitle();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1382,6 +1361,93 @@ public class NoteEditorFragment extends Fragment{
         });
         alertDialog.show();
     }
+
+    public void addNote() {
+
+        if (currentJournal == null) {
+            currentJournal = new Note();
+        }
+
+        String content = mContent.getText().toString();
+        String title = mTitle.getText().toString();
+
+        if (TextUtils.isEmpty(content)){
+            content = getString(R.string.missing_content);
+        }
+
+        if (TextUtils.isEmpty(title)){
+            title = getString(R.string.missing_title);
+        }
+
+        currentJournal.setContent(content);
+        currentJournal.setTitle(title);
+        currentJournal.setDateModified(System.currentTimeMillis());
+
+        if (attachmentList != null && attachmentList.size() > 0) {
+            currentJournal.setAttachments(attachmentList);
+        }
+
+        if (TextUtils.isEmpty(currentJournal.getId())){
+            journalManager.getJournalCloudPath().add(currentJournal)
+                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentReference> task) {
+                            if (task.isSuccessful()) {
+                                String key = task.getResult().getId();
+                                currentJournal.setId(key);
+                                journalManager.getJournalCloudPath().document(key).set(currentJournal);
+
+                                if (currentJournal.getFolder() == null) {
+                                    addJournalToDefaultFolder(currentJournal);
+                                }
+                            }
+                        }
+                    });
+        }else {
+            journalManager.getJournalCloudPath().document(currentJournal.getId()).set(currentJournal);
+
+            if (currentJournal.getFolder() == null) {
+                addJournalToDefaultFolder(currentJournal);
+            }
+        }
+
+        startActivity(new Intent(getActivity(), NoteListActivity.class));
+
+    }
+
+    private void addJournalToDefaultFolder(final Note currentJournal) {
+        journalManager.getFolderPath().whereEqualTo("folderName", Constants.DEFAULT_CATEGORY)
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot documentSnapshots) {
+                if (documentSnapshots.isEmpty()){
+                    final Folder folder = new Folder();
+                    folder.setFolderName(Constants.DEFAULT_CATEGORY);
+                    folder.setDateModified(System.currentTimeMillis());
+                    folder.setDateCreated(System.currentTimeMillis());
+                    journalManager.getFolderPath().add(folder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentReference> task) {
+                            if (task.isSuccessful()){
+                                folder.setId(task.getResult().getId());
+                                journalManager.getFolderPath().document(folder.getId()).set(folder);
+                                currentJournal.setFolder(folder);
+                                journalManager.getJournalCloudPath().document(currentJournal.getId()).set(currentJournal);
+                            }
+                        }
+                    });
+                }else {
+                    Folder defaultFolder = documentSnapshots.getDocuments().get(0).toObject(Folder.class);
+                    currentJournal.setFolder(defaultFolder);
+                    journalManager.getJournalCloudPath().document(currentJournal.getId()).set(currentJournal);
+                }
+            }
+        });
+
+    }
+
+
+
 
 
 
