@@ -16,7 +16,6 @@ import android.widget.LinearLayout;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
@@ -41,27 +40,14 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
 
 
 
-    public SelectTagAdapter(final List<String> tags, Context context, OnTagSelectedListener listener, DataAccessManager dataAccessManager) {
-        selectTags = tags;
+    public SelectTagAdapter(final List<Tag> allTags, List<String> currentTags, Context context,
+                            OnTagSelectedListener listener, DataAccessManager dataAccessManager) {
+        selectTags = currentTags;
+        mTags = allTags;
         mContext = context;
         mListener = listener;
+
         this.dataAccessManager = dataAccessManager;
-
-
-        //Get all Tags
-        dataAccessManager.getTagCloudPath()
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()){
-                            for (DocumentSnapshot document: task.getResult()){
-                                Tag tag = document.toObject(Tag.class);
-                                mTags.add(tag);
-                            }
-                        }
-                    }
-                });
     }
 
 

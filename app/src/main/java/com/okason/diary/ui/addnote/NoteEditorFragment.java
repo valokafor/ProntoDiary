@@ -57,6 +57,7 @@ import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.AttachingFileCompleteEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
+import com.okason.diary.core.events.TagListChangeEvent;
 import com.okason.diary.core.events.UpdateTagLayoutEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
@@ -308,7 +309,7 @@ public class NoteEditorFragment extends Fragment{
                 }
                 break;
             case R.id.action_tag:
-                showSelectTag();
+                journalManager.getAllTags();
                 break;
 
 
@@ -321,7 +322,7 @@ public class NoteEditorFragment extends Fragment{
      * For this journal. The selected tags are delivered back to this Fragment via
      * A Listener. Tags are saved to the Journal as a Map of String and Boolean
      */
-    private void showSelectTag() {
+    private void showSelectTag(List<Tag> tagList) {
         selectTagDialogFragment = SelectTagDialogFragment.newInstance();
         List<String> existingTags = new ArrayList<>();
         if (isInEditMode) {
@@ -335,6 +336,7 @@ public class NoteEditorFragment extends Fragment{
         }
         selectTagDialogFragment.setTags(existingTags);
         selectTagDialogFragment.setDataAccessManager(journalManager);
+        selectTagDialogFragment.setAllTags(tagList);
 
 
 
@@ -347,6 +349,7 @@ public class NoteEditorFragment extends Fragment{
                 if (!currentJournal.getTags().containsKey(selectedTag.getTagName())){
                     currentJournal.getTags().put(selectedTag.getTagName(), true);
                 }
+                initTagLayout(currentJournal.getTags());
 
 
             }
@@ -425,6 +428,13 @@ public class NoteEditorFragment extends Fragment{
         List<Tag> tags = event.getTags();
         initTagLayout(currentJournal.getTags());
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTagListChange(TagListChangeEvent event){
+        showSelectTag(event.getTaglList());
+    }
+
+
 
 
     @OnClick(R.id.edit_text_category)
@@ -540,6 +550,10 @@ public class NoteEditorFragment extends Fragment{
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        if (!journal.getTags().isEmpty()){
+            initTagLayout(journal.getTags());
         }
 
 
