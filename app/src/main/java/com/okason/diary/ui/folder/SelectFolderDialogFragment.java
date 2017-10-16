@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,17 +13,15 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.R;
+import com.okason.diary.core.events.FolderListChangeEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.models.Folder;
-import com.okason.diary.utils.Constants;
+import com.okason.diary.ui.addnote.DataAccessManager;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +34,15 @@ public class SelectFolderDialogFragment extends DialogFragment {
     private List<Folder> mCategories;
     private SelectFolderAdapter mCategoryAdapter;
     private OnFolderSelectedListener mCategorySelectedListener;
-    private FirebaseFirestore database;
-    private CollectionReference folderCloudReference;
+    private DataAccessManager dataAccessManager;
 
 
     public void setCategorySelectedListener(OnFolderSelectedListener categorySelectedListener) {
         mCategorySelectedListener = categorySelectedListener;
+    }
+
+    public void setDataAccessManager(DataAccessManager dataAccessManager) {
+        this.dataAccessManager = dataAccessManager;
     }
 
     public SelectFolderDialogFragment() {
@@ -53,28 +53,32 @@ public class SelectFolderDialogFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mCategories = new ArrayList<>();
-        database = FirebaseFirestore.getInstance();
-        folderCloudReference = database.document(Constants.USERS_CLOUD_END_POINT)
-                .collection(FirebaseAuth.getInstance().getCurrentUser().getUid()).document().collection(Constants.FOLDER_CLOUD_END_POINT);
-        folderCloudReference.get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        for (DocumentSnapshot documentSnapshot: task.getResult()){
-                            Folder folder = documentSnapshot.toObject(Folder.class);
-                            if (folder != null){
-                                mCategories.add(folder);
-                            }
-                        }
-
-                    }
-                });
 
 
     }
 
     public static SelectFolderDialogFragment newInstance(){
         return new SelectFolderDialogFragment();
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onFolderListChange(FolderListChangeEvent event){
+        mCategories = event.getFolderlList();
+        mCategoryAdapter.replaceData(mCategories);
     }
 
 
@@ -118,6 +122,7 @@ public class SelectFolderDialogFragment extends DialogFragment {
                 }
             }
         });
+        dataAccessManager.getAllFolder();
 
         return builder.create();
 

@@ -9,7 +9,7 @@ import java.util.Map;
  * Created by Valentine on 4/10/2017.
  */
 
-public class Note {
+public class Journal {
 
     private String id;
     private String title;
@@ -21,7 +21,7 @@ public class Note {
     private Map<String, Boolean> tags;
 
 
-    public Note(){
+    public Journal(){
         attachments = new ArrayList<>();
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();

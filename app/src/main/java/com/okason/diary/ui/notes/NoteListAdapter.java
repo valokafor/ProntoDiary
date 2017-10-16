@@ -16,7 +16,7 @@ import com.bumptech.glide.Glide;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.models.Attachment;
-import com.okason.diary.models.Note;
+import com.okason.diary.models.Journal;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.date.TimeUtils;
@@ -31,15 +31,15 @@ import butterknife.ButterKnife;
  * Created by Valentine on 2/6/2016.
  */
 public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHolder> {
-    private List<Note> mNotes;
+    private List<Journal> mJournals;
     private final Context mContext;
     private NoteItemListener mItemListener;
     private View noteView;
     private boolean isAudioPlaying = false;
 
 
-    public NoteListAdapter(List<Note> notes, Context mContext){
-        mNotes = notes;
+    public NoteListAdapter(List<Journal> journals, Context mContext){
+        mJournals = journals;
         this.mContext = mContext;
     }
 
@@ -53,28 +53,28 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final Note note = mNotes.get(position);
-        if (note != null && !TextUtils.isEmpty(note.getContent()) && !TextUtils.isEmpty(note.getTitle())) {
+        final Journal journal = mJournals.get(position);
+        if (journal != null && !TextUtils.isEmpty(journal.getContent()) && !TextUtils.isEmpty(journal.getTitle())) {
             String firstLetter;
             TextDrawable drawable;
             int color;
 
-            holder.title.setText(note.getTitle());
-            holder.contentSummary.setText(note.getContent().substring(0, Math.min(100, note.getContent().length())));
-            holder.date.setText(TimeUtils.getReadableModifiedDateWithTime(note.getDateModified()));
+            holder.title.setText(journal.getTitle());
+            holder.contentSummary.setText(journal.getContent().substring(0, Math.min(100, journal.getContent().length())));
+            holder.date.setText(TimeUtils.getReadableModifiedDateWithTime(journal.getDateModified()));
 
-            firstLetter = note.getTitle().substring(0, 1);
+            firstLetter = journal.getTitle().substring(0, 1);
             color = Color.GRAY;
             drawable = TextDrawable.builder()
                     .buildRound(firstLetter, color);
             holder.firstLetterIcon.setImageDrawable(drawable);
 
-            //Check to see if this Note has Attachments, if it does check if the attachment is image
+            //Check to see if this Journal has Attachments, if it does check if the attachment is image
             //If it is then show the thumbnail
-            if (note.getAttachments() != null && note.getAttachments().size() > 0){
+            if (journal.getAttachments() != null && journal.getAttachments().size() > 0){
                 holder.attachmentLayout.setVisibility(View.VISIBLE);
 
-                Attachment lastAttachment = note.getAttachments().get(note.getAttachments().size() - 1);
+                Attachment lastAttachment = journal.getAttachments().get(journal.getAttachments().size() - 1);
 
 
                 if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
@@ -134,25 +134,25 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        return mNotes.size();
+        return mJournals.size();
     }
 
-    public Note getItem(int position) {
-        return mNotes.get(position);
+    public Journal getItem(int position) {
+        return mJournals.get(position);
     }
 
-    public void replaceData(List<Note> notes) {
-        setList(notes);
+    public void replaceData(List<Journal> journals) {
+        setList(journals);
         notifyDataSetChanged();
     }
 
-    public void addNote(Note note){
-        mNotes.add(note);
-        notifyItemInserted(mNotes.size() - 1);
+    public void addNote(Journal journal){
+        mJournals.add(journal);
+        notifyItemInserted(mJournals.size() - 1);
     }
 
-    private void setList(List<Note> notes) {
-        mNotes = notes;
+    private void setList(List<Journal> journals) {
+        mJournals = journals;
     }
 
     public void setNoteItemListener(NoteItemListener listener){
@@ -199,24 +199,24 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    Note note = getItem(position);
-                    mItemListener.onNoteClick(note);
+                    Journal journal = getItem(position);
+                    mItemListener.onNoteClick(journal);
                 }
             });
             contentSummary.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    Note note = getItem(position);
-                    mItemListener.onNoteClick(note);
+                    Journal journal = getItem(position);
+                    mItemListener.onNoteClick(journal);
                 }
             });
             delete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    Note note = getItem(position);
-                    mItemListener.onDeleteButtonClicked(note);
+                    Journal journal = getItem(position);
+                    mItemListener.onDeleteButtonClicked(journal);
                 }
             });
 
@@ -224,8 +224,8 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 @Override
                 public void onClick(View v) {
                     int postion = getAdapterPosition();
-                    Note note = getItem(postion);
-                    mItemListener.onAttachmentClicked(note, postion);
+                    Journal journal = getItem(postion);
+                    mItemListener.onAttachmentClicked(journal, postion);
                 }
             });
         }

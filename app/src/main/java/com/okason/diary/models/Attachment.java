@@ -6,7 +6,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.core.services.DownloadFileFromFireaseIntentService;
+import com.okason.diary.core.services.FileDownloadIntentService;
 import com.okason.diary.utils.Constants;
 
 import java.io.File;
@@ -88,7 +88,7 @@ public class Attachment{
             if (!TextUtils.isEmpty(filePath)){
                 Context appContext =  ProntoDiaryApplication.getAppContext();
                 Intent downloadIntent = new Intent(appContext,
-                        DownloadFileFromFireaseIntentService.class);
+                        FileDownloadIntentService.class);
                 downloadIntent.putExtra(Constants.ATTACHMENT_ID, id);
                 appContext.startService(downloadIntent);
 

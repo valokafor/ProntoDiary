@@ -13,6 +13,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,7 +30,9 @@ import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.events.FolderListChangeEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.models.Folder;
+import com.okason.diary.models.SampleData;
 import com.okason.diary.ui.addnote.DataAccessManager;
+import com.okason.diary.ui.auth.AuthUiActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -47,7 +50,7 @@ import butterknife.ButterKnife;
 public class FolderListFragment extends Fragment implements OnFolderSelectedListener,
         SearchView.OnCloseListener, SearchView.OnQueryTextListener{
 
-   // private List<Note> mNotes;
+   // private List<Journal> mNotes;
     private FolderListAdapter mAdapter;
     private DataAccessManager dataAccessManager;
     private View mRootView;
@@ -105,7 +108,11 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showAddNewFolderDialog();
+                if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+                    showAddNewFolderDialog();
+                } else {
+                   startActivity(AuthUiActivity.createIntent(getActivity()));
+                }
             }
         });
 
@@ -116,10 +123,27 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     @Override
     public void onResume() {
         super.onResume();
-        if (firebaseUser != null) {
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
             dataAccessManager = new DataAccessManager(firebaseUser.getUid());
             dataAccessManager.getAllFolder();
+        } else {
+            showFolders(generateSampleFolders());
         }
+    }
+
+    private List<Folder> generateSampleFolders() {
+
+        final List<Folder> folders = new ArrayList<>();
+
+        List<String> sampleFolderNames = SampleData.getSampleCategories();
+        for (String name : sampleFolderNames) {
+
+            final Folder folder = new Folder();
+            folder.setFolderName(name);
+
+            folders.add(folder);
+        }
+        return folders;
     }
 
 
@@ -225,12 +249,21 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     @Override
     public void onEditCategoryButtonClicked(Folder selectedFolder) {
-        showEditCategoryForm(selectedFolder);
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+            showEditCategoryForm(selectedFolder);
+        } else {
+            makeToast(getString(R.string.login_required));
+        }
     }
 
     @Override
     public void onDeleteCategoryButtonClicked(Folder selectedFolder) {
-        showConfirmDeleteCategoryPrompt(selectedFolder);
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+            showConfirmDeleteCategoryPrompt(selectedFolder);
+        } else {
+            makeToast(getString(R.string.login_required));
+        }
+
 
     }
 
@@ -289,7 +322,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     }
 
     private void makeToast(String message) {
-        Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
+        Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_SHORT);
         View snackBarView = snackbar.getView();
         snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
         TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);

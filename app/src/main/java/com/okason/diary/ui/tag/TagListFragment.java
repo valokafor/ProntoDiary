@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,14 +29,17 @@ import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.events.TagListChangeEvent;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.models.SampleData;
 import com.okason.diary.models.Tag;
 import com.okason.diary.ui.addnote.DataAccessManager;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -108,10 +112,28 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     @Override
     public void onResume() {
         super.onResume();
-        if (dataAccessManager != null){
-            dataAccessManager.getAllTags();
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+            if (dataAccessManager != null){
+                dataAccessManager.getAllTags();
+            }
+        } else {
+            showTags(generateSampleTags());
         }
 
+    }
+
+    private List<Tag> generateSampleTags() {
+        final List<Tag> tags = new ArrayList<>();
+
+        List<String> sampleTagNames = SampleData.getSampleTags();
+        for (String name : sampleTagNames) {
+
+            final Tag folder = new Tag();
+            folder.setTagName(name);
+
+            tags.add(folder);
+        }
+        return tags;
     }
 
     @Override
@@ -164,8 +186,12 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
 
     public void showAddNewTagDialog() {
-        addTagDialog = AddTagDialogFragment.newInstance("");
-        addTagDialog.show(getActivity().getFragmentManager(), "Dialog");
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+            addTagDialog = AddTagDialogFragment.newInstance("");
+            addTagDialog.show(getActivity().getFragmentManager(), "Dialog");
+        } else {
+            startActivity(AuthUiActivity.createIntent(getActivity()));
+        }
     }
 
 
@@ -216,7 +242,11 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
     @Override
     public void onEditTagButtonClicked(Tag clickedTag) {
-        showEditTagForm(clickedTag);
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+            showEditTagForm(clickedTag);
+        } else {
+            makeToast(getString(R.string.login_required));
+        }
 
     }
 
@@ -229,7 +259,11 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
     @Override
     public void onDeleteTagButtonClicked(Tag clickedTag) {
-        showConfirmDeleteTagPrompt(clickedTag);
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+            showConfirmDeleteTagPrompt(clickedTag);
+        } else {
+            makeToast(getString(R.string.login_required));
+        }
     }
 
     private void showConfirmDeleteTagPrompt(final Tag clickedTag) {

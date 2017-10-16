@@ -24,7 +24,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.dynamiclinks.DynamicLink;
@@ -112,7 +111,6 @@ public class NoteListActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         settingsHelper = SettingsHelper.getHelper(mActivity);
-        firebaseAuth = FirebaseAuth.getInstance();
         firebaseAnalytics = FirebaseAnalytics.getInstance(mActivity);
 
 
@@ -134,7 +132,7 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-       checkLoginStatus();
+       showNoteListFragment();
       //  checkForDynamicLinkInvite(getIntent());
 
     }
@@ -246,14 +244,14 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
 
-    private void checkLoginStatus() {
-        if (firebaseUser != null) {
-            showNoteListFragment();
-        }else {
-            startActivity(AuthUiActivity.createIntent(mActivity));
-        }
-
-    }
+//    private void checkLoginStatus() {
+//        if (firebaseUser != null) {
+//            showNoteListFragment();
+//        }else {
+//            startActivity(AuthUiActivity.createIntent(mActivity));
+//        }
+//
+//    }
 
     private void showNoteListFragment() {
         //Apply Tag filter is one exist.
@@ -272,35 +270,7 @@ public class NoteListActivity extends AppCompatActivity {
 
     }
 
-    private void loginAnonymously() {
-        String savedUserId = settingsHelper.getAnonymousUserId();
-        if (!TextUtils.isEmpty(savedUserId)){
-            firebaseUser = firebaseAuth.getCurrentUser();
-            return;
-        }
 
-        firebaseAuth.signInAnonymously()
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInAnonymously:success");
-                            firebaseUser = firebaseAuth.getCurrentUser();
-                            settingsHelper.saveAnonymousUserId(firebaseUser.getUid());
-                            if (firebaseUser != null){
-                                showNoteListFragment();
-                            }
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInAnonymously:failure", task.getException());
-                            makeToast("Authentication failed.");
-                        }
-
-                    }
-                });
-
-    }
 
 
 //    @Subscribe(threadMode = ThreadMode.MAIN)

@@ -48,6 +48,12 @@ public class SelectFolderAdapter extends ArrayAdapter<Folder> {
         return position;
     }
 
+    public void replaceData(List<Folder> folders){
+        mCategories.clear();
+        mCategories = folders;
+        notifyDataSetChanged();
+    }
+
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {

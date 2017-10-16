@@ -7,16 +7,13 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,29 +27,23 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.google.gson.Gson;
-import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.ItemDeletedEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnEditNoteButtonClickedListener;
 import com.okason.diary.models.Attachment;
-import com.okason.diary.models.Note;
+import com.okason.diary.models.Journal;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
-import com.okason.diary.utils.FileUtility;
 import com.okason.diary.utils.IntentChecker;
 import com.okason.diary.utils.date.TimeUtils;
 
@@ -60,8 +51,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -118,7 +107,7 @@ public class NoteDetailFragment extends Fragment{
         this.editNoteistener = editNoteistener;
     }
 
-    private Note mCurrentNote = null;
+    private Journal mCurrentJournal = null;
 
 
 
@@ -141,7 +130,7 @@ public class NoteDetailFragment extends Fragment{
             String serializedNote = args.getString(Constants.SERIALIZED_JOURNAL);
             if (!TextUtils.isEmpty(serializedNote)){
                 Gson gson = new Gson();
-                mCurrentNote = gson.fromJson(serializedNote, Note.class);
+                mCurrentJournal = gson.fromJson(serializedNote, Journal.class);
             }
         }
     }
@@ -167,8 +156,8 @@ public class NoteDetailFragment extends Fragment{
         mFirebaseStorage = FirebaseStorage.getInstance();
 
 
-        if (mCurrentNote != null) {
-            displayNote(mCurrentNote);
+        if (mCurrentJournal != null) {
+            displayNote(mCurrentJournal);
         }
         return mRootView;
     }
@@ -209,8 +198,8 @@ public class NoteDetailFragment extends Fragment{
     }
 
     /**
-     * This event will be fired when a Note is deleted
-     * If deleted successfuly, go back to the Note List
+     * This event will be fired when a Journal is deleted
+     * If deleted successfuly, go back to the Journal List
      * @param event
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -234,13 +223,13 @@ public class NoteDetailFragment extends Fragment{
         int id = item.getItemId();
         switch (id){
             case R.id.action_edit:
-                editNoteistener.onEditNote(mCurrentNote);
+                editNoteistener.onEditNote(mCurrentJournal);
                 break;
             case R.id.action_delete:
-                showDeleteConfirmation(mCurrentNote);
+                showDeleteConfirmation(mCurrentJournal);
                 break;
             case R.id.action_share:
-                displayShareIntent(mCurrentNote);
+                displayShareIntent(mCurrentJournal);
                 break;
             case R.id.action_play:
                // onPlayAudioButtonClicked();
@@ -266,27 +255,27 @@ public class NoteDetailFragment extends Fragment{
     }
 
 
-    public void displayNote(Note note) {
+    public void displayNote(Journal journal) {
         try {
-            mCategory.setText(note.getFolder().getFolderName());
+            mCategory.setText(journal.getFolder().getFolderName());
         } catch (Exception e) {
             e.printStackTrace();
         }
         try {
-            mContent.setText(note.getContent());
+            mContent.setText(journal.getContent());
         } catch (Exception e) {
             e.printStackTrace();
         }
         try {
-            mTitle.setText(note.getTitle());
+            mTitle.setText(journal.getTitle());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
 
         try {
-            if (note.getAttachments() != null && note.getAttachments().size() > 0){
-                initViewAttachments(note.getAttachments());
+            if (journal.getAttachments() != null && journal.getAttachments().size() > 0){
+                initViewAttachments(journal.getAttachments());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -294,13 +283,13 @@ public class NoteDetailFragment extends Fragment{
 
         String created = null;
         try {
-            created = getString(R.string.creation) + " " + TimeUtils.getTimeAgo(note.getDateCreated());
+            created = getString(R.string.creation) + " " + TimeUtils.getTimeAgo(journal.getDateCreated());
         } catch (Exception e) {
             created = getString(R.string.creation) + " " + TimeUtils.getTimeAgo(System.currentTimeMillis());
         }
         String modified = null;
         try {
-            modified = getString(R.string.last_update) + " "  + TimeUtils.getTimeAgo(note.getDateModified());
+            modified = getString(R.string.last_update) + " "  + TimeUtils.getTimeAgo(journal.getDateModified());
         } catch (Exception e) {
             modified = getString(R.string.last_update) + " "  + TimeUtils.getTimeAgo(System.currentTimeMillis());
         }
@@ -312,8 +301,8 @@ public class NoteDetailFragment extends Fragment{
     }
 
 
-    public void showDeleteConfirmation(Note note) {
-        final String titleOfNoteTobeDeleted = note.getTitle();
+    public void showDeleteConfirmation(Journal journal) {
+        final String titleOfNoteTobeDeleted = journal.getTitle();
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -327,7 +316,7 @@ public class NoteDetailFragment extends Fragment{
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                deleteNote(mCurrentNote);
+                deleteNote(mCurrentJournal);
             }
         });
         alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
@@ -349,7 +338,7 @@ public class NoteDetailFragment extends Fragment{
     /**
      * Shows a horizontal layout at the top of the screen that displays
      * thunmnail of attachments
-     * @param attachmentList - the list of attachments for this Note
+     * @param attachmentList - the list of attachments for this Journal
      */
     private void initViewAttachments(final List<Attachment> attachmentList){
 
@@ -411,24 +400,22 @@ public class NoteDetailFragment extends Fragment{
 
     }
 
-    public void displayShareIntent(final Note note) {
-        final String titleText = note.getTitle();
+    public void displayShareIntent(final Journal journal) {
+        final String titleText = journal.getTitle();
 
-        final String contentText = titleText
-                + System.getProperty("line.separator")
-                + note.getContent();
+        final String contentText = journal.getContent();
 
-        if (note.getAttachments().size() == 0){
+        if (journal.getAttachments().size() == 0){
             shareTextOnly(titleText, contentText);
-        } else if (note.getAttachments().size() == 1) {
-            shareTextAndOneAttachment(titleText, contentText, note);
-        } else if (note.getAttachments().size() > 1) {
-            shareTextAndMultipleAttachment(titleText, contentText, note);
+        } else if (journal.getAttachments().size() == 1) {
+            shareTextAndOneAttachment(titleText, contentText, journal);
+        } else if (journal.getAttachments().size() > 1) {
+            shareTextAndMultipleAttachment(titleText, contentText, journal);
         }
 
     }
 
-    private void shareTextAndMultipleAttachment(String titleText, String contentText, Note note) {
+    private void shareTextAndMultipleAttachment(String titleText, String contentText, Journal journal) {
         final Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
         ArrayList<Uri> uris = new ArrayList<>();
@@ -437,10 +424,7 @@ public class NoteDetailFragment extends Fragment{
 
         // A check to decide the mime type of attachments to share is done here
         HashMap<String, Boolean> mimeTypes = new HashMap<>();
-        for (Attachment attachment : note.getAttachments()) {
-            if (attachment.getFilePath().contains("http")){
-                continue;
-            }
+        for (Attachment attachment : journal.getAttachments()) {
             Uri uri = Uri.parse(attachment.getUri());
             uris.add(uri);
             mimeTypes.put(attachment.getMime_type(), true);
@@ -454,41 +438,24 @@ public class NoteDetailFragment extends Fragment{
 
         shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
 
+
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
+        startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+
     }
 
-    private void shareTextAndOneAttachment(final String titleText, final String contentText, Note note) {
+    private void shareTextAndOneAttachment(final String titleText, final String contentText, Journal journal) {
         final Intent shareIntent = new Intent();
 
         shareIntent.setAction(Intent.ACTION_SEND);
-        shareIntent.setType(note.getAttachments().get(0).getMime_type());
-        Uri singleUri = Uri.parse(note.getAttachments().get(0).getUri());
+        shareIntent.setType(journal.getAttachments().get(0).getMime_type());
+        Uri singleUri = Uri.parse(journal.getAttachments().get(0).getUri());
+
         shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
-
-        String cloudString = note.getAttachments().get(0).getCloudFilePath();
-        StorageReference storageReference = mFirebaseStorage.getReferenceFromUrl(cloudString);
-        try {
-            final File localFile = FileUtility.createImageFile(Constants.MIME_TYPE_IMAGE_EXT);
-            storageReference.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    Uri singleUri  = FileProvider.getUriForFile(getContext(),
-                            BuildConfig.APPLICATION_ID + ".provider",
-                            localFile);
-                    shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
-                    shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
-                    shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
-                    startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
-
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.d(TAG, "File Download failed: " + e.getLocalizedMessage());
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
+        startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
 
 
     }
@@ -504,9 +471,9 @@ public class NoteDetailFragment extends Fragment{
 
     }
 
-    private void deleteNote(Note note) {
-        if (!TextUtils.isEmpty(note.getId())) {
-            noteCloudReference.child(note.getId()).removeValue();
+    private void deleteNote(Journal journal) {
+        if (!TextUtils.isEmpty(journal.getId())) {
+            noteCloudReference.child(journal.getId()).removeValue();
         }
         startActivity(new Intent(getActivity(), NoteListActivity.class));
     }

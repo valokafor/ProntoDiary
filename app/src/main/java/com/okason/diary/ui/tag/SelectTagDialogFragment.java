@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.ui.addnote.DataAccessManager;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class SelectTagDialogFragment extends DialogFragment {
     private List<String> mTags;
     private SelectTagAdapter mTagAdapter;
     private OnTagSelectedListener mListener;
+    private DataAccessManager dataAccessManager;
 
 
 
@@ -52,6 +54,10 @@ public class SelectTagDialogFragment extends DialogFragment {
         // Required empty public constructor
     }
 
+
+    public void setDataAccessManager(DataAccessManager dataAccessManager) {
+        this.dataAccessManager = dataAccessManager;
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -78,7 +84,7 @@ public class SelectTagDialogFragment extends DialogFragment {
             }
         });
 
-        mTagAdapter = new SelectTagAdapter(mTags, getActivity(), mListener);
+        mTagAdapter = new SelectTagAdapter(mTags, getActivity(), mListener, dataAccessManager);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         tagRecyclerView.setLayoutManager(layoutManager);
         tagRecyclerView.setAdapter(mTagAdapter);

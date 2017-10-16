@@ -61,9 +61,10 @@ import com.okason.diary.core.events.UpdateTagLayoutEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.core.services.FileUploadIntentService;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
-import com.okason.diary.models.Note;
+import com.okason.diary.models.Journal;
 import com.okason.diary.models.Tag;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.attachment.AttachmentTask;
@@ -103,7 +104,7 @@ public class NoteEditorFragment extends Fragment{
 
     private View mRootView;
 
-    private Note currentJournal = null;
+    private Journal currentJournal = null;
     private List<Attachment> attachmentList;
 
     private FirebaseAuth firebaseAuth;
@@ -200,7 +201,7 @@ public class NoteEditorFragment extends Fragment{
             String serializedNote = args.getString(Constants.SERIALIZED_JOURNAL, "");
             if (!serializedNote.isEmpty()){
                 Gson gson = new Gson();
-                currentJournal = gson.fromJson(serializedNote, new TypeToken<Note>(){}.getType());
+                currentJournal = gson.fromJson(serializedNote, new TypeToken<Journal>(){}.getType());
                 if (currentJournal != null & !TextUtils.isEmpty(currentJournal.getId())){
                     isInEditMode = true;
                 }
@@ -315,6 +316,11 @@ public class NoteEditorFragment extends Fragment{
         return true;
     }
 
+    /**
+     * This methods shows a dialog for the user to select one or more tags
+     * For this journal. The selected tags are delivered back to this Fragment via
+     * A Listener. Tags are saved to the Journal as a Map of String and Boolean
+     */
     private void showSelectTag() {
         selectTagDialogFragment = SelectTagDialogFragment.newInstance();
         List<String> existingTags = new ArrayList<>();
@@ -328,6 +334,7 @@ public class NoteEditorFragment extends Fragment{
             }
         }
         selectTagDialogFragment.setTags(existingTags);
+        selectTagDialogFragment.setDataAccessManager(journalManager);
 
 
 
@@ -335,7 +342,7 @@ public class NoteEditorFragment extends Fragment{
             @Override
             public void onTagChecked(Tag selectedTag) {
                 if (currentJournal == null){
-                    currentJournal = new Note();
+                    currentJournal = new Journal();
                 }
                 if (!currentJournal.getTags().containsKey(selectedTag.getTagName())){
                     currentJournal.getTags().put(selectedTag.getTagName(), true);
@@ -387,21 +394,12 @@ public class NoteEditorFragment extends Fragment{
         hideProgressDialog();
         updateAttachmentList(event.getAttachment());
         dataChanged = true;
-//
-//        Intent uploadIntent = new Intent(getActivity(),
-//                UploadFileToFirebaseIntentService.class);
-//        uploadIntent.putExtra(Constants.ATTACHMENT_ID, event.getAttachmentId());
-//        getActivity().startService(uploadIntent);
     }
 
     private void updateAttachmentList(Attachment attachment) {
         attachmentList.add(attachment);
         initViewAttachments(attachmentList);
-        try {
-            journalManager.uploadFileToCloud(attachment);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
 
@@ -416,7 +414,7 @@ public class NoteEditorFragment extends Fragment{
         if (event.getFolder() != null){
             mCategory.setText(event.getFolder().getFolderName());
             if (currentJournal == null){
-                currentJournal = new Note();
+                currentJournal = new Journal();
             }
             currentJournal.setFolder(event.getFolder());
         }
@@ -436,14 +434,14 @@ public class NoteEditorFragment extends Fragment{
 
     private void showChooseFolderDialog() {
         selectFolderDialogFragment = selectFolderDialogFragment.newInstance();
-
+        selectFolderDialogFragment.setDataAccessManager(journalManager);
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
             @Override
             public void onCategorySelected(Folder selectedCategory) {
                 selectFolderDialogFragment.dismiss();
                 mCategory.setText(selectedCategory.getFolderName());
                 if (currentJournal == null){
-                    currentJournal = new Note();
+                    currentJournal = new Journal();
                 }
                 currentJournal.setFolder(selectedCategory);
             }
@@ -496,39 +494,37 @@ public class NoteEditorFragment extends Fragment{
     }
 
 
-    private void populateFolderList() {
-
-
-    }
-
-
-    public void populateNote(Note note) {
+    /**
+     * This method populates the screen with existing data
+     * @param journal - Journal to be shown
+     */
+    public void populateNote(Journal journal) {
 
         mTitle.setHint(R.string.placeholder_journal_title);
         mContent.setHint(R.string.placeholder_journal_text);
 
         try {
-            mContent.setText(note.getContent());
-            existingContentText = note.getContent();
+            mContent.setText(journal.getContent());
+            existingContentText = journal.getContent();
         } catch (Exception e) {
             e.printStackTrace();
         }
         try {
-            mTitle.setText(note.getTitle());
-            existingTitleText = note.getTitle();
+            mTitle.setText(journal.getTitle());
+            existingTitleText = journal.getTitle();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            mCategory.setText(note.getFolder().getFolderName());
+            mCategory.setText(journal.getFolder().getFolderName());
         } catch (Exception e) {
             mCategory.setText(Constants.DEFAULT_CATEGORY);
         }
 
         mContent.requestFocus();
         try {
-            attachmentList = note.getAttachments();
+            attachmentList = journal.getAttachments();
             if (attachmentList != null && attachmentList.size() == 1){
                 mImageAttachment.setVisibility(View.VISIBLE);
                 attachmentContainer.setVisibility(View.GONE);
@@ -602,7 +598,7 @@ public class NoteEditorFragment extends Fragment{
      * Shows a horizontal layout at the top of the screen that displays
      * thunmnail of attachments
      *
-     * @param attachmentList - the list of attachments for this Note
+     * @param attachmentList - the list of attachments for this Journal
      */
     private void initViewAttachments(final List<Attachment> attachmentList) {
         mImageAttachment.setVisibility(View.GONE);
@@ -1243,53 +1239,20 @@ public class NoteEditorFragment extends Fragment{
     }
 
 
-    public void displayShareIntent(Note note) {
-        if (note != null && !TextUtils.isEmpty(note.getContent()) && !TextUtils.isEmpty(note.getTitle())) {
+    public void displayShareIntent(Journal journal) {
+        if (journal != null && !TextUtils.isEmpty(journal.getContent()) && !TextUtils.isEmpty(journal.getTitle())) {
 
-            String titleText = note.getTitle();
+            final String titleText = journal.getTitle();
 
-            String contentText = titleText
-                    + System.getProperty("line.separator")
-                    + note.getContent();
+            final String contentText = journal.getContent();
 
-
-            Intent shareIntent = new Intent();
-            // Prepare sharing intent with only text
-            if (note.getAttachments().size() == 0) {
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.setType("text/plain");
-
-                // Intent with single image attachment
-            } else if (note.getAttachments().size() == 1) {
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.setType(note.getAttachments().get(0).getMime_type());
-                Uri singleUri = Uri.parse(note.getAttachments().get(0).getUri());
-                shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
-
-                // Intent with multiple images
-            } else if (note.getAttachments().size() > 1) {
-                shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
-                ArrayList<Uri> uris = new ArrayList<>();
-                // A check to decide the mime type of attachments to share is done here
-                HashMap<String, Boolean> mimeTypes = new HashMap<>();
-                for (Attachment attachment : note.getAttachments()) {
-                    Uri uri = Uri.parse(attachment.getUri());
-                    uris.add(uri);
-                    mimeTypes.put(attachment.getMime_type(), true);
-                }
-                // If many mime types are present a general type is assigned to intent
-                if (mimeTypes.size() > 1) {
-                    shareIntent.setType("*/*");
-                } else {
-                    shareIntent.setType((String) mimeTypes.keySet().toArray()[0]);
-                }
-
-                shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+            if (journal.getAttachments().size() == 0){
+                shareTextOnly(titleText, contentText);
+            } else if (journal.getAttachments().size() == 1) {
+                shareTextAndOneAttachment(titleText, contentText, journal);
+            } else if (journal.getAttachments().size() > 1) {
+                shareTextAndMultipleAttachment(titleText, contentText, journal);
             }
-            shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
-            shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
-
-            startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
 
         } else {
             makeToast(getString(R.string.no_notes_found));
@@ -1299,15 +1262,70 @@ public class NoteEditorFragment extends Fragment{
 
     }
 
+    private void shareTextOnly(String titleText, String contentText) {
+
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
+        startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+
+    }
+
+    private void shareTextAndMultipleAttachment(String titleText, String contentText, Journal journal) {
+        final Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+        ArrayList<Uri> uris = new ArrayList<>();
+
+
+
+        // A check to decide the mime type of attachments to share is done here
+        HashMap<String, Boolean> mimeTypes = new HashMap<>();
+        for (Attachment attachment : journal.getAttachments()) {
+            Uri uri = Uri.parse(attachment.getUri());
+            uris.add(uri);
+            mimeTypes.put(attachment.getMime_type(), true);
+        }
+        // If many mime types are present a general type is assigned to intent
+        if (mimeTypes.size() > 1) {
+            shareIntent.setType("*/*");
+        } else {
+            shareIntent.setType((String) mimeTypes.keySet().toArray()[0]);
+        }
+
+        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+
+
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
+        startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+
+    }
+
+    private void shareTextAndOneAttachment(final String titleText, final String contentText, Journal journal) {
+        final Intent shareIntent = new Intent();
+
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.setType(journal.getAttachments().get(0).getMime_type());
+        Uri singleUri = Uri.parse(journal.getAttachments().get(0).getUri());
+
+        shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
+        startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+
+    }
+
     private void resetFields() {
         mCategory.setText("");
         mTitle.setText("");
         mContent.setText("");
     }
 
-    private void promptForDelete(Note note){
-        String title = "Delete " + note.getTitle();
-        String message =  "Are you sure you want to delete note " + note.getTitle() + "?";
+    private void promptForDelete(Journal journal){
+        String title = "Delete " + journal.getTitle();
+        String message =  "Are you sure you want to delete journal " + journal.getTitle() + "?";
 
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
@@ -1334,7 +1352,7 @@ public class NoteEditorFragment extends Fragment{
     }
 
     public void promptForDiscard(){
-        String title = "Discard Note";
+        String title = "Discard Journal";
         String message =  "Are you sure you want to discard note ";
 
 
@@ -1365,7 +1383,7 @@ public class NoteEditorFragment extends Fragment{
     public void addNote() {
 
         if (currentJournal == null) {
-            currentJournal = new Note();
+            currentJournal = new Journal();
         }
 
         String content = mContent.getText().toString();
@@ -1400,6 +1418,13 @@ public class NoteEditorFragment extends Fragment{
                                 if (currentJournal.getFolder() == null) {
                                     addJournalToDefaultFolder(currentJournal);
                                 }
+
+                                //After saving the Journal
+                                //Kick off an Intent Service that uploads the attachments to cloud
+                                Intent uploadIntent = new Intent(getActivity(),
+                                        FileUploadIntentService.class);
+                                uploadIntent.putExtra(Constants.JOURNAL_ID, key);
+                                getActivity().startService(uploadIntent);
                             }
                         }
                     });
@@ -1409,13 +1434,20 @@ public class NoteEditorFragment extends Fragment{
             if (currentJournal.getFolder() == null) {
                 addJournalToDefaultFolder(currentJournal);
             }
+
+            //After updating the Journal
+            //Kick off an Intent Service that uploads the attachments to cloud
+            Intent uploadIntent = new Intent(getActivity(),
+                    FileUploadIntentService.class);
+            uploadIntent.putExtra(Constants.JOURNAL_ID, currentJournal.getId());
+            getActivity().startService(uploadIntent);
         }
 
         startActivity(new Intent(getActivity(), NoteListActivity.class));
 
     }
 
-    private void addJournalToDefaultFolder(final Note currentJournal) {
+    private void addJournalToDefaultFolder(final Journal currentJournal) {
         journalManager.getFolderPath().whereEqualTo("folderName", Constants.DEFAULT_CATEGORY)
                 .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override

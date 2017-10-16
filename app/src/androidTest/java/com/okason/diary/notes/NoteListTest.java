@@ -17,7 +17,7 @@ public class NoteListTest {
     private static final int POSTION_TO_CLICK = 3;
 
     public void clickOnDeleteButtonShouldShowDeleteConfirmationDialog(){
-        //First scroll to the position of the Note that needs to be deleted and click
+        //First scroll to the position of the Journal that needs to be deleted and click
         onView(ViewMatchers.withId(R.id.note_recycler_view))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(POSTION_TO_CLICK, click()));
     }

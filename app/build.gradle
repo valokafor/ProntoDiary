@@ -105,7 +105,7 @@ dependencies {
     compile 'commons-io:commons-io:2.5'
     compile 'org.apache.commons:commons-collections4:4.1'
     compile 'com.afollestad:material-camera:0.4.4'
-    compile 'com.facebook.android:facebook-android-sdk:4.22.1'
+    compile 'com.facebook.android:facebook-login:4.27.0'
     compile 'com.google.code.gson:gson:2.8.1'
     testCompile 'junit:junit:4.12'
     testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'

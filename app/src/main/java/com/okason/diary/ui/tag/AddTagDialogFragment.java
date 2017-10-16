@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -14,14 +15,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
 import com.okason.diary.models.Tag;
+import com.okason.diary.ui.addnote.DataAccessManager;
 import com.okason.diary.utils.Constants;
 
 /**
@@ -34,8 +37,8 @@ public class AddTagDialogFragment extends DialogFragment {
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
-    private DatabaseReference database;
-    private DatabaseReference tagCloudReference;
+    private DataAccessManager dataAccessManager;
+
 
 
 
@@ -48,8 +51,7 @@ public class AddTagDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        database = FirebaseDatabase.getInstance().getReference();
-        tagCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TAG_CLOUD_END_POINT);
+        dataAccessManager = new DataAccessManager(firebaseUser.getUid());
 
     }
 
@@ -171,14 +173,25 @@ public class AddTagDialogFragment extends DialogFragment {
             if (mTag == null){
                 mTag = new Tag();
                 mTag.setTagName(tagName);
-                mTag.setId(tagCloudReference.push().getKey());
+                mTag.setDateCreated(System.currentTimeMillis());
+                mTag.setDateModified(System.currentTimeMillis());
+                dataAccessManager.getTagCloudPath().add(mTag).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                        if (task.isSuccessful()){
+                            mTag.setId(task.getResult().getId());
+                            dataAccessManager.getTagCloudPath().document(mTag.getId()).set(mTag);
+                            dataAccessManager.getAllTags();
+                        }
+                    }
+                });
             }else {
                 mTag.setTagName(tagName);
+                mTag.setDateModified(System.currentTimeMillis());
+                dataAccessManager.getTagCloudPath().document(mTag.getId()).set(mTag);
+                dataAccessManager.getAllTags();
             }
-            tagCloudReference.child(mTag.getId()).setValue(mTag);
-
         }
-
 
     }
 

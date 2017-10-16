@@ -40,7 +40,7 @@ public class GalleryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_gallery);
         ButterKnife.bind(this);
 
-        //Pass in the Note as a JSON to avoid having to query for the Note from Firebase
+        //Pass in the Journal as a JSON to avoid having to query for the Journal from Firebase
         if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_ATTACHMENT_ID)) {
             getPassedInAttachments();
         } else {
@@ -50,7 +50,7 @@ public class GalleryActivity extends AppCompatActivity {
 
     }
 
-    //Get the Note object that was passed in
+    //Get the Journal object that was passed in
     private void getPassedInAttachments() {
         if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_ATTACHMENT_ID)){
             String serialized = getIntent().getStringExtra(Constants.SERIALIZED_ATTACHMENT_ID);
@@ -73,7 +73,7 @@ public class GalleryActivity extends AppCompatActivity {
         String selectAttachmentPath = getIntent().getStringExtra(Constants.FILE_PATH);
         int selectedPosition = 0;
 
-        //Get the list of attachments in the Note
+        //Get the list of attachments in the Journal
         imageOnlyAttachments = new ArrayList<>();
         for (Attachment attachment : attachments) {
             if (Constants.MIME_TYPE_IMAGE.equals(attachment.getMime_type())

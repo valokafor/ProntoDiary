@@ -10,7 +10,7 @@ import android.support.v7.widget.Toolbar;
 import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnEditNoteButtonClickedListener;
-import com.okason.diary.models.Note;
+import com.okason.diary.models.Journal;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.utils.Constants;
 
@@ -38,8 +38,8 @@ public class NoteDetailActivity extends AppCompatActivity {
             NoteDetailFragment fragment = NoteDetailFragment.newInstance(serializedNote);
             fragment.setEditNoteistener(new OnEditNoteButtonClickedListener() {
                 @Override
-                public void onEditNote(Note clickedNote) {
-                    String serializedNote = gson.toJson(clickedNote);
+                public void onEditNote(Journal clickedJournal) {
+                    String serializedNote = gson.toJson(clickedJournal);
                     Intent editNoteIntent = new Intent(NoteDetailActivity.this, AddNoteActivity.class);
                     editNoteIntent.putExtra(Constants.SERIALIZED_JOURNAL, serializedNote);
                     startActivity(editNoteIntent);

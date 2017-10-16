@@ -140,6 +140,7 @@ public class AuthUiActivity extends AppCompatActivity {
         }
 
         makeToast(getString(R.string.unknown_response));
+        onBackPressed();
     }
 
     @MainThread
@@ -164,16 +165,19 @@ public class AuthUiActivity extends AppCompatActivity {
             if (response == null) {
                 // User pressed back button
                 showSnackbar(R.string.sign_in_cancelled);
+                onBackPressed();
                 return;
             }
 
             if (response.getErrorCode() == ErrorCodes.NO_NETWORK) {
                 showSnackbar(R.string.no_internet_connection);
+                onBackPressed();
                 return;
             }
 
             if (response.getErrorCode() == ErrorCodes.UNKNOWN_ERROR) {
                 showSnackbar(R.string.unknown_error);
+                onBackPressed();
                 return;
             }
         }
@@ -226,7 +230,15 @@ public class AuthUiActivity extends AppCompatActivity {
 
     @MainThread
     private void showSnackbar(@StringRes int errorMessageRes) {
-        Snackbar.make(mRootView, errorMessageRes, Snackbar.LENGTH_LONG).show();
+       // Snackbar.make(mRootView, errorMessageRes, Snackbar.LENGTH_LONG).show();
+
+        Snackbar snackbar = Snackbar.make(mRootView, getString(errorMessageRes), Snackbar.LENGTH_LONG);
+        View snackBarView = snackbar.getView();
+        snackBarView.setBackgroundColor(ContextCompat.getColor(mActivity, R.color.primary));
+        TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
+        tv.setTextColor(Color.WHITE);
+        snackbar.show();
+
     }
 
 

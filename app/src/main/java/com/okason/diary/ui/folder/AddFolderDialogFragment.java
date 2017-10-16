@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -14,15 +15,17 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.models.Folder;
+import com.okason.diary.ui.addnote.DataAccessManager;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
@@ -37,8 +40,8 @@ public class AddFolderDialogFragment extends DialogFragment {
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
-    private DatabaseReference database;
-    private DatabaseReference folderCloudReference;
+    private DataAccessManager dataAccessManager;
+
 
 
 
@@ -52,9 +55,7 @@ public class AddFolderDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        database = FirebaseDatabase.getInstance().getReference();
-        folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
-
+        dataAccessManager = new DataAccessManager(firebaseUser.getUid());
     }
 
 
@@ -179,12 +180,27 @@ public class AddFolderDialogFragment extends DialogFragment {
             if (mFolder == null){
                 mFolder = new Folder();
                 mFolder.setFolderName(folderName);
-                mFolder.setId(folderCloudReference.push().getKey());
+                mFolder.setDateCreated(System.currentTimeMillis());
+                mFolder.setDateModified(System.currentTimeMillis());
+                dataAccessManager.getFolderPath().add(mFolder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                        if (task.isSuccessful()){
+                            mFolder.setId(task.getResult().getId());
+                            dataAccessManager.getFolderPath().document(mFolder.getId()).set(mFolder);
+                            EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+                            dataAccessManager.getAllFolder();
+                        }
+                    }
+                });
             }else {
                 mFolder.setFolderName(folderName);
+                mFolder.setDateModified(System.currentTimeMillis());
+                dataAccessManager.getFolderPath().document(mFolder.getId()).set(mFolder);
+                EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+                dataAccessManager.getAllFolder();
             }
-            folderCloudReference.child(mFolder.getId()).setValue(mFolder);
-            EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+
 
         }
 

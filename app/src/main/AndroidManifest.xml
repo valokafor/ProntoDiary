@@ -152,7 +152,7 @@
         </activity>
 
         <service
-            android:name=".core.services.DownloadFileFromFireaseIntentService"
+            android:name=".core.services.FileDownloadIntentService"
             android:exported="false">
         </service>
 
@@ -201,9 +201,12 @@
             android:name=".core.services.MergeTagIntentService"
             android:exported="false">
         </service>
-
         <service
             android:name=".core.services.MergeFolderIntentService"
+            android:exported="false">
+        </service>
+        <service
+            android:name=".core.services.FileUploadIntentService"
             android:exported="false">
         </service>
     </application>

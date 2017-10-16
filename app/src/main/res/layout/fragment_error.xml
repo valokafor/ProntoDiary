@@ -2,7 +2,7 @@
              xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
-             tools:context="com.okason.diary.ui.notes.ErrorFragment">
+             tools:context="com.okason.diary.ui.journals.ErrorFragment">
 
     <TextView
         android:id="@+id/error_textView"

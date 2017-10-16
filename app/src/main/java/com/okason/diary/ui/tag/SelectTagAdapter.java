@@ -17,11 +17,11 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.models.Tag;
+import com.okason.diary.ui.addnote.DataAccessManager;
 
 import java.util.List;
 
@@ -37,17 +37,19 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
     private List<String> selectTags;
     private final Context mContext;
     private final OnTagSelectedListener mListener;
-    private FirebaseFirestore db;
+    private final DataAccessManager dataAccessManager;
 
 
-    public SelectTagAdapter(final List<String> tags, Context context, OnTagSelectedListener listener) {
+
+    public SelectTagAdapter(final List<String> tags, Context context, OnTagSelectedListener listener, DataAccessManager dataAccessManager) {
         selectTags = tags;
         mContext = context;
         mListener = listener;
-        db = FirebaseFirestore.getInstance();
+        this.dataAccessManager = dataAccessManager;
+
 
         //Get all Tags
-        db.collection("tags")
+        dataAccessManager.getTagCloudPath()
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -78,9 +80,9 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
         if (!TextUtils.isEmpty(selectedTag.getTagName())) {
             holder.tagCheckbox.setText(selectedTag.getTagName());
 
-            String tagPath = "filterTags." + selectedTag.getTagName();
+            String tagPath = "tags." + selectedTag.getTagName();
 
-            db.collection("notes")
+            dataAccessManager.getJournalCloudPath()
                     .whereEqualTo(tagPath, true)
                     .get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

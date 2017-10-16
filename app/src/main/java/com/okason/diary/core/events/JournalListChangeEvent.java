@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.Note;
+import com.okason.diary.models.Journal;
 
 import java.util.List;
 
@@ -9,13 +9,13 @@ import java.util.List;
  */
 
 public class JournalListChangeEvent {
-    private final List<Note> journalList;
+    private final List<Journal> journalList;
 
-    public JournalListChangeEvent(List<Note> journalList) {
+    public JournalListChangeEvent(List<Journal> journalList) {
         this.journalList = journalList;
     }
 
-    public List<Note> getJournalList() {
+    public List<Journal> getJournalList() {
         return journalList;
     }
 }

@@ -36,16 +36,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
-import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.JournalListChangeEvent;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.models.Attachment;
-import com.okason.diary.models.Note;
+import com.okason.diary.models.Journal;
+import com.okason.diary.models.SampleData;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.addnote.DataAccessManager;
 import com.okason.diary.ui.attachment.GalleryActivity;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
 
@@ -75,8 +76,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     private DataAccessManager dataAccessManager;
 
 
-    private List<Note> unFilteredNotes;
-    private List<Note> filteredNotes;
+    private List<Journal> unFilteredJournals;
+    private List<Journal> filteredJournals;
 
 
     private MediaPlayer mPlayer = null;
@@ -112,7 +113,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
     /**
-     * Factory method to create a Note List Fragment
+     * Factory method to create a Journal List Fragment
      *
      * @param dualScreen - indicates if this Fragment is participating in dual screen
      * @return - returns the created Fragment
@@ -152,33 +153,33 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        if (firebaseUser == null){
-            //User must be logged in to proceed
-            startActivity(new Intent(getActivity(), NoteListActivity.class));
-        }
 
-        filteredNotes = new ArrayList<>();
-        unFilteredNotes = new ArrayList<>();
+        filteredJournals = new ArrayList<>();
+        unFilteredJournals = new ArrayList<>();
 
 
         floatingActionButton = getActivity().findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(getActivity(), AddNoteActivity.class));
+                if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+                    startActivity(new Intent(getActivity(), AddNoteActivity.class));
+                } else {
+                    startActivity(AuthUiActivity.createIntent(getActivity()));
+                }
             }
         });
         return mRootView;
     }
 
 
-    private void goToImageGallery(Note clickedNote, Attachment clickedAttachment) {
+    private void goToImageGallery(Journal clickedJournal, Attachment clickedAttachment) {
         Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
         Gson gson = new Gson();
-        String attachmentJson = gson.toJson(clickedNote.getAttachments());
+        String attachmentJson = gson.toJson(clickedJournal.getAttachments());
         galleryIntent.putExtra(Constants.SERIALIZED_ATTACHMENT_ID, attachmentJson);
         galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
-        galleryIntent.putExtra(Constants.NOTE_TITLE, clickedNote.getTitle());
+        galleryIntent.putExtra(Constants.NOTE_TITLE, clickedJournal.getTitle());
         startActivity(galleryIntent);
     }
 
@@ -186,7 +187,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
-        if (firebaseUser != null){
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())){
 
             dataAccessManager = new DataAccessManager(firebaseUser.getUid());
             sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(getString(R.string.label_title),
@@ -195,16 +196,18 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
             sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
             editor = sharedPreferences.edit();
             boolean first_run = sharedPreferences.getBoolean(Constants.FIRST_RUN, true);
-            if (first_run) {
-                dataAccessManager.addInitialNotesToFirebase();
-
-                editor.putBoolean(Constants.FIRST_RUN, false).commit();
-            }
+//            if (first_run) {
+//                dataAccessManager.addInitialNotesToFirebase();
+//
+//                editor.putBoolean(Constants.FIRST_RUN, false).commit();
+//            }
             if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
                 tagName = getArguments().getString(Constants.TAG_FILTER);
             }
             dataAccessManager.getAllJournal(tagName);
 
+        } else {
+            showNotes(SampleData.getSampleNotes());
         }
         if (ProntoDiaryApplication.getProntoDiaryUser() != null && ProntoDiaryApplication.getProntoDiaryUser().isPremium()){
             //Do not show Ad
@@ -222,45 +225,6 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         showNotes(event.getJournalList());
     }
 
-
-
-
-
-//    private void populateNoteList() {
-//
-
-//        journalCloudReference.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                if (dataSnapshot.exists()) {
-//                    unFilteredNotes.clear();
-//                    for (DataSnapshot noteSnapshot: dataSnapshot.getChildren()){
-//                        Note note = noteSnapshot.getValue(Note.class);
-//                        if (TextUtils.isEmpty(tagName)) {
-//                            unFilteredNotes.add(note);
-//                        } else {
-////                            for (Tag tag: note.getTags()){
-////                                if (tag.getTagName().equals(tagName)){
-////                                    unFilteredNotes.add(note);
-////                                    break;
-////                                }
-////                            }
-//                        }
-//                    }
-//                    showNotes(unFilteredNotes);
-//                }else {
-//                    showEmptyText(true);
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//                makeToast("Error fetching data " + databaseError.getMessage());
-//            }
-//        });
-//
-//
-//    }
 
     @Override
     public void onPause() {
@@ -293,14 +257,14 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (query.length() > 0) {
-            filteredNotes = filterNotes(query);
-            showNotes(filteredNotes);
+            filteredJournals = filterNotes(query);
+            showNotes(filteredJournals);
             return true;
         }
         return true;
     }
 
-    private List<Note> filterNotes(String query) {
+    private List<Journal> filterNotes(String query) {
         return null;
     }
 
@@ -312,7 +276,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     @Override
     public boolean onClose() {
-        showNotes(unFilteredNotes);
+        showNotes(unFilteredJournals);
         return false;
     }
 
@@ -324,34 +288,34 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
 
-    public void showNotes(List<Note> notes) {
-        if (notes != null && notes.size() > 0) {
+    public void showNotes(List<Journal> journals) {
+        if (journals != null && journals.size() > 0) {
             showEmptyText(false);
             mListAdapter = null;
 
 
-            mListAdapter = new NoteListAdapter(notes, getContext());
+            mListAdapter = new NoteListAdapter(journals, getContext());
             mRecyclerView.setAdapter(mListAdapter);
 
             mListAdapter.setNoteItemListener(new NoteItemListener() {
                 @Override
-                public void onNoteClick(Note clickedNote) {
+                public void onNoteClick(Journal clickedJournal) {
                     if (isDualScreen) {
-                        showDualDetailUi(clickedNote);
+                        showDualDetailUi(clickedJournal);
                     } else {
-                        showSingleDetailUi(clickedNote);
+                        showSingleDetailUi(clickedJournal);
                     }
                 }
 
                 @Override
-                public void onDeleteButtonClicked(Note clickedNote) {
-                    showDeleteConfirmation(clickedNote);
+                public void onDeleteButtonClicked(Journal clickedJournal) {
+                    showDeleteConfirmation(clickedJournal);
                 }
 
                 @Override
-                public void onAttachmentClicked(Note clickedNote, int position) {
-                    //An attachment in the Note list has been clicked
-                    List<Attachment> attachmentList = clickedNote.getAttachments();
+                public void onAttachmentClicked(Journal clickedJournal, int position) {
+                    //An attachment in the Journal list has been clicked
+                    List<Attachment> attachmentList = clickedJournal.getAttachments();
                     Attachment clickedAttachment = attachmentList.get(attachmentList.size() - 1);
                     if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)) {
                         //Play Audio
@@ -361,7 +325,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
                         viewMedia(clickedAttachment);
                     } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)) {
                         //Show Image Gallery
-                        goToImageGallery(clickedNote, clickedAttachment);
+                        goToImageGallery(clickedJournal, clickedAttachment);
                     } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)) {
                         //Show file
 
@@ -395,40 +359,49 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
 
-    public void showDeleteConfirmation(Note note) {
-        boolean shouldPromptForDelete = PreferenceManager
-                .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
-        if (shouldPromptForDelete) {
-            promptForDelete(note);
+    public void showDeleteConfirmation(Journal journal) {
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+            boolean shouldPromptForDelete = PreferenceManager
+                    .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
+            if (shouldPromptForDelete) {
+                promptForDelete(journal);
+            } else {
+                deleteNote(journal);
+            }
         } else {
-            deleteNote(note);
+            makeToast(getString(R.string.login_required));
         }
 
     }
 
-    private void deleteNote(Note note) {
-        dataAccessManager.deleteNote(note.getId());
+    private void deleteNote(Journal journal) {
+        dataAccessManager.deleteNote(journal.getId());
     }
 
 
-    public void showSingleDetailUi(Note selectedNote) {
-        Gson gson = new Gson();
-        String serializedNote = gson.toJson(selectedNote);
-        Intent intent = new Intent(getActivity(), NoteDetailActivity.class);
-        intent.putExtra(Constants.SERIALIZED_JOURNAL, serializedNote);
-        startActivity(intent);
+    public void showSingleDetailUi(Journal selectedJournal) {
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+            Gson gson = new Gson();
+            String serializedNote = gson.toJson(selectedJournal);
+            Intent intent = new Intent(getActivity(), NoteDetailActivity.class);
+            intent.putExtra(Constants.SERIALIZED_JOURNAL, serializedNote);
+            startActivity(intent);
+        } else {
+            startActivity(AuthUiActivity.createIntent(getActivity()));
+        }
+
     }
 
 
-    public void showDualDetailUi(Note note) {
+    public void showDualDetailUi(Journal journal) {
 //        NoteListActivity activity = (NoteListActivity)getActivity();
-//        activity.showTwoPane(note);
+//        activity.showTwoPane(journal);
     }
 
-    public void promptForDelete(final Note note) {
+    public void promptForDelete(final Journal journal) {
         String content;
-        if (!TextUtils.isEmpty(note.getContent())) {
-            content = note.getContent();
+        if (!TextUtils.isEmpty(journal.getContent())) {
+            content = journal.getContent();
         } else {
             content = "";
         }
@@ -446,7 +419,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-               deleteNote(note);
+               deleteNote(journal);
             }
         });
         alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
@@ -460,7 +433,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     private void makeToast(String message) {
         try {
-            Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(mRootView, message, Snackbar.LENGTH_SHORT);
             View snackBarView = snackbar.getView();
             snackBarView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary));
             TextView tv = (TextView) snackBarView.findViewById(android.support.design.R.id.snackbar_text);
