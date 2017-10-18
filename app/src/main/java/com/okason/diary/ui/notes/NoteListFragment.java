@@ -222,7 +222,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onJournalListChange(JournalListChangeEvent event){
-        showNotes(event.getJournalList());
+        unFilteredJournals = event.getJournalList();
+        showNotes(unFilteredJournals);
     }
 
 
@@ -265,11 +266,26 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
     private List<Journal> filterNotes(String query) {
-        return null;
+        List<Journal> journals = new ArrayList<>();
+        for (Journal journal: unFilteredJournals){
+            String title = journal.getTitle().toLowerCase();
+            String content = journal.getContent().toLowerCase();
+            query = query.toLowerCase();
+            if (title.contains(query) || content.contains(query)){
+                journals.add(journal);
+            }
+        }
+        return journals;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
+
+        if (newText.length() > 0) {
+            filteredJournals = filterNotes(newText);
+            showNotes(filteredJournals);
+            return true;
+        }
 
         return true;
     }

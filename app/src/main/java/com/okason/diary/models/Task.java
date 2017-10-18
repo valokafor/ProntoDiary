@@ -130,9 +130,7 @@ public class Task {
         this.longitude = longitude;
     }
 
-    public void setRepeatFrequency(String repeatFrequency) {
-        this.repeatFrequency = repeatFrequency;
-    }
+
 
     public Folder getFolder() {
         return folder;

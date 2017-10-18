@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
@@ -32,13 +33,13 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
@@ -46,6 +47,7 @@ import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Task;
+import com.okason.diary.ui.addnote.DataAccessManager;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.FolderListAdapter;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
@@ -58,9 +60,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -116,10 +116,9 @@ public class AddTaskFragment extends Fragment{
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
-    private List<Folder> folderList;
-    private DatabaseReference database;
-    private DatabaseReference folderCloudReference;
-    private DatabaseReference taskCloudReference;
+
+
+    private DataAccessManager dataAccessManager;
 
 
 
@@ -135,7 +134,7 @@ public class AddTaskFragment extends Fragment{
 
     private Reminder repeatFrequency;
     private int priority = Constants.PRIORITY_LOW;
-    private Folder selectedFolder;
+   // private Folder selectedFolder;
     private Calendar mReminderTime;
     private Calendar repeatEndDate;
 
@@ -165,6 +164,7 @@ public class AddTaskFragment extends Fragment{
             if (!TextUtils.isEmpty(serializedTask)){
                 Gson gson = new Gson();
                 currentTast = gson.fromJson(serializedTask, new TypeToken<Task>(){}.getType());
+                boolean status = currentTast == null;
             }
         }
 
@@ -197,7 +197,7 @@ public class AddTaskFragment extends Fragment{
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_add_task, container, false);
         ButterKnife.bind(this, mRootView);
-        folderList = new ArrayList<>();
+
 
 
         if (currentTast == null) {
@@ -234,33 +234,8 @@ public class AddTaskFragment extends Fragment{
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         if (firebaseUser != null) {
-            database = FirebaseDatabase.getInstance().getReference();
-            taskCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TASK_CLOUD_END_POINT);
-            folderCloudReference =  database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.FOLDER_CLOUD_END_POINT);
+            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
         }
-
-        folderEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    folderList.clear();
-                    for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
-                        Folder folder = folderSnapshot.getValue(Folder.class);
-                        folderList.add(folder);
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
-        folderCloudReference.addValueEventListener(folderEventListener);
-
-
         return mRootView;
     }
 
@@ -268,6 +243,9 @@ public class AddTaskFragment extends Fragment{
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
+        if (currentTast != null){
+            showTaskDetail(currentTast);
+        }
 
     }
 
@@ -281,8 +259,6 @@ public class AddTaskFragment extends Fragment{
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
-        folderCloudReference.removeEventListener(folderEventListener);
-
     }
 
     @Override
@@ -297,16 +273,14 @@ public class AddTaskFragment extends Fragment{
         switch (id){
             case R.id.action_save:
                 onSaveTaskButtonClicked();
-                break;
+                return true;
         }
-        return true;
+        return false;
     }
 
     private void onSaveTaskButtonClicked(){
         if (currentTast == null){
             currentTast = new Task();
-            String key = taskCloudReference.push().getKey();
-            currentTast.setId(key);
         }
 
 
@@ -318,12 +292,6 @@ public class AddTaskFragment extends Fragment{
         if (repeatFrequency == null){
             repeatFrequency = Reminder.NO;
         }
-
-        if (selectedFolder == null) {
-            selectedFolder = getDefaultFolder(Constants.DEFAULT_CATEGORY);
-        }
-        currentTast.setFolder(selectedFolder);
-
 
         if (mReminderTime == null){
             mReminderTime = Calendar.getInstance();
@@ -340,22 +308,89 @@ public class AddTaskFragment extends Fragment{
         currentTast.setDueDateAndTime(mReminderTime.getTimeInMillis());
         currentTast.setRepeatFrequency(repeatFrequency);
         currentTast.setRepeatEndDate(repeatEndDate.getTimeInMillis());
-        currentTast.setFolder(selectedFolder);
-        taskCloudReference.child(currentTast.getId()).setValue(currentTast);
 
-        if (shouldAddSubTasks){
-            Gson gson = new Gson();
-            String serializedTask = gson.toJson(currentTast);
-            Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
-            addSubTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
-            addSubTaskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(addSubTaskIntent);
-        }else {
-            goBackToParent();
+        if (TextUtils.isEmpty(currentTast.getId())){
+            dataAccessManager.getTaskPath().add(currentTast)
+                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                        @Override
+                        public void onComplete(@NonNull com.google.android.gms.tasks.Task<DocumentReference> task) {
+                            if (task.isSuccessful()){
+                                String key = task.getResult().getId();
+                                currentTast.setId(key);
+
+                                dataAccessManager.getTaskPath().document(key).set(currentTast);
+
+                                if (currentTast.getFolder() == null) {
+                                    addTaskToDefaultFolder(currentTast);
+                                }
+
+                                if (shouldAddSubTasks){
+                                    Gson gson = new Gson();
+                                    String serializedTask = gson.toJson(currentTast);
+                                    Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
+                                    addSubTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
+                                    addSubTaskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(addSubTaskIntent);
+                                }else {
+                                    goBackToParent();
+                                }
+                            }
+
+                        }
+                    });
+        } else {
+            dataAccessManager.getTaskPath().document(currentTast.getId()).set(currentTast);
+
+            if (currentTast.getFolder() == null) {
+                addTaskToDefaultFolder(currentTast);
+            }
+
+            if (shouldAddSubTasks){
+                Gson gson = new Gson();
+                String serializedTask = gson.toJson(currentTast);
+                Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
+                addSubTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
+                addSubTaskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(addSubTaskIntent);
+            }else {
+                goBackToParent();
+            }
+
         }
-
     }
 
+    private void addTaskToDefaultFolder(final Task currentTast) {
+
+        dataAccessManager.getFolderPath().whereEqualTo("folderName", Constants.DEFAULT_CATEGORY)
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot documentSnapshots) {
+                if (documentSnapshots.isEmpty()){
+                    final Folder folder = new Folder();
+                    folder.setFolderName(Constants.DEFAULT_CATEGORY);
+                    folder.setDateModified(System.currentTimeMillis());
+                    folder.setDateCreated(System.currentTimeMillis());
+                    dataAccessManager.getFolderPath().add(folder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                        @Override
+                        public void onComplete(@NonNull com.google.android.gms.tasks.Task<DocumentReference> task) {
+                            if (task.isSuccessful()){
+                                folder.setId(task.getResult().getId());
+                                dataAccessManager.getFolderPath().document(folder.getId()).set(folder);
+                                currentTast.setFolder(folder);
+                                dataAccessManager.getTaskPath().document(currentTast.getId()).set(currentTast);
+                            }
+
+                        }
+                    });
+                } else {
+                    Folder defaultFolder = documentSnapshots.getDocuments().get(0).toObject(Folder.class);
+                    currentTast.setFolder(defaultFolder);
+                    dataAccessManager.getTaskPath().document(currentTast.getId()).set(currentTast);
+                }
+            }
+        });
+
+    }
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -363,7 +398,10 @@ public class AddTaskFragment extends Fragment{
         addFolderDialogFragment.dismiss();
         if (event.getFolder() != null){
             mFolder.setText(event.getFolder().getFolderName());
-            selectedFolder = event.getFolder();
+            if (currentTast == null){
+                currentTast = new Task();
+            }
+            currentTast.setFolder(event.getFolder());
         }
 
     }
@@ -381,7 +419,7 @@ public class AddTaskFragment extends Fragment{
 
     @OnClick(R.id.edit_text_category)
     public void showSelectFolder(){
-        showChooseFolderDialog(folderList);
+        showChooseFolderDialog();
     }
 
     @OnClick(R.id.edit_text_repeat_end_date)
@@ -570,8 +608,9 @@ public class AddTaskFragment extends Fragment{
         snackbar.show();
     }
 
-    private void showChooseFolderDialog(List<Folder> folders) {
+    private void showChooseFolderDialog() {
         selectFolderDialogFragment = selectFolderDialogFragment.newInstance();
+        selectFolderDialogFragment.setDataAccessManager(dataAccessManager);
 
 
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
@@ -690,7 +729,6 @@ public class AddTaskFragment extends Fragment{
 
         try {
             mFolder.setText(task.getFolder().getFolderName());
-            getFolderById(task.getId());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -706,33 +744,6 @@ public class AddTaskFragment extends Fragment{
         }
 
 
-    }
-
-    private void getFolderById(String id) {
-        if (folderList != null && folderList.size() > 0){
-            //Get Folder from the List of retreived folders
-            for (Folder folder: folderList){
-                if (folder.getId().equals(id)){
-                    selectedFolder = folder;
-                    break;
-                }
-            }
-        }else {
-            //Get Folder from cloud
-            folderCloudReference.orderByChild("id").equalTo(id).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()){
-                        selectedFolder = dataSnapshot.getValue(Folder.class);
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        }
     }
 
 
@@ -868,30 +879,5 @@ public class AddTaskFragment extends Fragment{
 
     }
 
-    private Folder getDefaultFolder(String defaultCategory) {
-        Folder folder = new Folder();
-        folder.setId(getFolderId(defaultCategory));
-        folder.setFolderName(defaultCategory);
-        return folder;
-    }
-
-    private String getFolderId(String folderName) {
-        for (Folder folder: folderList){
-            if (!TextUtils.isEmpty(folder.getId()) && folder.getFolderName().equals(folderName)){
-                return folder.getId();
-            }
-        }
-        return addFolderToFirebase(folderName);
-    }
-
-
-    private String addFolderToFirebase(String folderName) {
-        Folder folder = new Folder();
-        folder.setFolderName(folderName);
-        String key = folderCloudReference.push().getKey();
-        folder.setId(key);
-        folderCloudReference.child(key).setValue(folder);
-        return key;
-    }
 
 }

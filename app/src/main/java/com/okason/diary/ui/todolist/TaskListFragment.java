@@ -25,15 +25,18 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 import com.okason.diary.R;
+import com.okason.diary.core.events.TaskListChangeEvent;
 import com.okason.diary.core.listeners.TaskItemListener;
+import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
+import com.okason.diary.ui.addnote.DataAccessManager;
 import com.okason.diary.utils.Constants;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +53,8 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
-    private DatabaseReference database;
-    private DatabaseReference taskCloudReference;
+    private DataAccessManager dataAccessManager;
+
 
     private List<Task> allTasks;
     private List<Task> filteredTasks;
@@ -96,9 +99,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         if (firebaseUser != null) {
-            database = FirebaseDatabase.getInstance().getReference();
-            taskCloudReference = database.child(Constants.USERS_CLOUD_END_POINT + firebaseUser.getUid() + Constants.TASK_CLOUD_END_POINT);
-            populateTaskList();
+            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
         }
 
         floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
@@ -114,31 +115,30 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public void onResume() {
         super.onResume();
+        dataAccessManager.getAllTasks();
     }
 
-    private void populateTaskList() {
-        taskCloudReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    allTasks.clear();
-                    for (DataSnapshot folderSnapshot: dataSnapshot.getChildren()){
-                        Task task = folderSnapshot.getValue(Task.class);
-                        allTasks.add(task);
-                    }
-                    showTodoLists(allTasks);
-                }else {
-                    showEmptyText(true);
-                }
-            }
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                makeToast("Error fetching data " + databaseError.getMessage());
-            }
-        });
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
 
     }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTaskListChange(TaskListChangeEvent event){
+        allTasks = event.getTasklList();
+        showTodoLists(allTasks);
+    }
+
+
 
 
     @Override
@@ -183,12 +183,41 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        showTodoLists(filteredTasks);
+        if (query.length() > 0) {
+            filteredTasks = filterTasks(query);
+            showTodoLists(filteredTasks);
+            return true;
+        }
         return true;
+    }
+
+    private List<Task> filterTasks(String query) {
+        List<Task> taskList = new ArrayList<>();
+        for (Task task: allTasks){
+            String title = task.getTitle().toLowerCase();
+            query = query.toLowerCase();
+            if (title.contains(query)){
+                taskList.add(task);
+            }else {
+                for (SubTask subTask: task.getSubTask()){
+                    String subTasktitle = subTask.getTitle().toLowerCase();
+                    if (subTasktitle.contains(query)){
+                        taskList.add(task);
+                        break;
+                    }
+                }
+            }
+        }
+        return taskList;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
+        if (newText.length() > 0) {
+            filteredTasks = filterTasks(newText);
+            showTodoLists(filteredTasks);
+            return true;
+        }
         return true;
     }
 
@@ -223,7 +252,8 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public void onEditTaskButtonClicked(Task clickedTask) {
         Intent editTaskIntent = new Intent(getActivity(), AddTaskActivity.class);
-        editTaskIntent.putExtra(Constants.TASK_ID, clickedTask.getId());
+        String serializedTask = new Gson().toJson(clickedTask);
+        editTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
         startActivity(editTaskIntent);
     }
 
@@ -240,13 +270,16 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     }
 
     private void deleteTask(Task clickedTask) {
+        dataAccessManager.deleteTask(clickedTask);
 
     }
 
     @Override
     public void onAddSubTasksButtonClicked(Task clickedTask) {
         Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
-        addSubTaskIntent.putExtra(Constants.TASK_ID, clickedTask.getId());
+        Gson gson = new Gson();
+        String serializedTask = gson.toJson(clickedTask);
+        addSubTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
         startActivity(addSubTaskIntent);
 
     }
@@ -288,7 +321,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                taskCloudReference.child(clickedTask.getId()).removeValue();
+                dataAccessManager.deleteTask(clickedTask);
             }
         });
         alertDialog.setNegativeButton(R.string.label_cancel, new DialogInterface.OnClickListener() {

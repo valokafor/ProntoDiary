@@ -12,7 +12,6 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.SubTaskItemListener;
 import com.okason.diary.models.SubTask;
-import com.okason.diary.models.Task;
 
 import java.util.List;
 
@@ -24,14 +23,13 @@ import butterknife.ButterKnife;
  */
 
 public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.ViewHolder> {
-    private final Task parentTask;
+  //  private final Task parentTask;
     private final SubTaskItemListener taskItemListener;
     private final List<SubTask> subTasks;
 
-    public SubTaskListAdapter(Task parentTask, SubTaskItemListener taskItemListener) {
-        this.parentTask = parentTask;
+    public SubTaskListAdapter(List<SubTask> subTasks, SubTaskItemListener taskItemListener) {
         this.taskItemListener = taskItemListener;
-        this.subTasks = parentTask.getSubTask();
+        this.subTasks = subTasks;
     }
 
     @Override
@@ -80,11 +78,11 @@ public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                     if (isChecked) {
                         final SubTask checkedTask = subTasks.get(getLayoutPosition());
-                        taskItemListener.onSubTaskChecked(parentTask.getId(), checkedTask.getId());
+                        taskItemListener.onSubTaskChecked(checkedTask.getTitle());
 
                     } else {
                         final SubTask uncheckedTask = subTasks.get(getLayoutPosition());
-                        taskItemListener.onSubTaskUnChecked(parentTask.getId(), uncheckedTask.getId());
+                        taskItemListener.onSubTaskUnChecked(uncheckedTask.getTitle());
                     }
                 }
             });
@@ -95,7 +93,7 @@ public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.
                 public void onClick(View view) {
                     int position = getLayoutPosition();
                     final SubTask deletedSubTask = subTasks.get(position);
-                    taskItemListener.onSubTaskDeleted(parentTask.getId(), deletedSubTask.getId());
+                    taskItemListener.onSubTaskDeleted(deletedSubTask.getTitle());
 
                 }
             });

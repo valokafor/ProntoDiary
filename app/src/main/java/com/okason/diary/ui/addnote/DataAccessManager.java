@@ -17,9 +17,12 @@ import com.okason.diary.NoteListActivity;
 import com.okason.diary.core.events.FolderListChangeEvent;
 import com.okason.diary.core.events.JournalListChangeEvent;
 import com.okason.diary.core.events.TagListChangeEvent;
+import com.okason.diary.core.events.TaskChangedEvent;
+import com.okason.diary.core.events.TaskListChangeEvent;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Journal;
 import com.okason.diary.models.SampleData;
+import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Tag;
 import com.okason.diary.utils.Constants;
 
@@ -192,6 +195,33 @@ public class DataAccessManager {
 
     }
 
+    public void getAllTasks() {
+        final List<com.okason.diary.models.Task> tasks = new ArrayList<>();
+        try {
+            taskCloudReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot snapshot : task.getResult()) {
+                            com.okason.diary.models.Task item = snapshot.toObject(com.okason.diary.models.Task.class);
+                            if (item != null) {
+                                tasks.add(item);
+                            }
+                        }
+                        EventBus.getDefault().post(new TaskListChangeEvent(tasks));
+
+                    } else {
+                        EventBus.getDefault().post(new TaskListChangeEvent(tasks));
+                    }
+                }
+            });
+        } catch (Exception e) {
+            EventBus.getDefault().post(new TaskListChangeEvent(tasks));
+            Log.d(TAG, "Data access failure: " + e.getLocalizedMessage());
+        }
+
+    }
+
 
 
 
@@ -294,4 +324,72 @@ public class DataAccessManager {
     }
 
 
+
+
+    public void addSubTask(final com.okason.diary.models.Task parentTask, String subTaskText) {
+        SubTask subTask = new SubTask();
+        subTask.setTitle(subTaskText);
+        subTask.setDateCreated(System.currentTimeMillis());
+        subTask.setDateModified(System.currentTimeMillis());
+        subTask.setChecked(false);
+        subTask.setParentTaskName(parentTask.getTitle());
+        parentTask.getSubTask().add(subTask);
+        taskCloudReference.document(parentTask.getId()).set(parentTask)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        EventBus.getDefault().post(new TaskChangedEvent(parentTask));
+                    }
+                });
+    }
+
+    public void onMarkSubTaskAsComplete(com.okason.diary.models.Task parentTask, String subTaskTitle) {
+        for (SubTask subTask: parentTask.getSubTask()){
+            if (subTask.getTitle().equals(subTaskTitle)){
+                subTask.setChecked(true);
+                break;
+            }
+        }
+        taskCloudReference.document(parentTask.getId()).set(parentTask);
+    }
+
+    public void onMarkSubTaskAsInComplete(com.okason.diary.models.Task parentTask, String subTaskTitle) {
+        for (SubTask subTask: parentTask.getSubTask()){
+            if (subTask.getTitle().equals(subTaskTitle)){
+                subTask.setChecked(false);
+                break;
+            }
+        }
+        taskCloudReference.document(parentTask.getId()).set(parentTask);
+
+    }
+
+    public void deleteSubTask(final com.okason.diary.models.Task parentTask, String subTaskTitle) {
+        for (int i = 0; i < parentTask.getSubTask().size(); i++){
+            SubTask subTask = parentTask.getSubTask().get(i);
+            if (subTask.getTitle().equals(subTaskTitle)){
+                parentTask.getSubTask().remove(i);
+                break;
+            }
+        }
+        taskCloudReference.document(parentTask.getId()).set(parentTask)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        EventBus.getDefault().post(new TaskChangedEvent(parentTask));
+                    }
+                });
+    }
+
+    public void deleteTask(com.okason.diary.models.Task clickedTask) {
+        taskCloudReference.document(clickedTask.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    getAllTasks();
+                }
+            }
+        });
+
+    }
 }

@@ -7,8 +7,8 @@ import com.okason.diary.models.SubTask;
  */
 
 public interface SubTaskItemListener {
-    void onSubTaskChecked(String taskId, String subTaskId);
-    void onSubTaskUnChecked(String taskId, String subTaskId);
-    void onSubTaskDeleted(String taskId, String subTaskId);
+    void onSubTaskChecked(String subTaskName);
+    void onSubTaskUnChecked(String subTaskName);
+    void onSubTaskDeleted(String subTaskName);
     void onEditSubTask(SubTask subTask);
 }

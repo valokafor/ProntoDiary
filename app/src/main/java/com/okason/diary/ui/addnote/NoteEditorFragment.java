@@ -411,7 +411,7 @@ public class NoteEditorFragment extends Fragment{
      * @param event - containing the new Folder
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onAddNewCategory(FolderAddedEvent event){
+    public void onAddNewFolder(FolderAddedEvent event){
         addFolderDialogFragment.dismiss();
 
         if (event.getFolder() != null){

@@ -180,22 +180,16 @@ public class NoteDetailFragment extends Fragment{
     @Override
     public void onStart() {
         super.onStart();
-        try {
-            EventBus.getDefault().register(this);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        EventBus.getDefault().register(this);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        try {
-            EventBus.getDefault().unregister(this);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        EventBus.getDefault().unregister(this);
     }
+
+
 
     /**
      * This event will be fired when a Journal is deleted
