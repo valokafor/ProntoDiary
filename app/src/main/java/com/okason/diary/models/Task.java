@@ -31,6 +31,7 @@ public class Task {
     private List<SubTask> subTask;
 
     public Task(){
+        dateCreated = System.currentTimeMillis();
         subTask = new ArrayList<>();
     }
 

@@ -54,6 +54,7 @@ import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
+import com.okason.diary.utils.reminder.MyAlarmManager;
 import com.okason.diary.utils.reminder.Reminder;
 
 import org.greenrobot.eventbus.EventBus;
@@ -308,6 +309,8 @@ public class AddTaskFragment extends Fragment{
         currentTast.setDueDateAndTime(mReminderTime.getTimeInMillis());
         currentTast.setRepeatFrequency(repeatFrequency);
         currentTast.setRepeatEndDate(repeatEndDate.getTimeInMillis());
+        currentTast.setDateModified(System.currentTimeMillis());
+        currentTast.setDateCreated(System.currentTimeMillis());
 
         if (TextUtils.isEmpty(currentTast.getId())){
             dataAccessManager.getTaskPath().add(currentTast)
@@ -322,6 +325,10 @@ public class AddTaskFragment extends Fragment{
 
                                 if (currentTast.getFolder() == null) {
                                     addTaskToDefaultFolder(currentTast);
+                                }
+
+                                if (currentTast.getDueDateAndTime() > System.currentTimeMillis()){
+                                    MyAlarmManager.createAlarm(getActivity(), currentTast);
                                 }
 
                                 if (shouldAddSubTasks){
@@ -343,6 +350,10 @@ public class AddTaskFragment extends Fragment{
 
             if (currentTast.getFolder() == null) {
                 addTaskToDefaultFolder(currentTast);
+            }
+
+            if (currentTast.getDueDateAndTime() > System.currentTimeMillis()){
+                MyAlarmManager.createAlarm(getActivity(), currentTast);
             }
 
             if (shouldAddSubTasks){

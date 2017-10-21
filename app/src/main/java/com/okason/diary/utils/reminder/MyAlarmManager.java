@@ -37,7 +37,7 @@ public class MyAlarmManager {
         intent.putExtra(Constants.TODO_LIST_ID, task.getId());
         intent.putExtra(Constants.ALARM_NOTIFICATION, notification);
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, Integer.parseInt(task.getId()), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int) task.getDateCreated(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
         long triggerTime = getTriggerTime(context, task);
         long intervalTime = getIntervalTime(task, triggerTime);
 

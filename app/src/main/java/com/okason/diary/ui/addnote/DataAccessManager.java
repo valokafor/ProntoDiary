@@ -83,26 +83,17 @@ public class DataAccessManager {
 
 
     public void deleteNote(String noteId) {
-//        final Intent deleteNoteIntent = new Intent(getContext(), HandleNoteDeleteIntentService.class);
-//        deleteNoteIntent.putExtra(Constants.JOURNAL_ID, note.getId());
-//        journalCloudReference.child(note.getId()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//                if (task.isSuccessful()){
-//                    getActivity().startService(deleteNoteIntent);
-//                }else {
-//                    makeToast("Unable to delete Journal");
-//                }
-//            }
-//        });
-        journalCloudReference.document(noteId).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    getAllJournal("");
+        DocumentReference noteToBeDeletedRef = journalCloudReference.document(noteId);
+        if (noteToBeDeletedRef != null) {
+            noteToBeDeletedRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()){
+                        getAllJournal("");
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
 

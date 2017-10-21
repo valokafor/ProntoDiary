@@ -781,7 +781,10 @@ public class NoteEditorFragment extends Fragment{
         filesIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         filesIntent.addCategory(Intent.CATEGORY_OPENABLE);
         filesIntent.setType("*/*");
-        startActivityForResult(filesIntent, FILE_PICK_REQUEST);
+        if (filesIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivityForResult(filesIntent, FILE_PICK_REQUEST);
+        }
+
 
     }
 
@@ -790,6 +793,10 @@ public class NoteEditorFragment extends Fragment{
         filesIntent = new Intent(Intent.ACTION_PICK);
         filesIntent.setType("image/*");
         startActivityForResult(filesIntent, PICTURE_PICK_REQUEST);
+
+        if (filesIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivityForResult(filesIntent, PICTURE_PICK_REQUEST);
+        }
 
     }
 
@@ -1315,6 +1322,10 @@ public class NoteEditorFragment extends Fragment{
         shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
         startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
 
+        if (shareIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+        }
+
     }
 
     private void shareTextAndOneAttachment(final String titleText, final String contentText, Journal journal) {
@@ -1327,7 +1338,11 @@ public class NoteEditorFragment extends Fragment{
         shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
         shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
-        startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+
+
+        if (shareIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+        }
 
     }
 

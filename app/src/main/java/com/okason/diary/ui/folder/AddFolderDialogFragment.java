@@ -176,7 +176,7 @@ public class AddFolderDialogFragment extends DialogFragment {
 
     private void saveFolder() {
         final String folderName = mFolderEditText.getText().toString().trim();
-        if (!TextUtils.isEmpty(folderName)) {
+        if (!TextUtils.isEmpty(mFolder.getId())) {
             if (mFolder == null){
                 mFolder = new Folder();
                 mFolder.setFolderName(folderName);
@@ -196,11 +196,14 @@ public class AddFolderDialogFragment extends DialogFragment {
             }else {
                 mFolder.setFolderName(folderName);
                 mFolder.setDateModified(System.currentTimeMillis());
-                dataAccessManager.getFolderPath().document(mFolder.getId()).set(mFolder);
-                EventBus.getDefault().post(new FolderAddedEvent(mFolder));
-                dataAccessManager.getAllFolder();
-            }
+                DocumentReference documentReference = dataAccessManager.getFolderPath().document(mFolder.getId());
+                if (documentReference != null){
+                    documentReference.set(mFolder);
+                    EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+                    dataAccessManager.getAllFolder();
+                }
 
+            }
 
         }
 
