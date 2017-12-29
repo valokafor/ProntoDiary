@@ -27,7 +27,6 @@ import com.okason.diary.models.Task;
 import com.okason.diary.ui.addnote.DataAccessManager;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
-import com.okason.diary.utils.reminder.Reminder;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -121,6 +120,8 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
     }
 
+
+
     @Override
     public void onStart() {
         super.onStart();
@@ -180,7 +181,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
             dueDateTextView.setVisibility(View.GONE);
         }
 
-        Reminder repeat = null;
+        String repeat = "";
         try {
             repeat = parentTask.getRepeatFrequency();
         } catch (Exception e) {

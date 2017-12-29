@@ -48,6 +48,8 @@ public class DataAccessManager {
     private CollectionReference tagCloudReference;
     private CollectionReference taskCloudReference;
 
+
+
     public DataAccessManager(String userId) {
         this.userId = userId;
         database = FirebaseFirestore.getInstance();
@@ -83,16 +85,18 @@ public class DataAccessManager {
 
 
     public void deleteNote(String noteId) {
-        DocumentReference noteToBeDeletedRef = journalCloudReference.document(noteId);
-        if (noteToBeDeletedRef != null) {
-            noteToBeDeletedRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if (task.isSuccessful()){
-                        getAllJournal("");
+        if (!TextUtils.isEmpty(noteId)) {
+            DocumentReference noteToBeDeletedRef = journalCloudReference.document(noteId);
+            if (noteToBeDeletedRef != null) {
+                noteToBeDeletedRef.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()){
+                            getAllJournal("");
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 

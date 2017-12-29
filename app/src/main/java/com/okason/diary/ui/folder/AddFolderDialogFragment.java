@@ -173,37 +173,40 @@ public class AddFolderDialogFragment extends DialogFragment {
     }
 
 
-
     private void saveFolder() {
         final String folderName = mFolderEditText.getText().toString().trim();
-        if (!TextUtils.isEmpty(mFolder.getId())) {
-            if (mFolder == null){
-                mFolder = new Folder();
-                mFolder.setFolderName(folderName);
-                mFolder.setDateCreated(System.currentTimeMillis());
-                mFolder.setDateModified(System.currentTimeMillis());
-                dataAccessManager.getFolderPath().add(mFolder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentReference> task) {
-                        if (task.isSuccessful()){
-                            mFolder.setId(task.getResult().getId());
-                            dataAccessManager.getFolderPath().document(mFolder.getId()).set(mFolder);
-                            EventBus.getDefault().post(new FolderAddedEvent(mFolder));
-                            dataAccessManager.getAllFolder();
-                        }
-                    }
-                });
-            }else {
-                mFolder.setFolderName(folderName);
-                mFolder.setDateModified(System.currentTimeMillis());
-                DocumentReference documentReference = dataAccessManager.getFolderPath().document(mFolder.getId());
-                if (documentReference != null){
-                    documentReference.set(mFolder);
-                    EventBus.getDefault().post(new FolderAddedEvent(mFolder));
-                    dataAccessManager.getAllFolder();
-                }
+        if (mFolder == null) {
+            mFolder = new Folder();
+        }
 
+        mFolder.setFolderName(folderName);
+        mFolder.setDateModified(System.currentTimeMillis());
+
+        String folderId = mFolder.getId();
+
+        if (TextUtils.isEmpty(folderId)) {
+            mFolder.setDateCreated(System.currentTimeMillis());
+            dataAccessManager.getFolderPath().add(mFolder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentReference> task) {
+                    if (task.isSuccessful()) {
+                        mFolder.setId(task.getResult().getId());
+                        dataAccessManager.getFolderPath().document(mFolder.getId()).set(mFolder);
+                        EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+                        dataAccessManager.getAllFolder();
+                    }
+                }
+            });
+        } else {
+            try {
+                DocumentReference documentReference = dataAccessManager.getFolderPath().document(mFolder.getId());
+                documentReference.set(mFolder);
+                EventBus.getDefault().post(new FolderAddedEvent(mFolder));
+                dataAccessManager.getAllFolder();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
 
         }
 

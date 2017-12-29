@@ -15,6 +15,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +33,7 @@ import com.okason.diary.core.listeners.TaskItemListener;
 import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
 import com.okason.diary.ui.addnote.DataAccessManager;
+import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
@@ -71,6 +73,8 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     TextView mEmptyText;
 
     private FloatingActionButton floatingActionButton;
+    private int priority;
+
 
 
     public TaskListFragment() {
@@ -89,6 +93,8 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_todo_list, container, false);
         ButterKnife.bind(this, mRootView);
+        priority = Constants.PRIORITY_LOW;
+
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -98,15 +104,17 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        if (firebaseUser != null) {
-            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
-        }
 
         floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(getActivity(), AddTaskActivity.class));
+                if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+                    startActivity(new Intent(getActivity(), AddTaskActivity.class));
+                } else {
+                    startActivity(AuthUiActivity.createIntent(getActivity()));
+                }
+
             }
         });
         return mRootView;
@@ -115,7 +123,12 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public void onResume() {
         super.onResume();
-        dataAccessManager.getAllTasks();
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
+            dataAccessManager.getAllTasks();
+        }
+
+
     }
 
     @Override
@@ -177,17 +190,24 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public boolean onClose() {
 
-        showTodoLists(allTasks);
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+            showTodoLists(allTasks);
+        }
         return false;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if (query.length() > 0) {
-            filteredTasks = filterTasks(query);
-            showTodoLists(filteredTasks);
-            return true;
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+            if (query.length() > 0) {
+                filteredTasks = filterTasks(query);
+                showTodoLists(filteredTasks);
+                return true;
+            }
+        }  else {
+            makeToast(getString(R.string.login_required));
         }
+
         return true;
     }
 
@@ -213,11 +233,16 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        if (newText.length() > 0) {
-            filteredTasks = filterTasks(newText);
-            showTodoLists(filteredTasks);
-            return true;
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+            if (newText.length() > 0) {
+                filteredTasks = filterTasks(newText);
+                showTodoLists(filteredTasks);
+                return true;
+            }
+        }  else {
+            makeToast(getString(R.string.login_required));
         }
+
         return true;
     }
 

@@ -12,7 +12,6 @@ import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +23,7 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.common.Scopes;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.services.AddSampleDataIntentService;
 import com.okason.diary.utils.SettingsHelper;
 
 import java.util.ArrayList;
@@ -49,10 +49,10 @@ public class AuthUiActivity extends AppCompatActivity {
         setContentView(R.layout.activity_auth_ui);
         ButterKnife.bind(this);
         mActivity = this;
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Enable Cloud Backup");
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        toolbar.setTitle("Enable Cloud Backup");
+//        setSupportActionBar(toolbar);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         progressView = findViewById(R.id.register_progress);
 
 
@@ -150,9 +150,7 @@ public class AuthUiActivity extends AppCompatActivity {
         // Successfully signed in
         if (resultCode == RESULT_OK) {
             SettingsHelper.getHelper(mActivity).setRegisteredUser(true);
-            String anonyhmousUserId = SettingsHelper.getHelper(mActivity).getAnonymousUserId();
-
-          
+            startService(new Intent(mActivity, AddSampleDataIntentService.class));
 
             Intent restartIntent = new Intent(mActivity, NoteListActivity.class);
             restartIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

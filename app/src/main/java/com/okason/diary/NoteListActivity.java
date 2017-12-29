@@ -62,15 +62,7 @@ public class NoteListActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private FirebaseAnalytics firebaseAnalytics;
-
-
-
-    private static final String EMAIL = "tempemail@prontodiary.com";
-    private static final String PASSWORD = "abc1234";
     private static final int REQUEST_INVITE = 0;
-
-
-
 
 
     public static final String ACTION_IGNORE_CURRENT_USER = "action.ignoreCurrentUser";
@@ -112,8 +104,6 @@ public class NoteListActivity extends AppCompatActivity {
         firebaseUser = firebaseAuth.getCurrentUser();
         settingsHelper = SettingsHelper.getHelper(mActivity);
         firebaseAnalytics = FirebaseAnalytics.getInstance(mActivity);
-
-
         setupNavigationDrawer(savedInstanceBundle);
     }
 
@@ -325,7 +315,7 @@ public class NoteListActivity extends AppCompatActivity {
         switch (position) {
             case Constants.NOTES:
                 //Do Nothing, we are already on Notes
-                openFragment(new NoteListFragment(), getString(R.string.label_journals));
+                //openFragment(new NoteListFragment(), getString(R.string.label_journals));
                 break;
             case Constants.FOLDERS:
                 //Go To Folders Screen

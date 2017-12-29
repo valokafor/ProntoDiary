@@ -13,11 +13,10 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.TaskItemListener;
-import com.okason.diary.models.SubTask;
 import com.okason.diary.models.Task;
 import com.okason.diary.utils.date.DateHelper;
+import com.okason.diary.utils.date.TimeUtils;
 
 import java.util.List;
 
@@ -61,43 +60,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         holder.titleTextView.setText(title);
 
-        StringBuilder stringBuilder = new StringBuilder(40);
-
-        int numberOfTasks = 0;
-        String tasksLabel = ProntoDiaryApplication.getAppContext().getString(R.string.label_sub_task);
-        numberOfTasks = task.getSubTask().size();
-
-        if (numberOfTasks > 1){
-            tasksLabel = tasksLabel + "s";
-        }
-        tasksLabel = numberOfTasks + " "  + tasksLabel;
-
-        stringBuilder.append(tasksLabel);
-
-        int completedTasks = 0;
-        int pendingTasks = 0;
-
-        if (task.getSubTask().size() > 0){
-            for (SubTask subTask: task.getSubTask()){
-                if (subTask.isChecked()){
-                    completedTasks++;
-                }else {
-                    pendingTasks++;
-                }
-            }
-
-            stringBuilder.append(" (");
-            stringBuilder.append(completedTasks);
-            stringBuilder.append(" ");
-            stringBuilder.append(ProntoDiaryApplication.getAppContext().getString(R.string.label_done));
-            stringBuilder.append(", ");
-            stringBuilder.append(pendingTasks);
-            stringBuilder.append(" " + ProntoDiaryApplication.getAppContext().getString(R.string.label_pending));
-            stringBuilder.append(")");
-
-        }
-
-        String statusText = stringBuilder.toString();
+        String statusText = TimeUtils.getSubTaskStatus(task);
         holder.taskCountTextView.setText(statusText);
         String time = DateHelper.getTimeShort(mContext, task.getDueDateAndTime());
         holder.dueTimeTextView.setText(time);
@@ -134,6 +97,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
 
     }
+
 
     @Override
     public int getItemCount() {

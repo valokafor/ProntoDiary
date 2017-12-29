@@ -1,7 +1,5 @@
 package com.okason.diary.models;
 
-import com.okason.diary.utils.reminder.Reminder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,12 +105,12 @@ public class Task {
         this.repeatEndDate = repeatEndDate;
     }
 
-    public Reminder getRepeatFrequency() {
-        return Reminder.valueOf(repeatFrequency);
+    public String getRepeatFrequency() {
+        return repeatFrequency;
     }
 
-    public void setRepeatFrequency(Reminder val) {
-        this.repeatFrequency = val.toString();
+    public void setRepeatFrequency(String repeatFrequency) {
+        this.repeatFrequency = repeatFrequency;
     }
 
     public Double getLatitude() {
@@ -130,8 +128,6 @@ public class Task {
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
-
-
 
     public Folder getFolder() {
         return folder;

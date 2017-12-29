@@ -1,5 +1,6 @@
 package com.okason.diary.ui.todolist;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -63,7 +64,7 @@ public class AddSubTaskActivity extends AppCompatActivity {
                 // app icon in action bar clicked; go home
                 int count = getFragmentManager().getBackStackEntryCount();
                 if (count == 0) {
-                    finish();
+                    startActivity(new Intent(AddSubTaskActivity.this, TodoListActivity.class));
                 } else {
                     getFragmentManager().popBackStack();
                 }
@@ -77,7 +78,7 @@ public class AddSubTaskActivity extends AppCompatActivity {
     public void onBackPressed() {
         int count = getFragmentManager().getBackStackEntryCount();
         if (count == 0) {
-            finish();
+            startActivity(new Intent(AddSubTaskActivity.this, TodoListActivity.class));
         } else {
             getFragmentManager().popBackStack();
         }

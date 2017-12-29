@@ -2,23 +2,25 @@ package com.okason.diary.core.services;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.text.TextUtils;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.okason.diary.models.Folder;
+import com.okason.diary.models.SampleData;
+import com.okason.diary.ui.addnote.DataAccessManager;
+
+import java.util.List;
 
 
-/**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p>
- * TODO: Customize class - update intent actions and extra parameters.
- */
 public class AddSampleDataIntentService extends IntentService {
-    // TODO: Rename actions, choose action names that describe tasks that this
-    // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
-    public static final String ACTION_FOO = "com.okason.diary.core.services.action.FOO";
-    public static final String ACTION_BAZ = "com.okason.diary.core.services.action.BAZ";
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private FirebaseFirestore database;
+    private DataAccessManager dataAccessManager;
 
-    // TODO: Rename parameters
-    public static final String EXTRA_PARAM1 = "com.okason.diary.core.services.extra.PARAM1";
-    public static final String EXTRA_PARAM2 = "com.okason.diary.core.services.extra.PARAM2";
 
     public AddSampleDataIntentService() {
         super("AddSampleDataIntentService");
@@ -26,35 +28,23 @@ public class AddSampleDataIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (intent != null) {
-            final String action = intent.getAction();
-            if (ACTION_FOO.equals(action)) {
-                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
-                final String param2 = intent.getStringExtra(EXTRA_PARAM2);
-                handleActionFoo(param1, param2);
-            } else if (ACTION_BAZ.equals(action)) {
-                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
-                final String param2 = intent.getStringExtra(EXTRA_PARAM2);
-                handleActionBaz(param1, param2);
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
+            List<String> sampleFolderNames = SampleData.getSampleCategories();
+            for (String name : sampleFolderNames) {
+                final Folder folder = new Folder();
+                folder.setFolderName(name);
+                folder.setDateModified(System.currentTimeMillis());
+                DocumentReference newFolder = dataAccessManager.getFolderPath().document();
+                folder.setId(newFolder.getId());
+                newFolder.set(folder);
             }
+
         }
     }
 
-    /**
-     * Handle action Foo in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionFoo(String param1, String param2) {
-        // TODO: Handle action Foo
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 
-    /**
-     * Handle action Baz in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionBaz(String param1, String param2) {
-        // TODO: Handle action Baz
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }

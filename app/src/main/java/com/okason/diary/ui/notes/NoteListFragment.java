@@ -1,10 +1,8 @@
 package com.okason.diary.ui.notes;
 
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -83,8 +81,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     private MediaPlayer mPlayer = null;
     private boolean isAudioPlaying = false;
 
-    private SharedPreferences sharedPreferences;
-    SharedPreferences.Editor editor;
+
 
     private String sortColumn = "";
     private  String tagName = "";
@@ -162,7 +159,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+                if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
                     startActivity(new Intent(getActivity(), AddNoteActivity.class));
                 } else {
                     startActivity(AuthUiActivity.createIntent(getActivity()));
@@ -187,20 +184,11 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())){
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())){
 
             dataAccessManager = new DataAccessManager(firebaseUser.getUid());
             sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(getString(R.string.label_title),
                     getString(R.string.label_title));
-
-            sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-            editor = sharedPreferences.edit();
-            boolean first_run = sharedPreferences.getBoolean(Constants.FIRST_RUN, true);
-//            if (first_run) {
-//                dataAccessManager.addInitialNotesToFirebase();
-//
-//                editor.putBoolean(Constants.FIRST_RUN, false).commit();
-//            }
             if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
                 tagName = getArguments().getString(Constants.TAG_FILTER);
             }
@@ -257,10 +245,14 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
      */
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if (query.length() > 0) {
-            filteredJournals = filterNotes(query);
-            showNotes(filteredJournals);
-            return true;
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+            if (query.length() > 0) {
+                filteredJournals = filterNotes(query);
+                showNotes(filteredJournals);
+                return true;
+            }
+        }  else {
+            makeToast(getString(R.string.login_required));
         }
         return true;
     }
@@ -281,18 +273,26 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     @Override
     public boolean onQueryTextChange(String newText) {
 
-        if (newText.length() > 0) {
-            filteredJournals = filterNotes(newText);
-            showNotes(filteredJournals);
-            return true;
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+            if (newText.length() > 0) {
+                filteredJournals = filterNotes(newText);
+                showNotes(filteredJournals);
+                return true;
+            }
+        }  else {
+            makeToast(getString(R.string.login_required));
         }
+
+
 
         return true;
     }
 
     @Override
     public boolean onClose() {
-        showNotes(unFilteredJournals);
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+            showNotes(unFilteredJournals);
+        }
         return false;
     }
 
@@ -376,7 +376,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
 
     public void showDeleteConfirmation(Journal journal) {
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             boolean shouldPromptForDelete = PreferenceManager
                     .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
             if (shouldPromptForDelete) {
@@ -391,12 +391,14 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
     private void deleteNote(Journal journal) {
-        dataAccessManager.deleteNote(journal.getId());
+        if (journal != null && journal.getId() != null) {
+            dataAccessManager.deleteNote(journal.getId());
+        }
     }
 
 
     public void showSingleDetailUi(Journal selectedJournal) {
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             Gson gson = new Gson();
             String serializedNote = gson.toJson(selectedJournal);
             Intent intent = new Intent(getActivity(), NoteDetailActivity.class);

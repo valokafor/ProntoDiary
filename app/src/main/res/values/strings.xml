@@ -307,7 +307,7 @@
     <string name="reminder_label_weekly">Weekly</string>
     <string name="reminder_label_monthly">Monthly</string>
     <string name="reminder_label_yearly">Yearly</string>
-    <string name="label_add_sub_task">Add SubTasks</string>
+    <string name="label_add_sub_task">View or Add SubTasks</string>
     <string name="general">General</string>
     <string name="add_task_hint">Example: Buy milk</string>
     <string name="zero_task">0 Task</string>
@@ -324,7 +324,7 @@
     <string name="label_date_modified">Date Modified</string>
     <string name="reminder">Reminder</string>
     <string name="no_sub_task_found">No Sub Task found for this task, use the + button to start</string>
-    <string name="title_edit_task">Edit Task</string>
+    <string name="title_edit_task">View or Edit Task</string>
     <string name="title_activity_add_task">AddTaskActivity</string>
     <string name="title_activity_add_sub_task">AddSubTaskActivity</string>
     <string name="repeat_date_before_due_date">Task repeat date is before Task due date.</string>
@@ -387,7 +387,7 @@
     <string name="title_activity_tag_list">TagListActivity</string>
     <string name="login_required">You not signed in</string>
     <string name="edit_journal">Edit Journal</string>
-
+    <string name="channel_id">okason</string>
 
 
 </resources>

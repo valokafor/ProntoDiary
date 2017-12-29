@@ -55,7 +55,6 @@ import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
 import com.okason.diary.utils.reminder.MyAlarmManager;
-import com.okason.diary.utils.reminder.Reminder;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -133,7 +132,7 @@ public class AddTaskFragment extends Fragment{
   ;
     private Task currentTast = null;
 
-    private Reminder repeatFrequency;
+    private String repeatFrequency = "";
     private int priority = Constants.PRIORITY_LOW;
    // private Folder selectedFolder;
     private Calendar mReminderTime;
@@ -279,27 +278,27 @@ public class AddTaskFragment extends Fragment{
         return false;
     }
 
-    private void onSaveTaskButtonClicked(){
-        if (currentTast == null){
+    private void onSaveTaskButtonClicked() {
+        if (currentTast == null) {
             currentTast = new Task();
         }
 
 
-        if (TextUtils.isEmpty(taskNameEditText.getText())){
+        if (TextUtils.isEmpty(taskNameEditText.getText())) {
             taskNameEditText.setError(getString(R.string.required));
             return;
         }
 
-        if (repeatFrequency == null){
-            repeatFrequency = Reminder.NO;
+        if (TextUtils.isEmpty(repeatFrequency)) {
+            repeatFrequency = Constants.REMINDER_NO_REMINDER;
         }
 
-        if (mReminderTime == null){
+        if (mReminderTime == null) {
             mReminderTime = Calendar.getInstance();
             mReminderTime.setTimeInMillis(System.currentTimeMillis());
         }
 
-        if (repeatEndDate == null){
+        if (repeatEndDate == null) {
             repeatEndDate = Calendar.getInstance();
             repeatEndDate.setTimeInMillis(System.currentTimeMillis());
         }
@@ -312,39 +311,29 @@ public class AddTaskFragment extends Fragment{
         currentTast.setDateModified(System.currentTimeMillis());
         currentTast.setDateCreated(System.currentTimeMillis());
 
-        if (TextUtils.isEmpty(currentTast.getId())){
-            dataAccessManager.getTaskPath().add(currentTast)
-                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                        @Override
-                        public void onComplete(@NonNull com.google.android.gms.tasks.Task<DocumentReference> task) {
-                            if (task.isSuccessful()){
-                                String key = task.getResult().getId();
-                                currentTast.setId(key);
+        if (TextUtils.isEmpty(currentTast.getId())) {
+            DocumentReference taskRef = dataAccessManager.getTaskPath().document();
+            currentTast.setId(taskRef.getId());
+            taskRef.set(currentTast);
+            if (currentTast.getFolder() == null) {
+                addTaskToDefaultFolder(currentTast);
+            }
 
-                                dataAccessManager.getTaskPath().document(key).set(currentTast);
+            if (currentTast.getDueDateAndTime() > System.currentTimeMillis()) {
+                MyAlarmManager.createAlarm(getActivity(), currentTast);
+            }
 
-                                if (currentTast.getFolder() == null) {
-                                    addTaskToDefaultFolder(currentTast);
-                                }
+            if (shouldAddSubTasks) {
+                Gson gson = new Gson();
+                String serializedTask = gson.toJson(currentTast);
+                Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
+                addSubTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
+                addSubTaskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(addSubTaskIntent);
+            } else {
+                goBackToParent();
+            }
 
-                                if (currentTast.getDueDateAndTime() > System.currentTimeMillis()){
-                                    MyAlarmManager.createAlarm(getActivity(), currentTast);
-                                }
-
-                                if (shouldAddSubTasks){
-                                    Gson gson = new Gson();
-                                    String serializedTask = gson.toJson(currentTast);
-                                    Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
-                                    addSubTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
-                                    addSubTaskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    startActivity(addSubTaskIntent);
-                                }else {
-                                    goBackToParent();
-                                }
-                            }
-
-                        }
-                    });
         } else {
             dataAccessManager.getTaskPath().document(currentTast.getId()).set(currentTast);
 
@@ -352,18 +341,18 @@ public class AddTaskFragment extends Fragment{
                 addTaskToDefaultFolder(currentTast);
             }
 
-            if (currentTast.getDueDateAndTime() > System.currentTimeMillis()){
+            if (currentTast.getDueDateAndTime() > System.currentTimeMillis()) {
                 MyAlarmManager.createAlarm(getActivity(), currentTast);
             }
 
-            if (shouldAddSubTasks){
+            if (shouldAddSubTasks) {
                 Gson gson = new Gson();
                 String serializedTask = gson.toJson(currentTast);
                 Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
                 addSubTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
                 addSubTaskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(addSubTaskIntent);
-            }else {
+            } else {
                 goBackToParent();
             }
 
@@ -481,7 +470,7 @@ public class AddTaskFragment extends Fragment{
     @OnClick(R.id.button_one_time_event)
     public void onClickOneTimeEventButton(View view){
         resetReminderButtons();
-        repeatFrequency = Reminder.NO;
+        repeatFrequency = Constants.REMINDER_NO_REMINDER;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             oneTimeEventButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             oneTimeEventButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -492,7 +481,7 @@ public class AddTaskFragment extends Fragment{
     @OnClick(R.id.button_reminder_hourly)
     public void onClickHourlyReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Reminder.HOURLY;
+        repeatFrequency = Constants.REMINDER_HOURLY;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             hourlyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             hourlyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -505,7 +494,7 @@ public class AddTaskFragment extends Fragment{
     @OnClick(R.id.button_reminder_daily)
     public void onClickDailyReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Reminder.DAILY;
+        repeatFrequency = Constants.REMINDER_DAILY;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             dailyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             dailyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -517,7 +506,7 @@ public class AddTaskFragment extends Fragment{
     @OnClick(R.id.button_reminder_weekly)
     public void onClickWeeklyReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Reminder.WEEKLY;
+        repeatFrequency = Constants.REMINDER_WEEKLY;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             weeklyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             weeklyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -529,7 +518,7 @@ public class AddTaskFragment extends Fragment{
     @OnClick(R.id.button_reminder_week_days)
     public void onClickWeekDaysReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Reminder.WEEKDAYS;
+        repeatFrequency = Constants.REMINDER_WEEK_DAYS;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             weekDaysReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             weekDaysReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -540,7 +529,7 @@ public class AddTaskFragment extends Fragment{
     @OnClick(R.id.button_reminder_monthly)
     public void onClickMonthlyReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Reminder.MONTHLY;
+        repeatFrequency = Constants.REMINDER_MONTHLY;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             monthlyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             monthlyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -552,7 +541,7 @@ public class AddTaskFragment extends Fragment{
     @OnClick(R.id.button_reminder_yearly)
     public void onClickYearlyReminderButton(View view){
         resetReminderButtons();
-        repeatFrequency = Reminder.YEARLY;
+        repeatFrequency = Constants.REMINDER_YEARLY;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             yearlyReminderButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.primary));
             yearlyReminderButton.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
@@ -705,32 +694,32 @@ public class AddTaskFragment extends Fragment{
             e.printStackTrace();
         }
 
-        Reminder frequency = null;
+        String frequency = "";
         try {
             frequency = task.getRepeatFrequency();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        if (frequency != null){
+        if (!TextUtils.isEmpty(frequency)){
 
             switch (frequency){
-                case HOURLY:
+                case Constants.REMINDER_HOURLY:
                     hourlyReminderButton.performClick();
                     break;
-                case DAILY:
+                case Constants.REMINDER_DAILY:
                     dailyReminderButton.performClick();
                     break;
-                case WEEKLY:
+                case Constants.REMINDER_WEEKLY:
                     weeklyReminderButton.performClick();
                     break;
-                case MINUTE:
+                case Constants.REMINDER_WEEK_DAYS:
                     weekDaysReminderButton.performClick();
                     break;
-                case YEARLY:
+                case Constants.REMINDER_YEARLY:
                     yearlyReminderButton.performClick();
                     break;
-                case MONTHLY:
+                case Constants.REMINDER_MONTHLY:
                     monthlyReminderButton.performClick();
                     break;
 
@@ -745,7 +734,7 @@ public class AddTaskFragment extends Fragment{
         }
 
         //Show the repeat end date of the Frequency is not a single event
-        if (task.getRepeatFrequency() != Reminder.NO){
+        if (!task.getRepeatFrequency().equals(Constants.REMINDER_NO_REMINDER)){
             reminderEndDateLayout.setVisibility(View.VISIBLE);
             repeatEndDate = Calendar.getInstance();
             if (task.getRepeatEndDate() > 0){
@@ -852,7 +841,6 @@ public class AddTaskFragment extends Fragment{
 
     public void goBackToParent() {
         Intent parentIntent = new Intent(getActivity(), TodoListActivity.class);
-        parentIntent.putExtra(Constants.FRAGMENT_TAG, Constants.TODO_LIST_FRAGMENT_TAG);
         startActivity(parentIntent);
     }
 

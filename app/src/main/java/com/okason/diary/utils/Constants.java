@@ -167,11 +167,14 @@ public class Constants {
     public static final String PREFS_NAME = PACKAGE + "_preferences";
 
     public static final String REMINDER_NO_REMINDER = "no_reminder";
+    public static final String REMINDER_MINUTE = "minute";
     public static final String REMINDER_HOURLY = "hourly";
     public static final String REMINDER_DAILY = "daily";
     public static final String REMINDER_WEEKLY= "weekly";
     public static final String REMINDER_WEEK_DAYS= "week_days";
     public static final String REMINDER_MONTHLY = "monthly";
     public static final String REMINDER_YEARLY = "yearly";
+    public static final String EMAIL_LOGIN = "anonymous_user@prontodiary.com";
+    public static final String EMAIL_PASSWORD = "pr0ntodi@ry!";
 
 }

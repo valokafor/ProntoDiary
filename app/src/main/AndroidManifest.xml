@@ -193,22 +193,15 @@
             android:name=".core.services.HandleNoteDeleteIntentService"
             android:exported="false">
         </service>
-        <service
-            android:name=".core.services.MergeJournalIntentService"
-            android:exported="false">
-        </service>
-        <service
-            android:name=".core.services.MergeTagIntentService"
-            android:exported="false">
-        </service>
-        <service
-            android:name=".core.services.MergeFolderIntentService"
-            android:exported="false">
-        </service>
+
         <service
             android:name=".core.services.FileUploadIntentService"
             android:exported="false">
         </service>
+        <receiver android:name=".utils.reminder.AlarmReceiver"
+                  android:enabled="true">
+        </receiver>
+
     </application>
 
 </manifest>

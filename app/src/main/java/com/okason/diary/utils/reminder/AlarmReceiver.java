@@ -6,17 +6,13 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
+import android.util.Log;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.crash.FirebaseCrash;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.okason.diary.NoteListActivity;
+import com.google.gson.Gson;
 import com.okason.diary.models.Task;
-import com.okason.diary.ui.addnote.DataAccessManager;
+import com.okason.diary.ui.todolist.AddTaskActivity;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.date.TimeUtils;
 
 import java.util.Calendar;
 
@@ -26,66 +22,48 @@ import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 public class AlarmReceiver extends BroadcastReceiver {
 
     private static final String TAG = "AlarmReceiver";
-    private static final Class COMPONENT_CLASS = NoteListActivity.class;
-    private DataAccessManager dataAccessManager;
+    private static final Class COMPONENT_CLASS = AddTaskActivity.class;
+
 
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (firebaseUser != null) {
-            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
-            final String taskId = intent.getStringExtra(Constants.TASK_ID);
-            dataAccessManager.getTaskPath().document(taskId).get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull com.google.android.gms.tasks.Task<DocumentSnapshot> task) {
-                            DocumentSnapshot documentSnapshot = task.getResult();
-                            Task currentTask = documentSnapshot.toObject(Task.class);
-                            if (currentTask != null) {
-                                handleReminder(currentTask);
 
-                            } else {
-                                FirebaseCrash.report(new Exception("Saved Task is Null after Alarm Receiver Fired"));
-                            }
+            final String serializedTask = intent.getStringExtra(Constants.SERIALIZED_TASK);
+            Log.d(TAG, "serializedTask : " + serializedTask);
+            Gson gson = new Gson();
+            Task currentTask = gson.fromJson(serializedTask, Task.class);
+            if (currentTask != null) {
 
-                        }
+                Notification notification = intent.getParcelableExtra(Constants.ALARM_NOTIFICATION);
+                int pendingIntentId = TimeUtils.currentTimeMillis(currentTask.getDateCreated());
+                Log.d(TAG, "pendingIntentId :" + pendingIntentId);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(context, pendingIntentId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-                        private void handleReminder(Task currentTask) {
+                // Delete alarm if date of task expired
+                if (currentTask != null && Calendar.getInstance().after(currentTask.getRepeatEndDate())) {
+                    MyAlarmManager.deleteAlarm(context, pendingIntent);
+                    return;
+                }
 
-                            Notification notification = intent.getParcelableExtra(Constants.ALARM_NOTIFICATION);
-                            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int) currentTask.getDateCreated(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                // this condition is for weekdays
+                if (currentTask.getRepeatFrequency().equals(Constants.REMINDER_WEEK_DAYS)) {
+                    int dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+                    if (dayOfWeek == Calendar.SUNDAY || dayOfWeek == Calendar.SATURDAY) {
+                        return;
+                    }
+                }
 
-                            // Delete alarm if date of task expired
-                            if (currentTask != null && Calendar.getInstance().after(currentTask.getRepeatEndDate())) {
-                                MyAlarmManager.deleteAlarm(context, pendingIntent);
-                                return;
-                            }
+                intent.setClass(context, COMPONENT_CLASS);
+                notification.contentIntent =
+                        PendingIntent.getActivity(context, pendingIntentId, intent, FLAG_UPDATE_CURRENT);
 
-                            // this condition is for weekdays
-                            if (currentTask.getRepeatFrequency().equals(Reminder.WEEKDAYS)) {
-                                int dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-                                if (dayOfWeek == Calendar.SUNDAY || dayOfWeek == Calendar.SATURDAY) {
-                                    return;
-                                }
-                            }
-
-                            intent.setClass(context, COMPONENT_CLASS);
-                            notification.contentIntent =
-                                    PendingIntent.getActivity(context, Integer.parseInt(taskId), intent, FLAG_UPDATE_CURRENT);
-
-                            NotificationManager notificationManager =
-                                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                            notificationManager.notify(Integer.parseInt(taskId), notification);
-
-                        }
-                    });
-
-
-        } else {
-            FirebaseCrash.report(new Exception("Firebase User is Null after Alarm Receiver Fired"));
-        }
-
+                NotificationManager notificationManager =
+                        (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.notify(pendingIntentId, notification);
+            }
 
     }
+
+
 }

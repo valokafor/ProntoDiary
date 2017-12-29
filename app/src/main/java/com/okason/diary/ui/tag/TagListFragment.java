@@ -96,14 +96,18 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
 
-        if (firebaseUser != null) {
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             dataAccessManager = new DataAccessManager(firebaseUser.getUid());
         }
 
         addTagbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showAddNewTagDialog();
+                if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+                    showAddNewTagDialog();
+                } else {
+                    startActivity(AuthUiActivity.createIntent(getActivity()));
+                }
             }
         });
         return mRootView;

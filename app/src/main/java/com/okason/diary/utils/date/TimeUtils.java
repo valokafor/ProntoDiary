@@ -1,6 +1,13 @@
 package com.okason.diary.utils.date;
 
+import com.okason.diary.R;
+import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.models.SubTask;
+import com.okason.diary.models.Task;
+import com.okason.diary.utils.Constants;
+
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -68,6 +75,91 @@ public class TimeUtils {
         String displayDate = new SimpleDateFormat("MMM dd, yyyy").format(new Date(date));
         return displayDate;
     }
+
+    public static int currentTimeMillis(long timeInMillis) {
+        return (int) (timeInMillis % Integer.MAX_VALUE);
+    }
+
+    public static long getInterval(long baseAtMillis, String interval) {
+        Calendar baseTime = Calendar.getInstance();
+        baseTime.setTimeInMillis(baseAtMillis);
+
+        long baseTimeMillis = baseTime.getTimeInMillis();
+
+        if (interval.equals(Constants.REMINDER_NO_REMINDER)) {
+            return 0;
+        } else if (interval.equals(Constants.REMINDER_MINUTE)){
+            baseTime.add(Calendar.MINUTE, 1);
+            return baseTime.getTimeInMillis() - baseTimeMillis;
+
+        }else if (interval.equals(Constants.REMINDER_HOURLY)){
+            baseTime.add(Calendar.HOUR, 1);
+            return baseTime.getTimeInMillis() - baseTimeMillis;
+
+        } else if (interval.equals(Constants.REMINDER_DAILY)){
+            baseTime.add(Calendar.HOUR, 24);
+            return baseTime.getTimeInMillis() - baseTimeMillis;
+
+        } else if (interval.equals(Constants.REMINDER_WEEK_DAYS)){
+            baseTime.add(Calendar.HOUR, 24);
+            return baseTime.getTimeInMillis() - baseTimeMillis;
+
+        } else if (interval.equals(Constants.REMINDER_WEEKLY)){
+            baseTime.add(Calendar.HOUR, 24 * 7);
+            return baseTime.getTimeInMillis() - baseTimeMillis;
+        } else if (interval.equals(Constants.REMINDER_MONTHLY)){
+            baseTime.add(Calendar.MONTH, 1);
+            return baseTime.getTimeInMillis() - baseTimeMillis;
+        } else if (interval.equals(Constants.REMINDER_YEARLY)){
+            baseTime.add(Calendar.YEAR, 1);
+            return baseTime.getTimeInMillis() - baseTimeMillis;
+        } else {
+            return 0;
+        }
+
+
+    }
+
+    public static String getSubTaskStatus(Task task) {
+        StringBuilder stringBuilder = new StringBuilder(40);
+
+        int numberOfTasks = 0;
+        String tasksLabel = ProntoDiaryApplication.getAppContext().getString(R.string.label_sub_task);
+        numberOfTasks = task.getSubTask().size();
+
+        if (numberOfTasks > 1){
+            tasksLabel = tasksLabel + "s";
+        }
+        tasksLabel = numberOfTasks + " "  + tasksLabel;
+
+        stringBuilder.append(tasksLabel);
+
+        int completedTasks = 0;
+        int pendingTasks = 0;
+
+        if (task.getSubTask().size() > 0){
+            for (SubTask subTask: task.getSubTask()){
+                if (subTask.isChecked()){
+                    completedTasks++;
+                }else {
+                    pendingTasks++;
+                }
+            }
+
+            stringBuilder.append(" (");
+            stringBuilder.append(completedTasks);
+            stringBuilder.append(" ");
+            stringBuilder.append(ProntoDiaryApplication.getAppContext().getString(R.string.label_done));
+            stringBuilder.append(", ");
+            stringBuilder.append(pendingTasks);
+            stringBuilder.append(" " + ProntoDiaryApplication.getAppContext().getString(R.string.label_pending));
+            stringBuilder.append(")");
+
+        }
+
+        return stringBuilder.toString();
+    }
+
 
 
 

@@ -9,7 +9,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -108,7 +107,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+                if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
                     showAddNewFolderDialog();
                 } else {
                    startActivity(AuthUiActivity.createIntent(getActivity()));
@@ -123,7 +122,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     @Override
     public void onResume() {
         super.onResume();
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             dataAccessManager = new DataAccessManager(firebaseUser.getUid());
             dataAccessManager.getAllFolder();
         } else {
@@ -178,20 +177,18 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        menu.clear();
-        inflater.inflate(R.menu.menu_folder_list, menu);
-        MenuItem search = menu.findItem(R.id.action_search);
-        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
-        searchView.setOnQueryTextListener(this);
-        searchView.setOnCloseListener(this);
-        super.onCreateOptionsMenu(menu, inflater);
+//        menu.clear();
+//        inflater.inflate(R.menu.menu_folder_list, menu);
+//        MenuItem search = menu.findItem(R.id.action_search);
+//        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
+//        searchView.setOnQueryTextListener(this);
+//        searchView.setOnCloseListener(this);
+//        super.onCreateOptionsMenu(menu, inflater);
     }
 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-
 
         return super.onOptionsItemSelected(item);
     }
@@ -249,7 +246,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     @Override
     public void onEditCategoryButtonClicked(Folder selectedFolder) {
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             showEditCategoryForm(selectedFolder);
         } else {
             makeToast(getString(R.string.login_required));
@@ -258,7 +255,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     @Override
     public void onDeleteCategoryButtonClicked(Folder selectedFolder) {
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             showConfirmDeleteCategoryPrompt(selectedFolder);
         } else {
             makeToast(getString(R.string.login_required));
