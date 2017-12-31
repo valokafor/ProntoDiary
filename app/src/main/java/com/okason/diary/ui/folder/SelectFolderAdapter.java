@@ -61,7 +61,7 @@ public class SelectFolderAdapter extends ArrayAdapter<Folder> {
 
         View view = LayoutInflater.from(getContext()).inflate(R.layout.folder_list_text, null);
         TextView text1 = (TextView) view.findViewById(android.R.id.text1);
-        text1.setText(category.getFolderName());
+        text1.setText(category.getTitle());
 
         return view;
     }

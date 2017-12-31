@@ -63,6 +63,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     FloatingActionButton addTagbutton;
 
     private AddTagDialogFragment addTagDialog;
+    private String sortColumn = "title";
 
 
 
@@ -96,9 +97,6 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
 
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
-        }
 
         addTagbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,9 +115,8 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     public void onResume() {
         super.onResume();
         if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
-            if (dataAccessManager != null){
-                dataAccessManager.getAllTags();
-            }
+            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
+            dataAccessManager.getAllTags();
         } else {
             showTags(generateSampleTags());
         }

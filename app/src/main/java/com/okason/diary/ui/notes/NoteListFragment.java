@@ -81,9 +81,6 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     private MediaPlayer mPlayer = null;
     private boolean isAudioPlaying = false;
 
-
-
-    private String sortColumn = "";
     private  String tagName = "";
 
 
@@ -187,11 +184,10 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())){
 
             dataAccessManager = new DataAccessManager(firebaseUser.getUid());
-            sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(getString(R.string.label_title),
-                    getString(R.string.label_title));
             if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
                 tagName = getArguments().getString(Constants.TAG_FILTER);
             }
+
             dataAccessManager.getAllJournal(tagName);
 
         } else {

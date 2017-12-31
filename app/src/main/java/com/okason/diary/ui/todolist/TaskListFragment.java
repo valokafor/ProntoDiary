@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -24,8 +25,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.TaskListChangeEvent;
@@ -53,6 +57,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
          SearchView.OnCloseListener, SearchView.OnQueryTextListener{
 
 
+    private final static String TAG = "TaskListFragment";
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private DataAccessManager dataAccessManager;
@@ -63,6 +68,8 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     private TaskListAdapter mListAdapter;
     private View mRootView;
     private boolean shouldUpdateAdapter = true;
+    private String sortColumn = "title";
+
 
 
 
@@ -73,7 +80,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     TextView mEmptyText;
 
     private FloatingActionButton floatingActionButton;
-    private int priority;
+    private int priority = Constants.PRIORITY_ALL;
 
 
 
@@ -81,10 +88,22 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         // Required empty public constructor
     }
 
+    public static TaskListFragment newInstance(int priority){
+        TaskListFragment fragment = new TaskListFragment();
+        Bundle args = new Bundle();
+        args.putInt(Constants.TASK_PRIORITY, priority);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        if (getArguments() != null && getArguments().containsKey(Constants.TASK_PRIORITY)){
+            priority = getArguments().getInt(Constants.TASK_PRIORITY);
+        }
     }
 
     @Override
@@ -93,7 +112,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_todo_list, container, false);
         ButterKnife.bind(this, mRootView);
-        priority = Constants.PRIORITY_LOW;
+
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -117,6 +136,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
             }
         });
+        sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("sort_options","title");
         return mRootView;
     }
 
@@ -125,7 +145,45 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         super.onResume();
         if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             dataAccessManager = new DataAccessManager(firebaseUser.getUid());
-            dataAccessManager.getAllTasks();
+
+
+            if (priority == Constants.PRIORITY_ALL){
+               dataAccessManager.getTaskPath()
+                       .orderBy(sortColumn)
+                       .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                   @Override
+                   public void onComplete(@NonNull com.google.android.gms.tasks.Task<QuerySnapshot> task) {
+                       if (task.isSuccessful()){
+                           for (DocumentSnapshot snapshot : task.getResult()) {
+                               com.okason.diary.models.Task item = snapshot.toObject(com.okason.diary.models.Task.class);
+                               if (item != null) {
+                                   allTasks.add(item);
+                               }
+                           }
+                           showTodoLists(allTasks);
+                       }
+                   }
+               });
+
+            } else {
+               dataAccessManager
+                       .getTaskPath()
+                       .orderBy(sortColumn)
+                       .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                   @Override
+                   public void onComplete(@NonNull com.google.android.gms.tasks.Task<QuerySnapshot> task) {
+                       if (task.isSuccessful()){
+                           for (DocumentSnapshot snapshot : task.getResult()) {
+                               com.okason.diary.models.Task item = snapshot.toObject(com.okason.diary.models.Task.class);
+                               if (item != null && item.getPriority() == priority) {
+                                   allTasks.add(item);
+                               }
+                           }
+                           showTodoLists(allTasks);
+                       }
+                   }
+               });
+            }
         }
 
 
@@ -263,6 +321,20 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
             mRecyclerView.setVisibility(View.GONE);
             mEmptyText.setVisibility(View.VISIBLE);
             //  mAdView.setVisibility(View.GONE);
+            switch (priority){
+                case 0:
+                    mEmptyText.setText(getString(R.string.no_todo_list_found_high_priority));
+                    break;
+                case 1:
+                    mEmptyText.setText(getString(R.string.no_todo_list_found_medium_priority));
+                    break;
+                case 2:
+                    mEmptyText.setText(getString(R.string.no_todo_list_found_low_priority));
+                    break;
+                default:
+                    mEmptyText.setText(getString(R.string.no_todo_list_found_default));
+                    break;
+            }
 
         }else {
             //  mAdView.setVisibility(View.VISIBLE);
@@ -311,24 +383,26 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     @Override
     public void onTaskChecked(Task task) {
-        shouldUpdateAdapter = false;
-        onMarkTaskAsComplete(task);
+//        shouldUpdateAdapter = false;
+//        for (SubTask subTask: task.getSubTask()){
+//            subTask.setChecked(true);
+//        }
+        dataAccessManager.getTaskPath().document(task.getId()).update("checked", true);
 
     }
 
-    private void onMarkTaskAsComplete(Task task) {
 
-    }
 
     @Override
     public void onTaskUnChecked(Task task) {
-        shouldUpdateAdapter = false;
-        onMarkTaskAsInComplete(task);
+//        shouldUpdateAdapter = false;
+//        for (SubTask subTask: task.getSubTask()){
+//            subTask.setChecked(false);
+//        }
+        dataAccessManager.getTaskPath().document(task.getId()).update("checked", false);
+
     }
 
-    private void onMarkTaskAsInComplete(Task task) {
-
-    }
 
     private void promptForDelete(final Task clickedTask) {
         String title = getString(R.string.are_you_sure);

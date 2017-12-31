@@ -43,6 +43,7 @@ public class Constants {
     public static final String PHONE_NUMBER = "phone_number";
     public static final String TEMP_USER_NAME = "temp_user_name";
     public static final String TEMP_PASSWORD = "temp_password";
+    public static final String TASK_PRIORITY = "task_priority";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
@@ -60,7 +61,7 @@ public class Constants {
     public static final int PRIORITY_LOW = 1;
     public static final int PRIORITY_MEDIUM = 2;
     public static final int PRIORITY_HIGH = 3;
-    public static final int PRIORITY_TOP = 3;
+    public static final int PRIORITY_ALL = 4;
 
     public final static int NOTES = 1;
     public final static int FOLDERS = 2;

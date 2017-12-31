@@ -309,6 +309,7 @@ public class NoteEditorFragment extends Fragment{
                 }
                 break;
             case R.id.action_tag:
+                String sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("sort_options","title");
                 journalManager.getAllTags();
                 break;
 
@@ -350,8 +351,6 @@ public class NoteEditorFragment extends Fragment{
                     currentJournal.getTags().put(selectedTag.getTagName(), true);
                 }
                 initTagLayout(currentJournal.getTags());
-
-
             }
 
             @Override
@@ -415,7 +414,7 @@ public class NoteEditorFragment extends Fragment{
         addFolderDialogFragment.dismiss();
 
         if (event.getFolder() != null){
-            mCategory.setText(event.getFolder().getFolderName());
+            mCategory.setText(event.getFolder().getTitle());
             if (currentJournal == null){
                 currentJournal = new Journal();
             }
@@ -449,7 +448,7 @@ public class NoteEditorFragment extends Fragment{
             @Override
             public void onCategorySelected(Folder selectedCategory) {
                 selectFolderDialogFragment.dismiss();
-                mCategory.setText(selectedCategory.getFolderName());
+                mCategory.setText(selectedCategory.getTitle());
                 if (currentJournal == null){
                     currentJournal = new Journal();
                 }
@@ -527,7 +526,7 @@ public class NoteEditorFragment extends Fragment{
         }
 
         try {
-            mCategory.setText(journal.getFolder().getFolderName());
+            mCategory.setText(journal.getFolder().getTitle());
         } catch (Exception e) {
             mCategory.setText(Constants.DEFAULT_CATEGORY);
         }
@@ -1483,7 +1482,7 @@ public class NoteEditorFragment extends Fragment{
             public void onSuccess(QuerySnapshot documentSnapshots) {
                 if (documentSnapshots.isEmpty()){
                     final Folder folder = new Folder();
-                    folder.setFolderName(Constants.DEFAULT_CATEGORY);
+                    folder.setTitle(Constants.DEFAULT_CATEGORY);
                     folder.setDateModified(System.currentTimeMillis());
                     folder.setDateCreated(System.currentTimeMillis());
                     journalManager.getFolderPath().add(folder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {

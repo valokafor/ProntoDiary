@@ -36,7 +36,7 @@ public class AddSampleDataIntentService extends IntentService {
             List<String> sampleFolderNames = SampleData.getSampleCategories();
             for (String name : sampleFolderNames) {
                 final Folder folder = new Folder();
-                folder.setFolderName(name);
+                folder.setTitle(name);
                 folder.setDateModified(System.currentTimeMillis());
                 DocumentReference newFolder = dataAccessManager.getFolderPath().document();
                 folder.setId(newFolder.getId());

@@ -158,7 +158,7 @@
 
         <activity
             android:name=".ui.todolist.TodoListActivity"
-            android:label="@string/title_activity_todo_list"
+            android:label="@string/label_todo_list"
             android:launchMode="singleTask"
             android:parentActivityName=".NoteListActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -193,13 +193,14 @@
             android:name=".core.services.HandleNoteDeleteIntentService"
             android:exported="false">
         </service>
-
         <service
             android:name=".core.services.FileUploadIntentService"
             android:exported="false">
         </service>
-        <receiver android:name=".utils.reminder.AlarmReceiver"
-                  android:enabled="true">
+
+        <receiver
+            android:name=".utils.reminder.AlarmReceiver"
+            android:enabled="true">
         </receiver>
 
     </application>

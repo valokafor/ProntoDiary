@@ -4,6 +4,7 @@ package com.okason.diary.ui.folder;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -70,6 +71,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     private List<Folder> filteredFolders;
 
     private FloatingActionButton floatingActionButton;
+    private String sortColumn = "title";
 
 
 
@@ -124,6 +126,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         super.onResume();
         if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             dataAccessManager = new DataAccessManager(firebaseUser.getUid());
+            sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("sort_options","title");
             dataAccessManager.getAllFolder();
         } else {
             showFolders(generateSampleFolders());
@@ -138,7 +141,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         for (String name : sampleFolderNames) {
 
             final Folder folder = new Folder();
-            folder.setFolderName(name);
+            folder.setTitle(name);
 
             folders.add(folder);
         }
@@ -290,7 +293,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     public void showConfirmDeleteCategoryPrompt(final Folder folder) {
         String title = getString(R.string.are_you_sure);
-        String message =  getString(R.string.action_delete) + " " + folder.getFolderName() + "?";
+        String message =  getString(R.string.action_delete) + " " + folder.getTitle() + "?";
 
 
         android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext());

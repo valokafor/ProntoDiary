@@ -64,7 +64,7 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
     public void onBindViewHolder(final ViewHolder holder, int position) {
 
         Folder folder = mFolders.get(position);
-        String folderName = folder.getFolderName();
+        String folderName = folder.getTitle();
         holder.folderName.setText(folderName);
 
 

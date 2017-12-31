@@ -7,7 +7,7 @@ package com.okason.diary.models;
 public class Folder{
 
     private String id;
-    private String folderName;
+    private String title;
     private long dateCreated;
     private long dateModified;
 
@@ -24,12 +24,12 @@ public class Folder{
         this.id = id;
     }
 
-    public String getFolderName() {
-        return folderName;
+    public String getTitle() {
+        return title;
     }
 
-    public void setFolderName(String folderName) {
-        this.folderName = folderName;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public long getDateCreated() {

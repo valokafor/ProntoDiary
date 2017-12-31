@@ -123,7 +123,7 @@ public class AddFolderDialogFragment extends DialogFragment {
                 }
             });
 
-            if (mFolder != null && !TextUtils.isEmpty(mFolder.getFolderName())){
+            if (mFolder != null && !TextUtils.isEmpty(mFolder.getTitle())){
                 populateFields(mFolder);
                 mFolderEditText.setSelection(mFolderEditText.getText().length());
             }
@@ -135,7 +135,7 @@ public class AddFolderDialogFragment extends DialogFragment {
     }
 
     private void populateFields(Folder category) {
-        mFolderEditText.setText(category.getFolderName());
+        mFolderEditText.setText(category.getTitle());
     }
 
     private boolean requiredFieldCompleted(){
@@ -179,7 +179,7 @@ public class AddFolderDialogFragment extends DialogFragment {
             mFolder = new Folder();
         }
 
-        mFolder.setFolderName(folderName);
+        mFolder.setTitle(folderName);
         mFolder.setDateModified(System.currentTimeMillis());
 
         String folderId = mFolder.getId();

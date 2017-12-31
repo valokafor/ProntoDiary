@@ -367,7 +367,7 @@ public class AddTaskFragment extends Fragment{
             public void onSuccess(QuerySnapshot documentSnapshots) {
                 if (documentSnapshots.isEmpty()){
                     final Folder folder = new Folder();
-                    folder.setFolderName(Constants.DEFAULT_CATEGORY);
+                    folder.setTitle(Constants.DEFAULT_CATEGORY);
                     folder.setDateModified(System.currentTimeMillis());
                     folder.setDateCreated(System.currentTimeMillis());
                     dataAccessManager.getFolderPath().add(folder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
@@ -397,7 +397,7 @@ public class AddTaskFragment extends Fragment{
     public void onAddNewFolder(FolderAddedEvent event){
         addFolderDialogFragment.dismiss();
         if (event.getFolder() != null){
-            mFolder.setText(event.getFolder().getFolderName());
+            mFolder.setText(event.getFolder().getTitle());
             if (currentTast == null){
                 currentTast = new Task();
             }
@@ -617,7 +617,7 @@ public class AddTaskFragment extends Fragment{
             @Override
             public void onCategorySelected(Folder selectedFolder) {
                 selectFolderDialogFragment.dismiss();
-                mFolder.setText(selectedFolder.getFolderName());
+                mFolder.setText(selectedFolder.getTitle());
                 selectedFolder = selectedFolder;
             }
 
@@ -728,7 +728,7 @@ public class AddTaskFragment extends Fragment{
         }
 
         try {
-            mFolder.setText(task.getFolder().getFolderName());
+            mFolder.setText(task.getFolder().getTitle());
         } catch (Exception e) {
             e.printStackTrace();
         }

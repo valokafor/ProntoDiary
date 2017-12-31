@@ -1,5 +1,6 @@
 package com.okason.diary.ui.addnote;
 
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
@@ -14,6 +15,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.NoteListActivity;
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.FolderListChangeEvent;
 import com.okason.diary.core.events.JournalListChangeEvent;
 import com.okason.diary.core.events.TagListChangeEvent;
@@ -103,15 +105,19 @@ public class DataAccessManager {
 
     public void getAllJournal(String tagName) {
         final List<Journal> journals = new ArrayList<>();
+        String sortColumn = PreferenceManager.getDefaultSharedPreferences(
+                ProntoDiaryApplication.getAppContext()).getString("sort_options","title");
         try {
 
             Query query;
             if (!TextUtils.isEmpty(tagName)) {
-                query = journalCloudReference.whereEqualTo(tagName, true);
+                String tagPath = "tags." + tagName;
+                query = journalCloudReference.whereEqualTo(tagPath, true);
             } else {
                 query = journalCloudReference;
             }
-            query.get()
+            query.orderBy(sortColumn)
+                    .get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -137,9 +143,11 @@ public class DataAccessManager {
     }
 
     public void getAllFolder() {
+        String sortColumn = PreferenceManager.getDefaultSharedPreferences(
+                ProntoDiaryApplication.getAppContext()).getString("sort_options","title");
         final List<Folder> folders = new ArrayList<>();
         try {
-            folderCloudReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            folderCloudReference.orderBy(sortColumn).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                     if (task.isSuccessful()) {
@@ -165,8 +173,10 @@ public class DataAccessManager {
 
     public void getAllTags() {
         final List<Tag> tags = new ArrayList<>();
+        String sortColumn = PreferenceManager.getDefaultSharedPreferences(
+                ProntoDiaryApplication.getAppContext()).getString("sort_options","title");
         try {
-            tagCloudReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            tagCloudReference.orderBy(sortColumn).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                     if (task.isSuccessful()) {
@@ -229,7 +239,7 @@ public class DataAccessManager {
         for (String name : sampleFolderNames) {
 
             final Folder folder = new Folder();
-            folder.setFolderName(name);
+            folder.setTitle(name);
             folderCloudReference.add(folder).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                 @Override
                 public void onSuccess(DocumentReference documentReference) {
@@ -294,7 +304,6 @@ public class DataAccessManager {
     }
 
     public void deleteFolder(String folderId) {
-
         folderCloudReference.document(folderId).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {

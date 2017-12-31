@@ -1,6 +1,8 @@
 package com.okason.diary.ui.todolist;
 
 import android.content.Context;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -54,7 +56,12 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         final Task task = mTasks.get(position);
 
         boolean isChecked = task.isChecked();
-        holder.checkBox.setChecked(isChecked);
+        if (isChecked){
+            holder.titleTextView.setTypeface(holder.titleTextView.getTypeface(), Typeface.ITALIC);
+            holder.checkBox.setChecked(true);
+            holder.titleTextView.setPaintFlags( holder.titleTextView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        }
+
 
         String title = task.getTitle();
 

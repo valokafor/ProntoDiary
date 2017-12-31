@@ -39,7 +39,7 @@
         android:textSize="@dimen/text_size_huge"
         android:textColor="@color/primary_dark"
         android:layout_below="@+id/adView"
-        android:text="@string/no_todo_list_found"
+        android:text="@string/no_todo_list_found_default"
         android:fontFamily="sans-serif-condensed"/>
 
 

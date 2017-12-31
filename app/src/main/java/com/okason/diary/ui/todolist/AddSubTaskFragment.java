@@ -222,7 +222,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
         String folderName = null;
         try {
-            folderName = parentTask.getFolder().getFolderName();
+            folderName = parentTask.getFolder().getTitle();
         } catch (Exception e) {
             e.printStackTrace();
         }
