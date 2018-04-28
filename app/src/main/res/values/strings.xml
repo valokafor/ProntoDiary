@@ -392,6 +392,7 @@
     <string name="channel_id">okason</string>
     <string name="title_activity_tab_task">TabTaskActivity</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="one_time_event">Does not Repeat</string>
 
 
 </resources>

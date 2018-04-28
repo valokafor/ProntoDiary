@@ -129,7 +129,6 @@ public class SplashScreenActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 // Sign in success, update UI with the signed-in user's information
-                                Log.d(TAG, "signInAnonymously:success");
                                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                                 if (user != null){
                                     SettingsHelper.getHelper(SplashScreenActivity.this).setRegisteredUser(false);

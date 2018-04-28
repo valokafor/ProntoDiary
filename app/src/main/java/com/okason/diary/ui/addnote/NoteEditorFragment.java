@@ -43,12 +43,9 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -1433,69 +1430,48 @@ public class NoteEditorFragment extends Fragment{
             currentJournal.setAttachments(attachmentList);
         }
 
+
+        String key;
         if (TextUtils.isEmpty(currentJournal.getId())){
-            journalManager.getJournalCloudPath().add(currentJournal)
-                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentReference> task) {
-                            if (task.isSuccessful()) {
-                                String key = task.getResult().getId();
-                                currentJournal.setId(key);
-                                journalManager.getJournalCloudPath().document(key).set(currentJournal);
-
-                                if (currentJournal.getFolder() == null) {
-                                    addJournalToDefaultFolder(currentJournal);
-                                }
-
-                                //After saving the Journal
-                                //Kick off an Intent Service that uploads the attachments to cloud
-                                Intent uploadIntent = new Intent(getActivity(),
-                                        FileUploadIntentService.class);
-                                uploadIntent.putExtra(Constants.JOURNAL_ID, key);
-                                getActivity().startService(uploadIntent);
-                            }
-                        }
-                    });
-        }else {
-            journalManager.getJournalCloudPath().document(currentJournal.getId()).set(currentJournal);
-
-            if (currentJournal.getFolder() == null) {
-                addJournalToDefaultFolder(currentJournal);
-            }
-
-            //After updating the Journal
-            //Kick off an Intent Service that uploads the attachments to cloud
-            Intent uploadIntent = new Intent(getActivity(),
-                    FileUploadIntentService.class);
-            uploadIntent.putExtra(Constants.JOURNAL_ID, currentJournal.getId());
-            getActivity().startService(uploadIntent);
+            key = journalManager.getJournalCloudPath().document().getId();
+            currentJournal.setId(key);
+        } else {
+            key = currentJournal.getId();
         }
+
+        journalManager.getJournalCloudPath().document(key).set(currentJournal);
+
+        if (currentJournal.getFolder() == null) {
+            addJournalToDefaultFolder(currentJournal);
+        }
+
+        //After updating the Journal
+        //Kick off an Intent Service that uploads the attachments to cloud
+        Intent uploadIntent = new Intent(getActivity(),
+                FileUploadIntentService.class);
+        uploadIntent.putExtra(Constants.JOURNAL_ID, currentJournal.getId());
+        getActivity().startService(uploadIntent);
 
         startActivity(new Intent(getActivity(), NoteListActivity.class));
 
     }
 
     private void addJournalToDefaultFolder(final Journal currentJournal) {
-        journalManager.getFolderPath().whereEqualTo("folderName", Constants.DEFAULT_CATEGORY)
+        journalManager.getFolderPath().whereEqualTo("title", Constants.DEFAULT_CATEGORY)
                 .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot documentSnapshots) {
                 if (documentSnapshots.isEmpty()){
+                    //Create default folder
                     final Folder folder = new Folder();
                     folder.setTitle(Constants.DEFAULT_CATEGORY);
                     folder.setDateModified(System.currentTimeMillis());
                     folder.setDateCreated(System.currentTimeMillis());
-                    journalManager.getFolderPath().add(folder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentReference> task) {
-                            if (task.isSuccessful()){
-                                folder.setId(task.getResult().getId());
-                                journalManager.getFolderPath().document(folder.getId()).set(folder);
-                                currentJournal.setFolder(folder);
-                                journalManager.getJournalCloudPath().document(currentJournal.getId()).set(currentJournal);
-                            }
-                        }
-                    });
+                    String key =  journalManager.getJournalCloudPath().document().getId();
+                    folder.setId(key);
+                    journalManager.getFolderPath().document(key).set(folder);
+                    currentJournal.setFolder(folder);
+                    journalManager.getJournalCloudPath().document(currentJournal.getId()).set(currentJournal);
                 }else {
                     Folder defaultFolder = documentSnapshots.getDocuments().get(0).toObject(Folder.class);
                     currentJournal.setFolder(defaultFolder);

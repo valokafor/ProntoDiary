@@ -203,6 +203,9 @@
             android:enabled="true">
         </receiver>
 
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="d89df4fcdc67118332105322c30b099a1eb3c398" />
     </application>
 
 </manifest>

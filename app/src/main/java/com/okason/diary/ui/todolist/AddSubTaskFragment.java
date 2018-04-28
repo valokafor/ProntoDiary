@@ -189,12 +189,16 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         }
 
         if (repeat != null){
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("Repeats every  ");
-            stringBuilder.append(repeat);
-            stringBuilder.append(" until ");
-            stringBuilder.append(TimeUtils.getReadableDateWithoutTime(parentTask.getRepeatEndDate()));
-            repeatTextView.setText(stringBuilder.toString());
+            if (repeat.equals(Constants.REMINDER_NO_REMINDER)) {
+                repeatTextView.setText(getString(R.string.one_time_event));
+            } else {
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append("Repeats every  ");
+                stringBuilder.append(repeat);
+                stringBuilder.append(" until ");
+                stringBuilder.append(TimeUtils.getReadableDateWithoutTime(parentTask.getRepeatEndDate()));
+                repeatTextView.setText(stringBuilder.toString());
+            }
         }else {
             //Create Notification text based on Notification preferences
             repeatTextView.setText("Notify 30 minutes before due time");

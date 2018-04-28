@@ -361,7 +361,7 @@ public class AddTaskFragment extends Fragment{
 
     private void addTaskToDefaultFolder(final Task currentTast) {
 
-        dataAccessManager.getFolderPath().whereEqualTo("folderName", Constants.DEFAULT_CATEGORY)
+        dataAccessManager.getFolderPath().whereEqualTo("title", Constants.DEFAULT_CATEGORY)
                 .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot documentSnapshots) {
