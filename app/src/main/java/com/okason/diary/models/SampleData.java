@@ -1,11 +1,15 @@
 package com.okason.diary.models;
 
+import com.okason.diary.models.realmentities.NoteEntity;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.UUID;
+
+import io.realm.Realm;
 
 /**
  * Created by vokafor on 1/18/2017.
@@ -138,5 +142,34 @@ public class SampleData {
        // journals.add(journal5);
 
         return journals;
+    }
+
+
+    public static void getSampleNotesRealm() {
+
+
+        try (Realm realm = Realm.getDefaultInstance()) {
+            realm.beginTransaction();
+            NoteEntity note1 = realm.createObject(NoteEntity.class, UUID.randomUUID().toString());
+            note1.setTitle("DisneyLand Trip");
+            note1.setContent("We went to Disneyland today and the kids had lots of fun!");
+            Calendar calendar1 = GregorianCalendar.getInstance();
+            note1.setDateModified(calendar1.getTimeInMillis());
+
+
+            NoteEntity note2 = realm.createObject(NoteEntity.class, UUID.randomUUID().toString());
+            note2.setTitle("Gym Work Out");
+            note2.setContent("I went to the Gym today and I got a lot of exercises");
+
+            //change the date to random time
+            Calendar calendar2 = GregorianCalendar.getInstance();
+            calendar2.add(Calendar.DAY_OF_WEEK, -1);
+            calendar2.add(Calendar.MILLISECOND, 10005623);
+            note2.setDateModified(calendar2.getTimeInMillis());
+
+
+            realm.commitTransaction();
+
+        }
     }
 }

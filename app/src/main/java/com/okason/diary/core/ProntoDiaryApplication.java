@@ -15,7 +15,10 @@ import com.mikepenz.materialdrawer.util.DrawerUIUtils;
 import com.okason.diary.R;
 import com.okason.diary.models.ProntoDiaryUser;
 import com.squareup.leakcanary.LeakCanary;
+
 import io.fabric.sdk.android.Fabric;
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 
 /**
  * Created by Valentine on 4/20/2017.
@@ -43,9 +46,21 @@ public class ProntoDiaryApplication extends Application {
             return;
         }
         initDrawer();
+        initRealm();
         mContext = getApplicationContext();
         LeakCanary.install(this);
 
+
+    }
+
+    private void initRealm() {
+        Realm.init(this);
+        RealmConfiguration configuration = new RealmConfiguration.Builder()
+                .schemaVersion(1)
+                .deleteRealmIfMigrationNeeded()
+                .name("Pronto_Journal.realm")
+                .build();
+        Realm.setDefaultConfiguration(configuration);
 
     }
 
