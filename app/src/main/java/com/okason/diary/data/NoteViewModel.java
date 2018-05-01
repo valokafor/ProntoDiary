@@ -19,12 +19,16 @@ import io.realm.RealmResults;
 public class NoteViewModel extends ViewModel {
     private Realm realmDatabase;
     private NoteDao noteDao;
+    private LiveData<List<NoteEntity>> noteLiveData;
 
     private final MutableLiveData<List<NoteEntity>> observableNoteEntitys = new MutableLiveData<>();
+
+
     private RealmResults<NoteEntity> results;
     private RealmChangeListener<RealmResults<NoteEntity>> realmChangeListener = (results) -> {
         if (results.isLoaded()  && results.isValid()){
             observableNoteEntitys.setValue(results);
+
         }
     };
 

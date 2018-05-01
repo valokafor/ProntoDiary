@@ -43,7 +43,7 @@ import com.mikepenz.materialdrawer.model.interfaces.Nameable;
 import com.mikepenz.materialdrawer.util.KeyboardUtil;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.folder.FolderListActivity;
-import com.okason.diary.ui.notes.NoteListFragment;
+import com.okason.diary.ui.notes.NotesFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
 import com.okason.diary.ui.tag.TagListActivity;
 import com.okason.diary.ui.todolist.TodoListActivity;
@@ -105,6 +105,8 @@ public class NoteListActivity extends AppCompatActivity {
         settingsHelper = SettingsHelper.getHelper(mActivity);
         firebaseAnalytics = FirebaseAnalytics.getInstance(mActivity);
         setupNavigationDrawer(savedInstanceBundle);
+       // SampleData.getSampleNotesRealm();
+
     }
 
     @Override
@@ -250,11 +252,11 @@ public class NoteListActivity extends AppCompatActivity {
         boolean hasTag = getIntent().hasExtra(Constants.TAG_FILTER);
         if (exist && hasTag) {
             String tagName = getIntent().getStringExtra(Constants.TAG_FILTER);
-            NoteListFragment fragment = NoteListFragment.newInstance(false, tagName);
+            NotesFragment fragment = NotesFragment.newInstance(false, tagName);
             String title = "#" + tagName;
             openFragment(fragment, title);
         } else {
-            openFragment(new NoteListFragment(), getString(R.string.label_journals));
+            openFragment(new NotesFragment(), getString(R.string.label_journals));
         }
 
 

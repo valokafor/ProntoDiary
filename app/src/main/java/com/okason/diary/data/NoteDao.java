@@ -17,7 +17,7 @@ public class NoteDao {
     }
 
     public RealmResults<NoteEntity> getAllNoteEntitys() {
-        RealmResults<NoteEntity> notes = realm.where(NoteEntity.class).findAllAsync();
+        RealmResults<NoteEntity> notes = realm.where(NoteEntity.class).findAll();
         return notes;
     }
 
@@ -54,4 +54,16 @@ public class NoteDao {
     }
 
 
+    public void deleteNote(String noteId) {
+        NoteEntity noteEntity = getNoteEntityById(noteId);
+        if (noteEntity != null);
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                noteEntity.deleteFromRealm();
+            }
+        });
+
+
+    }
 }

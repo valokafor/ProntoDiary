@@ -13,12 +13,11 @@ apply plugin: 'realm-android'
 
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 27
     defaultConfig {
         applicationId "com.okason.diary"
         minSdkVersion 19
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 24
         versionName "1.24"
         multiDexEnabled true
@@ -89,16 +88,34 @@ dependencies {
     }
 
 
-    compile "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
-    compile "com.android.support:design:$rootProject.supportLibraryVersion"
-    compile "com.android.support:cardview-v7:$rootProject.supportLibraryVersion"
-    compile "com.android.support:support-vector-drawable:$rootProject.supportLibraryVersion"
-    compile "com.android.support:recyclerview-v7:$rootProject.supportLibraryVersion"
-    compile "com.android.support:support-v4:$rootProject.supportLibraryVersion"
+    ext {
+        supportLibraryVersion = "27.1.1"
+        butterknifeVersion = "8.8.1"
+        constraintLayoutVersion = "1.0.2"
+        junitVersion = "4.12"
+        runnerVersion = "1.0.1"
+        espressoVersion = "3.0.1"
+        floatingSearchViewVersion = "2.1.1"
+        firebaseLibraryVersion = "15.0.0"
+        firebaseUIVersion = "3.2.2"
+        gsonVersion = "2.2.4"
+        glideVersion = "4.7.1"
+        materialDialogVersion = "0.9.6.0";
+        eventBusVersion = "3.1.1"
+    }
 
     compile('com.mikepenz:materialdrawer:5.9.5@aar') {
         transitive = true
     }
+
+
+    implementation "com.android.support:appcompat-v7:$supportLibraryVersion"
+    implementation "com.android.support.constraint:constraint-layout:$constraintLayoutVersion"
+    implementation "com.android.support:recyclerview-v7:$supportLibraryVersion"
+    implementation "com.android.support:cardview-v7:$supportLibraryVersion"
+    implementation "com.android.support:customtabs:$supportLibraryVersion"
+    implementation "com.android.support:support-annotations:$supportLibraryVersion"
+    implementation "com.android.support:design:$supportLibraryVersion"
 
 
     compile 'com.mikepenz:google-material-typeface:2.2.0.1@aar'
@@ -142,7 +159,7 @@ configurations.all {
         def requested = details.requested
         if (requested.group == 'com.android.support') {
             if (!requested.name.startsWith("multidex")) {
-                details.useVersion '26.0.2'
+                details.useVersion '27.1.1'
             }
         }
     }
