@@ -15,14 +15,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "498554407152-04ik20hdpv48acnf61n9p4u9jmsa81te.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.okason.diary",
-            "certificate_hash": "454ae4595b1a31027c42fba61440626dca3637ac"
-          }
-        },
-        {
           "client_id": "498554407152-15m8do0ok0r1sgi3r4fvol8a05lk5dsd.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
