@@ -52,6 +52,7 @@
     <dimen name="attachment_dialog_drawable_padding">10dp</dimen>
     <dimen name="attachment_dialog_items_padding">10dp</dimen>
     <dimen name="appbar_padding_top">8dp</dimen>
+    <dimen name="margin_padding_xxtiny">3dp</dimen>
 
     <!-- Default screen margins, per the Android Design guidelines. -->
 

@@ -1,5 +1,6 @@
 package com.okason.diary.ui.notedetails;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -7,19 +8,19 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
-import com.google.gson.Gson;
 import com.okason.diary.R;
-import com.okason.diary.core.listeners.OnEditNoteButtonClickedListener;
-import com.okason.diary.models.Journal;
-import com.okason.diary.ui.addnote.AddNoteActivity;
+import com.okason.diary.data.NoteDao;
+import com.okason.diary.models.realmentities.NoteEntity;
 import com.okason.diary.utils.Constants;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Realm;
 
 public class NoteDetailActivity extends AppCompatActivity {
 
     @BindView(R.id.toolbar) Toolbar toolbar;
+    private Realm realm;
 
 
     @Override
@@ -27,29 +28,26 @@ public class NoteDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_detail);
         ButterKnife.bind(this);
+        realm = Realm.getDefaultInstance();
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        final Gson gson = new Gson();
-
-        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_JOURNAL)){
-            String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_JOURNAL);
-            String title = getString(R.string.note_detail);
-            NoteDetailFragment fragment = NoteDetailFragment.newInstance(serializedNote);
-            fragment.setEditNoteistener(new OnEditNoteButtonClickedListener() {
-                @Override
-                public void onEditNote(Journal clickedJournal) {
-                    String serializedNote = gson.toJson(clickedJournal);
-                    Intent editNoteIntent = new Intent(NoteDetailActivity.this, AddNoteActivity.class);
-                    editNoteIntent.putExtra(Constants.SERIALIZED_JOURNAL, serializedNote);
-                    startActivity(editNoteIntent);
+        if (savedInstanceState == null) {
+            if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
+                String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
+                NoteEntity passedInNote = new NoteDao(realm).getNoteEntityById(noteId);
+                NewNoteDetailFragment fragment = NewNoteDetailFragment.newInstance(noteId);
+                if (passedInNote != null) {
+                    openFragment(fragment, passedInNote.getTitle());
+                } else {
+                    finish();
                 }
-            });
-
-            openFragment(fragment, title);
-        }else {
-            finish();
+            } else {
+                finish();
+            }
         }
+
+
     }
 
     @Override
@@ -67,6 +65,18 @@ public class NoteDetailActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Creates an Intent that is used to start this Activity
+     * @param context - this context
+     * @param noteId - Note id
+     * @return
+     */
+    public static Intent getStartIntent(final Context context, final String noteId) {
+        Intent intent = new Intent(context, NoteDetailActivity.class);
+        intent.putExtra(Constants.NOTE_ID, noteId);
+        return intent;
+    }
+
 
 
     public void openFragment(Fragment fragment, String screenTitle){
@@ -79,5 +89,9 @@ public class NoteDetailActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(screenTitle);
     }
 
-
+    @Override
+    protected void onDestroy() {
+        realm.close();
+        super.onDestroy();
+    }
 }

@@ -200,7 +200,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 public void onClick(View v) {
                     int position = getAdapterPosition();
                     NoteEntity journal = getItem(position);
-                   // mItemListener.onNoteClick(journal);
+                    mItemListener.onNoteClick(journal);
                 }
             });
             contentSummary.setOnClickListener(new View.OnClickListener() {
@@ -208,7 +208,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 public void onClick(View v) {
                     int position = getAdapterPosition();
                     NoteEntity journal = getItem(position);
-                  //  mItemListener.onNoteClick(journal);
+                   mItemListener.onNoteClick(journal);
                 }
             });
             delete.setOnClickListener(new View.OnClickListener() {
@@ -216,7 +216,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 public void onClick(View v) {
                     int position = getAdapterPosition();
                     NoteEntity journal = getItem(position);
-                   // mItemListener.onDeleteButtonClicked(journal);
+                    mItemListener.onDeleteButtonClicked(journal);
                 }
             });
 
@@ -225,7 +225,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 public void onClick(View v) {
                     int postion = getAdapterPosition();
                     NoteEntity journal = getItem(postion);
-                   // mItemListener.onAttachmentClicked(journal, postion);
+                    mItemListener.onAttachmentClicked(journal, postion);
                 }
             });
         }

@@ -105,7 +105,7 @@ public class NoteListActivity extends AppCompatActivity {
         settingsHelper = SettingsHelper.getHelper(mActivity);
         firebaseAnalytics = FirebaseAnalytics.getInstance(mActivity);
         setupNavigationDrawer(savedInstanceBundle);
-       // SampleData.getSampleNotesRealm();
+        //SampleData.getSampleNotesRealm();
 
     }
 
@@ -250,14 +250,15 @@ public class NoteListActivity extends AppCompatActivity {
 
         boolean exist = getIntent() != null;
         boolean hasTag = getIntent().hasExtra(Constants.TAG_FILTER);
-        if (exist && hasTag) {
-            String tagName = getIntent().getStringExtra(Constants.TAG_FILTER);
-            NotesFragment fragment = NotesFragment.newInstance(false, tagName);
-            String title = "#" + tagName;
-            openFragment(fragment, title);
-        } else {
-            openFragment(new NotesFragment(), getString(R.string.label_journals));
-        }
+        openFragment(new NotesFragment(), "Notes");
+//        if (exist && hasTag) {
+//            String tagName = getIntent().getStringExtra(Constants.TAG_FILTER);
+//            NotesFragment fragment = NotesFragment.newInstance(false, tagName);
+//            String title = "#" + tagName;
+//            openFragment(fragment, title);
+//        } else {
+//            openFragment(new NotesFragment(), getString(R.string.label_journals));
+//        }
 
 
     }
@@ -306,11 +307,6 @@ public class NoteListActivity extends AppCompatActivity {
                 .commit();
         getSupportActionBar().setTitle(screenTitle);
     }
-
-
-
-
-
 
 
     private void onTouchDrawer(int position) {

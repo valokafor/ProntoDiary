@@ -30,7 +30,6 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.gson.Gson;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
@@ -345,12 +344,8 @@ public class NotesFragment extends Fragment
 
 
     public void showSingleDetailUi(NoteEntity selectedJournal) {
-        Gson gson = new Gson();
-        String serializedNote = gson.toJson(selectedJournal);
-        Intent intent = new Intent(getActivity(), NoteDetailActivity.class);
-        intent.putExtra(Constants.SERIALIZED_JOURNAL, serializedNote);
-        startActivity(intent);
-
+        String id = selectedJournal.getId();
+        startActivity(NoteDetailActivity.getStartIntent(getContext(), id));
     }
 
 

@@ -1,6 +1,7 @@
 package com.okason.diary.models;
 
 import com.okason.diary.models.realmentities.NoteEntity;
+import com.okason.diary.models.realmentities.TagEntity;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
@@ -156,6 +157,19 @@ public class SampleData {
             Calendar calendar1 = GregorianCalendar.getInstance();
             note1.setDateModified(calendar1.getTimeInMillis());
 
+            TagEntity tagEntity1 = realm.createObject(TagEntity.class, UUID.randomUUID().toString());
+            tagEntity1.setTagName("Social");
+
+            TagEntity tagEntity2 = realm.createObject(TagEntity.class, UUID.randomUUID().toString());
+            tagEntity2.setTagName("Funny");
+
+            TagEntity tagEntity3 = realm.createObject(TagEntity.class, UUID.randomUUID().toString());
+            tagEntity3.setTagName("Work");
+
+            note1.getTags().add(tagEntity1);
+            note1.getTags().add(tagEntity2);
+            note1.getTags().add(tagEntity3);
+
 
             NoteEntity note2 = realm.createObject(NoteEntity.class, UUID.randomUUID().toString());
             note2.setTitle("Gym Work Out");
@@ -166,6 +180,20 @@ public class SampleData {
             calendar2.add(Calendar.DAY_OF_WEEK, -1);
             calendar2.add(Calendar.MILLISECOND, 10005623);
             note2.setDateModified(calendar2.getTimeInMillis());
+
+            TagEntity tagEntity4 = realm.createObject(TagEntity.class, UUID.randomUUID().toString());
+            tagEntity4.setTagName("Friends");
+
+            TagEntity tagEntity5 = realm.createObject(TagEntity.class, UUID.randomUUID().toString());
+            tagEntity5.setTagName("Family");
+
+            TagEntity tagEntity6 = realm.createObject(TagEntity.class, UUID.randomUUID().toString());
+            tagEntity6.setTagName("Kids");
+
+            note2.getTags().add(tagEntity4);
+            note2.getTags().add(tagEntity5);
+            note2.getTags().add(tagEntity6);
+
 
 
             realm.commitTransaction();
