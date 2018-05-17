@@ -31,9 +31,7 @@ import com.okason.diary.utils.Constants;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by valokafor on 10/13/17.
@@ -274,31 +272,31 @@ public class DataAccessManager {
         }
 
 
-        List<Journal> sampleJournals = SampleData.getSampleNotes();
-        for (int i = 0; i < sampleJournals.size(); i++) {
-
-            final Journal journal = sampleJournals.get(i);
-            Folder selectedFolder = folders.get(i);
-            journal.setFolder(selectedFolder);
-
-
-            Tag selectedTag = tags.get(i);
-
-            Map<String, Boolean> addedTags = new HashMap<>();
-            addedTags.put(selectedTag.getTagName(), true);
-            journal.setTags(addedTags);
-
-            journalCloudReference.add(journal).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                @Override
-                public void onSuccess(DocumentReference documentReference) {
-                    String key = documentReference.getId();
-                    journal.setId(key);
-                    journalCloudReference.document(key).set(journal);
-                }
-            });
-
-
-        }
+//        List<Journal> sampleJournals = SampleData.getSampleNotes();
+//        for (int i = 0; i < sampleJournals.size(); i++) {
+//
+//            final Journal journal = sampleJournals.get(i);
+//            Folder selectedFolder = folders.get(i);
+//            journal.setFolder(selectedFolder);
+//
+//
+//            Tag selectedTag = tags.get(i);
+//
+//            Map<String, Boolean> addedTags = new HashMap<>();
+//            addedTags.put(selectedTag.getTagName(), true);
+//            journal.setTags(addedTags);
+//
+//            journalCloudReference.add(journal).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//                @Override
+//                public void onSuccess(DocumentReference documentReference) {
+//                    String key = documentReference.getId();
+//                    journal.setId(key);
+//                    journalCloudReference.document(key).set(journal);
+//                }
+//            });
+//
+//
+//        }
 
 
     }

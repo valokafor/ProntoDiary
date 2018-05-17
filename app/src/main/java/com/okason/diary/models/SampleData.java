@@ -1,5 +1,9 @@
 package com.okason.diary.models;
 
+import android.content.Context;
+
+import com.okason.diary.R;
+import com.okason.diary.models.realmentities.AttachmentEntity;
 import com.okason.diary.models.realmentities.NoteEntity;
 import com.okason.diary.models.realmentities.TagEntity;
 import com.okason.diary.utils.Constants;
@@ -17,6 +21,11 @@ import io.realm.Realm;
  */
 
 public class SampleData {
+    private final Context context;
+
+    public SampleData(Context context) {
+        this.context = context;
+    }
 
     public static List<String> getSampleCategories() {
         List<String> folderNames = new ArrayList<>();
@@ -42,13 +51,13 @@ public class SampleData {
     }
 
 
-    public static List<Journal> getSampleNotes() {
+    public  List<Journal> getSampleNotes() {
 
         List<Journal> journals = new ArrayList<>();
 
         Journal journal1 = new Journal();
         journal1.setTitle("Sample Journal with Image");
-        journal1.setContent("We went to Disneyland today and the kids had lots of fun!");
+        journal1.setContent(context.getString(R.string.sample_text_disneyland));
         Calendar calendar1 = GregorianCalendar.getInstance();
         journal1.setDateModified(calendar1.getTimeInMillis());
         Attachment attachment = new Attachment();
@@ -146,14 +155,14 @@ public class SampleData {
     }
 
 
-    public static void getSampleNotesRealm() {
+    public void getSampleNotesRealm() {
 
 
         try (Realm realm = Realm.getDefaultInstance()) {
             realm.beginTransaction();
             NoteEntity note1 = realm.createObject(NoteEntity.class, UUID.randomUUID().toString());
             note1.setTitle("DisneyLand Trip");
-            note1.setContent("We went to Disneyland today and the kids had lots of fun!");
+            note1.setContent(context.getString(R.string.sample_text_disneyland));
             Calendar calendar1 = GregorianCalendar.getInstance();
             note1.setDateModified(calendar1.getTimeInMillis());
 
@@ -169,6 +178,23 @@ public class SampleData {
             note1.getTags().add(tagEntity1);
             note1.getTags().add(tagEntity2);
             note1.getTags().add(tagEntity3);
+
+            AttachmentEntity attachment1 = realm.createObject(AttachmentEntity.class, UUID.randomUUID().toString());
+            attachment1.setCloudFilePath("https://randomuser.me/api/portraits/women/83.jpg");
+            note1.getAttachments().add(attachment1);
+
+            AttachmentEntity attachment2 = realm.createObject(AttachmentEntity.class, UUID.randomUUID().toString());
+            attachment2.setCloudFilePath("https://randomuser.me/api/portraits/women/45.jpg");
+            note1.getAttachments().add(attachment2);
+
+            AttachmentEntity attachment3 = realm.createObject(AttachmentEntity.class, UUID.randomUUID().toString());
+            attachment3.setCloudFilePath("https://randomuser.me/api/portraits/men/82.jpg");
+            note1.getAttachments().add(attachment3);
+
+            AttachmentEntity attachment4 = realm.createObject(AttachmentEntity.class, UUID.randomUUID().toString());
+            attachment4.setCloudFilePath("https://randomuser.me/api/portraits/men/59.jpg");
+            note1.getAttachments().add(attachment4);
+
 
 
             NoteEntity note2 = realm.createObject(NoteEntity.class, UUID.randomUUID().toString());
@@ -199,5 +225,13 @@ public class SampleData {
             realm.commitTransaction();
 
         }
+    }
+
+    private List<AttachmentEntity> getSampleAttachments() {
+        List<AttachmentEntity> attachments = new ArrayList<>();
+
+
+
+        return attachments;
     }
 }

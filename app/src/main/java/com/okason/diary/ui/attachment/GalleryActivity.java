@@ -11,10 +11,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
-import com.okason.diary.models.Attachment;
+import com.okason.diary.data.NoteDao;
+import com.okason.diary.models.realmentities.AttachmentEntity;
+import com.okason.diary.models.realmentities.NoteEntity;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Realm;
 
 public class GalleryActivity extends AppCompatActivity {
 
@@ -30,87 +31,80 @@ public class GalleryActivity extends AppCompatActivity {
     @BindView(R.id.viewpager)
     ViewPager mViewPager;
 
-    private List<Attachment> attachments;
-    private List<Attachment> imageOnlyAttachments;
+    private List<AttachmentEntity> attachments;
+    private List<AttachmentEntity> imageOnlyAttachments;
     private String title = "";
+
+    private NoteEntity parentNote;
+    private Realm realm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
         ButterKnife.bind(this);
+        realm = Realm.getDefaultInstance();
+        attachments = new ArrayList<>();
+        imageOnlyAttachments = new ArrayList<>();
 
         //Pass in the Journal as a JSON to avoid having to query for the Journal from Firebase
-        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_ATTACHMENT_ID)) {
-            getPassedInAttachments();
+        if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
+            getPassedInNote();
         } else {
             finish();
         }
-
-
     }
 
-    //Get the Journal object that was passed in
-    private void getPassedInAttachments() {
-        if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_ATTACHMENT_ID)){
-            String serialized = getIntent().getStringExtra(Constants.SERIALIZED_ATTACHMENT_ID);
-            Gson gson = new Gson();
-            attachments = gson.fromJson(serialized, new TypeToken<List<Attachment>>(){}.getType());
-            if (attachments != null && attachments.size() > 0){
-                if (getIntent().hasExtra(Constants.NOTE_TITLE)){
-                    title = getIntent().getStringExtra(Constants.NOTE_TITLE);
-                }
-                initViews();
-                initData();
-            } else {
-                finish();
-            }
+
+    //Get the Note object that was passed in
+    private void getPassedInNote() {
+        if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)){
+            String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
+            parentNote = new NoteDao(realm).getNoteEntityById(noteId);
         }
 
     }
 
-    private void initData() {
+
+    private void initData(){
         String selectAttachmentPath = getIntent().getStringExtra(Constants.FILE_PATH);
         int selectedPosition = 0;
 
-        //Get the list of attachments in the Journal
-        imageOnlyAttachments = new ArrayList<>();
-        for (Attachment attachment : attachments) {
-            if (Constants.MIME_TYPE_IMAGE.equals(attachment.getMime_type())
-                    || Constants.MIME_TYPE_SKETCH.equals(attachment.getMime_type())
-                    || Constants.MIME_TYPE_VIDEO.equals(attachment.getMime_type())) {
-                imageOnlyAttachments.add(attachment);
+        if (parentNote != null) {
+            //Create an Arraylist to hold Ids of Attachments that are image or Video
 
+            //Get the list of attachments in the Note
+            for (AttachmentEntity attachment : parentNote.getAttachments()) {
+                if (Constants.MIME_TYPE_IMAGE.equals(attachment.getMime_type())
+                        || Constants.MIME_TYPE_SKETCH.equals(attachment.getMime_type())
+                        || Constants.MIME_TYPE_VIDEO.equals(attachment.getMime_type())) {
+                    imageOnlyAttachments.add(attachment);
+
+                }
             }
-        }
 
 
-        //Identify the attachment that was clicked in the list
-        for (int i = 0; i < imageOnlyAttachments.size(); i++) {
-            if (imageOnlyAttachments.get(i).getLocalFilePath().equals(selectAttachmentPath)) {
-                selectedPosition = i;
-                break;
+            //Identify the attachment that was clicked in the list
+            for (int i = 0; i < attachments.size(); i++) {
+                if (attachments.get(i).getLocalFilePath().equals(selectAttachmentPath)) {
+                    selectedPosition = i;
+                    break;
+                }
             }
+
+
+            //Create a View Pager adapter to show the attachments
+            AttachmentPagerAdapter pagerAdapter = new AttachmentPagerAdapter(getSupportFragmentManager(), imageOnlyAttachments);
+            mViewPager.setOffscreenPageLimit(3);
+            mViewPager.setAdapter(pagerAdapter);
+            mViewPager.setCurrentItem(selectedPosition);
+
+            getSupportActionBar().setTitle(parentNote.getTitle());
+            getSupportActionBar().setSubtitle("(" + (selectedPosition + 1) + "/" + attachments.size() + ")");
         }
 
-
-        //Create a View Pager adapter to show the attachments
-        AttachmentPagerAdapter pagerAdapter = new AttachmentPagerAdapter(getSupportFragmentManager(), imageOnlyAttachments);
-        mViewPager.setOffscreenPageLimit(3);
-        mViewPager.setAdapter(pagerAdapter);
-        mViewPager.setCurrentItem(selectedPosition);
-
-        getSupportActionBar().setTitle(title);
-        getSupportActionBar().setSubtitle("(" + (selectedPosition + 1) + "/" + imageOnlyAttachments.size() + ")");
-
-
-        //If selected attachment is a video it will be immediately played
-        if (imageOnlyAttachments.get(selectedPosition).getMime_type().equals(Constants.MIME_TYPE_VIDEO)) {
-            viewMedia();
         }
 
-
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -168,14 +162,23 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     private void viewMedia() {
-        Attachment attachment = imageOnlyAttachments.get(mViewPager.getCurrentItem());
+        AttachmentEntity attachment = imageOnlyAttachments.get(mViewPager.getCurrentItem());
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(Uri.parse(attachment.getLocalFilePath()), attachment.getMime_type());
         startActivity(intent);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            realm.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-//    private void shareMedia() {
+    //    private void shareMedia() {
 //
 //        Attachment attachment = attachments.get(mViewPager.getCurrentItem());
 //        String imageFilePath = TextUtils.isEmpty(attachment.getUriCloudPath())
