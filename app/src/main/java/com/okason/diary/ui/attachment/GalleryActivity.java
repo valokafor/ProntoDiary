@@ -31,7 +31,7 @@ public class GalleryActivity extends AppCompatActivity {
     @BindView(R.id.viewpager)
     ViewPager mViewPager;
 
-    private List<AttachmentEntity> attachments;
+   // private List<AttachmentEntity> attachments;
     private List<AttachmentEntity> imageOnlyAttachments;
     private String title = "";
 
@@ -44,12 +44,13 @@ public class GalleryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_gallery);
         ButterKnife.bind(this);
         realm = Realm.getDefaultInstance();
-        attachments = new ArrayList<>();
         imageOnlyAttachments = new ArrayList<>();
 
         //Pass in the Journal as a JSON to avoid having to query for the Journal from Firebase
         if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
             getPassedInNote();
+            initViews();
+            initData();
         } else {
             finish();
         }
@@ -85,8 +86,8 @@ public class GalleryActivity extends AppCompatActivity {
 
 
             //Identify the attachment that was clicked in the list
-            for (int i = 0; i < attachments.size(); i++) {
-                if (attachments.get(i).getLocalFilePath().equals(selectAttachmentPath)) {
+            for (int i = 0; i < imageOnlyAttachments.size(); i++) {
+                if (imageOnlyAttachments.get(i).getLocalFilePath().equals(selectAttachmentPath)) {
                     selectedPosition = i;
                     break;
                 }
@@ -100,7 +101,7 @@ public class GalleryActivity extends AppCompatActivity {
             mViewPager.setCurrentItem(selectedPosition);
 
             getSupportActionBar().setTitle(parentNote.getTitle());
-            getSupportActionBar().setSubtitle("(" + (selectedPosition + 1) + "/" + attachments.size() + ")");
+            getSupportActionBar().setSubtitle("(" + (selectedPosition + 1) + "/" + imageOnlyAttachments.size() + ")");
         }
 
         }

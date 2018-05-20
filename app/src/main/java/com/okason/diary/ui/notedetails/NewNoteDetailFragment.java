@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -22,6 +23,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
 import com.okason.diary.R;
 import com.okason.diary.data.NoteDao;
@@ -32,6 +35,7 @@ import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.IntentChecker;
+import com.okason.diary.utils.SettingsHelper;
 import com.okason.diary.utils.date.TimeUtils;
 
 import butterknife.BindView;
@@ -59,6 +63,8 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
     TextView folderTextView;
     @BindView(R.id.text_view_summary)
     TextView noteSummary;
+    @BindView(R.id.text_view_attachment_count)
+    TextView imageCountTextView;
     @BindView(R.id.linear_layout_date)
     LinearLayout dateLinearLayout;
     @BindView(R.id.linear_layout_folder)
@@ -169,13 +175,13 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
     private void populateScreen() {
         if (currentNote != null){
             if (currentNote.getAttachments() != null && currentNote.getAttachments().size() > 0){
-                noteSummary.setMaxLines(4);
                 showHideImageViews(currentNote.getAttachments());
-
-
+                topImageView.setVisibility(View.VISIBLE);
+                displayImage(currentNote.getAttachments().get(0).getCloudFilePath(), topImageView);
             }else {
                 attachmentLinearLayout.setVisibility(View.GONE);
                 divider_2.setVisibility(View.GONE);
+                topImageView.setVisibility(View.GONE);
             }
         }
 
@@ -198,6 +204,13 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
                 makeToast("Not implemented yet");
             }
         });
+
+        //Show or Hide Audio Player icon
+        if (containsAudioRecording(currentNote)){
+            audioLinearLayout.setVisibility(View.VISIBLE);
+        } else {
+            audioLinearLayout.setVisibility(View.GONE);
+        }
 
         //Display Tag names and make each Tag name clickable
         if (currentNote.getTags() != null && currentNote.getTags().size() > 0){
@@ -238,11 +251,44 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
                 fragment.show(getActivity().getSupportFragmentManager(), "Dialog");
             }
         });
+        if (currentNote.getContent().length() > 300 && SettingsHelper.getHelper(getContext()).shouldShowNoteDetailExplainer()){
+            MaterialDialog dialog = new MaterialDialog.Builder(getContext())
+                    .title(R.string.note_detail)
+                    .content(R.string.explain_note_detail)
+                    .positiveText(R.string.label_yes)
+                    .negativeText(R.string.label_cancel)
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            SettingsHelper.getHelper(getContext()).onNoteDetailExplainerShown(false);
+                        }
+                    })
+                    .show();
+        }
+
+
 
 
     }
 
+    private boolean containsAudioRecording(NoteEntity currentNote) {
+        for (AttachmentEntity attachment: currentNote.getAttachments()){
+            if (attachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void showHideImageViews(RealmList<AttachmentEntity> attachments) {
+
+        imageViewThumbnail1.setOnClickListener(this);
+
+        imageViewThumbnail1.setOnClickListener(this);
+        imageViewThumbnail2.setOnClickListener(this);
+        imageViewThumbnail3.setOnClickListener(this);
+        clickLinearLayout.setOnClickListener(this);
+
         switch (attachments.size()){
             case 1:
                 cardViewContainer1.setVisibility(View.VISIBLE);
@@ -250,7 +296,6 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
                 cardViewContainer3.setVisibility(View.GONE);
                 clickLinearLayout.setVisibility(View.GONE);
                 displayImage(attachments.get(0).getCloudFilePath(), imageViewThumbnail1);
-                imageViewThumbnail1.setOnClickListener(this);
                 break;
             case 2:
                 cardViewContainer1.setVisibility(View.VISIBLE);
@@ -259,7 +304,6 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
                 clickLinearLayout.setVisibility(View.GONE);
                 displayImage(attachments.get(0).getCloudFilePath(), imageViewThumbnail1);
                 displayImage(attachments.get(1).getCloudFilePath(), imageViewThumbnail2);
-                imageViewThumbnail2.setOnClickListener(this);
                 break;
             case 3:
                 cardViewContainer1.setVisibility(View.VISIBLE);
@@ -279,7 +323,8 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
                 displayImage(attachments.get(0).getCloudFilePath(), imageViewThumbnail1);
                 displayImage(attachments.get(1).getCloudFilePath(), imageViewThumbnail2);
                 displayImage(attachments.get(2).getCloudFilePath(), imageViewThumbnail3);
-                clickLinearLayout.setOnClickListener(this);
+                String countText = attachments.size() - 3 + "";
+                imageCountTextView.setText(countText);
                 break;
 
 
@@ -331,28 +376,27 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
     @Override
     public void onClick(View view) {
         AttachmentEntity clickedAttachment = null;
-        int selectedPosition = -1;
         switch (view.getId()){
             case R.id.image_view_thumbnail_1:
-                clickedAttachment = currentNote.getAttachments().get(0);
-                selectedPosition = 0;
+                displayImage(currentNote.getAttachments().get(0).getCloudFilePath(), topImageView);
                 break;
             case R.id.image_view_thumbnail_2:
-                clickedAttachment = currentNote.getAttachments().get(1);
-                selectedPosition = 1;
+                displayImage(currentNote.getAttachments().get(1).getCloudFilePath(), topImageView);
                 break;
             case R.id.image_view_thumbnail_3:
-                clickedAttachment = currentNote.getAttachments().get(2);
-                selectedPosition = 2;
+                displayImage(currentNote.getAttachments().get(2).getCloudFilePath(), topImageView);
                 break;
             default:
                 clickedAttachment = currentNote.getAttachments().get(0);
-                selectedPosition = 0;
+                goToGallery(clickedAttachment);
                 break;
-
         }
 
 
+
+    }
+
+    private void goToGallery(AttachmentEntity clickedAttachment) {
         //If clicked Attachment is of type Document
         //Launch an Intent to show it, otherwise start Gallery Activity
         if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
@@ -386,6 +430,13 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
             galleryIntent.putExtra(Constants.NOTE_ID, currentNote.getId());
             galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getFilePath());
             startActivity(galleryIntent);
+        }
+    }
+
+    private void showSnackbar(final String text) {
+        View container = mRootView.findViewById(android.R.id.content);
+        if (container != null) {
+            Snackbar.make(mRootView, text, Snackbar.LENGTH_LONG).show();
         }
     }
 

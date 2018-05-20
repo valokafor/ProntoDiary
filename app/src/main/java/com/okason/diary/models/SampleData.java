@@ -181,18 +181,22 @@ public class SampleData {
 
             AttachmentEntity attachment1 = realm.createObject(AttachmentEntity.class, UUID.randomUUID().toString());
             attachment1.setCloudFilePath("https://randomuser.me/api/portraits/women/83.jpg");
+            attachment1.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment1);
 
             AttachmentEntity attachment2 = realm.createObject(AttachmentEntity.class, UUID.randomUUID().toString());
             attachment2.setCloudFilePath("https://randomuser.me/api/portraits/women/45.jpg");
+            attachment2.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment2);
 
             AttachmentEntity attachment3 = realm.createObject(AttachmentEntity.class, UUID.randomUUID().toString());
             attachment3.setCloudFilePath("https://randomuser.me/api/portraits/men/82.jpg");
+            attachment3.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment3);
 
             AttachmentEntity attachment4 = realm.createObject(AttachmentEntity.class, UUID.randomUUID().toString());
             attachment4.setCloudFilePath("https://randomuser.me/api/portraits/men/59.jpg");
+            attachment4.setMime_type(Constants.MIME_TYPE_IMAGE);
             note1.getAttachments().add(attachment4);
 
 

@@ -105,7 +105,7 @@ public class NoteListActivity extends AppCompatActivity {
         settingsHelper = SettingsHelper.getHelper(mActivity);
         firebaseAnalytics = FirebaseAnalytics.getInstance(mActivity);
         setupNavigationDrawer(savedInstanceBundle);
-        //new SampleData(mActivity).getSampleNotesRealm();
+       // new SampleData(mActivity).getSampleNotesRealm();
 
     }
 
