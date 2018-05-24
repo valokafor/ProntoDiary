@@ -1,16 +1,16 @@
 package com.okason.diary.core.listeners;
 
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Tag;
 
 /**
  * Created by valokafor on 6/20/17.
  */
 
 public interface OnTagSelectedListener {
-    void onTagChecked(TagEntity selectedTag);
-    void onTagUnChecked(TagEntity unSelectedTag);
+    void onTagChecked(Tag selectedTag);
+    void onTagUnChecked(Tag unSelectedTag);
     void onAddTagButtonClicked();
-    void onTagClicked(TagEntity clickedTag);
-    void onEditTagButtonClicked(TagEntity clickedTag);
-    void onDeleteTagButtonClicked(TagEntity clickedTag);
+    void onTagClicked(Tag clickedTag);
+    void onEditTagButtonClicked(Tag clickedTag);
+    void onDeleteTagButtonClicked(Tag clickedTag);
 }

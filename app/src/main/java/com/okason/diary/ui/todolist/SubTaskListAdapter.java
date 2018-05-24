@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.SubTaskItemListener;
-import com.okason.diary.models.realmentities.SubTaskEntity;
+import com.okason.diary.models.realmentities.SubTask;
 
 import java.util.List;
 
@@ -25,9 +25,9 @@ import butterknife.ButterKnife;
 public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.ViewHolder> {
   //  private final Task parentTask;
     private final SubTaskItemListener taskItemListener;
-    private final List<SubTaskEntity> subTasks;
+    private final List<SubTask> subTasks;
 
-    public SubTaskListAdapter(List<SubTaskEntity> subTasks, SubTaskItemListener taskItemListener) {
+    public SubTaskListAdapter(List<SubTask> subTasks, SubTaskItemListener taskItemListener) {
         this.taskItemListener = taskItemListener;
         this.subTasks = subTasks;
     }
@@ -42,7 +42,7 @@ public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (subTasks != null && subTasks.size() > 0){
-            SubTaskEntity selectedSubTask = subTasks.get(position);
+            SubTask selectedSubTask = subTasks.get(position);
 
             holder.taskTitle.setText(selectedSubTask.getTitle());
 
@@ -77,11 +77,11 @@ public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                     if (isChecked) {
-                        final SubTaskEntity checkedTask = subTasks.get(getLayoutPosition());
+                        final SubTask checkedTask = subTasks.get(getLayoutPosition());
                         taskItemListener.onSubTaskChecked(checkedTask.getId());
 
                     } else {
-                        final SubTaskEntity uncheckedTask = subTasks.get(getLayoutPosition());
+                        final SubTask uncheckedTask = subTasks.get(getLayoutPosition());
                         taskItemListener.onSubTaskUnChecked(uncheckedTask.getId());
                     }
                 }
@@ -92,7 +92,7 @@ public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.
                 @Override
                 public void onClick(View view) {
                     int position = getLayoutPosition();
-                    final SubTaskEntity deletedSubTask = subTasks.get(position);
+                    final SubTask deletedSubTask = subTasks.get(position);
                     taskItemListener.onSubTaskDeleted(deletedSubTask.getTitle());
 
                 }
@@ -101,7 +101,7 @@ public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.
             taskTitle.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    final SubTaskEntity clickedTask = subTasks.get(getLayoutPosition());
+                    final SubTask clickedTask = subTasks.get(getLayoutPosition());
                     taskItemListener.onEditSubTask(clickedTask);
 
                 }

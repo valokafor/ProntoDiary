@@ -58,10 +58,10 @@ import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.data.FolderDao;
 import com.okason.diary.data.NoteDao;
-import com.okason.diary.models.realmentities.AttachmentEntity;
-import com.okason.diary.models.realmentities.FolderEntity;
-import com.okason.diary.models.realmentities.NoteEntity;
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.realmentities.Folder;
+import com.okason.diary.models.realmentities.Note;
+import com.okason.diary.models.realmentities.Tag;
 import com.okason.diary.ui.attachment.AttachmentListAdapter;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
@@ -106,7 +106,7 @@ public class NewNoteEditorFragment extends Fragment {
     private AddFolderDialogFragment addFolderDialogFragment;
 
     private AttachmentListAdapter attachmentListAdapter;
-    private NoteEntity mCurrentNote;
+    private Note mCurrentNote;
     private Realm realm;
     private boolean isInEditMode = false;
 
@@ -278,14 +278,14 @@ public class NewNoteEditorFragment extends Fragment {
         return mRootView;
     }
 
-    private final RealmObjectChangeListener<NoteEntity> noteChangeListener = new RealmObjectChangeListener<NoteEntity>() {
+    private final RealmObjectChangeListener<Note> noteChangeListener = new RealmObjectChangeListener<Note>() {
         @Override
-        public void onChange(NoteEntity noteEntity, @javax.annotation.Nullable ObjectChangeSet changeSet) {
+        public void onChange(Note note, @javax.annotation.Nullable ObjectChangeSet changeSet) {
             if (changeSet.isDeleted()){
                 //this note has been deleted
                 goBackToParent();
             }
-            populateNote(noteEntity);
+            populateNote(note);
 
         }
     };
@@ -365,13 +365,13 @@ public class NewNoteEditorFragment extends Fragment {
 
         selectTagDialogFragment.setListener(new OnTagSelectedListener() {
             @Override
-            public void onTagChecked(TagEntity selectedTag) {
+            public void onTagChecked(Tag selectedTag) {
                 noteDao.addTag(mCurrentNote.getId(), selectedTag.getId());
 
             }
 
             @Override
-            public void onTagUnChecked(TagEntity unSelectedTag) {
+            public void onTagUnChecked(Tag unSelectedTag) {
                 noteDao.removeTag(mCurrentNote.getId(), unSelectedTag.getId());
             }
 
@@ -381,17 +381,17 @@ public class NewNoteEditorFragment extends Fragment {
             }
 
             @Override
-            public void onTagClicked(TagEntity clickedTag) {
+            public void onTagClicked(Tag clickedTag) {
 
             }
 
             @Override
-            public void onEditTagButtonClicked(TagEntity clickedTag) {
+            public void onEditTagButtonClicked(Tag clickedTag) {
 
             }
 
             @Override
-            public void onDeleteTagButtonClicked(TagEntity clickedTag) {
+            public void onDeleteTagButtonClicked(Tag clickedTag) {
 
             }
         });
@@ -421,7 +421,7 @@ public class NewNoteEditorFragment extends Fragment {
     public void onAddNewCategory(FolderAddedEvent event){
         addFolderDialogFragment.dismiss();
         String folderId = event.getAddedFolderId();
-        FolderEntity selectedFolder = folderDao.getFolderById(folderId);
+        Folder selectedFolder = folderDao.getFolderById(folderId);
 
         if (selectedFolder != null){
             String folderName = selectedFolder.getFolderName();
@@ -441,24 +441,24 @@ public class NewNoteEditorFragment extends Fragment {
     }
 
     //Handles when a select Folder button is clicked
-    private void showChooseFolderDialog(List<FolderEntity> folders) {
+    private void showChooseFolderDialog(List<Folder> folders) {
         selectFolderDialogFragment = selectFolderDialogFragment.newInstance();
         selectFolderDialogFragment.setCategories(folders);
 
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
             @Override
-            public void onCategorySelected(FolderEntity selectedCategory) {
+            public void onCategorySelected(Folder selectedCategory) {
                 noteDao.setFolder(mCurrentNote.getId(), selectedCategory.getId());
                 selectFolderDialogFragment.dismiss();
             }
 
             @Override
-            public void onEditCategoryButtonClicked(FolderEntity selectedCategory) {
+            public void onEditCategoryButtonClicked(Folder selectedCategory) {
 
             }
 
             @Override
-            public void onDeleteCategoryButtonClicked(FolderEntity selectedCategory) {
+            public void onDeleteCategoryButtonClicked(Folder selectedCategory) {
 
             }
 
@@ -491,7 +491,7 @@ public class NewNoteEditorFragment extends Fragment {
     }
 
 
-    public void populateNote(NoteEntity note) {
+    public void populateNote(Note note) {
 
         mTitle.setHint(R.string.placeholder_journal_title);
         mContent.setHint(R.string.placeholder_journal_text);
@@ -519,12 +519,12 @@ public class NewNoteEditorFragment extends Fragment {
 
     }
 
-    private void initTagLayout(List<TagEntity> tags) {
+    private void initTagLayout(List<Tag> tags) {
         if (tags != null && tags.size() > 0){
             mTimeStampLayout.setVisibility(View.VISIBLE);
             dateCreated.setVisibility(View.VISIBLE);
             String tagText = "";
-            for (TagEntity tag: tags){
+            for (Tag tag: tags){
                 tagText = tagText + "#" + tag.getTagName() + ", ";
             }
             dateCreated.setText(tagText);
@@ -566,7 +566,7 @@ public class NewNoteEditorFragment extends Fragment {
      *
      * @param attachmentList - the list of attachments for this Note
      */
-    private void initViewAttachments(final List<AttachmentEntity> attachmentList) {
+    private void initViewAttachments(final List<Attachment> attachmentList) {
 
         attachmentContainer.setVisibility(View.VISIBLE);
         attachmentRecyclerView = (RecyclerView) mRootView.findViewById(R.id.attachment_list_recyclerview);
@@ -579,7 +579,7 @@ public class NewNoteEditorFragment extends Fragment {
 
         attachmentListAdapter.setListener(new OnAttachmentClickedListener() {
             @Override
-            public void onAttachmentClicked(AttachmentEntity clickedAttachment) {
+            public void onAttachmentClicked(Attachment clickedAttachment) {
                 //If clicked Attachment is of type Document
                 //Launch an Intent to show it, otherwise start Gallery Activity
                 if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)) {
@@ -1041,7 +1041,7 @@ public class NewNoteEditorFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        AttachmentEntity attachment;
+        Attachment attachment;
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
                 case IMAGE_CAPTURE_REQUEST:
@@ -1226,7 +1226,7 @@ public class NewNoteEditorFragment extends Fragment {
     }
 
 
-    public void displayShareIntent(NoteEntity note) {
+    public void displayShareIntent(Note note) {
         if (note == null) {
             makeToast(getString(R.string.no_notes_found));
             return;
@@ -1258,7 +1258,7 @@ public class NewNoteEditorFragment extends Fragment {
             ArrayList<Uri> uris = new ArrayList<>();
             // A check to decide the mime type of attachments to share is done here
             HashMap<String, Boolean> mimeTypes = new HashMap<>();
-            for (AttachmentEntity attachment : note.getAttachments()) {
+            for (Attachment attachment : note.getAttachments()) {
                 Uri uri = Uri.parse(attachment.getUri());
                 uris.add(uri);
                 mimeTypes.put(attachment.getMime_type(), true);
@@ -1278,7 +1278,7 @@ public class NewNoteEditorFragment extends Fragment {
         startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
     }
 
-    public void showDeleteConfirmation(NoteEntity note) {
+    public void showDeleteConfirmation(Note note) {
         final String titleOfNoteTobeDeleted = note.getTitle();
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
 
@@ -1309,7 +1309,7 @@ public class NewNoteEditorFragment extends Fragment {
 
 
 
-    private void deleteNote(NoteEntity note) {
+    private void deleteNote(Note note) {
         if (!TextUtils.isEmpty(note.getId())) {
             new NoteDao(realm).deleteNote(note.getId());
         }

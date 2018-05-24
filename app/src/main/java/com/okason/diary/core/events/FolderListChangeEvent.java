@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.realmentities.FolderEntity;
+import com.okason.diary.models.realmentities.Folder;
 
 import java.util.List;
 
@@ -9,14 +9,14 @@ import java.util.List;
  */
 
 public class FolderListChangeEvent {
-    private final List<FolderEntity> folderlList;
+    private final List<Folder> folderlList;
 
 
-    public FolderListChangeEvent(List<FolderEntity> folderlList) {
+    public FolderListChangeEvent(List<Folder> folderlList) {
         this.folderlList = folderlList;
     }
 
-    public List<FolderEntity> getFolderlList() {
+    public List<Folder> getFolderlList() {
         return folderlList;
     }
 }

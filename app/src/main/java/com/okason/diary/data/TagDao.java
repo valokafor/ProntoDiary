@@ -1,6 +1,6 @@
 package com.okason.diary.data;
 
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Tag;
 
 import java.util.UUID;
 
@@ -20,15 +20,15 @@ public class TagDao {
     }
 
 
-    public RealmResults<TagEntity> getAllTags() {
-        RealmResults<TagEntity> tags = realm.where(TagEntity.class).findAll();
+    public RealmResults<Tag> getAllTags() {
+        RealmResults<Tag> tags = realm.where(Tag.class).findAll();
         return tags;
     }
 
 
-    public TagEntity getTagById(String tagId) {
+    public Tag getTagById(String tagId) {
         try {
-            TagEntity selectedTag = realm.where(TagEntity.class).equalTo("id", tagId).findFirst();
+            Tag selectedTag = realm.where(Tag.class).equalTo("id", tagId).findFirst();
             return selectedTag;
         } catch (Exception e) {
             return null;
@@ -36,19 +36,19 @@ public class TagDao {
     }
 
 
-    public TagEntity createNewTag() {
+    public Tag createNewTag() {
         String id = UUID.randomUUID().toString();
         realm.beginTransaction();
-        TagEntity tag = realm.createObject(TagEntity.class, id);
+        Tag tag = realm.createObject(Tag.class, id);
         tag.setDateCreated(System.currentTimeMillis());
         tag.setDateModified(System.currentTimeMillis());
         realm.commitTransaction();
         return tag;
     }
 
-    public TagEntity getTagByName(String tagName) {
+    public Tag getTagByName(String tagName) {
         try {
-            TagEntity selectedTag = realm.where(TagEntity.class).equalTo("tagName", tagName).findFirst();
+            Tag selectedTag = realm.where(Tag.class).equalTo("tagName", tagName).findFirst();
             return selectedTag;
         } catch (Exception e) {
             return null;
@@ -56,8 +56,8 @@ public class TagDao {
     }
 
 
-    public TagEntity getOrCreateTag(String tagName) {
-        TagEntity tag = getTagById(tagName);
+    public Tag getOrCreateTag(String tagName) {
+        Tag tag = getTagById(tagName);
         if (tag == null){
             tag = createNewTag();
         }
@@ -69,7 +69,7 @@ public class TagDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                TagEntity selectedTag = backgroundRealm.where(TagEntity.class).equalTo("id", id).findFirst();
+                Tag selectedTag = backgroundRealm.where(Tag.class).equalTo("id", id).findFirst();
                 if (selectedTag != null) {
                     selectedTag.setTagName(title);
                     selectedTag.setDateModified(System.currentTimeMillis());
@@ -84,7 +84,7 @@ public class TagDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                backgroundRealm.where(TagEntity.class).equalTo("id", tagId).findFirst().deleteFromRealm();
+                backgroundRealm.where(Tag.class).equalTo("id", tagId).findFirst().deleteFromRealm();
             }
         });
     }

@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.realmentities.AttachmentEntity;
+import com.okason.diary.models.realmentities.Attachment;
 
 /**
  * Created by valokafor on 6/4/17.
@@ -8,9 +8,9 @@ import com.okason.diary.models.realmentities.AttachmentEntity;
 
 public class AttachingFileCompleteEvent {
     private final boolean resultOk;
-    private final AttachmentEntity attachment;
+    private final Attachment attachment;
 
-    public AttachingFileCompleteEvent(boolean resultOk, AttachmentEntity attachment) {
+    public AttachingFileCompleteEvent(boolean resultOk, Attachment attachment) {
         this.resultOk = resultOk;
         this.attachment = attachment;
     }
@@ -19,7 +19,7 @@ public class AttachingFileCompleteEvent {
         return resultOk;
     }
 
-    public AttachmentEntity getAttachment() {
+    public Attachment getAttachment() {
         return attachment;
     }
 }

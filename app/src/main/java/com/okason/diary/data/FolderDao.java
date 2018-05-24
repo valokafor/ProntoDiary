@@ -1,6 +1,6 @@
 package com.okason.diary.data;
 
-import com.okason.diary.models.realmentities.FolderEntity;
+import com.okason.diary.models.realmentities.Folder;
 
 import java.util.UUID;
 
@@ -20,20 +20,20 @@ public class FolderDao {
         this.realm = realm;
     }
 
-    public RealmResults<FolderEntity> getAllFolders() {
-        RealmResults<FolderEntity> folders = realm.where(FolderEntity.class).findAll();
+    public RealmResults<Folder> getAllFolders() {
+        RealmResults<Folder> folders = realm.where(Folder.class).findAll();
         return folders;
     }
 
-    public FolderEntity getFolderById(String id) {
-        FolderEntity folder = realm.where(FolderEntity.class).equalTo("id", id).findFirst();
+    public Folder getFolderById(String id) {
+        Folder folder = realm.where(Folder.class).equalTo("id", id).findFirst();
         return folder;
     }
 
-    public FolderEntity createNewFolder() {
+    public Folder createNewFolder() {
         String id = UUID.randomUUID().toString();
         realm.beginTransaction();
-        FolderEntity folder = realm.createObject(FolderEntity.class, id);
+        Folder folder = realm.createObject(Folder.class, id);
         folder.setDateCreated(System.currentTimeMillis());
         folder.setDateModified(System.currentTimeMillis());
         realm.commitTransaction();
@@ -45,7 +45,7 @@ public class FolderDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                FolderEntity selectedFolder = backgroundRealm.where(FolderEntity.class).equalTo("id", id).findFirst();
+                Folder selectedFolder = backgroundRealm.where(Folder.class).equalTo("id", id).findFirst();
                 if (selectedFolder != null) {
                     selectedFolder.setFolderName(title);
                     selectedFolder.setDateModified(System.currentTimeMillis());
@@ -58,7 +58,7 @@ public class FolderDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                FolderEntity folder =  backgroundRealm.where(FolderEntity.class).equalTo("id", folderId).findFirst();
+                Folder folder =  backgroundRealm.where(Folder.class).equalTo("id", folderId).findFirst();
                 if (folder != null) {
                     folder.deleteFromRealm();
                 }
@@ -67,21 +67,21 @@ public class FolderDao {
     }
 
 
-    public FolderEntity getFolderByName(String query) {
-        FolderEntity folders = realm.where(FolderEntity.class).equalTo("folderName", query, Case.INSENSITIVE).findFirst();
+    public Folder getFolderByName(String query) {
+        Folder folders = realm.where(Folder.class).equalTo("folderName", query, Case.INSENSITIVE).findFirst();
         return folders;
     }
 
-    public FolderEntity getOrCreateFolder(String foldername) {
-        FolderEntity folder = getFolderByName(foldername);
+    public Folder getOrCreateFolder(String foldername) {
+        Folder folder = getFolderByName(foldername);
         if (folder == null){
             folder = createNewFolder();
         }
         return folder;
     }
 
-    public RealmResults<FolderEntity> filterFolder(String query) {
-        RealmResults<FolderEntity> results = realm.where(FolderEntity.class).contains("folderName", query, Case.INSENSITIVE).findAll();
+    public RealmResults<Folder> filterFolder(String query) {
+        RealmResults<Folder> results = realm.where(Folder.class).contains("folderName", query, Case.INSENSITIVE).findAll();
         return results;
     }
 }

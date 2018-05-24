@@ -16,7 +16,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.okason.diary.R;
-import com.okason.diary.models.realmentities.TaskEntity;
+import com.okason.diary.models.realmentities.Task;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
@@ -35,7 +35,7 @@ public class MyAlarmManager {
     }
 
 
-    public static void createAlarm(Context context, TaskEntity task) {
+    public static void createAlarm(Context context, Task task) {
         Notification notification = buildNotification(context, task);
 
         Intent intent = new Intent(context, AlarmReceiver.class);
@@ -69,13 +69,13 @@ public class MyAlarmManager {
     }
 
 
-    private static long getIntervalTime(TaskEntity task, long baseDateTimeAtMillis) {
+    private static long getIntervalTime(Task task, long baseDateTimeAtMillis) {
         long interval = TimeUtils.getInterval(baseDateTimeAtMillis, task.getRepeatFrequency());
         return interval;
     }
 
 
-    private static long getTriggerTime(Context context, TaskEntity task) {
+    private static long getTriggerTime(Context context, Task task) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String taskNotificationMinutes = prefs.getString(context.getString(R.string.pref_tasknotification_key), "0");
 
@@ -105,7 +105,7 @@ public class MyAlarmManager {
     }
 
 
-    private static Notification buildNotification(Context context, TaskEntity task) {
+    private static Notification buildNotification(Context context, Task task) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean vibrate = prefs.getBoolean(context.getString(R.string.pref_vibration_key), true);
         String sound = prefs.getString(context.getString(R.string.pref_sound_key), null);

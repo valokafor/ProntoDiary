@@ -42,9 +42,9 @@ import com.okason.diary.BuildConfig;
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.data.NoteDao;
-import com.okason.diary.models.realmentities.AttachmentEntity;
-import com.okason.diary.models.realmentities.NoteEntity;
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.realmentities.Note;
+import com.okason.diary.models.realmentities.Tag;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
@@ -118,7 +118,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
 
 
     private String currentNoteId;
-    private NoteEntity currentNote;
+    private Note currentNote;
     private Realm realm;
 
     private FirebaseAuth mFirebaseAuth;
@@ -246,7 +246,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
         //Display Tag names and make each Tag name clickable
         if (currentNote.getTags() != null && currentNote.getTags().size() > 0){
             for (int i = 0; i < currentNote.getTags().size(); i++){
-                TagEntity tag = currentNote.getTags().get(i);
+                Tag tag = currentNote.getTags().get(i);
                 TextView textView = new TextView(getActivity());
                 int viewId = textView.generateViewId();
                 textView.setId(viewId);
@@ -302,8 +302,8 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
 
     }
 
-    private boolean containsAudioRecording(NoteEntity currentNote) {
-        for (AttachmentEntity attachment: currentNote.getAttachments()){
+    private boolean containsAudioRecording(Note currentNote) {
+        for (Attachment attachment: currentNote.getAttachments()){
             if (attachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
                 return true;
             }
@@ -311,7 +311,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
         return false;
     }
 
-    private void showHideImageViews(RealmList<AttachmentEntity> attachments) {
+    private void showHideImageViews(RealmList<Attachment> attachments) {
 
         imageViewThumbnail1.setOnClickListener(this);
 
@@ -406,7 +406,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        AttachmentEntity clickedAttachment = null;
+        Attachment clickedAttachment = null;
         switch (view.getId()){
             case R.id.image_view_thumbnail_1:
                 displayImage(currentNote.getAttachments().get(0).getCloudFilePath(), topImageView);
@@ -427,7 +427,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
 
     }
 
-    private void goToGallery(AttachmentEntity clickedAttachment) {
+    private void goToGallery(Attachment clickedAttachment) {
         //If clicked Attachment is of type Document
         //Launch an Intent to show it, otherwise start Gallery Activity
         if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
@@ -471,7 +471,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
         }
     }
 
-    public void showDeleteConfirmation(NoteEntity note) {
+    public void showDeleteConfirmation(Note note) {
         final String titleOfNoteTobeDeleted = note.getTitle();
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
 
@@ -505,7 +505,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
 
     }
 
-    private void deleteNote(NoteEntity note) {
+    private void deleteNote(Note note) {
         if (!TextUtils.isEmpty(note.getId())) {
             new NoteDao(realm).deleteNote(note.getId());
         }
@@ -513,7 +513,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
     }
 
 
-    public void displayShareIntent(final NoteEntity note) {
+    public void displayShareIntent(final Note note) {
         final String titleText = note.getTitle();
 
         final String contentText = titleText
@@ -530,7 +530,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
 
     }
 
-    private void shareTextAndMultipleAttachment(String titleText, String contentText, NoteEntity note) {
+    private void shareTextAndMultipleAttachment(String titleText, String contentText, Note note) {
         final Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
         ArrayList<Uri> uris = new ArrayList<>();
@@ -539,7 +539,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
 
         // A check to decide the mime type of attachments to share is done here
         HashMap<String, Boolean> mimeTypes = new HashMap<>();
-        for (AttachmentEntity attachment : note.getAttachments()) {
+        for (Attachment attachment : note.getAttachments()) {
             if (attachment.getFilePath().contains("http")){
                 continue;
             }
@@ -558,7 +558,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
 
     }
 
-    private void shareTextAndOneAttachment(final String titleText, final String contentText, NoteEntity note) {
+    private void shareTextAndOneAttachment(final String titleText, final String contentText, Note note) {
         final Intent shareIntent = new Intent();
 
         shareIntent.setAction(Intent.ACTION_SEND);

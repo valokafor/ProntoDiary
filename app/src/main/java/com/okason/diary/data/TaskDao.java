@@ -1,8 +1,8 @@
 package com.okason.diary.data;
 
-import com.okason.diary.models.realmentities.FolderEntity;
-import com.okason.diary.models.realmentities.SubTaskEntity;
-import com.okason.diary.models.realmentities.TaskEntity;
+import com.okason.diary.models.realmentities.Folder;
+import com.okason.diary.models.realmentities.SubTask;
+import com.okason.diary.models.realmentities.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,23 +23,23 @@ public class TaskDao {
         this.realm = realm;
     }
 
-    public TaskEntity createNewTask(String taskName) {
+    public Task createNewTask(String taskName) {
         String taskId = UUID.randomUUID().toString();
         realm.beginTransaction();
-        TaskEntity task = realm.createObject(TaskEntity.class, taskId);
+        Task task = realm.createObject(Task.class, taskId);
         task.setDateCreated(System.currentTimeMillis());
         task.setDateModified(System.currentTimeMillis());
         realm.commitTransaction();
         return task;
     }
 
-    public SubTaskEntity createNewSubTask(String subTaskName, String parentTaskId) {
-        SubTaskEntity subTask = null;
-        TaskEntity parentTask = realm.where(TaskEntity.class).equalTo("id", parentTaskId).findFirst();
+    public SubTask createNewSubTask(String subTaskName, String parentTaskId) {
+        SubTask subTask = null;
+        Task parentTask = realm.where(Task.class).equalTo("id", parentTaskId).findFirst();
         if (parentTask != null){
             realm.beginTransaction();
             String subTaskId = UUID.randomUUID().toString();
-            subTask = realm.createObject(SubTaskEntity.class, subTaskId);
+            subTask = realm.createObject(SubTask.class, subTaskId);
             subTask.setDateCreated(System.currentTimeMillis());
             subTask.setDateModified(System.currentTimeMillis());
             subTask.setTitle(subTaskName);
@@ -52,16 +52,16 @@ public class TaskDao {
         return subTask;
     }
 
-    public TaskEntity createNewTask(int priority, String taskName, long dueDateAndTime,  String repeat, long repeatEndDate, String folderId) {
+    public Task createNewTask(int priority, String taskName, long dueDateAndTime, String repeat, long repeatEndDate, String folderId) {
         realm.beginTransaction();
-        TaskEntity task = createNewTask(taskName);
+        Task task = createNewTask(taskName);
         task.setDateModified(System.currentTimeMillis());
         task.setPriority(priority);
         task.setDueDateAndTime(dueDateAndTime);
         task.setRepeatEndDate(repeatEndDate);
         task.setRepeatFrequency(repeat);
 
-        FolderEntity selectedFolder = realm.where(FolderEntity.class).equalTo("id", folderId).findFirst();
+        Folder selectedFolder = realm.where(Folder.class).equalTo("id", folderId).findFirst();
         if (selectedFolder != null){
             task.setFolder(selectedFolder);
             selectedFolder.getTodoLists().add(task);
@@ -76,7 +76,7 @@ public class TaskDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                TaskEntity updatedTask = realm.where(TaskEntity.class).equalTo("id", taskId).findFirst();
+                Task updatedTask = realm.where(Task.class).equalTo("id", taskId).findFirst();
                 if (updatedTask != null) {
                     updatedTask.setTitle(taskName);
                     updatedTask.setDateModified(System.currentTimeMillis());
@@ -90,16 +90,16 @@ public class TaskDao {
 
     }
 
-    public void updateTaskStatus(final TaskEntity task, final boolean completed) {
+    public void updateTaskStatus(final Task task, final boolean completed) {
         try (Realm realm = Realm.getDefaultInstance()) {
             realm.executeTransaction(new Realm.Transaction() {
                 @Override
                 public void execute(Realm backgroundRealm) {
-                    TaskEntity updatedTask = backgroundRealm.where(TaskEntity.class).equalTo("id", task.getId()).findFirst();
+                    Task updatedTask = backgroundRealm.where(Task.class).equalTo("id", task.getId()).findFirst();
                     if (updatedTask != null) {
                         updatedTask.setChecked(completed);
                         updatedTask.setDateModified(System.currentTimeMillis());
-                        for (SubTaskEntity subTask: updatedTask.getSubTask()){
+                        for (SubTask subTask: updatedTask.getSubTask()){
                             subTask.setChecked(completed);
                         }
                     }
@@ -113,9 +113,9 @@ public class TaskDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                TaskEntity updatedTask = backgroundRealm.where(TaskEntity.class).equalTo("id", taskId).findFirst();
-                SubTaskEntity updatedSubTask = null;
-                for (SubTaskEntity subTask: updatedTask.getSubTask()){
+                Task updatedTask = backgroundRealm.where(Task.class).equalTo("id", taskId).findFirst();
+                SubTask updatedSubTask = null;
+                for (SubTask subTask: updatedTask.getSubTask()){
                     if (subTask.getId().equals(subTaskId)){
                         updatedSubTask = subTask;
                         break;
@@ -130,8 +130,8 @@ public class TaskDao {
 
     }
 
-    public RealmResults<TaskEntity> getAllTask() {
-        RealmResults<TaskEntity> taskResult = realm.where(TaskEntity.class).findAll();
+    public RealmResults<Task> getAllTask() {
+        RealmResults<Task> taskResult = realm.where(Task.class).findAll();
         return taskResult;
 
     }
@@ -140,7 +140,7 @@ public class TaskDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                backgroundRealm.where(TaskEntity.class).equalTo("id", taskId).findFirst().deleteFromRealm();
+                backgroundRealm.where(Task.class).equalTo("id", taskId).findFirst().deleteFromRealm();
             }
         });
     }
@@ -149,14 +149,14 @@ public class TaskDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                backgroundRealm.where(SubTaskEntity.class).equalTo("id", subTaskId).findFirst().deleteFromRealm();
+                backgroundRealm.where(SubTask.class).equalTo("id", subTaskId).findFirst().deleteFromRealm();
             }
         });
     }
 
-    public TaskEntity getTaskById(String taskId) {
+    public Task getTaskById(String taskId) {
         try {
-            TaskEntity selectedNoteEntity = realm.where(TaskEntity.class).equalTo("id", taskId).findFirst();
+            Task selectedNoteEntity = realm.where(Task.class).equalTo("id", taskId).findFirst();
             return selectedNoteEntity;
         } catch (Exception e) {
             return null;
@@ -167,8 +167,8 @@ public class TaskDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                TaskEntity task = backgroundRealm.where(TaskEntity.class).equalTo("id", taskId).findFirst();
-                FolderEntity folder = backgroundRealm.where(FolderEntity.class).equalTo("id", folderId).findFirst();
+                Task task = backgroundRealm.where(Task.class).equalTo("id", taskId).findFirst();
+                Folder folder = backgroundRealm.where(Folder.class).equalTo("id", folderId).findFirst();
                 if (task != null && folder != null) {
                     task.setFolder(folder);
                     folder.getTodoLists().add(task);
@@ -179,25 +179,25 @@ public class TaskDao {
     }
 
 
-    public RealmResults<TaskEntity> getAllTasksForPriority(int priority) {
-        RealmResults<TaskEntity> taskResult = realm.where(TaskEntity.class).equalTo("priority", priority).findAll();
+    public RealmResults<Task> getAllTasksForPriority(int priority) {
+        RealmResults<Task> taskResult = realm.where(Task.class).equalTo("priority", priority).findAll();
         return taskResult;
     }
 
-    public RealmResults<TaskEntity> searchTasks(String query) {
-        RealmResults<TaskEntity> results = realm.where(TaskEntity.class).contains("title", query, Case.INSENSITIVE).findAll();
+    public RealmResults<Task> searchTasks(String query) {
+        RealmResults<Task> results = realm.where(Task.class).contains("title", query, Case.INSENSITIVE).findAll();
         return results;
     }
 
-    public List<TaskEntity> filterTasks(String query) {
-        List<TaskEntity> taskList = new ArrayList<>();
-        for (TaskEntity task: getAllTask()){
+    public List<Task> filterTasks(String query) {
+        List<Task> taskList = new ArrayList<>();
+        for (Task task: getAllTask()){
             String title = task.getTitle().toLowerCase();
             query = query.toLowerCase();
             if (title.contains(query)){
                 taskList.add(task);
             }else {
-                for (SubTaskEntity subTask: task.getSubTask()){
+                for (SubTask subTask: task.getSubTask()){
                     String subTasktitle = subTask.getTitle().toLowerCase();
                     if (subTasktitle.contains(query)){
                         taskList.add(task);

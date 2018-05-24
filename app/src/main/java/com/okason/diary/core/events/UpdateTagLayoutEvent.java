@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.realmentities.TaskEntity;
+import com.okason.diary.models.realmentities.Task;
 
 import java.util.List;
 
@@ -9,13 +9,13 @@ import java.util.List;
  */
 
 public class UpdateTagLayoutEvent {
-    private final List<TaskEntity> mTags;
+    private final List<Task> mTags;
 
-    public UpdateTagLayoutEvent(List<TaskEntity> tags) {
+    public UpdateTagLayoutEvent(List<Task> tags) {
         mTags = tags;
     }
 
-    public List<TaskEntity> getTags() {
+    public List<Task> getTags() {
         return mTags;
     }
 }

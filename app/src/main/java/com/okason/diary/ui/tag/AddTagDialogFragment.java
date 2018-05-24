@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.data.TagDao;
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Tag;
 import com.okason.diary.utils.Constants;
 
 import io.realm.Realm;
@@ -27,7 +27,7 @@ import io.realm.Realm;
 public class AddTagDialogFragment extends DialogFragment {
 
     private EditText tagEditText;
-    private TagEntity mTag = null;
+    private Tag mTag = null;
     private Realm realm;
     private TagDao tagDao;
 
@@ -117,7 +117,7 @@ public class AddTagDialogFragment extends DialogFragment {
         return addTagDialog.create();
     }
 
-    private void populateFields(TagEntity tag) {
+    private void populateFields(Tag tag) {
         tagEditText.setText(tag.getTagName());
     }
 

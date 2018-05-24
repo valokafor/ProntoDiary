@@ -1,22 +1,22 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.realmentities.NoteEntity;
+import com.okason.diary.models.realmentities.Note;
 
 /**
  * Created by valokafor on 6/24/17.
  */
 
 public class OnAttachmentAddedToNoteEvent {
-    private final NoteEntity updatedJournal;
+    private final Note updatedJournal;
     private final String attachmentId;
 
 
-    public OnAttachmentAddedToNoteEvent(NoteEntity updatedJournal, String attachmentId) {
+    public OnAttachmentAddedToNoteEvent(Note updatedJournal, String attachmentId) {
         this.updatedJournal = updatedJournal;
         this.attachmentId = attachmentId;
     }
 
-    public NoteEntity getUpdatedJournal() {
+    public Note getUpdatedJournal() {
         return updatedJournal;
     }
 

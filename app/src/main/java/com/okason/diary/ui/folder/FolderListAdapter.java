@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
-import com.okason.diary.models.realmentities.FolderEntity;
+import com.okason.diary.models.realmentities.Folder;
 
 import java.util.List;
 
@@ -24,13 +24,13 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
     private final static String LOG_CAT = FolderListAdapter.class.getSimpleName();
     private final static boolean DEBUG = true;
 
-    private List<FolderEntity> mFolders;
+    private List<Folder> mFolders;
     private final OnFolderSelectedListener mListener;
     private final Context mContext;
 
 
 
-    public FolderListAdapter(Context mContext, List<FolderEntity> mFolders, OnFolderSelectedListener mListener) {
+    public FolderListAdapter(Context mContext, List<Folder> mFolders, OnFolderSelectedListener mListener) {
         this.mFolders = mFolders;
         this.mContext = mContext;
         this.mListener = mListener;
@@ -46,7 +46,7 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
 
-        FolderEntity folder = mFolders.get(position);
+        Folder folder = mFolders.get(position);
         String folderName = folder.getFolderName();
         holder.folderName.setText(folderName);
         int journalCount = folder.getNoteEntitys().size();
@@ -60,7 +60,7 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
 
     }
 
-    public void replaceData(List<FolderEntity> categories){
+    public void replaceData(List<Folder> categories){
         this.mFolders.clear();
         mFolders = categories;
         notifyDataSetChanged();
@@ -87,14 +87,14 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
             editFolder.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FolderEntity categoryToBeEdited = mFolders.get(getLayoutPosition());
+                    Folder categoryToBeEdited = mFolders.get(getLayoutPosition());
                     mListener.onEditCategoryButtonClicked(categoryToBeEdited);
                 }
             });
             deleteFolder.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FolderEntity categoryToBeDeleted = mFolders.get(getLayoutPosition());
+                    Folder categoryToBeDeleted = mFolders.get(getLayoutPosition());
                     mListener.onDeleteCategoryButtonClicked(categoryToBeDeleted);
                 }
             });

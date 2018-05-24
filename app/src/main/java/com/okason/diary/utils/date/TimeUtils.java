@@ -2,8 +2,8 @@ package com.okason.diary.utils.date;
 
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.models.realmentities.SubTaskEntity;
-import com.okason.diary.models.realmentities.TaskEntity;
+import com.okason.diary.models.realmentities.SubTask;
+import com.okason.diary.models.realmentities.Task;
 import com.okason.diary.utils.Constants;
 
 import java.text.SimpleDateFormat;
@@ -120,7 +120,7 @@ public class TimeUtils {
 
     }
 
-    public static String getSubTaskStatus(TaskEntity task) {
+    public static String getSubTaskStatus(Task task) {
         StringBuilder stringBuilder = new StringBuilder(40);
 
         int numberOfTasks = 0;
@@ -138,7 +138,7 @@ public class TimeUtils {
         int pendingTasks = 0;
 
         if (task.getSubTask().size() > 0){
-            for (SubTaskEntity subTask: task.getSubTask()){
+            for (SubTask subTask: task.getSubTask()){
                 if (subTask.isChecked()){
                     completedTasks++;
                 }else {

@@ -18,7 +18,7 @@ import io.realm.annotations.PrimaryKey;
  * Created by Valentine on 4/10/2017.
  */
 
-public class AttachmentEntity extends RealmObject {
+public class Attachment extends RealmObject {
 
     @PrimaryKey
     private String id;
@@ -33,7 +33,7 @@ public class AttachmentEntity extends RealmObject {
     private long dateCreated;
 
 
-    public AttachmentEntity(){
+    public Attachment(){
         localFilePath = "";
         cloudFilePath = "";
         name = "";
@@ -45,7 +45,7 @@ public class AttachmentEntity extends RealmObject {
 
     }
 
-    public AttachmentEntity(Uri uri, String imagePath, String mime_type) {
+    public Attachment(Uri uri, String imagePath, String mime_type) {
         this.uri = uri.toString();
         this.localFilePath = imagePath;
         this.mime_type = mime_type;
@@ -57,7 +57,7 @@ public class AttachmentEntity extends RealmObject {
 
     }
 
-    public AttachmentEntity(Uri uri, String imagePath, String mime_type, String name) {
+    public Attachment(Uri uri, String imagePath, String mime_type, String name) {
         this.uri = uri.toString();
         this.localFilePath = imagePath;
         this.mime_type = mime_type;
@@ -69,7 +69,7 @@ public class AttachmentEntity extends RealmObject {
 
     }
 
-    public void update(AttachmentEntity attachment){
+    public void update(Attachment attachment){
         this.uri = attachment.getUri();
         this.localFilePath = attachment.getLocalFilePath();
         this.mime_type = attachment.getMime_type();
@@ -102,7 +102,7 @@ public class AttachmentEntity extends RealmObject {
     }
 
 
-    public AttachmentEntity(String ext){
+    public Attachment(String ext){
         mime_type = ext;
     }
 

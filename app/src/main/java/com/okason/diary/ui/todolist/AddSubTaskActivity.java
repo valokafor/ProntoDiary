@@ -11,7 +11,7 @@ import android.view.MenuItem;
 
 import com.okason.diary.R;
 import com.okason.diary.data.TaskDao;
-import com.okason.diary.models.realmentities.TaskEntity;
+import com.okason.diary.models.realmentities.Task;
 import com.okason.diary.utils.Constants;
 
 import io.realm.Realm;
@@ -36,7 +36,7 @@ public class AddSubTaskActivity extends AppCompatActivity {
             if (getIntent() != null && getIntent().hasExtra(Constants.TASK_ID)) {
                 String taskId = getIntent().getStringExtra(Constants.TASK_ID);
                 if (!TextUtils.isEmpty(taskId)) {
-                    TaskEntity task = taskDao.getTaskById(taskId);
+                    Task task = taskDao.getTaskById(taskId);
                     if (task != null) {
                         AddSubTaskFragment fragment = AddSubTaskFragment.newInstance(taskId);
                         openFragment(fragment, task.getTitle());

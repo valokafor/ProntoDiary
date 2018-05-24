@@ -13,8 +13,8 @@ import android.widget.LinearLayout;
 
 import com.okason.diary.R;
 import com.okason.diary.data.NoteDao;
-import com.okason.diary.models.realmentities.AttachmentEntity;
-import com.okason.diary.models.realmentities.NoteEntity;
+import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.realmentities.Note;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
@@ -31,11 +31,11 @@ public class GalleryActivity extends AppCompatActivity {
     @BindView(R.id.viewpager)
     ViewPager mViewPager;
 
-   // private List<AttachmentEntity> attachments;
-    private List<AttachmentEntity> imageOnlyAttachments;
+   // private List<Attachment> attachments;
+    private List<Attachment> imageOnlyAttachments;
     private String title = "";
 
-    private NoteEntity parentNote;
+    private Note parentNote;
     private Realm realm;
 
     @Override
@@ -75,7 +75,7 @@ public class GalleryActivity extends AppCompatActivity {
             //Create an Arraylist to hold Ids of Attachments that are image or Video
 
             //Get the list of attachments in the Note
-            for (AttachmentEntity attachment : parentNote.getAttachments()) {
+            for (Attachment attachment : parentNote.getAttachments()) {
                 if (Constants.MIME_TYPE_IMAGE.equals(attachment.getMime_type())
                         || Constants.MIME_TYPE_SKETCH.equals(attachment.getMime_type())
                         || Constants.MIME_TYPE_VIDEO.equals(attachment.getMime_type())) {
@@ -163,7 +163,7 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     private void viewMedia() {
-        AttachmentEntity attachment = imageOnlyAttachments.get(mViewPager.getCurrentItem());
+        Attachment attachment = imageOnlyAttachments.get(mViewPager.getCurrentItem());
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(Uri.parse(attachment.getLocalFilePath()), attachment.getMime_type());
         startActivity(intent);

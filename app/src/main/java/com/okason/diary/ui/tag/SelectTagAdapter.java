@@ -15,8 +15,8 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.models.realmentities.NoteEntity;
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Note;
+import com.okason.diary.models.realmentities.Tag;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ import butterknife.ButterKnife;
  */
 
 public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.ViewHolder> {
-    private List<TagEntity> mTags;
+    private List<Tag> mTags;
     private final Context mContext;
     private final OnTagSelectedListener mListener;
 
@@ -36,7 +36,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
     private final String noteId;
 
 
-    public SelectTagAdapter(List<TagEntity> tags, Context context, OnTagSelectedListener listener, String noteId) {
+    public SelectTagAdapter(List<Tag> tags, Context context, OnTagSelectedListener listener, String noteId) {
         mTags = tags;
         mContext = context;
         mListener = listener;
@@ -54,7 +54,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final TagEntity selectedTag = mTags.get(position);
+        final Tag selectedTag = mTags.get(position);
 
         if (!TextUtils.isEmpty(selectedTag.getTagName())){
             holder.tagCheckbox.setText(selectedTag.getTagName());
@@ -68,7 +68,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
         }
 
         if (selectedTag.getNotes().size() > 0){
-            for (NoteEntity note : selectedTag.getNotes()){
+            for (Note note : selectedTag.getNotes()){
                 if (note.getId().equals(noteId)){
                     holder.tagCheckbox.setChecked(true);
                 }
@@ -86,7 +86,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
         }
     }
 
-    private void setTasks(List<TagEntity> tags) {
+    private void setTasks(List<Tag> tags) {
         mTags = tags;
         notifyDataSetChanged();
     }
@@ -111,10 +111,10 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked){
-                        TagEntity checkedTag = mTags.get(getLayoutPosition());
+                        Tag checkedTag = mTags.get(getLayoutPosition());
                         mListener.onTagChecked(checkedTag);
                     }else {
-                        TagEntity unCheckedTag = mTags.get(getLayoutPosition());
+                        Tag unCheckedTag = mTags.get(getLayoutPosition());
                         mListener.onTagUnChecked(unCheckedTag);
                     }
                 }

@@ -27,7 +27,7 @@ import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.TaskItemListener;
 import com.okason.diary.data.TaskDao;
-import com.okason.diary.models.realmentities.TaskEntity;
+import com.okason.diary.models.realmentities.Task;
 import com.okason.diary.utils.Constants;
 
 import java.util.List;
@@ -49,8 +49,8 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
 
 
-    private RealmResults<TaskEntity> allTasks;
-    private List<TaskEntity> filteredTasks;
+    private RealmResults<Task> allTasks;
+    private List<Task> filteredTasks;
     private TaskListAdapter mListAdapter;
     private View mRootView;
     private boolean shouldUpdateAdapter = true;
@@ -200,7 +200,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     }
 
 
-    private void showTodoLists(List<TaskEntity> tasks) {
+    private void showTodoLists(List<Task> tasks) {
 
         if (tasks != null && tasks.size() > 0){
             showEmptyText(false);
@@ -242,7 +242,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
 
     @Override
-    public void onEditTaskButtonClicked(TaskEntity clickedTask) {
+    public void onEditTaskButtonClicked(Task clickedTask) {
         Intent editTaskIntent = new Intent(getActivity(), AddTaskActivity.class);
         String serializedTask = new Gson().toJson(clickedTask);
         editTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
@@ -250,7 +250,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     }
 
     @Override
-    public void onDeleteTaskButtonClicked(TaskEntity clickedTask) {
+    public void onDeleteTaskButtonClicked(Task clickedTask) {
         boolean shouldPromptForDelete = PreferenceManager
                 .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
         if (shouldPromptForDelete) {
@@ -261,13 +261,13 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     }
 
-    private void deleteTask(TaskEntity clickedTask) {
+    private void deleteTask(Task clickedTask) {
         taskDao.deleteTask(clickedTask.getId());
 
     }
 
     @Override
-    public void onAddSubTasksButtonClicked(TaskEntity clickedTask) {
+    public void onAddSubTasksButtonClicked(Task clickedTask) {
         Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
         Gson gson = new Gson();
         String serializedTask = gson.toJson(clickedTask);
@@ -277,7 +277,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     }
 
     @Override
-    public void onTaskChecked(TaskEntity task) {
+    public void onTaskChecked(Task task) {
         taskDao.updateTaskStatus(task, true);
 
     }
@@ -285,12 +285,12 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
 
     @Override
-    public void onTaskUnChecked(TaskEntity task) {
+    public void onTaskUnChecked(Task task) {
         taskDao.updateTaskStatus(task, false);
     }
 
 
-    private void promptForDelete(final TaskEntity clickedTask) {
+    private void promptForDelete(final Task clickedTask) {
         String title = getString(R.string.are_you_sure);
         String message =  getString(R.string.action_delete) + " " + clickedTask.getTitle();
 

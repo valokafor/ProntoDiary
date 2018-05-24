@@ -7,7 +7,7 @@ import io.realm.annotations.PrimaryKey;
  * Created by Valentine on 4/14/2017.
  */
 
-public class HistoryEntity extends RealmObject {
+public class History extends RealmObject {
 
     @PrimaryKey
     private long id;

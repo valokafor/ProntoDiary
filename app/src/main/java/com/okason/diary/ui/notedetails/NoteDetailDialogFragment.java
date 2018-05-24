@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.data.NoteDao;
-import com.okason.diary.models.realmentities.NoteEntity;
+import com.okason.diary.models.realmentities.Note;
 import com.okason.diary.utils.Constants;
 
 import io.realm.Realm;
@@ -31,7 +31,7 @@ public class NoteDetailDialogFragment extends DialogFragment {
 
     private View rootView;
     private Realm realm;
-    private NoteEntity currentNote;
+    private Note currentNote;
     private String title;
 
     public static NoteDetailDialogFragment newInstance(String noteId){

@@ -15,8 +15,8 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
-import com.okason.diary.models.realmentities.AttachmentEntity;
-import com.okason.diary.models.realmentities.NoteEntity;
+import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.realmentities.Note;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.date.TimeUtils;
@@ -31,14 +31,14 @@ import butterknife.ButterKnife;
  * Created by Valentine on 2/6/2016.
  */
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> {
-    private List<NoteEntity> mJournals;
+    private List<Note> mJournals;
     private final Context mContext;
     private NoteItemListener mItemListener;
     private View noteView;
     private boolean isAudioPlaying = false;
 
 
-    public NotesAdapter(List<NoteEntity> journals, Context mContext){
+    public NotesAdapter(List<Note> journals, Context mContext){
         mJournals = journals;
         this.mContext = mContext;
     }
@@ -53,7 +53,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final NoteEntity journal = mJournals.get(position);
+        final Note journal = mJournals.get(position);
         if (journal != null && !TextUtils.isEmpty(journal.getContent()) && !TextUtils.isEmpty(journal.getTitle())) {
             String firstLetter;
             TextDrawable drawable;
@@ -74,7 +74,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
             if (journal.getAttachments() != null && journal.getAttachments().size() > 0){
                 holder.attachmentLayout.setVisibility(View.VISIBLE);
 
-                AttachmentEntity lastAttachment = journal.getAttachments().get(journal.getAttachments().size() - 1);
+                Attachment lastAttachment = journal.getAttachments().get(journal.getAttachments().size() - 1);
 
 
                 if (lastAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
@@ -137,21 +137,21 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
         return mJournals.size();
     }
 
-    public NoteEntity getItem(int position) {
+    public Note getItem(int position) {
         return mJournals.get(position);
     }
 
-    public void replaceData(List<NoteEntity> journals) {
+    public void replaceData(List<Note> journals) {
         setList(journals);
         notifyDataSetChanged();
     }
 
-    public void addNote(NoteEntity journal){
+    public void addNote(Note journal){
         mJournals.add(journal);
         notifyItemInserted(mJournals.size() - 1);
     }
 
-    private void setList(List<NoteEntity> journals) {
+    private void setList(List<Note> journals) {
         mJournals = journals;
     }
 
@@ -199,7 +199,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    NoteEntity journal = getItem(position);
+                    Note journal = getItem(position);
                     mItemListener.onNoteClick(journal);
                 }
             });
@@ -207,7 +207,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    NoteEntity journal = getItem(position);
+                    Note journal = getItem(position);
                    mItemListener.onNoteClick(journal);
                 }
             });
@@ -215,7 +215,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    NoteEntity journal = getItem(position);
+                    Note journal = getItem(position);
                     mItemListener.onDeleteButtonClicked(journal);
                 }
             });
@@ -224,7 +224,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
                     int postion = getAdapterPosition();
-                    NoteEntity journal = getItem(postion);
+                    Note journal = getItem(postion);
                     mItemListener.onAttachmentClicked(journal, postion);
                 }
             });

@@ -35,8 +35,8 @@ import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.data.NoteDao;
-import com.okason.diary.models.realmentities.AttachmentEntity;
-import com.okason.diary.models.realmentities.NoteEntity;
+import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.realmentities.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
@@ -64,13 +64,13 @@ public class NotesFragment extends Fragment
 
     private FirebaseAnalytics firebaseAnalytics;
     private Realm realm;
-    private RealmResults<NoteEntity> noteEntities;
+    private RealmResults<Note> noteEntities;
     private NoteDao noteDao;
     private final static String TAG = "NotesFragment";
 
 
-    private List<NoteEntity> unFilteredJournals;
-    private List<NoteEntity> filteredJournals;
+    private List<Note> unFilteredJournals;
+    private List<Note> filteredJournals;
 
 
     private MediaPlayer mPlayer = null;
@@ -156,7 +156,7 @@ public class NotesFragment extends Fragment
     }
 
 
-    private void goToImageGallery(NoteEntity clickedNote, AttachmentEntity clickedAttachment) {
+    private void goToImageGallery(Note clickedNote, Attachment clickedAttachment) {
         Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
         galleryIntent.putExtra(Constants.NOTE_ID, clickedNote.getId());
         galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
@@ -224,9 +224,9 @@ public class NotesFragment extends Fragment
         return true;
     }
 
-    private List<NoteEntity> filterNotes(String query) {
-        List<NoteEntity> journals = new ArrayList<>();
-        for (NoteEntity journal: noteEntities){
+    private List<Note> filterNotes(String query) {
+        List<Note> journals = new ArrayList<>();
+        for (Note journal: noteEntities){
             String title = journal.getTitle().toLowerCase();
             String content = journal.getContent().toLowerCase();
             query = query.toLowerCase();
@@ -261,7 +261,7 @@ public class NotesFragment extends Fragment
     }
 
 
-    public void showNotes(List<NoteEntity> journals) {
+    public void showNotes(List<Note> journals) {
         if (journals != null) {
             showEmptyText(false);
             mListAdapter = null;
@@ -276,10 +276,10 @@ public class NotesFragment extends Fragment
 
     }
 
-    private final OrderedRealmCollectionChangeListener<RealmResults<NoteEntity>> changeListener =
-            new OrderedRealmCollectionChangeListener<RealmResults<NoteEntity>>() {
+    private final OrderedRealmCollectionChangeListener<RealmResults<Note>> changeListener =
+            new OrderedRealmCollectionChangeListener<RealmResults<Note>>() {
         @Override
-        public void onChange(RealmResults<NoteEntity> noteEntities, OrderedCollectionChangeSet changeSet) {
+        public void onChange(RealmResults<Note> noteEntities, OrderedCollectionChangeSet changeSet) {
             // `null`  means the async query returns the first time.
             if (changeSet == null) {
                 if (noteEntities != null && noteEntities.size() > 0) {
@@ -326,7 +326,7 @@ public class NotesFragment extends Fragment
     }
 
 
-    public void showDeleteConfirmation(NoteEntity note) {
+    public void showDeleteConfirmation(Note note) {
         boolean shouldPromptForDelete = PreferenceManager
                 .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
         if (shouldPromptForDelete) {
@@ -345,18 +345,18 @@ public class NotesFragment extends Fragment
     }
 
 
-    public void showSingleDetailUi(NoteEntity selectedJournal) {
+    public void showSingleDetailUi(Note selectedJournal) {
         String id = selectedJournal.getId();
         startActivity(NoteDetailActivity.getStartIntent(getContext(), id));
     }
 
 
-    public void showDualDetailUi(NoteEntity journal) {
+    public void showDualDetailUi(Note journal) {
         NoteListActivity activity = (NoteListActivity)getActivity();
      //   activity.showTwoPane(journal);
     }
 
-    public void promptForDelete(final NoteEntity journal) {
+    public void promptForDelete(final Note journal) {
         String content;
         if (!TextUtils.isEmpty(journal.getContent())) {
             content = journal.getContent();
@@ -402,7 +402,7 @@ public class NotesFragment extends Fragment
         }
     }
 
-    private void startPlaying(AttachmentEntity attachment, final int position) {
+    private void startPlaying(Attachment attachment, final int position) {
         if (isAudioPlaying) {
             mPlayer.stop();
             mPlayer.release();
@@ -433,7 +433,7 @@ public class NotesFragment extends Fragment
 
     }
 
-    private void viewMedia(AttachmentEntity attachment) {
+    private void viewMedia(Attachment attachment) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(Uri.parse(attachment.getFilePath()), attachment.getMime_type());
         startActivity(intent);
@@ -450,7 +450,7 @@ public class NotesFragment extends Fragment
     }
 
     @Override
-    public void onNoteClick(NoteEntity clickedJournal) {
+    public void onNoteClick(Note clickedJournal) {
         if (isDualScreen) {
             showDualDetailUi(clickedJournal);
         } else {
@@ -460,14 +460,14 @@ public class NotesFragment extends Fragment
     }
 
     @Override
-    public void onDeleteButtonClicked(NoteEntity clickedJournal) {
+    public void onDeleteButtonClicked(Note clickedJournal) {
         showDeleteConfirmation(clickedJournal);
     }
 
     @Override
-    public void onAttachmentClicked(NoteEntity clickedNote, int position) {
+    public void onAttachmentClicked(Note clickedNote, int position) {
         //An attachment in the Journal list has been clicked
-        AttachmentEntity clickedAttachment = clickedNote.getAttachments().get(clickedNote.getAttachments().size() - 1);
+        Attachment clickedAttachment = clickedNote.getAttachments().get(clickedNote.getAttachments().size() - 1);
         if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
             //Play Audio
             startPlaying(clickedAttachment, position);

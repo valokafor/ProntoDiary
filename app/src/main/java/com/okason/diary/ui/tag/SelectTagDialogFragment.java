@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.data.TagDao;
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Tag;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -28,7 +28,7 @@ import io.realm.RealmResults;
 public class SelectTagDialogFragment extends DialogFragment {
 
     private View mRooView;
-    private RealmResults<TagEntity> allTags;
+    private RealmResults<Tag> allTags;
     private SelectTagAdapter mTagAdapter;
     private OnTagSelectedListener mListener;
     private String noteId = "";

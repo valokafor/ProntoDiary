@@ -8,7 +8,7 @@ import io.realm.annotations.PrimaryKey;
  * Created by Valentine on 4/10/2017.
  */
 
-public class FolderEntity extends RealmObject {
+public class Folder extends RealmObject {
 
     @PrimaryKey
     private String id;
@@ -16,8 +16,8 @@ public class FolderEntity extends RealmObject {
     private long dateCreated;
     private long dateModified;
 
-    private RealmList<NoteEntity> notes;
-    private RealmList<TaskEntity> todoLists;
+    private RealmList<Note> notes;
+    private RealmList<Task> todoLists;
 
     public String getId() {
         return id;
@@ -51,19 +51,19 @@ public class FolderEntity extends RealmObject {
         this.dateModified = dateModified;
     }
 
-    public RealmList<TaskEntity> getTodoLists() {
+    public RealmList<Task> getTodoLists() {
         return todoLists;
     }
 
-    public void setTodoLists(RealmList<TaskEntity> todoLists) {
+    public void setTodoLists(RealmList<Task> todoLists) {
         this.todoLists = todoLists;
     }
 
-    public RealmList<NoteEntity> getNoteEntitys() {
+    public RealmList<Note> getNoteEntitys() {
         return notes;
     }
 
-    public void setNoteEntitys(RealmList<NoteEntity> notes) {
+    public void setNoteEntitys(RealmList<Note> notes) {
         this.notes = notes;
     }
 }

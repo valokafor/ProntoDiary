@@ -6,14 +6,14 @@ import io.realm.RealmObject;
  * Created by valokafor on 7/4/17.
  */
 
-public class SubTaskEntity extends RealmObject{
+public class SubTask extends RealmObject{
 
     private String id;
     private String title;
     private long dateCreated;
     private long dateModified;
     private boolean checked;
-    private TaskEntity parentTask;
+    private Task parentTask;
 
     public String getId() {
         return id;
@@ -55,11 +55,11 @@ public class SubTaskEntity extends RealmObject{
         this.checked = checked;
     }
 
-    public TaskEntity getParentTask() {
+    public Task getParentTask() {
         return parentTask;
     }
 
-    public void setParentTask(TaskEntity parentTask) {
+    public void setParentTask(Task parentTask) {
         this.parentTask = parentTask;
     }
 }

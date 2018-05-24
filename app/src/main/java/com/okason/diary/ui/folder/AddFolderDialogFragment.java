@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.data.FolderDao;
-import com.okason.diary.models.realmentities.FolderEntity;
+import com.okason.diary.models.realmentities.Folder;
 import com.okason.diary.utils.Constants;
 
 import io.realm.Realm;
@@ -27,7 +27,7 @@ import io.realm.Realm;
  */
 public class AddFolderDialogFragment extends DialogFragment {
     private EditText mFolderEditText;
-    private FolderEntity mFolder = null;
+    private Folder mFolder = null;
     private Realm realm;
     private FolderDao folderDao;
 
@@ -122,7 +122,7 @@ public class AddFolderDialogFragment extends DialogFragment {
         return addFolderDialog.create();
     }
 
-    private void populateFields(FolderEntity folder) {
+    private void populateFields(Folder folder) {
         mFolderEditText.setText(folder.getFolderName());
     }
 

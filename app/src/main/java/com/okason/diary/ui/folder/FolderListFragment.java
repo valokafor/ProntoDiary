@@ -22,8 +22,8 @@ import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.data.FolderDao;
-import com.okason.diary.models.realmentities.FolderEntity;
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Folder;
+import com.okason.diary.models.realmentities.Tag;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -57,9 +57,9 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     private AddFolderDialogFragment addCategoryDialog;
 
     private Realm realm;
-    private RealmResults<FolderEntity> mFolders;
+    private RealmResults<Folder> mFolders;
     private FolderDao folderDao;
-    private TagEntity tag;
+    private Tag tag;
     private FloatingActionButton floatingActionButton;
 
 
@@ -191,7 +191,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
 
 
-    public void showFolders(List<FolderEntity> folders) {
+    public void showFolders(List<Folder> folders) {
         if (folders.size() > 0){
             hideEmptyText();
             mAdapter = new FolderListAdapter(getContext(),folders, this);
@@ -204,18 +204,18 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
 
     @Override
-    public void onCategorySelected(FolderEntity selectedCategory) {
+    public void onCategorySelected(Folder selectedCategory) {
 
     }
 
     @Override
-    public void onEditCategoryButtonClicked(FolderEntity selectedCategory) {
+    public void onEditCategoryButtonClicked(Folder selectedCategory) {
         showEditCategoryForm(selectedCategory);
 
     }
 
     @Override
-    public void onDeleteCategoryButtonClicked(FolderEntity selectedFolder) {
+    public void onDeleteCategoryButtonClicked(Folder selectedFolder) {
         showConfirmDeleteCategoryPrompt(selectedFolder);
 
     }
@@ -226,7 +226,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     }
 
 
-    public void showEditCategoryForm(FolderEntity folder) {
+    public void showEditCategoryForm(Folder folder) {
         addCategoryDialog = AddFolderDialogFragment.newInstance(folder.getId());
         addCategoryDialog.show(getActivity().getFragmentManager(), "Dialog");
     }
@@ -242,7 +242,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     }
 
 
-    public void showConfirmDeleteCategoryPrompt(final FolderEntity folder) {
+    public void showConfirmDeleteCategoryPrompt(final Folder folder) {
         String title = getString(R.string.are_you_sure);
         String message =  getString(R.string.action_delete) + " " + folder.getFolderName();
 
@@ -285,10 +285,10 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
 
 
-    private OrderedRealmCollectionChangeListener<RealmResults<FolderEntity>>  listener
-            = new OrderedRealmCollectionChangeListener<RealmResults<FolderEntity>>() {
+    private OrderedRealmCollectionChangeListener<RealmResults<Folder>>  listener
+            = new OrderedRealmCollectionChangeListener<RealmResults<Folder>>() {
         @Override
-        public void onChange(RealmResults<FolderEntity> folderEntities, OrderedCollectionChangeSet changeSet) {
+        public void onChange(RealmResults<Folder> folderEntities, OrderedCollectionChangeSet changeSet) {
 
             if (changeSet == null) {
                 mAdapter.notifyDataSetChanged();

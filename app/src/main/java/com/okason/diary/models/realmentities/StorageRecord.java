@@ -4,13 +4,13 @@ package com.okason.diary.models.realmentities;
  * Created by valokafor on 6/8/17.
  */
 
-public class StorageRecordEntity {
+public class StorageRecord {
     private String id;
     private String uid;
     private String downloadUri;
     private long fileSizes;
 
-    public StorageRecordEntity(){}
+    public StorageRecord(){}
 
     public String getId() {
         return id;

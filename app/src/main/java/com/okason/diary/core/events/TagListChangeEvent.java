@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Tag;
 
 import java.util.List;
 
@@ -9,14 +9,14 @@ import java.util.List;
  */
 
 public class TagListChangeEvent {
-    private final List<TagEntity> taglList;
+    private final List<Tag> taglList;
 
 
-    public TagListChangeEvent(List<TagEntity> taglList) {
+    public TagListChangeEvent(List<Tag> taglList) {
         this.taglList = taglList;
     }
 
-    public List<TagEntity> getTaglList() {
+    public List<Tag> getTaglList() {
         return taglList;
     }
 }

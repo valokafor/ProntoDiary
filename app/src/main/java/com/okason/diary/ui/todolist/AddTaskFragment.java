@@ -38,8 +38,8 @@ import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.data.FolderDao;
 import com.okason.diary.data.TaskDao;
-import com.okason.diary.models.realmentities.FolderEntity;
-import com.okason.diary.models.realmentities.TaskEntity;
+import com.okason.diary.models.realmentities.Folder;
+import com.okason.diary.models.realmentities.Task;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.FolderListAdapter;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
@@ -121,7 +121,7 @@ public class AddTaskFragment extends Fragment{
     private AddFolderDialogFragment addFolderDialogFragment;
 
   ;
-    private TaskEntity currentTask = null;
+    private Task currentTask = null;
     private Realm realm;
     private TaskDao taskDao;
 
@@ -293,7 +293,7 @@ public class AddTaskFragment extends Fragment{
         }
 
         if (currentTask.getFolder() == null){
-            FolderEntity selectedFolder = new FolderDao(realm).getOrCreateFolder(getString(R.string.general));
+            Folder selectedFolder = new FolderDao(realm).getOrCreateFolder(getString(R.string.general));
             taskDao.setFolder(currentTask.getId(), selectedFolder.getId());
         }
 
@@ -315,7 +315,7 @@ public class AddTaskFragment extends Fragment{
     public void onAddNewFolder(FolderAddedEvent event){
         addFolderDialogFragment.dismiss();
         if (!TextUtils.isEmpty(event.getAddedFolderId())){
-            FolderEntity selectedFolder = new FolderDao(realm).getFolderById(event.getAddedFolderId());
+            Folder selectedFolder = new FolderDao(realm).getFolderById(event.getAddedFolderId());
             taskDao.setFolder(currentTask.getId(), selectedFolder.getId());
             mFolder.setText(selectedFolder.getFolderName());
         }
@@ -531,19 +531,19 @@ public class AddTaskFragment extends Fragment{
 
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
             @Override
-            public void onCategorySelected(FolderEntity selectedFolder) {
+            public void onCategorySelected(Folder selectedFolder) {
                 selectFolderDialogFragment.dismiss();
                 mFolder.setText(selectedFolder.getFolderName());
                 selectedFolder = selectedFolder;
             }
 
             @Override
-            public void onEditCategoryButtonClicked(FolderEntity selectedCategory) {
+            public void onEditCategoryButtonClicked(Folder selectedCategory) {
 
             }
 
             @Override
-            public void onDeleteCategoryButtonClicked(FolderEntity selectedCategory) {
+            public void onDeleteCategoryButtonClicked(Folder selectedCategory) {
 
             }
 
@@ -570,7 +570,7 @@ public class AddTaskFragment extends Fragment{
      * When it is in Edit mode
      * @param task - the passed in Task
      */
-    public void showTaskDetail(TaskEntity task) {
+    public void showTaskDetail(Task task) {
         try {
             taskNameEditText.setText(task.getTitle());
         } catch (Exception e) {

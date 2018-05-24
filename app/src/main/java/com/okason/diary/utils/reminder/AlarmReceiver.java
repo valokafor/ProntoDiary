@@ -8,7 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.okason.diary.data.TaskDao;
-import com.okason.diary.models.realmentities.TaskEntity;
+import com.okason.diary.models.realmentities.Task;
 import com.okason.diary.ui.todolist.AddTaskActivity;
 import com.okason.diary.utils.Constants;
 
@@ -30,7 +30,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         try(Realm realm = Realm.getDefaultInstance()) {
             String taskId = intent.getStringExtra(Constants.TASK_ID);
-            TaskEntity task = new TaskDao(realm).getTaskById(taskId);
+            Task task = new TaskDao(realm).getTaskById(taskId);
             Notification notification = intent.getParcelableExtra(Constants.ALARM_NOTIFICATION);
             PendingIntent pendingIntent = PendingIntent.getBroadcast(context, Integer.parseInt(taskId), intent, PendingIntent.FLAG_UPDATE_CURRENT);
 

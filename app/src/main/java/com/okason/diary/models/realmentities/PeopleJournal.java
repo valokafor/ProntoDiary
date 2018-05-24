@@ -7,7 +7,7 @@ import io.realm.annotations.PrimaryKey;
  * Created by Valentine on 4/10/2017.
  */
 
-public class PeopleJournalEntity extends RealmObject {
+public class PeopleJournal extends RealmObject {
 
     @PrimaryKey
     private long id;

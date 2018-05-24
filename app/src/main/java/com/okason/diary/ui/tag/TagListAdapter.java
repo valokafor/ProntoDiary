@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Tag;
 
 import java.util.List;
 
@@ -24,13 +24,13 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     private final static String LOG_CAT = TagListAdapter.class.getSimpleName();
     private final static boolean DEBUG = true;
 
-    private List<TagEntity> mTags;
+    private List<Tag> mTags;
     private final OnTagSelectedListener mListener;
     private final Context mContext;
 
 
 
-    public TagListAdapter(Context mContext, List<TagEntity> mTags, OnTagSelectedListener mListener) {
+    public TagListAdapter(Context mContext, List<Tag> mTags, OnTagSelectedListener mListener) {
         this.mTags = mTags;
         this.mContext = mContext;
         this.mListener = mListener;
@@ -46,7 +46,7 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
 
-        final TagEntity tag = mTags.get(position);
+        final Tag tag = mTags.get(position);
         String tagName = tag.getTagName();
         holder.tagName.setText(tagName);
         int numNote = tag.getNotes().size();
@@ -59,7 +59,7 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
 
     }
 
-    public void replaceData(List<TagEntity> tags){
+    public void replaceData(List<Tag> tags){
         this.mTags.clear();
         mTags.addAll(tags);
         notifyDataSetChanged();
@@ -86,14 +86,14 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
             editTag.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    TagEntity categoryToBeEdited = mTags.get(getLayoutPosition());
+                    Tag categoryToBeEdited = mTags.get(getLayoutPosition());
                     mListener.onEditTagButtonClicked(categoryToBeEdited);
                 }
             });
             deleteTag.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    TagEntity tagToBeDeleted = mTags.get(getLayoutPosition());
+                    Tag tagToBeDeleted = mTags.get(getLayoutPosition());
                     mListener.onDeleteTagButtonClicked(tagToBeDeleted);
                 }
             });

@@ -7,10 +7,10 @@ import android.text.TextUtils;
 
 import com.okason.diary.BuildConfig;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.models.realmentities.AttachmentEntity;
-import com.okason.diary.models.realmentities.FolderEntity;
-import com.okason.diary.models.realmentities.NoteEntity;
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.realmentities.Folder;
+import com.okason.diary.models.realmentities.Note;
+import com.okason.diary.models.realmentities.Tag;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.StorageHelper;
 
@@ -34,9 +34,9 @@ public class NoteDao {
         this.realm = realm;
     }
 
-    public RealmResults<NoteEntity> getAllNotes() {
-        RealmResults<NoteEntity> notes = realm.where(NoteEntity.class).findAll();
-        for (NoteEntity note: notes){
+    public RealmResults<Note> getAllNotes() {
+        RealmResults<Note> notes = realm.where(Note.class).findAll();
+        for (Note note: notes){
             if (note != null && TextUtils.isEmpty(note.getContent())
                     && TextUtils.isEmpty(note.getTitle())){
                 deleteNote(note.getId());
@@ -47,7 +47,7 @@ public class NoteDao {
 
 
     public int getNoteEntityPosition(String noteId) {
-        RealmResults<NoteEntity> notes = realm.where(NoteEntity.class).findAll();
+        RealmResults<Note> notes = realm.where(Note.class).findAll();
         for (int i = 0; i < notes.size(); i++){
             if (notes.get(i).getId().equals(noteId)){
                 return i;
@@ -56,25 +56,25 @@ public class NoteDao {
         return -1;
     }
 
-    public NoteEntity getNoteEntityById(String noteId) {
+    public Note getNoteEntityById(String noteId) {
         try {
-            NoteEntity selectedNoteEntity = realm.where(NoteEntity.class).equalTo("id", noteId).findFirst();
-            return selectedNoteEntity;
+            Note selectedNote = realm.where(Note.class).equalTo("id", noteId).findFirst();
+            return selectedNote;
         } catch (Exception e) {
             return null;
         }
     }
 
-    public NoteEntity copyOrUpdate(NoteEntity noteEntity){
+    public Note copyOrUpdate(Note note){
         try {
             realm.beginTransaction();
-            noteEntity = realm.copyToRealmOrUpdate(noteEntity);
+            note = realm.copyToRealmOrUpdate(note);
             realm.commitTransaction();
         } catch (Exception exception) {
             realm.cancelTransaction();
             throw exception;
         }
-        return noteEntity;
+        return note;
     }
 
 
@@ -82,18 +82,18 @@ public class NoteDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                NoteEntity noteEntity = backgroundRealm.where(NoteEntity.class).equalTo("id", noteId).findFirst();
-                noteEntity.deleteFromRealm();
+                Note note = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
+                note.deleteFromRealm();
             }
         });
 
 
     }
 
-    public NoteEntity createNewNote() {
+    public Note createNewNote() {
         String noteId = UUID.randomUUID().toString();
         realm.beginTransaction();
-        NoteEntity note = realm.createObject(NoteEntity.class, noteId);
+        Note note = realm.createObject(Note.class, noteId);
         note.setDateCreated(System.currentTimeMillis());
         note.setDateModified(System.currentTimeMillis());
         realm.commitTransaction();
@@ -104,8 +104,8 @@ public class NoteDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                NoteEntity note = backgroundRealm.where(NoteEntity.class).equalTo("id", noteId).findFirst();
-                AttachmentEntity attachment = backgroundRealm.where(AttachmentEntity.class).equalTo("id", attachmentId).findFirst();
+                Note note = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
+                Attachment attachment = backgroundRealm.where(Attachment.class).equalTo("id", attachmentId).findFirst();
                 if (note != null && attachment != null){
                     note.getAttachments().add(attachment);
                     note.setDateModified(System.currentTimeMillis());
@@ -118,8 +118,8 @@ public class NoteDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                NoteEntity note = backgroundRealm.where(NoteEntity.class).equalTo("id", noteId).findFirst();
-                FolderEntity folder = backgroundRealm.where(FolderEntity.class).equalTo("id", folderId).findFirst();
+                Note note = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
+                Folder folder = backgroundRealm.where(Folder.class).equalTo("id", folderId).findFirst();
                 note.setFolder(folder);
                 folder.getNoteEntitys().add(note);
                 note.setDateModified(System.currentTimeMillis());
@@ -133,12 +133,12 @@ public class NoteDao {
             @Override
             public void execute(Realm backgroundRealm) {
                 String attachmentId = UUID.randomUUID().toString();
-                AttachmentEntity attachment = backgroundRealm.createObject(AttachmentEntity.class, attachmentId);
+                Attachment attachment = backgroundRealm.createObject(Attachment.class, attachmentId);
                 attachment.setUri(attachmentUri.toString());
                 attachment.setLocalFilePath(filPath);
                 attachment.setMime_type(mimeType);
 
-                NoteEntity note = backgroundRealm.where(NoteEntity.class).equalTo("id", noteId).findFirst();
+                Note note = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
                 if (note != null && attachment != null){
                     note.getAttachments().add(attachment);
                     note.setDateModified(System.currentTimeMillis());
@@ -151,7 +151,7 @@ public class NoteDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                NoteEntity note = backgroundRealm.where(NoteEntity.class).equalTo("id", noteId).findFirst();
+                Note note = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
                 if (note != null){
                     note.setTitle(title);
                     note.setContent(content);
@@ -181,14 +181,14 @@ public class NoteDao {
                     String mimeType = StorageHelper.getMimeTypeInternal(mContext, uri);
 
 
-                    AttachmentEntity attachment = backgroundRealm.createObject(AttachmentEntity.class, attachmentId);
+                    Attachment attachment = backgroundRealm.createObject(Attachment.class, attachmentId);
                     attachment.setUri(fileUri.toString());
                     attachment.setLocalFilePath(filePath);
                     attachment.setMime_type(mimeType);
                     attachment.setName(name);
                     attachment.setSize(f.length());
 
-                    NoteEntity note = backgroundRealm.where(NoteEntity.class).equalTo("id", noteId).findFirst();
+                    Note note = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
                     if (note != null && attachment != null){
                         note.getAttachments().add(attachment);
                         note.setDateModified(System.currentTimeMillis());
@@ -204,8 +204,8 @@ public class NoteDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                NoteEntity selectedNote = backgroundRealm.where(NoteEntity.class).equalTo("id", noteId).findFirst();
-                TagEntity selectedTag = backgroundRealm.where(TagEntity.class).equalTo("id", tagId).findFirst();
+                Note selectedNote = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
+                Tag selectedTag = backgroundRealm.where(Tag.class).equalTo("id", tagId).findFirst();
 
                 if (noteContainsTag(selectedNote, selectedTag)){
                     return;
@@ -223,9 +223,9 @@ public class NoteDao {
     }
 
     //Preventds adding duplicate tag to Note
-    private boolean noteContainsTag(NoteEntity selectedNote, TagEntity selectedTag) {
-        List<TagEntity> tags = selectedNote.getTags();
-        for (TagEntity t: tags){
+    private boolean noteContainsTag(Note selectedNote, Tag selectedTag) {
+        List<Tag> tags = selectedNote.getTags();
+        for (Tag t: tags){
             if (t.getId().equals(selectedTag.getId())){
                 return true;
             }
@@ -237,8 +237,8 @@ public class NoteDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                NoteEntity selectedNote = backgroundRealm.where(NoteEntity.class).equalTo("id", noteId).findFirst();
-                TagEntity selectedTag = backgroundRealm.where(TagEntity.class).equalTo("id", tagId).findFirst();
+                Note selectedNote = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
+                Tag selectedTag = backgroundRealm.where(Tag.class).equalTo("id", tagId).findFirst();
                 selectedNote.getTags().remove(selectedTag);
                 selectedTag.getNotes().remove(selectedNote);
             }

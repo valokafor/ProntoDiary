@@ -8,7 +8,7 @@ import io.realm.annotations.PrimaryKey;
  * Created by Valentine on 4/10/2017.
  */
 
-public class TaskEntity extends RealmObject{
+public class Task extends RealmObject{
 
     @PrimaryKey
     private String id;
@@ -27,10 +27,10 @@ public class TaskEntity extends RealmObject{
     private Double longitude;
 
 
-    private FolderEntity folder;
-    private RealmList<SubTaskEntity> subTask;
+    private Folder folder;
+    private RealmList<SubTask> subTask;
 
-    public TaskEntity(){
+    public Task(){
         dateCreated = System.currentTimeMillis();
     }
 
@@ -131,19 +131,19 @@ public class TaskEntity extends RealmObject{
     }
 
 
-    public FolderEntity getFolder() {
+    public Folder getFolder() {
         return folder;
     }
 
-    public void setFolder(FolderEntity folder) {
+    public void setFolder(Folder folder) {
         this.folder = folder;
     }
 
-    public RealmList<SubTaskEntity> getSubTask() {
+    public RealmList<SubTask> getSubTask() {
         return subTask;
     }
 
-    public void setSubTask(RealmList<SubTaskEntity> subTask) {
+    public void setSubTask(RealmList<SubTask> subTask) {
         this.subTask = subTask;
     }
 }

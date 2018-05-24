@@ -8,7 +8,7 @@ import io.realm.annotations.PrimaryKey;
  * Created by valokafor on 4/28/18.
  */
 
-public class NoteEntity extends RealmObject{
+public class Note extends RealmObject{
 
     @PrimaryKey
     private String id;
@@ -18,23 +18,23 @@ public class NoteEntity extends RealmObject{
     private long dateModified;
 
 
-    public NoteEntity(){
+    public Note(){
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
     }
 
 
     //Relationships
-    private RealmList<AttachmentEntity> attachments;
-    private RealmList<TagEntity> tags;
-    private FolderEntity folder;
+    private RealmList<Attachment> attachments;
+    private RealmList<Tag> tags;
+    private Folder folder;
 
 
-    private RealmList<TaskEntity> tasks;
-    private RealmList<PeopleJournalEntity> peopleJournals;
-    private RealmList<HistoryEntity> historyList;
+    private RealmList<Task> tasks;
+    private RealmList<PeopleJournal> peopleJournals;
+    private RealmList<History> historyList;
 
-    public void update(NoteEntity note){
+    public void update(Note note){
         this.title = note.getTitle();
         this.content = note.getContent();
         this.dateCreated = note.getDateCreated();
@@ -87,51 +87,51 @@ public class NoteEntity extends RealmObject{
         this.dateModified = dateModified;
     }
 
-    public RealmList<AttachmentEntity> getAttachments() {
+    public RealmList<Attachment> getAttachments() {
         return attachments;
     }
 
-    public void setAttachments(RealmList<AttachmentEntity> attachments) {
+    public void setAttachments(RealmList<Attachment> attachments) {
         this.attachments = attachments;
     }
 
-    public RealmList<TagEntity> getTags() {
+    public RealmList<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(RealmList<TagEntity> tags) {
+    public void setTags(RealmList<Tag> tags) {
         this.tags = tags;
     }
 
-    public FolderEntity getFolder() {
+    public Folder getFolder() {
         return folder;
     }
 
-    public void setFolder(FolderEntity folder) {
+    public void setFolder(Folder folder) {
         this.folder = folder;
     }
 
-    public RealmList<TaskEntity> getTasks() {
+    public RealmList<Task> getTasks() {
         return tasks;
     }
 
-    public void setTasks(RealmList<TaskEntity> tasks) {
+    public void setTasks(RealmList<Task> tasks) {
         this.tasks = tasks;
     }
 
-    public RealmList<PeopleJournalEntity> getPeopleJournals() {
+    public RealmList<PeopleJournal> getPeopleJournals() {
         return peopleJournals;
     }
 
-    public void setPeopleJournals(RealmList<PeopleJournalEntity> peopleJournals) {
+    public void setPeopleJournals(RealmList<PeopleJournal> peopleJournals) {
         this.peopleJournals = peopleJournals;
     }
 
-    public RealmList<HistoryEntity> getHistoryList() {
+    public RealmList<History> getHistoryList() {
         return historyList;
     }
 
-    public void setHistoryList(RealmList<HistoryEntity> historyList) {
+    public void setHistoryList(RealmList<History> historyList) {
         this.historyList = historyList;
     }
 }

@@ -22,8 +22,8 @@ import com.okason.diary.R;
 import com.okason.diary.core.events.TaskChangedEvent;
 import com.okason.diary.core.listeners.SubTaskItemListener;
 import com.okason.diary.data.TaskDao;
-import com.okason.diary.models.realmentities.SubTaskEntity;
-import com.okason.diary.models.realmentities.TaskEntity;
+import com.okason.diary.models.realmentities.SubTask;
+import com.okason.diary.models.realmentities.Task;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
@@ -59,7 +59,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
     private SubTaskListAdapter subTaskListAdapter;
     private boolean shouldUpdateAdapter = true;
-    private TaskEntity parentTask;
+    private Task parentTask;
     private Realm realm;
     private TaskDao taskDao;
 
@@ -152,7 +152,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
 
 
-    private void showSubTasks(TaskEntity task) {
+    private void showSubTasks(Task task) {
         if (task != null && task.getSubTask().size() > 0){
             showEmptyText(false);
             subTaskListAdapter = new SubTaskListAdapter(task.getSubTask(), this);
@@ -174,7 +174,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         addSubTaskEditText.setText("");
     }
 
-    private void populateTaskDetails(TaskEntity parentTask) {
+    private void populateTaskDetails(Task parentTask) {
         String dueDate = null;
         try {
             dueDate = TimeUtils.getReadableModifiedDateWithTime(parentTask.getDueDateAndTime());
@@ -303,7 +303,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     }
 
     @Override
-    public void onEditSubTask(SubTaskEntity subTask) {
+    public void onEditSubTask(SubTask subTask) {
 
     }
 

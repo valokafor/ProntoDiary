@@ -24,7 +24,7 @@ import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.data.TagDao;
-import com.okason.diary.models.realmentities.TagEntity;
+import com.okason.diary.models.realmentities.Tag;
 import com.okason.diary.utils.Constants;
 
 import java.util.List;
@@ -57,7 +57,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     private String sortColumn = "title";
     private Realm realm;
     private TagDao tagDao;
-    private RealmResults<TagEntity> tags;
+    private RealmResults<Tag> tags;
 
 
 
@@ -142,7 +142,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
 
 
-    public void showTags(List<TagEntity> tags) {
+    public void showTags(List<Tag> tags) {
         if (tags.size() > 0){
             hideEmptyText();
             mAdapter = new TagListAdapter(getActivity(), tags, this);
@@ -164,12 +164,12 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     }
 
     @Override
-    public void onTagChecked(TagEntity selectedTag) {
+    public void onTagChecked(Tag selectedTag) {
 
     }
 
     @Override
-    public void onTagUnChecked(TagEntity unSelectedTag) {
+    public void onTagUnChecked(Tag unSelectedTag) {
 
     }
 
@@ -179,28 +179,28 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     }
 
     @Override
-    public void onTagClicked(TagEntity clickedTag) {
+    public void onTagClicked(Tag clickedTag) {
         Intent tagIntent = new Intent(getActivity(), NoteListActivity.class);
         tagIntent.putExtra(Constants.TAG_FILTER, clickedTag.getTagName());
         startActivity(tagIntent);
     }
 
     @Override
-    public void onEditTagButtonClicked(TagEntity clickedTag) {
+    public void onEditTagButtonClicked(Tag clickedTag) {
         showEditTagForm(clickedTag);
     }
 
-    private void showEditTagForm(TagEntity clickedTag) {
+    private void showEditTagForm(Tag clickedTag) {
         addTagDialog = AddTagDialogFragment.newInstance(clickedTag.getId());
         addTagDialog.show(getActivity().getFragmentManager(), "Dialog");
     }
 
     @Override
-    public void onDeleteTagButtonClicked(TagEntity clickedTag) {
+    public void onDeleteTagButtonClicked(Tag clickedTag) {
         showConfirmDeleteTagPrompt(clickedTag);
     }
 
-    private void showConfirmDeleteTagPrompt(final TagEntity clickedTag) {
+    private void showConfirmDeleteTagPrompt(final Tag clickedTag) {
         String title = getString(R.string.are_you_sure);
         String message =  getString(R.string.action_delete) + " " + clickedTag.getTagName();
 
@@ -247,10 +247,10 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         realm.close();
     }
 
-    private OrderedRealmCollectionChangeListener<RealmResults<TagEntity>> listener
-            = new OrderedRealmCollectionChangeListener<RealmResults<TagEntity>>() {
+    private OrderedRealmCollectionChangeListener<RealmResults<Tag>> listener
+            = new OrderedRealmCollectionChangeListener<RealmResults<Tag>>() {
         @Override
-        public void onChange(RealmResults<TagEntity> folderEntities, OrderedCollectionChangeSet changeSet) {
+        public void onChange(RealmResults<Tag> folderEntities, OrderedCollectionChangeSet changeSet) {
 
             if (changeSet == null) {
                 mAdapter.notifyDataSetChanged();

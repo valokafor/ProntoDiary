@@ -4,7 +4,7 @@ package com.okason.diary.models.realmentities;
  * Created by valokafor on 6/1/17.
  */
 
-public class ProntoDiaryUserEntity {
+public class ProntoDiaryUser {
     private String id;
     private String firebaseUid;
     private String fcmToken;
