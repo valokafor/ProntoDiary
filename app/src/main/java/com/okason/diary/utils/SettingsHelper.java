@@ -89,6 +89,14 @@ public class SettingsHelper {
   }
 
 
+  public boolean shouldShowNoteDetailExplainer() {
+    boolean noteDetailExplainerShownCount = getSharedPreferences().getBoolean(Constants.NOTE_DETAIL_EXPLAINER_COUNT, true);
+    return noteDetailExplainerShownCount;
+  }
 
-
+  public void onNoteDetailExplainerShown(boolean show){
+    int noteDetailExplainerShownCount = getSharedPreferences().getInt(Constants.NOTE_DETAIL_EXPLAINER_COUNT, 0);
+    noteDetailExplainerShownCount++;
+    getSharedPreferences().edit().putBoolean(Constants.NOTE_DETAIL_EXPLAINER_COUNT, show).commit();
+  }
 }

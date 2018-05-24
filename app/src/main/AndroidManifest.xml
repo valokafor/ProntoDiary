@@ -56,10 +56,6 @@
                 android:value="com.okason.diary.NoteListActivity"/>
         </activity>
 
-        <service
-            android:name=".core.services.AddSampleDataIntentService"
-            android:exported="false"/>
-
         <activity
             android:name=".ui.addnote.AddNoteActivity"
             android:label="@string/title_activity_add_note"
@@ -187,10 +183,6 @@
 
         <service
             android:name=".core.services.InviteRewardIntentService"
-            android:exported="false">
-        </service>
-        <service
-            android:name=".core.services.HandleNoteDeleteIntentService"
             android:exported="false">
         </service>
         <service

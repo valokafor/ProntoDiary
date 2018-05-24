@@ -44,6 +44,8 @@ public class Constants {
     public static final String TEMP_USER_NAME = "temp_user_name";
     public static final String TEMP_PASSWORD = "temp_password";
     public static final String TASK_PRIORITY = "task_priority";
+    public static final String NOTE_ID = "note_id";
+    public static final String NOTE_DETAIL_EXPLAINER_COUNT = "note_detail_explainer_count";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

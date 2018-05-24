@@ -14,7 +14,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
-import com.okason.diary.models.Attachment;
+import com.okason.diary.models.realmentities.AttachmentEntity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.date.DateHelper;
@@ -31,12 +31,12 @@ import butterknife.ButterKnife;
  */
 
 public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAdapter.ViewHolder> {
-    private final List<Attachment> attachmentList;
+    private final List<AttachmentEntity> attachmentList;
     private final Context context;
     private final int screenWidth;
     private OnAttachmentClickedListener listener;
 
-    public AttachmentListAdapter(List<Attachment> attachmentList, Context context) {
+    public AttachmentListAdapter(List<AttachmentEntity> attachmentList, Context context) {
         this.attachmentList = attachmentList;
         this.context = context;
         screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
@@ -57,7 +57,7 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
 
     @Override
     public void onBindViewHolder(AttachmentListAdapter.ViewHolder holder, int position) {
-        Attachment selectedAttachment = attachmentList.get(position);
+        AttachmentEntity selectedAttachment = attachmentList.get(position);
 
         // Draw name in case the type is an audio recording
         if (selectedAttachment.getMime_type() != null && selectedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)) {
@@ -144,7 +144,7 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
         return attachmentList.size();
     }
 
-    public void addAttachment(Attachment attachment){
+    public void addAttachment(AttachmentEntity attachment){
         attachmentList.add(attachment);
         notifyItemInserted(attachmentList.size() - 0);
     }

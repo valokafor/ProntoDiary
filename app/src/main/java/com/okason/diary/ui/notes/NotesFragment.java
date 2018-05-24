@@ -30,27 +30,17 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ValueEventListener;
-import com.google.gson.Gson;
+import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.core.events.JournalListChangeEvent;
 import com.okason.diary.core.listeners.NoteItemListener;
-import com.okason.diary.models.Attachment;
-import com.okason.diary.models.Journal;
-import com.okason.diary.models.SampleData;
+import com.okason.diary.data.NoteDao;
+import com.okason.diary.models.realmentities.AttachmentEntity;
+import com.okason.diary.models.realmentities.NoteEntity;
 import com.okason.diary.ui.addnote.AddNoteActivity;
-import com.okason.diary.ui.addnote.DataAccessManager;
 import com.okason.diary.ui.attachment.GalleryActivity;
-import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,24 +48,28 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.OrderedCollectionChangeSet;
+import io.realm.OrderedRealmCollectionChangeListener;
+import io.realm.Realm;
+import io.realm.RealmResults;
 
 import static com.okason.diary.R.style.dialog;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NoteListFragment extends Fragment implements SearchView.OnQueryTextListener, SearchView.OnCloseListener {
+public class NotesFragment extends Fragment
+        implements SearchView.OnQueryTextListener, SearchView.OnCloseListener, NoteItemListener
+{
 
     private FirebaseAnalytics firebaseAnalytics;
+    private Realm realm;
+    private RealmResults<NoteEntity> noteEntities;
+    private final static String TAG = "NotesFragment";
 
 
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser firebaseUser;
-    private DataAccessManager dataAccessManager;
-
-
-    private List<Journal> unFilteredJournals;
-    private List<Journal> filteredJournals;
+    private List<NoteEntity> unFilteredJournals;
+    private List<NoteEntity> filteredJournals;
 
 
     private MediaPlayer mPlayer = null;
@@ -85,7 +79,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
 
     private View mRootView;
-    private NoteListAdapter mListAdapter;
+    private NotesAdapter mListAdapter;
 
     private boolean isDualScreen = false;
     private final static String LOG_TAG = "NoteListFragment";
@@ -98,11 +92,11 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     AdView mAdView;
 
     private FloatingActionButton floatingActionButton;
-    private ValueEventListener valueEventListener;
 
 
 
-    public NoteListFragment() {
+
+    public NotesFragment() {
         // Required empty public constructor
     }
 
@@ -112,8 +106,8 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
      * @param dualScreen - indicates if this Fragment is participating in dual screen
      * @return - returns the created Fragment
      */
-    public static NoteListFragment newInstance(boolean dualScreen, String tagName) {
-        NoteListFragment fragment = new NoteListFragment();
+    public static NotesFragment newInstance(boolean dualScreen, String tagName) {
+        NotesFragment fragment = new NotesFragment();
         Bundle args = new Bundle();
         args.putBoolean(Constants.IS_DUAL_SCREEN, dualScreen);
         args.putString(Constants.TAG_FILTER, tagName);
@@ -134,65 +128,44 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
 
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_note_list, container, false);
         ButterKnife.bind(this, mRootView);
+        realm = Realm.getDefaultInstance();
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         firebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
 
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseUser = firebaseAuth.getCurrentUser();
-
         filteredJournals = new ArrayList<>();
         unFilteredJournals = new ArrayList<>();
-
-
         floatingActionButton = getActivity().findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-                    startActivity(new Intent(getActivity(), AddNoteActivity.class));
-                } else {
-                    startActivity(AuthUiActivity.createIntent(getActivity()));
-                }
+                startActivity(new Intent(getActivity(), AddNoteActivity.class));
             }
         });
         return mRootView;
     }
 
 
-    private void goToImageGallery(Journal clickedJournal, Attachment clickedAttachment) {
+    private void goToImageGallery(NoteEntity clickedNote, AttachmentEntity clickedAttachment) {
         Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-        Gson gson = new Gson();
-        String attachmentJson = gson.toJson(clickedJournal.getAttachments());
-        galleryIntent.putExtra(Constants.SERIALIZED_ATTACHMENT_ID, attachmentJson);
+        galleryIntent.putExtra(Constants.NOTE_ID, clickedNote.getId());
         galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
-        galleryIntent.putExtra(Constants.NOTE_TITLE, clickedJournal.getTitle());
         startActivity(galleryIntent);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        EventBus.getDefault().register(this);
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())){
+        fetchNotes();
 
-            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
-            if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
-                tagName = getArguments().getString(Constants.TAG_FILTER);
-            }
-
-            dataAccessManager.getAllJournal(tagName);
-
-        } else {
-            showNotes(SampleData.getSampleNotes());
-        }
         if (ProntoDiaryApplication.getProntoDiaryUser() != null && ProntoDiaryApplication.getProntoDiaryUser().isPremium()){
             //Do not show Ad
         }else {
@@ -204,17 +177,17 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onJournalListChange(JournalListChangeEvent event){
-        unFilteredJournals = event.getJournalList();
-        showNotes(unFilteredJournals);
+    private void fetchNotes() {
+        noteEntities = realm.where(NoteEntity.class).findAllAsync().sort("dateModified");
+        noteEntities.addChangeListener(changeListener);
+        showNotes(noteEntities);
     }
 
 
     @Override
     public void onPause() {
         super.onPause();
-        EventBus.getDefault().unregister(this);
+        noteEntities.removeChangeListener(changeListener);
         if (mPlayer != null) {
             mPlayer.release();
             mPlayer = null;
@@ -241,21 +214,17 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
      */
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-            if (query.length() > 0) {
-                filteredJournals = filterNotes(query);
-                showNotes(filteredJournals);
-                return true;
-            }
-        }  else {
-            makeToast(getString(R.string.login_required));
+        if (query.length() > 0) {
+            filteredJournals = filterNotes(query);
+            showNotes(filteredJournals);
+            return true;
         }
         return true;
     }
 
-    private List<Journal> filterNotes(String query) {
-        List<Journal> journals = new ArrayList<>();
-        for (Journal journal: unFilteredJournals){
+    private List<NoteEntity> filterNotes(String query) {
+        List<NoteEntity> journals = new ArrayList<>();
+        for (NoteEntity journal: noteEntities){
             String title = journal.getTitle().toLowerCase();
             String content = journal.getContent().toLowerCase();
             query = query.toLowerCase();
@@ -268,27 +237,17 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     @Override
     public boolean onQueryTextChange(String newText) {
-
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-            if (newText.length() > 0) {
-                filteredJournals = filterNotes(newText);
-                showNotes(filteredJournals);
-                return true;
-            }
-        }  else {
-            makeToast(getString(R.string.login_required));
+        if (newText.length() > 0) {
+            filteredJournals = filterNotes(newText);
+            showNotes(filteredJournals);
+            return true;
         }
-
-
-
         return true;
     }
 
     @Override
     public boolean onClose() {
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-            showNotes(unFilteredJournals);
-        }
+        fetchNotes();
         return false;
     }
 
@@ -300,52 +259,13 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
 
-    public void showNotes(List<Journal> journals) {
-        if (journals != null && journals.size() > 0) {
+    public void showNotes(List<NoteEntity> journals) {
+        if (journals != null) {
             showEmptyText(false);
             mListAdapter = null;
-
-
-            mListAdapter = new NoteListAdapter(journals, getContext());
+            mListAdapter = new NotesAdapter(journals, getContext());
             mRecyclerView.setAdapter(mListAdapter);
-
-            mListAdapter.setNoteItemListener(new NoteItemListener() {
-                @Override
-                public void onNoteClick(Journal clickedJournal) {
-                    if (isDualScreen) {
-                        showDualDetailUi(clickedJournal);
-                    } else {
-                        showSingleDetailUi(clickedJournal);
-                    }
-                }
-
-                @Override
-                public void onDeleteButtonClicked(Journal clickedJournal) {
-                    showDeleteConfirmation(clickedJournal);
-                }
-
-                @Override
-                public void onAttachmentClicked(Journal clickedJournal, int position) {
-                    //An attachment in the Journal list has been clicked
-                    List<Attachment> attachmentList = clickedJournal.getAttachments();
-                    Attachment clickedAttachment = attachmentList.get(attachmentList.size() - 1);
-                    if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)) {
-                        //Play Audio
-                        startPlaying(clickedAttachment, position);
-                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)) {
-                        //Play Video
-                        viewMedia(clickedAttachment);
-                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)) {
-                        //Show Image Gallery
-                        goToImageGallery(clickedJournal, clickedAttachment);
-                    } else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)) {
-                        //Show file
-
-                    } else {
-                        //Show details page
-                    }
-                }
-            });
+            mListAdapter.setNoteItemListener(this);
 
         } else {
             showEmptyText(true);
@@ -353,6 +273,39 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
 
     }
+
+    private final OrderedRealmCollectionChangeListener<RealmResults<NoteEntity>> changeListener =
+            new OrderedRealmCollectionChangeListener<RealmResults<NoteEntity>>() {
+        @Override
+        public void onChange(RealmResults<NoteEntity> noteEntities, OrderedCollectionChangeSet changeSet) {
+            // `null`  means the async query returns the first time.
+            if (changeSet == null) {
+                if (noteEntities != null && noteEntities.size() > 0) {
+                    unFilteredJournals = noteEntities;
+                    mListAdapter.replaceData(noteEntities);
+                    showEmptyText(false);
+                }
+                return;
+            }
+
+            // For deletions, the adapter has to be notified in reverse order.
+            OrderedCollectionChangeSet.Range[] deletions = changeSet.getDeletionRanges();
+            for (int i = deletions.length - 1; i >= 0; i--) {
+                OrderedCollectionChangeSet.Range range = deletions[i];
+                mListAdapter.notifyItemRangeRemoved(range.startIndex, range.length);
+            }
+
+            OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
+            for (OrderedCollectionChangeSet.Range range : insertions) {
+                mListAdapter.notifyItemRangeInserted(range.startIndex, range.length);
+            }
+
+            OrderedCollectionChangeSet.Range[] modifications = changeSet.getChangeRanges();
+            for (OrderedCollectionChangeSet.Range range : modifications) {
+                mListAdapter.notifyItemRangeChanged(range.startIndex, range.length);
+            }
+        }
+    };
 
 
     public void showEmptyText(boolean showText) {
@@ -371,48 +324,37 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
     }
 
 
-    public void showDeleteConfirmation(Journal journal) {
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-            boolean shouldPromptForDelete = PreferenceManager
-                    .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
-            if (shouldPromptForDelete) {
-                promptForDelete(journal);
-            } else {
-                deleteNote(journal);
-            }
+    public void showDeleteConfirmation(NoteEntity note) {
+        boolean shouldPromptForDelete = PreferenceManager
+                .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
+        if (shouldPromptForDelete) {
+            promptForDelete(note);
         } else {
-            makeToast(getString(R.string.login_required));
+            deleteNote(note.getId());
         }
 
     }
 
-    private void deleteNote(Journal journal) {
-        if (journal != null && journal.getId() != null) {
-            dataAccessManager.deleteNote(journal.getId());
+    private void deleteNote(String noteId) {
+        if (!TextUtils.isEmpty(noteId)) {
+            //dataAccessManager.deleteNote(journal.getId());
+            new NoteDao(realm).deleteNote(noteId);
         }
     }
 
 
-    public void showSingleDetailUi(Journal selectedJournal) {
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-            Gson gson = new Gson();
-            String serializedNote = gson.toJson(selectedJournal);
-            Intent intent = new Intent(getActivity(), NoteDetailActivity.class);
-            intent.putExtra(Constants.SERIALIZED_JOURNAL, serializedNote);
-            startActivity(intent);
-        } else {
-            startActivity(AuthUiActivity.createIntent(getActivity()));
-        }
-
+    public void showSingleDetailUi(NoteEntity selectedJournal) {
+        String id = selectedJournal.getId();
+        startActivity(NoteDetailActivity.getStartIntent(getContext(), id));
     }
 
 
-    public void showDualDetailUi(Journal journal) {
-//        NoteListActivity activity = (NoteListActivity)getActivity();
-//        activity.showTwoPane(journal);
+    public void showDualDetailUi(NoteEntity journal) {
+        NoteListActivity activity = (NoteListActivity)getActivity();
+     //   activity.showTwoPane(journal);
     }
 
-    public void promptForDelete(final Journal journal) {
+    public void promptForDelete(final NoteEntity journal) {
         String content;
         if (!TextUtils.isEmpty(journal.getContent())) {
             content = journal.getContent();
@@ -433,7 +375,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-               deleteNote(journal);
+               deleteNote(journal.getId());
             }
         });
         alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
@@ -458,7 +400,7 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
         }
     }
 
-    private void startPlaying(Attachment attachment, final int position) {
+    private void startPlaying(AttachmentEntity attachment, final int position) {
         if (isAudioPlaying) {
             mPlayer.stop();
             mPlayer.release();
@@ -489,17 +431,56 @@ public class NoteListFragment extends Fragment implements SearchView.OnQueryText
 
     }
 
-    private void viewMedia(Attachment attachment) {
+    private void viewMedia(AttachmentEntity attachment) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(Uri.parse(attachment.getFilePath()), attachment.getMime_type());
         startActivity(intent);
     }
 
 
+    @Override
+    public void onDestroy() {
+        if (realm != null){
+            realm.close();;
+            realm = null;
+        }
+        super.onDestroy();
+    }
 
+    @Override
+    public void onNoteClick(NoteEntity clickedJournal) {
+        if (isDualScreen) {
+            showDualDetailUi(clickedJournal);
+        } else {
+            showSingleDetailUi(clickedJournal);
+        }
 
+    }
 
+    @Override
+    public void onDeleteButtonClicked(NoteEntity clickedJournal) {
+        showDeleteConfirmation(clickedJournal);
+    }
 
+    @Override
+    public void onAttachmentClicked(NoteEntity clickedNote, int position) {
+        //An attachment in the Journal list has been clicked
+        AttachmentEntity clickedAttachment = clickedNote.getAttachments().get(clickedNote.getAttachments().size() - 1);
+        if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
+            //Play Audio
+            startPlaying(clickedAttachment, position);
+        }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_VIDEO)){
+            //Play Video
+            viewMedia(clickedAttachment);
+        }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
+            //Show Image Gallery
+            goToImageGallery(clickedNote, clickedAttachment);
+        }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
+            //Show file
 
+        }else {
+            //Show details page
+        }
 
+    }
 }

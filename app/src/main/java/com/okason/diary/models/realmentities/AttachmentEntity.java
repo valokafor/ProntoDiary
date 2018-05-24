@@ -1,4 +1,4 @@
-package com.okason.diary.models;
+package com.okason.diary.models.realmentities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,12 +11,16 @@ import com.okason.diary.utils.Constants;
 
 import java.io.File;
 
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Attachment{
+public class AttachmentEntity extends RealmObject {
 
+    @PrimaryKey
     private String id;
     private String localFilePath;
     private String cloudFilePath;
@@ -29,7 +33,7 @@ public class Attachment{
     private long dateCreated;
 
 
-    public Attachment(){
+    public AttachmentEntity(){
         localFilePath = "";
         cloudFilePath = "";
         name = "";
@@ -41,7 +45,7 @@ public class Attachment{
 
     }
 
-    public Attachment(Uri uri, String imagePath, String mime_type) {
+    public AttachmentEntity(Uri uri, String imagePath, String mime_type) {
         this.uri = uri.toString();
         this.localFilePath = imagePath;
         this.mime_type = mime_type;
@@ -53,7 +57,7 @@ public class Attachment{
 
     }
 
-    public Attachment(Uri uri, String imagePath, String mime_type, String name) {
+    public AttachmentEntity(Uri uri, String imagePath, String mime_type, String name) {
         this.uri = uri.toString();
         this.localFilePath = imagePath;
         this.mime_type = mime_type;
@@ -65,7 +69,7 @@ public class Attachment{
 
     }
 
-    public void update(Attachment attachment){
+    public void update(AttachmentEntity attachment){
         this.uri = attachment.getUri();
         this.localFilePath = attachment.getLocalFilePath();
         this.mime_type = attachment.getMime_type();
@@ -98,7 +102,7 @@ public class Attachment{
     }
 
 
-    public Attachment(String ext){
+    public AttachmentEntity(String ext){
         mime_type = ext;
     }
 

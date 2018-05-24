@@ -15,10 +15,14 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.okason.diary.R;
+import com.okason.diary.data.NoteDao;
+import com.okason.diary.models.realmentities.NoteEntity;
+import com.okason.diary.ui.notedetails.NewNoteDetailFragment;
 import com.okason.diary.utils.Constants;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Realm;
 
 public class AddNoteActivity extends AppCompatActivity {
 
@@ -27,6 +31,7 @@ public class AddNoteActivity extends AppCompatActivity {
     private Activity mActivity;
     @BindView(android.R.id.content)
     View mRootView;
+    private Realm realm;
 
 
     @BindView(R.id.toolbar) Toolbar toolbar;
@@ -38,19 +43,22 @@ public class AddNoteActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
         mActivity = this;
+        realm = Realm.getDefaultInstance();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationIcon(R.drawable.ic_check_white_24dp);
 
 
+
         if (savedInstanceState == null) {
-
-            if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_JOURNAL)){
-                String serializedNote = getIntent().getStringExtra(Constants.SERIALIZED_JOURNAL);
-                openFragment(NoteEditorFragment.newInstance(serializedNote), getString(R.string.edit_journal));
-            }else {
-                openFragment(NoteEditorFragment.newInstance(""), getString(R.string.add_new_journal));
+            if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
+                String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
+                NoteEntity passedInNote = new NoteDao(realm).getNoteEntityById(noteId);
+                NewNoteDetailFragment fragment = NewNoteDetailFragment.newInstance(noteId);
+                openFragment(NewNoteEditorFragment.newInstance(noteId),
+                        passedInNote.getTitle());
+            } else {
+                openFragment(NewNoteEditorFragment.newInstance(""), getString(R.string.add_new_journal));
             }
-
         }
 
     }
@@ -69,6 +77,12 @@ public class AddNoteActivity extends AppCompatActivity {
                 .add(R.id.container, fragment)
                 .commit();
         getSupportActionBar().setTitle(screenTitle);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        realm.close();
     }
 
     @Override

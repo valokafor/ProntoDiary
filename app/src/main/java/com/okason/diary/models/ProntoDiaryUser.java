@@ -5,28 +5,17 @@ package com.okason.diary.models;
  */
 
 public class ProntoDiaryUser {
-
-
     private String id;
-    private String realmUserId;
+    private String firebaseUid;
     private String fcmToken;
-    private String displayName;
     private String emailAddress;
     private boolean isEmailValid;
     private long totalFileSize;
     private boolean isPremium;
     private String upgradeMethod;
-    private String loginProvider;
-    private String photoUrl;
+    private String realmJson;
+    private String realmPassword;
 
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
 
     public String getId() {
         return id;
@@ -34,6 +23,14 @@ public class ProntoDiaryUser {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getFirebaseUid() {
+        return firebaseUid;
+    }
+
+    public void setFirebaseUid(String firebaseUid) {
+        this.firebaseUid = firebaseUid;
     }
 
     public String getFcmToken() {
@@ -84,27 +81,19 @@ public class ProntoDiaryUser {
         this.upgradeMethod = upgradeMethod;
     }
 
-    public String getLoginProvider() {
-        return loginProvider;
+    public String getRealmJson() {
+        return realmJson;
     }
 
-    public void setLoginProvider(String loginProvider) {
-        this.loginProvider = loginProvider;
+    public void setRealmJson(String realmJson) {
+        this.realmJson = realmJson;
     }
 
-    public String getPhotoUrl() {
-        return photoUrl;
+    public String getRealmPassword() {
+        return realmPassword;
     }
 
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
-    }
-
-    public String getRealmUserId() {
-        return realmUserId;
-    }
-
-    public void setRealmUserId(String realmUserId) {
-        this.realmUserId = realmUserId;
+    public void setRealmPassword(String realmPassword) {
+        this.realmPassword = realmPassword;
     }
 }

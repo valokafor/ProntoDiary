@@ -9,13 +9,17 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
-import com.okason.diary.models.Task;
+import com.okason.diary.data.TaskDao;
+import com.okason.diary.models.realmentities.TaskEntity;
 import com.okason.diary.utils.Constants;
 
+import io.realm.Realm;
+
 public class AddSubTaskActivity extends AppCompatActivity {
+
+    private Realm realm;
+    private TaskDao taskDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,26 +28,30 @@ public class AddSubTaskActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        realm = Realm.getDefaultInstance();
+        taskDao = new TaskDao(realm);
 
         //Only start the Add Sub Task Fragment if a valid Task object was passed in
         if (savedInstanceState == null) {
-            if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_TASK)) {
-                String serializedTask = getIntent().getStringExtra(Constants.SERIALIZED_TASK);
-                if (!TextUtils.isEmpty(serializedTask)){
-                    Gson gson = new Gson();
-                    Task task = gson.fromJson(serializedTask, new TypeToken<Task>(){}.getType());
+            if (getIntent() != null && getIntent().hasExtra(Constants.TASK_ID)) {
+                String taskId = getIntent().getStringExtra(Constants.TASK_ID);
+                if (!TextUtils.isEmpty(taskId)) {
+                    TaskEntity task = taskDao.getTaskById(taskId);
                     if (task != null) {
-                        AddSubTaskFragment fragment = AddSubTaskFragment.newInstance(serializedTask);
+                        AddSubTaskFragment fragment = AddSubTaskFragment.newInstance(taskId);
                         openFragment(fragment, task.getTitle());
                     } else {
                         finish();
                     }
+                } else {
+                    finish();
                 }
-
             } else {
                 finish();
             }
         }
+
+
     }
 
     private void openFragment(Fragment fragment, String screenTitle){
@@ -84,6 +92,9 @@ public class AddSubTaskActivity extends AppCompatActivity {
         }
     }
 
-
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        realm.close();
+    }
 }

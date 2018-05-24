@@ -1,14 +1,14 @@
 package com.okason.diary.core.listeners;
 
 
-import com.okason.diary.models.Folder;
+import com.okason.diary.models.realmentities.FolderEntity;
 
 /**
  * Created by Valentine on 3/6/2016.
  */
 public interface OnFolderSelectedListener {
-    void onCategorySelected(Folder selectedCategory);
-    void onEditCategoryButtonClicked(Folder selectedCategory);
-    void onDeleteCategoryButtonClicked(Folder selectedCategory);
+    void onCategorySelected(FolderEntity selectedCategory);
+    void onEditCategoryButtonClicked(FolderEntity selectedCategory);
+    void onDeleteCategoryButtonClicked(FolderEntity selectedCategory);
     void onAddCategoryButtonClicked();
 }

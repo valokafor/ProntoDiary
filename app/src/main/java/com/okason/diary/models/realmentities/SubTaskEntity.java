@@ -1,17 +1,19 @@
-package com.okason.diary.models;
+package com.okason.diary.models.realmentities;
+
+import io.realm.RealmObject;
 
 /**
  * Created by valokafor on 7/4/17.
  */
 
-public class SubTask {
+public class SubTaskEntity extends RealmObject{
 
     private String id;
     private String title;
     private long dateCreated;
     private long dateModified;
     private boolean checked;
-    private String parentTaskName;
+    private TaskEntity parentTask;
 
     public String getId() {
         return id;
@@ -53,11 +55,11 @@ public class SubTask {
         this.checked = checked;
     }
 
-    public String getParentTaskName() {
-        return parentTaskName;
+    public TaskEntity getParentTask() {
+        return parentTask;
     }
 
-    public void setParentTaskName(String parentTaskName) {
-        this.parentTaskName = parentTaskName;
+    public void setParentTask(TaskEntity parentTask) {
+        this.parentTask = parentTask;
     }
 }

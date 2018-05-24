@@ -1,13 +1,12 @@
 package com.okason.diary.ui.folder;
 
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,20 +14,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
-import com.okason.diary.core.events.FolderAddedEvent;
-import com.okason.diary.models.Folder;
-import com.okason.diary.ui.addnote.DataAccessManager;
+import com.okason.diary.data.FolderDao;
+import com.okason.diary.models.realmentities.FolderEntity;
 import com.okason.diary.utils.Constants;
 
-import org.greenrobot.eventbus.EventBus;
+import io.realm.Realm;
 
 
 /**
@@ -36,12 +27,9 @@ import org.greenrobot.eventbus.EventBus;
  */
 public class AddFolderDialogFragment extends DialogFragment {
     private EditText mFolderEditText;
-    private Folder mFolder = null;
-
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser firebaseUser;
-    private DataAccessManager dataAccessManager;
-
+    private FolderEntity mFolder = null;
+    private Realm realm;
+    private FolderDao folderDao;
 
 
 
@@ -53,20 +41,19 @@ public class AddFolderDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseUser = firebaseAuth.getCurrentUser();
-        dataAccessManager = new DataAccessManager(firebaseUser.getUid());
+        realm = Realm.getDefaultInstance();
+        folderDao = new FolderDao(realm);
+
     }
 
 
 
 
-    public static AddFolderDialogFragment newInstance(String content){
+    public static AddFolderDialogFragment newInstance(String folderId){
         AddFolderDialogFragment dialogFragment = new AddFolderDialogFragment();
-        Bundle args = new Bundle();
-
-        if (!TextUtils.isEmpty(content)){
-            args.putString(Constants.SERIALIZED_FOLDER, content);
+        if (!TextUtils.isEmpty(folderId)) {
+            Bundle args = new Bundle();
+            args.putString(Constants.FOLDER_ID, folderId);
             dialogFragment.setArguments(args);
         }
         return dialogFragment;
@@ -76,12 +63,11 @@ public class AddFolderDialogFragment extends DialogFragment {
      * The method gets the Folder that was passed in
      */
     public void getCurrentFolder(){
-        Bundle args = getArguments();
-        if (args != null && args.containsKey(Constants.SERIALIZED_FOLDER)){
-            String serializedFolder = args.getString(Constants.SERIALIZED_FOLDER, "");
-            if (!TextUtils.isEmpty(serializedFolder)){
-                Gson gson = new Gson();
-                mFolder = gson.fromJson(serializedFolder, new TypeToken<Folder>(){}.getType());
+        if (getArguments() != null && getArguments().containsKey(Constants.FOLDER_ID)){
+            String folderId = getArguments().getString(Constants.FOLDER_ID);
+            if (!TextUtils.isEmpty(folderId)){
+                mFolder = folderDao.getFolderById(folderId);
+
             }
         }
 
@@ -123,7 +109,9 @@ public class AddFolderDialogFragment extends DialogFragment {
                 }
             });
 
-            if (mFolder != null && !TextUtils.isEmpty(mFolder.getTitle())){
+
+
+            if (mFolder != null && !TextUtils.isEmpty(mFolder.getFolderName())){
                 populateFields(mFolder);
                 mFolderEditText.setSelection(mFolderEditText.getText().length());
             }
@@ -134,8 +122,8 @@ public class AddFolderDialogFragment extends DialogFragment {
         return addFolderDialog.create();
     }
 
-    private void populateFields(Folder category) {
-        mFolderEditText.setText(category.getTitle());
+    private void populateFields(FolderEntity folder) {
+        mFolderEditText.setText(folder.getFolderName());
     }
 
     private boolean requiredFieldCompleted(){
@@ -173,44 +161,18 @@ public class AddFolderDialogFragment extends DialogFragment {
     }
 
 
+
     private void saveFolder() {
-        final String folderName = mFolderEditText.getText().toString().trim();
-        if (mFolder == null) {
-            mFolder = new Folder();
-        }
-
-        mFolder.setTitle(folderName);
-        mFolder.setDateModified(System.currentTimeMillis());
-
-        String folderId = mFolder.getId();
-
-        if (TextUtils.isEmpty(folderId)) {
-            mFolder.setDateCreated(System.currentTimeMillis());
-            dataAccessManager.getFolderPath().add(mFolder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentReference> task) {
-                    if (task.isSuccessful()) {
-                        mFolder.setId(task.getResult().getId());
-                        dataAccessManager.getFolderPath().document(mFolder.getId()).set(mFolder);
-                        EventBus.getDefault().post(new FolderAddedEvent(mFolder));
-                        dataAccessManager.getAllFolder();
-                    }
-                }
-            });
-        } else {
-            try {
-                DocumentReference documentReference = dataAccessManager.getFolderPath().document(mFolder.getId());
-                documentReference.set(mFolder);
-                EventBus.getDefault().post(new FolderAddedEvent(mFolder));
-                dataAccessManager.getAllFolder();
-            } catch (Exception e) {
-                e.printStackTrace();
+        final String categoryName = mFolderEditText.getText().toString().trim();
+        if (!TextUtils.isEmpty(categoryName)) {
+            if (mFolder == null){
+                mFolder = folderDao.createNewFolder();
             }
-
-
+            folderDao.updatedFolderTitle(mFolder.getId(), categoryName);
         }
 
     }
+
 
 
 }

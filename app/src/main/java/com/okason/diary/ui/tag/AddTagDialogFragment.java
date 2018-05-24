@@ -6,7 +6,6 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -15,17 +14,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.okason.diary.R;
-import com.okason.diary.models.Tag;
-import com.okason.diary.ui.addnote.DataAccessManager;
+import com.okason.diary.data.TagDao;
+import com.okason.diary.models.realmentities.TagEntity;
 import com.okason.diary.utils.Constants;
+
+import io.realm.Realm;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -33,12 +27,9 @@ import com.okason.diary.utils.Constants;
 public class AddTagDialogFragment extends DialogFragment {
 
     private EditText tagEditText;
-    private Tag mTag = null;
-
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser firebaseUser;
-    private DataAccessManager dataAccessManager;
-
+    private TagEntity mTag = null;
+    private Realm realm;
+    private TagDao tagDao;
 
 
 
@@ -49,34 +40,33 @@ public class AddTagDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseUser = firebaseAuth.getCurrentUser();
-        dataAccessManager = new DataAccessManager(firebaseUser.getUid());
+        realm = Realm.getDefaultInstance();
+        tagDao = new TagDao(realm);
 
     }
 
-    public static AddTagDialogFragment newInstance(String content){
+    public static AddTagDialogFragment newInstance(String tagId){
         AddTagDialogFragment dialogFragment = new AddTagDialogFragment();
-        if (!TextUtils.isEmpty(content)) {
+        if (!TextUtils.isEmpty(tagId)) {
             Bundle args = new Bundle();
-            args.putString(Constants.SERIALIZED_TAG, content);
+            args.putString(Constants.TAG_ID, tagId);
             dialogFragment.setArguments(args);
         }
         return dialogFragment;
     }
 
     /**
-     * The method gets the Tag that was passed in, in the form of serialized String
+     * The method gets the Folder that was passed in, in the form of serialized String
      */
     public void getCurrentTag(){
-        Bundle args = getArguments();
-        if (args != null && args.containsKey(Constants.SERIALIZED_TAG)){
-            String serializedTag = args.getString(Constants.SERIALIZED_TAG, "");
-            if (!TextUtils.isEmpty(serializedTag)){
-                Gson gson = new Gson();
-                mTag = gson.fromJson(serializedTag, new TypeToken<Tag>(){}.getType());
+        if (getArguments() != null && getArguments().containsKey(Constants.TAG_ID)){
+            String tagId = getArguments().getString(Constants.TAG_ID);
+            if (!TextUtils.isEmpty(tagId)){
+                mTag = tagDao.getTagById(tagId);
+
             }
         }
+
     }
 
     @Override
@@ -127,8 +117,8 @@ public class AddTagDialogFragment extends DialogFragment {
         return addTagDialog.create();
     }
 
-    private void populateFields(Tag category) {
-        tagEditText.setText(category.getTagName());
+    private void populateFields(TagEntity tag) {
+        tagEditText.setText(tag.getTagName());
     }
 
     private boolean requiredFieldCompleted(){
@@ -169,32 +159,15 @@ public class AddTagDialogFragment extends DialogFragment {
 
     private void saveTag() {
         final String tagName = tagEditText.getText().toString().trim();
-        if (!TextUtils.isEmpty(tagName)) {
-            if (mTag == null){
-                mTag = new Tag();
-                mTag.setTagName(tagName);
-                mTag.setDateCreated(System.currentTimeMillis());
-                mTag.setDateModified(System.currentTimeMillis());
-                dataAccessManager.getTagCloudPath().add(mTag).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentReference> task) {
-                        if (task.isSuccessful()){
-                            mTag.setId(task.getResult().getId());
-                            dataAccessManager.getTagCloudPath().document(mTag.getId()).set(mTag);
-                            dataAccessManager.getAllTags();
-                        }
-                    }
-                });
-            }else {
-                mTag.setTagName(tagName);
-                mTag.setDateModified(System.currentTimeMillis());
-                dataAccessManager.getTagCloudPath().document(mTag.getId()).set(mTag);
-                dataAccessManager.getAllTags();
-            }
+        if (mTag == null){
+            mTag = tagDao.createNewTag();
         }
-
+        tagDao.updatedTagTitle(mTag.getId(), tagName);
     }
 
-
-
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        realm.close();
+    }
 }

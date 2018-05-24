@@ -43,7 +43,7 @@ import com.mikepenz.materialdrawer.model.interfaces.Nameable;
 import com.mikepenz.materialdrawer.util.KeyboardUtil;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.folder.FolderListActivity;
-import com.okason.diary.ui.notes.NoteListFragment;
+import com.okason.diary.ui.notes.NotesFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
 import com.okason.diary.ui.tag.TagListActivity;
 import com.okason.diary.ui.todolist.TodoListActivity;
@@ -105,6 +105,8 @@ public class NoteListActivity extends AppCompatActivity {
         settingsHelper = SettingsHelper.getHelper(mActivity);
         firebaseAnalytics = FirebaseAnalytics.getInstance(mActivity);
         setupNavigationDrawer(savedInstanceBundle);
+       // new SampleData(mActivity).getSampleNotesRealm();
+
     }
 
     @Override
@@ -248,14 +250,15 @@ public class NoteListActivity extends AppCompatActivity {
 
         boolean exist = getIntent() != null;
         boolean hasTag = getIntent().hasExtra(Constants.TAG_FILTER);
-        if (exist && hasTag) {
-            String tagName = getIntent().getStringExtra(Constants.TAG_FILTER);
-            NoteListFragment fragment = NoteListFragment.newInstance(false, tagName);
-            String title = "#" + tagName;
-            openFragment(fragment, title);
-        } else {
-            openFragment(new NoteListFragment(), getString(R.string.label_journals));
-        }
+        openFragment(new NotesFragment(), "Notes");
+//        if (exist && hasTag) {
+//            String tagName = getIntent().getStringExtra(Constants.TAG_FILTER);
+//            NotesFragment fragment = NotesFragment.newInstance(false, tagName);
+//            String title = "#" + tagName;
+//            openFragment(fragment, title);
+//        } else {
+//            openFragment(new NotesFragment(), getString(R.string.label_journals));
+//        }
 
 
     }
@@ -304,11 +307,6 @@ public class NoteListActivity extends AppCompatActivity {
                 .commit();
         getSupportActionBar().setTitle(screenTitle);
     }
-
-
-
-
-
 
 
     private void onTouchDrawer(int position) {

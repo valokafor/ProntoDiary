@@ -1,14 +1,16 @@
-package com.okason.diary.models;
+package com.okason.diary.models.realmentities;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class Task {
+public class TaskEntity extends RealmObject{
 
+    @PrimaryKey
     private String id;
     private String title;
     private String description;
@@ -25,12 +27,11 @@ public class Task {
     private Double longitude;
 
 
-    private Folder folder;
-    private List<SubTask> subTask;
+    private FolderEntity folder;
+    private RealmList<SubTaskEntity> subTask;
 
-    public Task(){
+    public TaskEntity(){
         dateCreated = System.currentTimeMillis();
-        subTask = new ArrayList<>();
     }
 
     public String getId() {
@@ -129,19 +130,20 @@ public class Task {
         this.longitude = longitude;
     }
 
-    public Folder getFolder() {
+
+    public FolderEntity getFolder() {
         return folder;
     }
 
-    public void setFolder(Folder folder) {
+    public void setFolder(FolderEntity folder) {
         this.folder = folder;
     }
 
-    public List<SubTask> getSubTask() {
+    public RealmList<SubTaskEntity> getSubTask() {
         return subTask;
     }
 
-    public void setSubTask(List<SubTask> subTask) {
+    public void setSubTask(RealmList<SubTaskEntity> subTask) {
         this.subTask = subTask;
     }
 }

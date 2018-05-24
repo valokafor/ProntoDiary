@@ -24,8 +24,6 @@ import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.utils.Constants;
 
-import net.fortuna.ical4j.model.property.RRule;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -174,23 +172,6 @@ public class DateHelper {
 
 
 
-    public static Long nextReminderFromRecurrenceRule(long reminder, long currentTime, String recurrenceRule) {
-        RRule rule = new RRule();
-        try {
-            rule.setValue(recurrenceRule);
-            net.fortuna.ical4j.model.DateTime seed = new net.fortuna.ical4j.model.DateTime(reminder);
-            long startTimestamp = reminder + 60 * 1000;
-            if (startTimestamp < currentTime) {
-                startTimestamp = currentTime;
-            }
-            net.fortuna.ical4j.model.DateTime start = new net.fortuna.ical4j.model.DateTime(startTimestamp);
-            Date nextDate = rule.getRecur().getNextDate(seed, start);
-            return nextDate == null ? 0L : nextDate.getTime();
-        } catch (ParseException e) {
-            Log.e(Constants.TAG, "Error parsing rrule");
-        }
-        return 0L;
-    }
 
 
     public static String getNoteReminderText(long reminder) {
