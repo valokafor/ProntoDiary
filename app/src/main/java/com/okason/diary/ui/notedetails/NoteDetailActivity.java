@@ -9,9 +9,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import com.okason.diary.R;
+import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.data.NoteDao;
 import com.okason.diary.models.realmentities.NoteEntity;
+import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.utils.Constants;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -78,6 +84,14 @@ public class NoteDetailActivity extends AppCompatActivity {
     }
 
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEditNoteButtonClickedEvent(EditNoteButtonClickedEvent event){
+        Intent editNoteIntent = new Intent(NoteDetailActivity.this, AddNoteActivity.class);
+        editNoteIntent.putExtra(Constants.NOTE_ID, event.getClickedNoteId());
+        startActivity(editNoteIntent);
+    }
+    
+
 
     public void openFragment(Fragment fragment, String screenTitle){
         getSupportFragmentManager()
@@ -87,6 +101,18 @@ public class NoteDetailActivity extends AppCompatActivity {
                 .addToBackStack(screenTitle)
                 .commit();
         getSupportActionBar().setTitle(screenTitle);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.okason.diary.ui.tag;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,15 +8,9 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.models.Tag;
-import com.okason.diary.ui.addnote.DataAccessManager;
+import com.okason.diary.models.realmentities.TagEntity;
 
 import java.util.List;
 
@@ -31,25 +24,16 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     private final static String LOG_CAT = TagListAdapter.class.getSimpleName();
     private final static boolean DEBUG = true;
 
-    private List<Tag> mTags;
+    private List<TagEntity> mTags;
     private final OnTagSelectedListener mListener;
-    private DataAccessManager dataAccessManager;
     private final Context mContext;
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser firebaseUser;
 
-    public TagListAdapter(Context mContext, List<Tag> mTags, OnTagSelectedListener mListener) {
+
+
+    public TagListAdapter(Context mContext, List<TagEntity> mTags, OnTagSelectedListener mListener) {
         this.mTags = mTags;
         this.mContext = mContext;
         this.mListener = mListener;
-
-
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseUser = firebaseAuth.getCurrentUser();
-
-        if (firebaseUser != null){
-            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
-        }
     }
 
     @Override
@@ -62,36 +46,22 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
 
-        final Tag tag = mTags.get(position);
+        final TagEntity tag = mTags.get(position);
         String tagName = tag.getTagName();
         holder.tagName.setText(tagName);
+        int numNote = tag.getNotes().size();
+        String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
+        holder.noteCountTextView.setText(numNote + " " + notes);
 
-        String tagPath = "tags." + tagName;
 
-        if (dataAccessManager != null) {
-            dataAccessManager.getJournalCloudPath()
-                    .whereEqualTo(tagPath, true)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            if (task.isSuccessful()){
-                                int numNote = task.getResult().size();
-                                String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
-                                holder.noteCountTextView.setText(numNote + " " + notes);
-                               // notifyItemChanged(position);
 
-                            }
-                        }
-                    });
-        }
 
 
     }
 
-    public void replaceData(List<Tag> categories){
+    public void replaceData(List<TagEntity> tags){
         this.mTags.clear();
-        mTags = categories;
+        mTags.addAll(tags);
         notifyDataSetChanged();
     }
 
@@ -116,14 +86,14 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
             editTag.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Tag categoryToBeEdited = mTags.get(getLayoutPosition());
+                    TagEntity categoryToBeEdited = mTags.get(getLayoutPosition());
                     mListener.onEditTagButtonClicked(categoryToBeEdited);
                 }
             });
             deleteTag.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Tag tagToBeDeleted = mTags.get(getLayoutPosition());
+                    TagEntity tagToBeDeleted = mTags.get(getLayoutPosition());
                     mListener.onDeleteTagButtonClicked(tagToBeDeleted);
                 }
             });

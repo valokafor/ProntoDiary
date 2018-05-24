@@ -4,27 +4,26 @@ package com.okason.diary.ui.todolist;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.TaskChangedEvent;
 import com.okason.diary.core.listeners.SubTaskItemListener;
-import com.okason.diary.models.SubTask;
-import com.okason.diary.models.Task;
-import com.okason.diary.ui.addnote.DataAccessManager;
+import com.okason.diary.data.TaskDao;
+import com.okason.diary.models.realmentities.SubTaskEntity;
+import com.okason.diary.models.realmentities.TaskEntity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
@@ -35,6 +34,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.realm.Realm;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -59,8 +59,10 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
     private SubTaskListAdapter subTaskListAdapter;
     private boolean shouldUpdateAdapter = true;
-    private Task parentTask;
-    private DataAccessManager dataAccessManager;
+    private TaskEntity parentTask;
+    private Realm realm;
+    private TaskDao taskDao;
+
 
 
 
@@ -68,28 +70,32 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         // Required empty public constructor
     }
 
-    public static AddSubTaskFragment newInstance(String serializedTask){
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+    }
+
+    public static AddSubTaskFragment newInstance(String taskId){
         AddSubTaskFragment fragment = new AddSubTaskFragment();
-        if (!TextUtils.isEmpty(serializedTask)){
+        if (!TextUtils.isEmpty(taskId)){
             Bundle args = new Bundle();
-            args.putString(Constants.SERIALIZED_TASK, serializedTask);
+            args.putString(Constants.TASK_ID, taskId);
             fragment.setArguments(args);
         }
 
         return fragment;
     }
 
+
     /**
      * The method gets the parent Task that was passed in
      */
     public void getParentTask(){
-        if (getArguments() != null && getArguments().containsKey(Constants.SERIALIZED_TASK)){
-            String serializedTask = getArguments().getString(Constants.SERIALIZED_TASK, "");
-            if (!serializedTask.isEmpty()){
-                Gson gson = new Gson();
-                parentTask = gson.fromJson(serializedTask, Task.class);
-                boolean status = parentTask == null;
-                Log.d("Task", "Status : " + String.valueOf(status));
+        if (getArguments() != null && getArguments().containsKey(Constants.TASK_ID)){
+            String taskId = getArguments().getString(Constants.TASK_ID);
+            if (!TextUtils.isEmpty(taskId)){
+                parentTask = taskDao.getTaskById(taskId);
             }
         }
     }
@@ -100,7 +106,8 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_add_sub_task, container, false);
-        dataAccessManager = new DataAccessManager(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        realm = Realm.getDefaultInstance();
+        taskDao = new TaskDao(realm);
 
         ButterKnife.bind(this, rootView);
         getParentTask();
@@ -145,7 +152,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
 
 
-    private void showSubTasks(Task task) {
+    private void showSubTasks(TaskEntity task) {
         if (task != null && task.getSubTask().size() > 0){
             showEmptyText(false);
             subTaskListAdapter = new SubTaskListAdapter(task.getSubTask(), this);
@@ -163,11 +170,11 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
             return;
         }
         String subTaskText = addSubTaskEditText.getText().toString();
-        dataAccessManager.addSubTask(parentTask, subTaskText);
+        taskDao.createNewSubTask(subTaskText, parentTask.getId());
         addSubTaskEditText.setText("");
     }
 
-    private void populateTaskDetails(Task parentTask) {
+    private void populateTaskDetails(TaskEntity parentTask) {
         String dueDate = null;
         try {
             dueDate = TimeUtils.getReadableModifiedDateWithTime(parentTask.getDueDateAndTime());
@@ -226,7 +233,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
         String folderName = null;
         try {
-            folderName = parentTask.getFolder().getTitle();
+            folderName = parentTask.getFolder().getFolderName();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -276,27 +283,33 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     }
 
     @Override
-    public void onSubTaskChecked(String subTaskTitle) {
+    public void onSubTaskChecked(String subTaskId) {
         shouldUpdateAdapter = false;
-        dataAccessManager.onMarkSubTaskAsComplete(parentTask, subTaskTitle);
+        taskDao.updateSubTaskStatus(parentTask.getId(), subTaskId, true);
     }
 
 
     @Override
-    public void onSubTaskUnChecked(String subTaskTitle) {
+    public void onSubTaskUnChecked(String subTaskId) {
         shouldUpdateAdapter = false;
-         dataAccessManager.onMarkSubTaskAsInComplete(parentTask, subTaskTitle);
+        taskDao.updateSubTaskStatus(parentTask.getId(), subTaskId, false);
 
     }
 
 
     @Override
-    public void onSubTaskDeleted(String subTaskTitle) {
-       dataAccessManager.deleteSubTask(parentTask, subTaskTitle);
+    public void onSubTaskDeleted(String subTaskId) {
+       taskDao.deleteSubTask(subTaskId);
     }
 
     @Override
-    public void onEditSubTask(SubTask subTask) {
+    public void onEditSubTask(SubTaskEntity subTask) {
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        realm.close();
     }
 }

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,7 +15,6 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,30 +23,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.okason.diary.R;
-import com.okason.diary.core.events.TaskListChangeEvent;
 import com.okason.diary.core.listeners.TaskItemListener;
-import com.okason.diary.models.SubTask;
-import com.okason.diary.models.Task;
-import com.okason.diary.ui.addnote.DataAccessManager;
-import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.data.TaskDao;
+import com.okason.diary.models.realmentities.TaskEntity;
 import com.okason.diary.utils.Constants;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Realm;
+import io.realm.RealmResults;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -58,17 +45,18 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
 
     private final static String TAG = "TaskListFragment";
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser firebaseUser;
-    private DataAccessManager dataAccessManager;
 
 
-    private List<Task> allTasks;
-    private List<Task> filteredTasks;
+
+
+    private RealmResults<TaskEntity> allTasks;
+    private List<TaskEntity> filteredTasks;
     private TaskListAdapter mListAdapter;
     private View mRootView;
     private boolean shouldUpdateAdapter = true;
     private String sortColumn = "title";
+    private Realm realm;
+    private TaskDao taskDao;
 
 
 
@@ -117,95 +105,34 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        allTasks = new ArrayList<>();
-        filteredTasks = new ArrayList<>();
 
-
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseUser = firebaseAuth.getCurrentUser();
 
         floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-                    startActivity(new Intent(getActivity(), AddTaskActivity.class));
-                } else {
-                    startActivity(AuthUiActivity.createIntent(getActivity()));
-                }
-
+                startActivity(new Intent(getActivity(), AddTaskActivity.class));
             }
         });
         sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("sort_options","title");
+        realm = Realm.getDefaultInstance();
+        taskDao = new TaskDao(realm);
         return mRootView;
+    }
+
+    private void getTasks() {
+        if (priority == Constants.PRIORITY_ALL){
+            allTasks = taskDao.getAllTask().sort(sortColumn);
+        } else {
+            allTasks = taskDao.getAllTasksForPriority(priority).sort(sortColumn);
+        }
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-            dataAccessManager = new DataAccessManager(firebaseUser.getUid());
-
-
-            if (priority == Constants.PRIORITY_ALL){
-               dataAccessManager.getTaskPath()
-                       .orderBy(sortColumn)
-                       .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                   @Override
-                   public void onComplete(@NonNull com.google.android.gms.tasks.Task<QuerySnapshot> task) {
-                       if (task.isSuccessful()){
-                           for (DocumentSnapshot snapshot : task.getResult()) {
-                               com.okason.diary.models.Task item = snapshot.toObject(com.okason.diary.models.Task.class);
-                               if (item != null) {
-                                   allTasks.add(item);
-                               }
-                           }
-                           showTodoLists(allTasks);
-                       }
-                   }
-               });
-
-            } else {
-               dataAccessManager
-                       .getTaskPath()
-                       .orderBy(sortColumn)
-                       .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                   @Override
-                   public void onComplete(@NonNull com.google.android.gms.tasks.Task<QuerySnapshot> task) {
-                       if (task.isSuccessful()){
-                           for (DocumentSnapshot snapshot : task.getResult()) {
-                               com.okason.diary.models.Task item = snapshot.toObject(com.okason.diary.models.Task.class);
-                               if (item != null && item.getPriority() == priority) {
-                                   allTasks.add(item);
-                               }
-                           }
-                           showTodoLists(allTasks);
-                       }
-                   }
-               });
-            }
-        }
-
-
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
-
-    }
-
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onTaskListChange(TaskListChangeEvent event){
-        allTasks = event.getTasklList();
+        getTasks();
         showTodoLists(allTasks);
     }
 
@@ -247,65 +174,33 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     @Override
     public boolean onClose() {
-
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-            showTodoLists(allTasks);
-        }
+        getTasks();
+        showTodoLists(allTasks);
         return false;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-            if (query.length() > 0) {
-                filteredTasks = filterTasks(query);
-                showTodoLists(filteredTasks);
-                return true;
-            }
-        }  else {
-            makeToast(getString(R.string.login_required));
+        if (query.length() > 0) {
+            filteredTasks = taskDao.filterTasks(query);
+            showTodoLists(filteredTasks);
         }
-
         return true;
     }
 
-    private List<Task> filterTasks(String query) {
-        List<Task> taskList = new ArrayList<>();
-        for (Task task: allTasks){
-            String title = task.getTitle().toLowerCase();
-            query = query.toLowerCase();
-            if (title.contains(query)){
-                taskList.add(task);
-            }else {
-                for (SubTask subTask: task.getSubTask()){
-                    String subTasktitle = subTask.getTitle().toLowerCase();
-                    if (subTasktitle.contains(query)){
-                        taskList.add(task);
-                        break;
-                    }
-                }
-            }
-        }
-        return taskList;
-    }
+
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-            if (newText.length() > 0) {
-                filteredTasks = filterTasks(newText);
-                showTodoLists(filteredTasks);
-                return true;
-            }
-        }  else {
-            makeToast(getString(R.string.login_required));
+        if (newText.length() > 0) {
+            filteredTasks = taskDao.filterTasks(newText);
+            showTodoLists(filteredTasks);
         }
-
         return true;
     }
 
 
-    private void showTodoLists(List<Task> tasks) {
+    private void showTodoLists(List<TaskEntity> tasks) {
 
         if (tasks != null && tasks.size() > 0){
             showEmptyText(false);
@@ -347,7 +242,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
 
     @Override
-    public void onEditTaskButtonClicked(Task clickedTask) {
+    public void onEditTaskButtonClicked(TaskEntity clickedTask) {
         Intent editTaskIntent = new Intent(getActivity(), AddTaskActivity.class);
         String serializedTask = new Gson().toJson(clickedTask);
         editTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
@@ -355,7 +250,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     }
 
     @Override
-    public void onDeleteTaskButtonClicked(Task clickedTask) {
+    public void onDeleteTaskButtonClicked(TaskEntity clickedTask) {
         boolean shouldPromptForDelete = PreferenceManager
                 .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
         if (shouldPromptForDelete) {
@@ -366,13 +261,13 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     }
 
-    private void deleteTask(Task clickedTask) {
-        dataAccessManager.deleteTask(clickedTask);
+    private void deleteTask(TaskEntity clickedTask) {
+        taskDao.deleteTask(clickedTask.getId());
 
     }
 
     @Override
-    public void onAddSubTasksButtonClicked(Task clickedTask) {
+    public void onAddSubTasksButtonClicked(TaskEntity clickedTask) {
         Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
         Gson gson = new Gson();
         String serializedTask = gson.toJson(clickedTask);
@@ -382,29 +277,20 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     }
 
     @Override
-    public void onTaskChecked(Task task) {
-//        shouldUpdateAdapter = false;
-//        for (SubTask subTask: task.getSubTask()){
-//            subTask.setChecked(true);
-//        }
-        dataAccessManager.getTaskPath().document(task.getId()).update("checked", true);
+    public void onTaskChecked(TaskEntity task) {
+        taskDao.updateTaskStatus(task, true);
 
     }
 
 
 
     @Override
-    public void onTaskUnChecked(Task task) {
-//        shouldUpdateAdapter = false;
-//        for (SubTask subTask: task.getSubTask()){
-//            subTask.setChecked(false);
-//        }
-        dataAccessManager.getTaskPath().document(task.getId()).update("checked", false);
-
+    public void onTaskUnChecked(TaskEntity task) {
+        taskDao.updateTaskStatus(task, false);
     }
 
 
-    private void promptForDelete(final Task clickedTask) {
+    private void promptForDelete(final TaskEntity clickedTask) {
         String title = getString(R.string.are_you_sure);
         String message =  getString(R.string.action_delete) + " " + clickedTask.getTitle();
 
@@ -420,7 +306,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                dataAccessManager.deleteTask(clickedTask);
+                taskDao.deleteTask(clickedTask.getId());
             }
         });
         alertDialog.setNegativeButton(R.string.label_cancel, new DialogInterface.OnClickListener() {

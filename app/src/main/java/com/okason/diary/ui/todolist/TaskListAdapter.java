@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.TaskItemListener;
-import com.okason.diary.models.Task;
+import com.okason.diary.models.realmentities.TaskEntity;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
 
@@ -31,11 +31,11 @@ import butterknife.ButterKnife;
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
-    private final List<Task> mTasks;
+    private final List<TaskEntity> mTasks;
     private final Context mContext;
     private final TaskItemListener taskItemListener;
 
-    public TaskListAdapter(List<Task> todoLists, Context context, TaskItemListener taskItemListener) {
+    public TaskListAdapter(List<TaskEntity> todoLists, Context context, TaskItemListener taskItemListener) {
         mTasks = todoLists;
         mContext = context;
         this.taskItemListener = taskItemListener;
@@ -53,7 +53,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        final Task task = mTasks.get(position);
+        final TaskEntity task = mTasks.get(position);
 
         boolean isChecked = task.isChecked();
         if (isChecked){
@@ -142,11 +142,11 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked) {
-                        final Task checkedTask = mTasks.get(getLayoutPosition());
+                        final TaskEntity checkedTask = mTasks.get(getLayoutPosition());
                         taskItemListener.onTaskChecked(checkedTask);
 
                     } else {
-                        final Task uncheckedTask = mTasks.get(getLayoutPosition());
+                        final TaskEntity uncheckedTask = mTasks.get(getLayoutPosition());
                         taskItemListener.onTaskUnChecked(uncheckedTask);
                     }
 

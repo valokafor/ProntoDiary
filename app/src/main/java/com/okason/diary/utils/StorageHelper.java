@@ -33,7 +33,7 @@ import android.widget.Toast;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.models.Attachment;
+import com.okason.diary.models.realmentities.AttachmentEntity;
 
 import org.apache.commons.io.FileUtils;
 
@@ -443,7 +443,7 @@ public class StorageHelper {
      * @param uri
      * @return
      */
-    public static Attachment createAttachmentFromUri(Context mContext, Uri uri) {
+    public static AttachmentEntity createAttachmentFromUri(Context mContext, Uri uri) {
         return createAttachmentFromUri(mContext, uri, false);
     }
 
@@ -451,7 +451,7 @@ public class StorageHelper {
     /**
      * Creates a fiile to be used as attachment.
      */
-    public static Attachment createAttachmentFromUri(Context mContext, Uri uri, boolean moveSource) {
+    public static AttachmentEntity createAttachmentFromUri(Context mContext, Uri uri, boolean moveSource) {
         String name = FileHelper.getNameFromUri(mContext, uri);
         String extension = FileHelper.getFileExtension(FileHelper.getNameFromUri(mContext, uri)).toLowerCase(
                 Locale.getDefault());
@@ -467,12 +467,12 @@ public class StorageHelper {
             f = StorageHelper.createExternalStoragePrivateFile(mContext, uri, extension);
         }
 
-        Attachment mAttachment = null;
+        AttachmentEntity mAttachment = null;
         if (f != null) {
             Uri fileUri = FileProvider.getUriForFile(ProntoDiaryApplication.getAppContext(),
                     BuildConfig.APPLICATION_ID + ".provider",
                     f);
-            mAttachment = new Attachment(fileUri, f.getAbsolutePath(), StorageHelper.getMimeTypeInternal(mContext, uri));
+            mAttachment = new AttachmentEntity(fileUri, f.getAbsolutePath(), StorageHelper.getMimeTypeInternal(mContext, uri));
             mAttachment.setName(name);
             mAttachment.setSize(f.length());
         }

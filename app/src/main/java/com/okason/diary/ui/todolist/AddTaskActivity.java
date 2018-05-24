@@ -22,9 +22,9 @@ public class AddTaskActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (savedInstanceState == null) {
-            if (getIntent() != null && getIntent().hasExtra(Constants.SERIALIZED_TASK)) {
-                String content = getIntent().getStringExtra(Constants.SERIALIZED_TASK);
-                AddTaskFragment fragment = AddTaskFragment.newInstance(content);
+            if (getIntent() != null && getIntent().hasExtra(Constants.TASK_ID)) {
+                String taskId = getIntent().getStringExtra(Constants.TASK_ID);
+                AddTaskFragment fragment = AddTaskFragment.newInstance(taskId);
                 openFragment(fragment, getString(R.string.title_edit_task));
             } else {
                 openFragment(AddTaskFragment.newInstance(""), getString(R.string.title_add_new_task));

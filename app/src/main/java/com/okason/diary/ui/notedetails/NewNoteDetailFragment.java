@@ -1,7 +1,10 @@
 package com.okason.diary.ui.notedetails;
 
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
@@ -11,8 +14,10 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.CardView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,7 +31,16 @@ import android.widget.TextView;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.okason.diary.BuildConfig;
 import com.okason.diary.R;
+import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.data.NoteDao;
 import com.okason.diary.models.realmentities.AttachmentEntity;
 import com.okason.diary.models.realmentities.NoteEntity;
@@ -34,9 +48,17 @@ import com.okason.diary.models.realmentities.TagEntity;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
+import com.okason.diary.utils.FileUtility;
 import com.okason.diary.utils.IntentChecker;
 import com.okason.diary.utils.SettingsHelper;
 import com.okason.diary.utils.date.TimeUtils;
+
+import org.greenrobot.eventbus.EventBus;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -47,6 +69,8 @@ import io.realm.RealmList;
  * A simple {@link Fragment} subclass.
  */
 public class NewNoteDetailFragment extends Fragment implements View.OnClickListener {
+
+    private final static String TAG = "NoteDetail";
 
     //Todo - Make Category clickable
     //Todo - Make Tags clickable, and when clicked open Tag Activity and display the Notes that belong to that tag
@@ -97,6 +121,10 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
     private NoteEntity currentNote;
     private Realm realm;
 
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+    private FirebaseStorage mFirebaseStorage;
+
 
     public NewNoteDetailFragment() {
         // Required empty public constructor
@@ -128,6 +156,9 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
         mRootView = inflater.inflate(R.layout.fragment_note_detail, container, false);
         ButterKnife.bind(this, mRootView);
         realm = Realm.getDefaultInstance();
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        mFirebaseStorage = FirebaseStorage.getInstance();
         if (!TextUtils.isEmpty(currentNoteId)){
             currentNote = new NoteDao(realm).getNoteEntityById(currentNoteId);
         }
@@ -155,13 +186,13 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
         int id = item.getItemId();
         switch (id){
             case R.id.action_edit:
-               // EventBus.getDefault().post(new EditNoteButtonClickedEvent(mCurrentNote.getId()));
+               EventBus.getDefault().post(new EditNoteButtonClickedEvent(currentNote.getId()));
                 break;
             case R.id.action_delete:
-               // showDeleteConfirmation(mCurrentNote);
+                showDeleteConfirmation(currentNote);
                 break;
             case R.id.action_share:
-               // displayShareIntent(mCurrentNote);
+                displayShareIntent(currentNote);
                 break;
             case R.id.action_play:
                 // onPlayAudioButtonClicked();
@@ -438,6 +469,146 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
         if (container != null) {
             Snackbar.make(mRootView, text, Snackbar.LENGTH_LONG).show();
         }
+    }
+
+    public void showDeleteConfirmation(NoteEntity note) {
+        final String titleOfNoteTobeDeleted = note.getTitle();
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
+
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
+        TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
+        titleText.setText(getString(R.string.warning_are_you_sure));
+        alertDialog.setCustomTitle(titleView);
+
+
+        alertDialog.setMessage(getString(R.string.delete_prompt) + " " + titleOfNoteTobeDeleted + " ?");
+        alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteNote(currentNote);
+                displayPreviousActivity();
+            }
+        });
+        alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialog.show();
+
+    }
+
+    public void displayPreviousActivity() {
+        getActivity().onBackPressed();
+
+    }
+
+    private void deleteNote(NoteEntity note) {
+        if (!TextUtils.isEmpty(note.getId())) {
+            new NoteDao(realm).deleteNote(note.getId());
+        }
+        displayPreviousActivity();
+    }
+
+
+    public void displayShareIntent(final NoteEntity note) {
+        final String titleText = note.getTitle();
+
+        final String contentText = titleText
+                + System.getProperty("line.separator")
+                + note.getContent();
+
+        if (note.getAttachments().size() == 0){
+            shareTextOnly(titleText, contentText);
+        } else if (note.getAttachments().size() == 1) {
+            shareTextAndOneAttachment(titleText, contentText, note);
+        } else if (note.getAttachments().size() > 1) {
+            shareTextAndMultipleAttachment(titleText, contentText, note);
+        }
+
+    }
+
+    private void shareTextAndMultipleAttachment(String titleText, String contentText, NoteEntity note) {
+        final Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+        ArrayList<Uri> uris = new ArrayList<>();
+
+
+
+        // A check to decide the mime type of attachments to share is done here
+        HashMap<String, Boolean> mimeTypes = new HashMap<>();
+        for (AttachmentEntity attachment : note.getAttachments()) {
+            if (attachment.getFilePath().contains("http")){
+                continue;
+            }
+            Uri uri = Uri.parse(attachment.getUri());
+            uris.add(uri);
+            mimeTypes.put(attachment.getMime_type(), true);
+        }
+        // If many mime types are present a general type is assigned to intent
+        if (mimeTypes.size() > 1) {
+            shareIntent.setType("*/*");
+        } else {
+            shareIntent.setType((String) mimeTypes.keySet().toArray()[0]);
+        }
+
+        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+
+    }
+
+    private void shareTextAndOneAttachment(final String titleText, final String contentText, NoteEntity note) {
+        final Intent shareIntent = new Intent();
+
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.setType(note.getAttachments().get(0).getMime_type());
+
+
+        String cloudString = note.getAttachments().get(0).getCloudFilePath();
+        StorageReference storageReference = mFirebaseStorage.getReferenceFromUrl(cloudString);
+        try {
+            final File localFile = FileUtility.createImageFile(Constants.MIME_TYPE_IMAGE_EXT);
+            storageReference.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    Uri singleUri  = FileProvider.getUriForFile(getContext(),
+                            BuildConfig.APPLICATION_ID + ".provider",
+                            localFile);
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, singleUri);
+                    shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
+                    startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d(TAG, "File Download failed: " + e.getLocalizedMessage());
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private void shareTextOnly(String titleText, String contentText) {
+
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, titleText);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, contentText);
+        PackageManager packageManager = getActivity().getPackageManager();
+        if (shareIntent.resolveActivity(packageManager) != null) {
+            startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.share_message_chooser)));
+        } else {
+            Log.d(TAG, getString(R.string.no_application_found));
+        }
+
+
     }
 
 

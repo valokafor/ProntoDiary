@@ -37,8 +37,8 @@ import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.data.NoteDao;
 import com.okason.diary.models.realmentities.AttachmentEntity;
 import com.okason.diary.models.realmentities.NoteEntity;
+import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.attachment.GalleryActivity;
-import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
 
@@ -147,7 +147,7 @@ public class NotesFragment extends Fragment
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(AuthUiActivity.createIntent(getActivity()));
+                startActivity(new Intent(getActivity(), AddNoteActivity.class));
             }
         });
         return mRootView;

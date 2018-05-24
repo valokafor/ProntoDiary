@@ -1,8 +1,6 @@
 package com.okason.diary.ui.tag;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -14,13 +12,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.amulyakhare.textdrawable.TextDrawable;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.models.Tag;
-import com.okason.diary.ui.addnote.DataAccessManager;
+import com.okason.diary.models.realmentities.NoteEntity;
+import com.okason.diary.models.realmentities.TagEntity;
 
 import java.util.List;
 
@@ -32,22 +28,19 @@ import butterknife.ButterKnife;
  */
 
 public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.ViewHolder> {
-    private List<Tag> mTags;
-    private List<String> selectTags;
+    private List<TagEntity> mTags;
     private final Context mContext;
     private final OnTagSelectedListener mListener;
-    private final DataAccessManager dataAccessManager;
+
+    //The id of the calling Note
+    private final String noteId;
 
 
-
-    public SelectTagAdapter(final List<Tag> allTags, List<String> currentTags, Context context,
-                            OnTagSelectedListener listener, DataAccessManager dataAccessManager) {
-        selectTags = currentTags;
-        mTags = allTags;
+    public SelectTagAdapter(List<TagEntity> tags, Context context, OnTagSelectedListener listener, String noteId) {
+        mTags = tags;
         mContext = context;
         mListener = listener;
-
-        this.dataAccessManager = dataAccessManager;
+        this.noteId = noteId;
     }
 
 
@@ -55,84 +48,52 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
-        View todoListView = inflater.inflate(R.layout.custom_layout_select_tag_list, parent, false);
-        return new ViewHolder((LinearLayout) todoListView);
+        View todoListView = inflater.inflate(R.layout.custom_row_tag_list, parent, false);
+        return new ViewHolder((LinearLayout)todoListView);
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, final int position) {
-        final Tag selectedTag = mTags.get(position);
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        final TagEntity selectedTag = mTags.get(position);
 
-        if (!TextUtils.isEmpty(selectedTag.getTagName())) {
+        if (!TextUtils.isEmpty(selectedTag.getTagName())){
             holder.tagCheckbox.setText(selectedTag.getTagName());
 
-            String tagPath = "tags." + selectedTag.getTagName();
-
-            dataAccessManager.getJournalCloudPath()
-                    .whereEqualTo(tagPath, true)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            if (task.isSuccessful()) {
-                                int count = task.getResult().size();
-                                int color = ContextCompat.getColor(mContext, R.color.primary_text);
-                                TextDrawable drawable = TextDrawable.builder()
-                                        .beginConfig()
-                                        .bold()
-                                        .endConfig()
-                                        .buildRound(String.valueOf(count), color);
-                                holder.tagCountImage.setImageDrawable(drawable);
-
-                            }
-                        }
-                    });
-
-
+            int count = selectedTag.getNotes().size();
+            ColorGenerator generator = ColorGenerator.MATERIAL;
+            int color = generator.getRandomColor();
+            TextDrawable drawable = TextDrawable.builder()
+                    .buildRound(String.valueOf(count), color);
+            holder.tagCountImage.setImageDrawable(drawable);
         }
 
-        //Selec Checkbox for Tags that have already been added to the
-        //Journal
-        for (String tag : selectTags) {
-            if (selectedTag.getTagName().equals(tag)) {
-                holder.tagCheckbox.setChecked(true);
-                break;
-            }
-        }
-
-        holder.tagCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    Tag checkedTag = mTags.get(position);
-                    mListener.onTagChecked(checkedTag);
-
-                } else {
-                    Tag unCheckedTag = mTags.get(position);
-                    mListener.onTagUnChecked(unCheckedTag);
+        if (selectedTag.getNotes().size() > 0){
+            for (NoteEntity note : selectedTag.getNotes()){
+                if (note.getId().equals(noteId)){
+                    holder.tagCheckbox.setChecked(true);
                 }
-                notifyDataSetChanged();
             }
-        });
+        }
 
     }
 
     @Override
     public int getItemCount() {
-        if (mTags != null) {
+        if (mTags != null){
             return mTags.size();
-        } else {
+        }else {
             return 0;
         }
     }
 
-    private void setTasks(List<Tag> tags) {
+    private void setTasks(List<TagEntity> tags) {
         mTags = tags;
         notifyDataSetChanged();
     }
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+
+    public class ViewHolder extends RecyclerView.ViewHolder{
         public LinearLayout container;
 
         @BindView(R.id.check_box_tag)
@@ -141,14 +102,27 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
         ImageView tagCountImage;
 
 
+
         public ViewHolder(LinearLayout container) {
             super(container);
             ButterKnife.bind(this, container);
-
+            tagCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked){
+                        TagEntity checkedTag = mTags.get(getLayoutPosition());
+                        mListener.onTagChecked(checkedTag);
+                    }else {
+                        TagEntity unCheckedTag = mTags.get(getLayoutPosition());
+                        mListener.onTagUnChecked(unCheckedTag);
+                    }
+                }
+            });
         }
 
 
     }
+
 
 
 }

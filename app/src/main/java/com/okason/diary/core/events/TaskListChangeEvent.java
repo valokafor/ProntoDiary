@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.Task;
+import com.okason.diary.models.realmentities.TaskEntity;
 
 import java.util.List;
 
@@ -9,14 +9,14 @@ import java.util.List;
  */
 
 public class TaskListChangeEvent {
-    private final List<Task> tasklList;
+    private final List<TaskEntity> tasklList;
 
 
-    public TaskListChangeEvent(List<Task> tasklList) {
+    public TaskListChangeEvent(List<TaskEntity> tasklList) {
         this.tasklList = tasklList;
     }
 
-    public List<Task> getTasklList() {
+    public List<TaskEntity> getTasklList() {
         return tasklList;
     }
 }

@@ -8,21 +8,21 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.models.Folder;
+import com.okason.diary.models.realmentities.FolderEntity;
 
 import java.util.List;
 
 /**
  * Created by Valentine on 2/17/2016.
  */
-public class SelectFolderAdapter extends ArrayAdapter<Folder> {
-    private List<Folder> mCategories;
+public class SelectFolderAdapter extends ArrayAdapter<FolderEntity> {
+    private List<FolderEntity> mCategories;
     private Context mContext;
 
 
 
 
-    public SelectFolderAdapter(Context context, List<Folder> categories){
+    public SelectFolderAdapter(Context context, List<FolderEntity> categories){
         super(context, android.R.layout.simple_list_item_1, categories);
         mCategories = categories;
         mContext = context;
@@ -36,7 +36,7 @@ public class SelectFolderAdapter extends ArrayAdapter<Folder> {
 
 
     @Override
-    public Folder getItem(int position) {
+    public FolderEntity getItem(int position) {
         if (position < mCategories.size()) {
             return mCategories.get(position);
         }
@@ -48,7 +48,7 @@ public class SelectFolderAdapter extends ArrayAdapter<Folder> {
         return position;
     }
 
-    public void replaceData(List<Folder> folders){
+    public void replaceData(List<FolderEntity> folders){
         mCategories.clear();
         mCategories = folders;
         notifyDataSetChanged();
@@ -57,11 +57,11 @@ public class SelectFolderAdapter extends ArrayAdapter<Folder> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Folder category = mCategories.get(position);
+        FolderEntity category = mCategories.get(position);
 
         View view = LayoutInflater.from(getContext()).inflate(R.layout.folder_list_text, null);
         TextView text1 = (TextView) view.findViewById(android.R.id.text1);
-        text1.setText(category.getTitle());
+        text1.setText(category.getFolderName());
 
         return view;
     }
