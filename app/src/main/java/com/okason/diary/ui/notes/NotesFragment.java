@@ -65,6 +65,7 @@ public class NotesFragment extends Fragment
     private FirebaseAnalytics firebaseAnalytics;
     private Realm realm;
     private RealmResults<NoteEntity> noteEntities;
+    private NoteDao noteDao;
     private final static String TAG = "NotesFragment";
 
 
@@ -136,6 +137,7 @@ public class NotesFragment extends Fragment
         mRootView = inflater.inflate(R.layout.fragment_note_list, container, false);
         ButterKnife.bind(this, mRootView);
         realm = Realm.getDefaultInstance();
+        noteDao = new NoteDao(realm);
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -178,7 +180,7 @@ public class NotesFragment extends Fragment
     }
 
     private void fetchNotes() {
-        noteEntities = realm.where(NoteEntity.class).findAllAsync().sort("dateModified");
+        noteEntities = noteDao.getAllNotes().sort("dateModified");
         noteEntities.addChangeListener(changeListener);
         showNotes(noteEntities);
     }

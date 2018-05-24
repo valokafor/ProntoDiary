@@ -3,16 +3,19 @@ package com.okason.diary.data;
 import android.content.Context;
 import android.net.Uri;
 import android.support.v4.content.FileProvider;
+import android.text.TextUtils;
 
 import com.okason.diary.BuildConfig;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.models.realmentities.AttachmentEntity;
 import com.okason.diary.models.realmentities.FolderEntity;
 import com.okason.diary.models.realmentities.NoteEntity;
+import com.okason.diary.models.realmentities.TagEntity;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.StorageHelper;
 
 import java.io.File;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -25,13 +28,20 @@ import io.realm.RealmResults;
 
 public class NoteDao {
     private Realm realm;
+    private final static String TAG = "NoteDao";
 
     public NoteDao(Realm realm) {
         this.realm = realm;
     }
 
-    public RealmResults<NoteEntity> getAllNoteEntitys() {
+    public RealmResults<NoteEntity> getAllNotes() {
         RealmResults<NoteEntity> notes = realm.where(NoteEntity.class).findAll();
+        for (NoteEntity note: notes){
+            if (note != null && TextUtils.isEmpty(note.getContent())
+                    && TextUtils.isEmpty(note.getTitle())){
+                deleteNote(note.getId());
+            }
+        }
         return notes;
     }
 
@@ -190,5 +200,52 @@ public class NoteDao {
 
     }
 
+    public void addTag(final String noteId, final String tagId) {
+        realm.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm backgroundRealm) {
+                NoteEntity selectedNote = backgroundRealm.where(NoteEntity.class).equalTo("id", noteId).findFirst();
+                TagEntity selectedTag = backgroundRealm.where(TagEntity.class).equalTo("id", tagId).findFirst();
 
-}
+                if (noteContainsTag(selectedNote, selectedTag)){
+                    return;
+                }
+
+                if (selectedNote != null && selectedTag != null){
+                    //Add Tag to Note
+                    selectedNote.getTags().add(selectedTag);
+                    selectedTag.getNotes().add(selectedNote);
+                }
+
+            }
+        });
+
+    }
+
+    //Preventds adding duplicate tag to Note
+    private boolean noteContainsTag(NoteEntity selectedNote, TagEntity selectedTag) {
+        List<TagEntity> tags = selectedNote.getTags();
+        for (TagEntity t: tags){
+            if (t.getId().equals(selectedTag.getId())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void removeTag(final String noteId, final String tagId) {
+        realm.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm backgroundRealm) {
+                NoteEntity selectedNote = backgroundRealm.where(NoteEntity.class).equalTo("id", noteId).findFirst();
+                TagEntity selectedTag = backgroundRealm.where(TagEntity.class).equalTo("id", tagId).findFirst();
+                selectedNote.getTags().remove(selectedTag);
+                selectedTag.getNotes().remove(selectedNote);
+            }
+        });
+    }
+
+
+
+
+    }

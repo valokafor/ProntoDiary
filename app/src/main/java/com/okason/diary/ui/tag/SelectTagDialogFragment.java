@@ -16,9 +16,11 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.data.TagDao;
 import com.okason.diary.models.realmentities.TagEntity;
 
-import java.util.List;
+import io.realm.Realm;
+import io.realm.RealmResults;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -26,35 +28,23 @@ import java.util.List;
 public class SelectTagDialogFragment extends DialogFragment {
 
     private View mRooView;
-    private List<TagEntity> mTags;
+    private RealmResults<TagEntity> allTags;
     private SelectTagAdapter mTagAdapter;
     private OnTagSelectedListener mListener;
     private String noteId = "";
+    private Realm realm;
+    private TagDao tagDao;
 
 
-    public List<TagEntity> getTags() {
-        return mTags;
-    }
 
-    public void setTags(List<TagEntity> tags) {
-        mTags = tags;
+    public void setNoteId(String noteId) {
+        this.noteId = noteId;
     }
 
     public static SelectTagDialogFragment newInstance(){
         return new SelectTagDialogFragment();
     }
 
-    public String getNoteId() {
-        return noteId;
-    }
-
-    public void setNoteId(String noteId) {
-        this.noteId = noteId;
-    }
-
-    public OnTagSelectedListener getListener() {
-        return mListener;
-    }
 
     public void setListener(OnTagSelectedListener listener) {
         mListener = listener;
@@ -64,6 +54,13 @@ public class SelectTagDialogFragment extends DialogFragment {
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        realm = Realm.getDefaultInstance();
+        tagDao = new TagDao(realm);
+        allTags = tagDao.getAllTags();
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -90,7 +87,7 @@ public class SelectTagDialogFragment extends DialogFragment {
             }
         });
 
-        mTagAdapter = new SelectTagAdapter(mTags, getActivity(), mListener, noteId);
+        mTagAdapter = new SelectTagAdapter(allTags, getActivity(), mListener, noteId);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         tagRecyclerView.setLayoutManager(layoutManager);
         tagRecyclerView.setAdapter(mTagAdapter);
@@ -104,5 +101,12 @@ public class SelectTagDialogFragment extends DialogFragment {
 
         return builder.create();
 
+    }
+
+
+    @Override
+    public void onDestroy() {
+        realm.close();
+        super.onDestroy();
     }
 }

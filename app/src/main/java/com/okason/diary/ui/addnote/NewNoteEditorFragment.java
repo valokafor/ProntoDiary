@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -38,12 +39,12 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.okason.diary.BuildConfig;
@@ -146,6 +147,14 @@ public class NewNoteEditorFragment extends Fragment {
     @BindView(R.id.attachment_list_recyclerview)
     RecyclerView attachmentRecyclerView;
 
+    @BindView(R.id.creation)
+    TextView dateCreated;
+
+    @BindView(R.id.last_modification) TextView dateModified;
+
+    @BindView(R.id.timestap_layout)
+    LinearLayout mTimeStampLayout;
+
     private final int EXTERNAL_PERMISSION_REQUEST = 1;
     private final int RECORD_AUDIO_PERMISSION_REQUEST = 2;
     private final int IMAGE_CAPTURE_REQUEST = 3;
@@ -161,7 +170,7 @@ public class NewNoteEditorFragment extends Fragment {
     private long audioRecordingTimeStart;
     private long audioRecordingTime;
     private MaterialDialog mDialog;
-    private ValueEventListener tagEventListener;
+
 
     private NoteDao noteDao;
     private FolderDao folderDao;
@@ -311,7 +320,7 @@ public class NewNoteEditorFragment extends Fragment {
     public void onDestroy() {
         //Remove empty note if user did not add anything
         if (mCurrentNote != null && TextUtils.isEmpty(mCurrentNote.getContent())
-                && TextUtils.isEmpty(mCurrentNote.getTitle()) && mCurrentNote.getAttachments().size() == 0){
+                && TextUtils.isEmpty(mCurrentNote.getTitle())){
             noteDao.deleteNote(mCurrentNote.getId());
         }
         mCurrentNote.removeAllChangeListeners();
@@ -352,17 +361,18 @@ public class NewNoteEditorFragment extends Fragment {
 
     private void showSelectTag() {
         selectTagDialogFragment = SelectTagDialogFragment.newInstance();
-        selectTagDialogFragment.setTags(mCurrentNote.getTags() );
+        selectTagDialogFragment.setNoteId(mCurrentNote.getId() );
 
         selectTagDialogFragment.setListener(new OnTagSelectedListener() {
             @Override
             public void onTagChecked(TagEntity selectedTag) {
+                noteDao.addTag(mCurrentNote.getId(), selectedTag.getId());
 
             }
 
             @Override
             public void onTagUnChecked(TagEntity unSelectedTag) {
-
+                noteDao.removeTag(mCurrentNote.getId(), unSelectedTag.getId());
             }
 
             @Override
@@ -438,7 +448,8 @@ public class NewNoteEditorFragment extends Fragment {
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
             @Override
             public void onCategorySelected(FolderEntity selectedCategory) {
-
+                noteDao.setFolder(mCurrentNote.getId(), selectedCategory.getId());
+                selectFolderDialogFragment.dismiss();
             }
 
             @Override
@@ -503,8 +514,26 @@ public class NewNoteEditorFragment extends Fragment {
         }
         mContent.requestFocus();
         initViewAttachments(note.getAttachments());
+        initTagLayout(note.getTags());
 
 
+    }
+
+    private void initTagLayout(List<TagEntity> tags) {
+        if (tags != null && tags.size() > 0){
+            mTimeStampLayout.setVisibility(View.VISIBLE);
+            dateCreated.setVisibility(View.VISIBLE);
+            String tagText = "";
+            for (TagEntity tag: tags){
+                tagText = tagText + "#" + tag.getTagName() + ", ";
+            }
+            dateCreated.setText(tagText);
+            dateCreated.setTextColor(ContextCompat.getColor(getActivity(), R.color.primary_dark));
+            dateCreated.setTypeface(dateCreated.getTypeface(), Typeface.BOLD);
+        }else {
+            mTimeStampLayout.setVisibility(View.GONE);
+            dateCreated.setVisibility(View.GONE);
+        }
     }
 
 
@@ -1343,6 +1372,8 @@ public class NewNoteEditorFragment extends Fragment {
 //            startActivity(new Intent(getActivity(), NoteListActivity.class));
 
 
+            goBackToParent();
+        } else {
             goBackToParent();
         }
 

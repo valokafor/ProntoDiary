@@ -48,7 +48,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
-        View todoListView = inflater.inflate(R.layout.custom_row_tag_list, parent, false);
+        View todoListView = inflater.inflate(R.layout.custom_layout_select_tag_list, parent, false);
         return new ViewHolder((LinearLayout)todoListView);
     }
 
@@ -106,6 +106,7 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
         public ViewHolder(LinearLayout container) {
             super(container);
             ButterKnife.bind(this, container);
+
             tagCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
