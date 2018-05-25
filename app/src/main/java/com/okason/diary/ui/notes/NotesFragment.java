@@ -64,13 +64,10 @@ public class NotesFragment extends Fragment
 
     private FirebaseAnalytics firebaseAnalytics;
     private Realm realm;
-    private RealmResults<Note> noteEntities;
+    private RealmResults<Note> allNotes;
+    private List<Note> filteredJournals;
     private NoteDao noteDao;
     private final static String TAG = "NotesFragment";
-
-
-    private List<Note> unFilteredJournals;
-    private List<Note> filteredJournals;
 
 
     private MediaPlayer mPlayer = null;
@@ -138,13 +135,12 @@ public class NotesFragment extends Fragment
         ButterKnife.bind(this, mRootView);
         realm = Realm.getDefaultInstance();
         noteDao = new NoteDao(realm);
+        filteredJournals = new ArrayList<>();
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         firebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
 
-        filteredJournals = new ArrayList<>();
-        unFilteredJournals = new ArrayList<>();
         floatingActionButton = getActivity().findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -180,16 +176,16 @@ public class NotesFragment extends Fragment
     }
 
     private void fetchNotes() {
-        noteEntities = noteDao.getAllNotes().sort("dateModified");
-        noteEntities.addChangeListener(changeListener);
-        showNotes(noteEntities);
+        allNotes = noteDao.getAllNotes().sort("dateModified");
+        allNotes.addChangeListener(changeListener);
+        showNotes(allNotes);
     }
 
 
     @Override
     public void onPause() {
         super.onPause();
-        noteEntities.removeChangeListener(changeListener);
+        allNotes.removeChangeListener(changeListener);
         if (mPlayer != null) {
             mPlayer.release();
             mPlayer = null;
@@ -217,30 +213,19 @@ public class NotesFragment extends Fragment
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (query.length() > 0) {
-            filteredJournals = filterNotes(query);
+            filteredJournals = noteDao.filterNotes(query);
             showNotes(filteredJournals);
             return true;
         }
         return true;
     }
 
-    private List<Note> filterNotes(String query) {
-        List<Note> journals = new ArrayList<>();
-        for (Note journal: noteEntities){
-            String title = journal.getTitle().toLowerCase();
-            String content = journal.getContent().toLowerCase();
-            query = query.toLowerCase();
-            if (title.contains(query) || content.contains(query)){
-                journals.add(journal);
-            }
-        }
-        return journals;
-    }
+
 
     @Override
     public boolean onQueryTextChange(String newText) {
         if (newText.length() > 0) {
-            filteredJournals = filterNotes(newText);
+            filteredJournals = noteDao.filterNotes(newText);
             showNotes(filteredJournals);
             return true;
         }
@@ -262,7 +247,7 @@ public class NotesFragment extends Fragment
 
 
     public void showNotes(List<Note> journals) {
-        if (journals != null) {
+        if (journals != null && journals.size() > 0) {
             showEmptyText(false);
             mListAdapter = null;
             mListAdapter = new NotesAdapter(journals, getContext());
@@ -279,12 +264,11 @@ public class NotesFragment extends Fragment
     private final OrderedRealmCollectionChangeListener<RealmResults<Note>> changeListener =
             new OrderedRealmCollectionChangeListener<RealmResults<Note>>() {
         @Override
-        public void onChange(RealmResults<Note> noteEntities, OrderedCollectionChangeSet changeSet) {
+        public void onChange(RealmResults<Note> allNotes, OrderedCollectionChangeSet changeSet) {
             // `null`  means the async query returns the first time.
             if (changeSet == null) {
-                if (noteEntities != null && noteEntities.size() > 0) {
-                    unFilteredJournals = noteEntities;
-                    mListAdapter.replaceData(noteEntities);
+                if (allNotes != null && allNotes.size() > 0) {
+                    mListAdapter.replaceData(allNotes);
                     showEmptyText(false);
                 }
                 return;

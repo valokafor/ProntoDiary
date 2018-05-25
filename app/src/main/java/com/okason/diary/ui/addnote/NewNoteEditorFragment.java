@@ -53,6 +53,7 @@ import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AttachingFileCompleteEvent;
 import com.okason.diary.core.events.FolderAddedEvent;
+import com.okason.diary.core.events.TagListChangeEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
@@ -67,6 +68,7 @@ import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.ui.sketch.SketchActivity;
+import com.okason.diary.ui.tag.AddTagDialogFragment;
 import com.okason.diary.ui.tag.SelectTagDialogFragment;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
@@ -104,6 +106,7 @@ public class NewNoteEditorFragment extends Fragment {
     private SelectFolderDialogFragment selectFolderDialogFragment;
     private SelectTagDialogFragment selectTagDialogFragment;
     private AddFolderDialogFragment addFolderDialogFragment;
+    private AddTagDialogFragment addTagDialogFragment;
 
     private AttachmentListAdapter attachmentListAdapter;
     private Note mCurrentNote;
@@ -377,7 +380,8 @@ public class NewNoteEditorFragment extends Fragment {
 
             @Override
             public void onAddTagButtonClicked() {
-
+                selectTagDialogFragment.dismiss();
+                showAddNewTagDialog();
             }
 
             @Override
@@ -398,6 +402,12 @@ public class NewNoteEditorFragment extends Fragment {
         selectTagDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
     }
 
+    public void showAddNewTagDialog() {
+        addTagDialogFragment = AddTagDialogFragment.newInstance("");
+        addTagDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
+
+    }
+
 
 
 
@@ -413,6 +423,11 @@ public class NewNoteEditorFragment extends Fragment {
             noteDao.onAttachmentAdded(event.getAttachment().getId(), mCurrentNote.getId());
 
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTagListChanged(TagListChangeEvent event){
+        showSelectTag();
     }
 
 
@@ -464,6 +479,7 @@ public class NewNoteEditorFragment extends Fragment {
 
             @Override
             public void onAddCategoryButtonClicked() {
+                showAddNewFolderDialog();
 
             }
         });

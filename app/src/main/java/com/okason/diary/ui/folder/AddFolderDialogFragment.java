@@ -15,9 +15,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.okason.diary.R;
+import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.data.FolderDao;
 import com.okason.diary.models.realmentities.Folder;
 import com.okason.diary.utils.Constants;
+
+import org.greenrobot.eventbus.EventBus;
 
 import io.realm.Realm;
 
@@ -38,13 +41,6 @@ public class AddFolderDialogFragment extends DialogFragment {
         // Required empty public constructor
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        realm = Realm.getDefaultInstance();
-        folderDao = new FolderDao(realm);
-
-    }
 
 
 
@@ -75,6 +71,8 @@ public class AddFolderDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        realm = Realm.getDefaultInstance();
+        folderDao = new FolderDao(realm);
         final AlertDialog.Builder addFolderDialog = new AlertDialog.Builder(getActivity(), R.style.dialog);
 
         getCurrentFolder();
@@ -169,6 +167,7 @@ public class AddFolderDialogFragment extends DialogFragment {
                 mFolder = folderDao.createNewFolder();
             }
             folderDao.updatedFolderTitle(mFolder.getId(), categoryName);
+            EventBus.getDefault().post(new FolderAddedEvent(mFolder.getId()));
         }
 
     }

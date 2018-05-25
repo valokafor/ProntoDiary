@@ -15,6 +15,7 @@ import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.StorageHelper;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -243,6 +244,19 @@ public class NoteDao {
                 selectedTag.getNotes().remove(selectedNote);
             }
         });
+    }
+
+    public List<Note> filterNotes(String query) {
+        List<Note> journals = new ArrayList<>();
+        for (Note journal: getAllNotes()){
+            String title = journal.getTitle().toLowerCase();
+            String content = journal.getContent().toLowerCase();
+            query = query.toLowerCase();
+            if (title.contains(query) || content.contains(query)){
+                journals.add(journal);
+            }
+        }
+        return journals;
     }
 
 

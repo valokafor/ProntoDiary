@@ -22,7 +22,8 @@
         android:paddingBottom="@dimen/margin_padding_xtiny"
         android:paddingLeft="@dimen/margin_padding_xtiny"
         android:paddingRight="@dimen/margin_padding_xtiny"
-        android:paddingTop="@dimen/margin_padding_xtiny" />
+        android:paddingTop="@dimen/margin_padding_xtiny"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/empty_text"
@@ -36,7 +37,7 @@
         android:textColor="@color/primary_dark"
         android:textSize="@dimen/text_size_huge"
         android:textStyle="italic"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
 
 </RelativeLayout>
