@@ -167,7 +167,7 @@ public class AddFolderDialogFragment extends DialogFragment {
                 mFolder = folderDao.createNewFolder();
             }
             folderDao.updatedFolderTitle(mFolder.getId(), categoryName);
-            EventBus.getDefault().post(new FolderAddedEvent(mFolder.getId()));
+
         }
 
     }

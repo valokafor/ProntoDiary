@@ -105,16 +105,6 @@ public class AddTaskFragment extends Fragment{
     @BindView(R.id.button_high_priority)
     RadioButton highPriorityButton;
 
-
-
-
-
-
-
-
-
-
-
     @BindView(R.id.image_button_add_reminder_options)
     ImageButton addOtherReminderButton;
     private SelectFolderDialogFragment selectFolderDialogFragment;
@@ -124,10 +114,12 @@ public class AddTaskFragment extends Fragment{
     private Task currentTask = null;
     private Realm realm;
     private TaskDao taskDao;
+    private FolderDao folderDao;
+    private Folder selectedFolder;
 
     private String repeatFrequency = "";
     private int priority = Constants.PRIORITY_LOW;
-   // private Folder selectedFolder;
+
     private Calendar mReminderTime;
     private Calendar repeatEndDate;
 
@@ -180,7 +172,7 @@ public class AddTaskFragment extends Fragment{
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        getPassedInTask();
+
     }
 
 
@@ -190,6 +182,12 @@ public class AddTaskFragment extends Fragment{
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_add_task, container, false);
         ButterKnife.bind(this, mRootView);
+
+        realm = Realm.getDefaultInstance();
+        taskDao = new TaskDao(realm);
+        folderDao = new FolderDao(realm);
+        getPassedInTask();
+
 
 
 
@@ -267,8 +265,6 @@ public class AddTaskFragment extends Fragment{
 
     private void onSaveTaskButtonClicked() {
 
-
-
         if (TextUtils.isEmpty(taskNameEditText.getText())) {
             taskNameEditText.setError(getString(R.string.required));
             return;
@@ -287,16 +283,18 @@ public class AddTaskFragment extends Fragment{
             mReminderTime.setTimeInMillis(System.currentTimeMillis());
         }
 
+        if (selectedFolder == null){
+            selectedFolder = folderDao.getOrCreateFolder(getString(R.string.general));
+        }
+
+        if (currentTask.getFolder() == null) {
+            taskDao.setFolder(currentTask.getId(), selectedFolder.getId());
+        }
+
         if (repeatEndDate == null) {
             repeatEndDate = Calendar.getInstance();
             repeatEndDate.setTimeInMillis(System.currentTimeMillis());
         }
-
-        if (currentTask.getFolder() == null){
-            Folder selectedFolder = new FolderDao(realm).getOrCreateFolder(getString(R.string.general));
-            taskDao.setFolder(currentTask.getId(), selectedFolder.getId());
-        }
-
 
 
         taskDao.updateTask(currentTask.getId(), priority,
@@ -304,6 +302,7 @@ public class AddTaskFragment extends Fragment{
                 mReminderTime.getTimeInMillis(),
                 repeatFrequency,
                 repeatEndDate.getTimeInMillis());
+        goBackToParent();
 
 
     }
@@ -315,12 +314,19 @@ public class AddTaskFragment extends Fragment{
     public void onAddNewFolder(FolderAddedEvent event){
         addFolderDialogFragment.dismiss();
         if (!TextUtils.isEmpty(event.getAddedFolderId())){
-            Folder selectedFolder = new FolderDao(realm).getFolderById(event.getAddedFolderId());
-            taskDao.setFolder(currentTask.getId(), selectedFolder.getId());
-            mFolder.setText(selectedFolder.getFolderName());
+            String folderId = event.getAddedFolderId();
+            selectedFolder = folderDao.getFolderById(folderId);
+            if (selectedFolder != null){
+                String folderName = selectedFolder.getFolderName();
+                mFolder.setText(folderName);
+            }
         }
 
     }
+
+
+
+
 
     private void onRepeatEndDateSelected(Calendar selectedEndDate){
         if (selectedEndDate.before(mReminderTime)){
@@ -526,15 +532,12 @@ public class AddTaskFragment extends Fragment{
 
     private void showChooseFolderDialog() {
         selectFolderDialogFragment = selectFolderDialogFragment.newInstance();
-
-
-
+        selectFolderDialogFragment.setFolders(folderDao.getAllFolders());
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
             @Override
             public void onCategorySelected(Folder selectedFolder) {
                 selectFolderDialogFragment.dismiss();
                 mFolder.setText(selectedFolder.getFolderName());
-                selectedFolder = selectedFolder;
             }
 
             @Override
@@ -644,7 +647,8 @@ public class AddTaskFragment extends Fragment{
         }
 
         try {
-            mFolder.setText(task.getFolder().getFolderName());
+            selectedFolder = task.getFolder();
+            mFolder.setText(selectedFolder.getFolderName());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -795,4 +799,9 @@ public class AddTaskFragment extends Fragment{
     }
 
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        realm.close();
+    }
 }

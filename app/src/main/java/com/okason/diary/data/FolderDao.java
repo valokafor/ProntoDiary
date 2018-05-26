@@ -1,6 +1,9 @@
 package com.okason.diary.data;
 
+import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.models.realmentities.Folder;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.UUID;
 
@@ -49,6 +52,7 @@ public class FolderDao {
                 if (selectedFolder != null) {
                     selectedFolder.setFolderName(title);
                     selectedFolder.setDateModified(System.currentTimeMillis());
+                    EventBus.getDefault().post(new FolderAddedEvent(selectedFolder.getId()));
                 }
             }
         });

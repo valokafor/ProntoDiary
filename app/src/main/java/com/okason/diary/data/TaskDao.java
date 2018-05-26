@@ -76,7 +76,7 @@ public class TaskDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                Task updatedTask = realm.where(Task.class).equalTo("id", taskId).findFirst();
+                Task updatedTask = backgroundRealm.where(Task.class).equalTo("id", taskId).findFirst();
                 if (updatedTask != null) {
                     updatedTask.setTitle(taskName);
                     updatedTask.setDateModified(System.currentTimeMillis());

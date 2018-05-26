@@ -6,7 +6,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.okason.diary.R;
+import com.okason.diary.data.TaskDao;
+import com.okason.diary.models.realmentities.Task;
 import com.okason.diary.utils.Constants;
+
+import io.realm.RealmResults;
 
 /**
  * Created by valokafor on 12/28/17.
@@ -14,10 +18,17 @@ import com.okason.diary.utils.Constants;
 
 public class TaskListPagerAdapter extends FragmentStatePagerAdapter {
     private final Context context;
+    private final TaskDao taskDao;
+    private RealmResults<Task> lowPriorityTasks, mediumPriorityTasks, highPriorityTasks;
 
-    public TaskListPagerAdapter(FragmentManager fm, Context context) {
+    public TaskListPagerAdapter(FragmentManager fm, Context context, TaskDao taskDao) {
         super(fm);
         this.context = context;
+        this.taskDao = taskDao;
+        lowPriorityTasks = taskDao.getAllTasksForPriority(Constants.PRIORITY_LOW);
+        mediumPriorityTasks = taskDao.getAllTasksForPriority(Constants.PRIORITY_MEDIUM);
+        highPriorityTasks = taskDao.getAllTasksForPriority(Constants.PRIORITY_HIGH);
+
     }
 
     @Override
@@ -48,15 +59,19 @@ public class TaskListPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public CharSequence getPageTitle(int position) {
         String title = "";
-        switch (position) {
+        int size = 0
+;        switch (position) {
             case 0:
-                title = context.getString(R.string.label_high_priority);
+                size =  highPriorityTasks.size();
+                title = context.getString(R.string.label_high_priority) + " (" + size + ")";
                 break;
             case 1:
-                title = context.getString(R.string.label_medium_priority);
+                size =  mediumPriorityTasks.size();
+                title = context.getString(R.string.label_medium_priority) + " (" + size + ")";
                 break;
             case 2:
-                title = context.getString(R.string.label_low_priotity);
+                size =  lowPriorityTasks.size();
+                title = context.getString(R.string.label_low_priotity) + " (" + size + ")";
                 break;
             default:
                 title = context.getString(R.string.label_high_priority);

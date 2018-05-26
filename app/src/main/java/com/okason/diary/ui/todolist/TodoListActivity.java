@@ -9,12 +9,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import com.okason.diary.R;
+import com.okason.diary.data.TaskDao;
+
+import io.realm.Realm;
 
 public class TodoListActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private TaskListPagerAdapter pagerAdapter;
     private Toolbar toolbar;
     private TabLayout tabLayout;
+    private Realm realm;
+    private TaskDao taskDao;
 
 
 
@@ -23,21 +28,27 @@ public class TodoListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo_list);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        realm = Realm.getDefaultInstance();
+        taskDao = new TaskDao(realm);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        tabLayout = findViewById(R.id.sliding_tabs);
 
-        pagerAdapter = new TaskListPagerAdapter(getSupportFragmentManager(), this);
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(pagerAdapter);
-        tabLayout.setupWithViewPager(mViewPager);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //openFragment(new TaskListFragment(), getString(R.string.label_todo_list));
+        setupViewPager();
+    }
+
+    private void setupViewPager() {
+        tabLayout = findViewById(R.id.sliding_tabs);
+        pagerAdapter = new TaskListPagerAdapter(getSupportFragmentManager(), this, taskDao);
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager.setAdapter(pagerAdapter);
+        tabLayout.setupWithViewPager(mViewPager);
+
     }
 
     public void openFragment(Fragment fragment, String screenTitle){
@@ -50,5 +61,9 @@ public class TodoListActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(screenTitle);
     }
 
-
+    @Override
+    protected void onDestroy() {
+        realm.close();
+        super.onDestroy();
+    }
 }

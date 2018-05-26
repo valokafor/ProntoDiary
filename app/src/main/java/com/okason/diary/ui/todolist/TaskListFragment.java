@@ -217,13 +217,13 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
             mEmptyText.setVisibility(View.VISIBLE);
             //  mAdView.setVisibility(View.GONE);
             switch (priority){
-                case 0:
+                case 1:
                     mEmptyText.setText(getString(R.string.no_todo_list_found_high_priority));
                     break;
-                case 1:
+                case 2:
                     mEmptyText.setText(getString(R.string.no_todo_list_found_medium_priority));
                     break;
-                case 2:
+                case 3:
                     mEmptyText.setText(getString(R.string.no_todo_list_found_low_priority));
                     break;
                 default:
