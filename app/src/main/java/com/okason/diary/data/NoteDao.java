@@ -7,12 +7,15 @@ import android.text.TextUtils;
 
 import com.okason.diary.BuildConfig;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.events.AttachingFileCompleteEvent;
 import com.okason.diary.models.realmentities.Attachment;
 import com.okason.diary.models.realmentities.Folder;
 import com.okason.diary.models.realmentities.Note;
 import com.okason.diary.models.realmentities.Tag;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.StorageHelper;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,8 +38,14 @@ public class NoteDao {
         this.realm = realm;
     }
 
-    public RealmResults<Note> getAllNotes() {
-        RealmResults<Note> notes = realm.where(Note.class).findAll();
+    public RealmResults<Note> getAllNotes(String tagName) {
+        RealmResults<Note> notes;
+        if (TextUtils.isEmpty(tagName)) {
+            notes = realm.where(Note.class).findAll();
+        } else {
+            notes = realm.where(Note.class).equalTo("tags.tagName", tagName).findAll();
+        }
+
         for (Note note: notes){
             if (note != null && TextUtils.isEmpty(note.getContent())
                     && TextUtils.isEmpty(note.getTitle())){
@@ -101,19 +110,6 @@ public class NoteDao {
         return note;
     }
 
-    public void onAttachmentAdded(String attachmentId, String noteId) {
-        realm.executeTransactionAsync(new Realm.Transaction() {
-            @Override
-            public void execute(Realm backgroundRealm) {
-                Note note = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
-                Attachment attachment = backgroundRealm.where(Attachment.class).equalTo("id", attachmentId).findFirst();
-                if (note != null && attachment != null){
-                    note.getAttachments().add(attachment);
-                    note.setDateModified(System.currentTimeMillis());
-                }
-            }
-        });
-    }
 
     public void setFolder(String noteId, String folderId) {
         realm.executeTransactionAsync(new Realm.Transaction() {
@@ -193,6 +189,7 @@ public class NoteDao {
                     if (note != null && attachment != null){
                         note.getAttachments().add(attachment);
                         note.setDateModified(System.currentTimeMillis());
+                        EventBus.getDefault().post(new AttachingFileCompleteEvent(attachment.getId()));
                     }
                 }
     ;
@@ -246,9 +243,9 @@ public class NoteDao {
         });
     }
 
-    public List<Note> filterNotes(String query) {
+    public List<Note> filterNotes(String query, String tagName) {
         List<Note> journals = new ArrayList<>();
-        for (Note journal: getAllNotes()){
+        for (Note journal: getAllNotes(tagName)){
             String title = journal.getTitle().toLowerCase();
             String content = journal.getContent().toLowerCase();
             query = query.toLowerCase();
@@ -260,6 +257,27 @@ public class NoteDao {
     }
 
 
-
-
+    public Attachment getAttachmentById(String attachmentId) {
+        try {
+            Attachment attachment = realm.where(Attachment.class).equalTo("id", attachmentId).findFirst();
+            return attachment;
+        } catch (Exception e) {
+            return null;
+        }
     }
+
+    public void updateAttachmentUrl(String attachmentId, String downloadUrl) {
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                Attachment attachment = getAttachmentById(attachmentId);
+                attachment.setCloudFilePath(downloadUrl);
+            }
+        });
+    }
+
+    public RealmResults<Note> getNotesByFolder(String folderId) {
+        RealmResults<Note> notes = realm.where(Note.class).equalTo("folder.id", folderId).findAll();
+        return notes;
+    }
+}

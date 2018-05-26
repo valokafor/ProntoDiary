@@ -74,6 +74,7 @@ public class NotesFragment extends Fragment
     private boolean isAudioPlaying = false;
 
     private  String tagName = "";
+    private String folderId = "";
 
 
     private View mRootView;
@@ -104,11 +105,18 @@ public class NotesFragment extends Fragment
      * @param dualScreen - indicates if this Fragment is participating in dual screen
      * @return - returns the created Fragment
      */
-    public static NotesFragment newInstance(boolean dualScreen, String tagName) {
+    public static NotesFragment newInstance(boolean dualScreen, String tagName, String folderId) {
         NotesFragment fragment = new NotesFragment();
         Bundle args = new Bundle();
-        args.putBoolean(Constants.IS_DUAL_SCREEN, dualScreen);
-        args.putString(Constants.TAG_FILTER, tagName);
+        if (dualScreen) {
+            args.putBoolean(Constants.IS_DUAL_SCREEN, dualScreen);
+        }
+        if (!TextUtils.isEmpty(tagName)) {
+            args.putString(Constants.TAG_FILTER, tagName);
+        }
+        if (!TextUtils.isEmpty(folderId)){
+            args.putString(Constants.FOLDER_ID, folderId);
+        }
         fragment.setArguments(args);
         return fragment;
     }
@@ -141,6 +149,18 @@ public class NotesFragment extends Fragment
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         firebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
 
+        showFloatingActionButton();
+        return mRootView;
+    }
+
+    /**
+     * Only show Floating Action Button when this Fragment is attached to the Main Activity
+     * Do not show when this Fragment is attached to Folder Activity
+     */
+    private void showFloatingActionButton() {
+        if (getArguments() != null && getArguments().containsKey(Constants.FOLDER_ID)){
+            return;
+        }
         floatingActionButton = getActivity().findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,7 +168,6 @@ public class NotesFragment extends Fragment
                 startActivity(new Intent(getActivity(), AddNoteActivity.class));
             }
         });
-        return mRootView;
     }
 
 
@@ -176,7 +195,18 @@ public class NotesFragment extends Fragment
     }
 
     private void fetchNotes() {
-        allNotes = noteDao.getAllNotes().sort("dateModified");
+        if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
+            tagName = getArguments().getString(Constants.TAG_FILTER);
+            allNotes = noteDao.getAllNotes(tagName);
+        } else if (getArguments() != null && getArguments().containsKey(Constants.FOLDER_ID)){
+            folderId = getArguments().getString(Constants.FOLDER_ID);
+            allNotes = noteDao.getNotesByFolder(folderId);
+        } else{
+            allNotes = noteDao.getAllNotes("").sort("dateModified");
+        }
+
+
+
         allNotes.addChangeListener(changeListener);
         showNotes(allNotes);
     }
@@ -213,7 +243,7 @@ public class NotesFragment extends Fragment
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (query.length() > 0) {
-            filteredJournals = noteDao.filterNotes(query);
+            filteredJournals = noteDao.filterNotes(query, tagName);
             showNotes(filteredJournals);
             return true;
         }
@@ -225,7 +255,7 @@ public class NotesFragment extends Fragment
     @Override
     public boolean onQueryTextChange(String newText) {
         if (newText.length() > 0) {
-            filteredJournals = noteDao.filterNotes(newText);
+            filteredJournals = noteDao.filterNotes(newText, tagName);
             showNotes(filteredJournals);
             return true;
         }

@@ -279,6 +279,8 @@
                 android:layout_margin="5dp"
                 android:background="@drawable/round_background"
                 android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
                 android:orientation="horizontal">
 
                 <ImageButton

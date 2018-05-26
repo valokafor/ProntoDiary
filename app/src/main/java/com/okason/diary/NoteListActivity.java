@@ -250,15 +250,14 @@ public class NoteListActivity extends AppCompatActivity {
 
         boolean exist = getIntent() != null;
         boolean hasTag = getIntent().hasExtra(Constants.TAG_FILTER);
-        openFragment(new NotesFragment(), "Notes");
-//        if (exist && hasTag) {
-//            String tagName = getIntent().getStringExtra(Constants.TAG_FILTER);
-//            NotesFragment fragment = NotesFragment.newInstance(false, tagName);
-//            String title = "#" + tagName;
-//            openFragment(fragment, title);
-//        } else {
-//            openFragment(new NotesFragment(), getString(R.string.label_journals));
-//        }
+        if (exist && hasTag) {
+            String tagName = getIntent().getStringExtra(Constants.TAG_FILTER);
+            NotesFragment fragment = NotesFragment.newInstance(false, tagName, "");
+            String title = "#" + tagName;
+            openFragment(fragment, title);
+        } else {
+            openFragment(new NotesFragment(), getString(R.string.label_journals));
+        }
 
 
     }

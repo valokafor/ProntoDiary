@@ -69,7 +69,8 @@ public class SettingsHelper {
 
 
   public boolean isRegisteredUser() {
-    return getSharedPreferences().getBoolean(Constants.REGISTERED_USER, false);
+    return true;
+    //return getSharedPreferences().getBoolean(Constants.REGISTERED_USER, false);
   }
 
   public void setRegisteredUser(boolean registered){

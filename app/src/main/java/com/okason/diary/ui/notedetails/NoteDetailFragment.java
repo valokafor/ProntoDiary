@@ -39,13 +39,16 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.okason.diary.BuildConfig;
+import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.data.NoteDao;
 import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.realmentities.Folder;
 import com.okason.diary.models.realmentities.Note;
 import com.okason.diary.models.realmentities.Tag;
 import com.okason.diary.ui.attachment.GalleryActivity;
+import com.okason.diary.ui.folder.FolderActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.FileUtility;
@@ -68,7 +71,7 @@ import io.realm.RealmList;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NewNoteDetailFragment extends Fragment implements View.OnClickListener {
+public class NoteDetailFragment extends Fragment implements View.OnClickListener {
 
     private final static String TAG = "NoteDetail";
 
@@ -126,13 +129,13 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
     private FirebaseStorage mFirebaseStorage;
 
 
-    public NewNoteDetailFragment() {
+    public NoteDetailFragment() {
         // Required empty public constructor
     }
 
 
-    public static NewNoteDetailFragment newInstance(String noteId){
-        NewNoteDetailFragment fragment = new NewNoteDetailFragment();
+    public static NoteDetailFragment newInstance(String noteId){
+        NoteDetailFragment fragment = new NoteDetailFragment();
         if (!TextUtils.isEmpty(noteId)){
             Bundle args = new Bundle();
             args.putString(Constants.NOTE_ID, noteId);
@@ -208,7 +211,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
             if (currentNote.getAttachments() != null && currentNote.getAttachments().size() > 0){
                 showHideImageViews(currentNote.getAttachments());
                 topImageView.setVisibility(View.VISIBLE);
-                displayImage(currentNote.getAttachments().get(0).getCloudFilePath(), topImageView);
+                displayImage(currentNote.getAttachments().get(0).getFilePath(), topImageView);
             }else {
                 attachmentLinearLayout.setVisibility(View.GONE);
                 divider_2.setVisibility(View.GONE);
@@ -231,8 +234,8 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
         folderTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Go to Category Detail screen
-                makeToast("Not implemented yet");
+                //Go to Folder screen
+                onFolderClicked(currentNote.getFolder());
             }
         });
 
@@ -264,7 +267,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
                     @Override
                     public void onClick(View v) {
                         //Go to Tag Detail
-                        makeToast(tag.getTagName() + "Not implemented yet");
+                        onTagClicked(tag);
                     }
                 });
                 tagsLinearLayout.addView(textView);
@@ -302,6 +305,18 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
 
     }
 
+    private void onTagClicked(Tag clickedTag) {
+        Intent tagIntent = new Intent(getActivity(), NoteListActivity.class);
+        tagIntent.putExtra(Constants.TAG_FILTER, clickedTag.getTagName());
+        startActivity(tagIntent);
+    }
+
+    private void onFolderClicked(Folder clickedFolder) {
+        Intent folderIntent = new Intent(getActivity(), FolderActivity.class);
+        folderIntent.putExtra(Constants.FOLDER_ID, clickedFolder.getId());
+        startActivity(folderIntent);
+    }
+
     private boolean containsAudioRecording(Note currentNote) {
         for (Attachment attachment: currentNote.getAttachments()){
             if (attachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
@@ -326,24 +341,24 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
                 cardViewContainer2.setVisibility(View.GONE);
                 cardViewContainer3.setVisibility(View.GONE);
                 clickLinearLayout.setVisibility(View.GONE);
-                displayImage(attachments.get(0).getCloudFilePath(), imageViewThumbnail1);
+                displayImage(attachments.get(0).getFilePath(), imageViewThumbnail1);
                 break;
             case 2:
                 cardViewContainer1.setVisibility(View.VISIBLE);
                 cardViewContainer2.setVisibility(View.VISIBLE);
                 cardViewContainer3.setVisibility(View.GONE);
                 clickLinearLayout.setVisibility(View.GONE);
-                displayImage(attachments.get(0).getCloudFilePath(), imageViewThumbnail1);
-                displayImage(attachments.get(1).getCloudFilePath(), imageViewThumbnail2);
+                displayImage(attachments.get(0).getFilePath(), imageViewThumbnail1);
+                displayImage(attachments.get(1).getFilePath(), imageViewThumbnail2);
                 break;
             case 3:
                 cardViewContainer1.setVisibility(View.VISIBLE);
                 cardViewContainer2.setVisibility(View.VISIBLE);
                 cardViewContainer3.setVisibility(View.VISIBLE);
                 clickLinearLayout.setVisibility(View.GONE);
-                displayImage(attachments.get(0).getCloudFilePath(), imageViewThumbnail1);
-                displayImage(attachments.get(1).getCloudFilePath(), imageViewThumbnail2);
-                displayImage(attachments.get(2).getCloudFilePath(), imageViewThumbnail3);
+                displayImage(attachments.get(0).getFilePath(), imageViewThumbnail1);
+                displayImage(attachments.get(1).getFilePath(), imageViewThumbnail2);
+                displayImage(attachments.get(2).getFilePath(), imageViewThumbnail3);
                 imageViewThumbnail3.setOnClickListener(this);
                 break;
             default:
@@ -351,9 +366,9 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
                 cardViewContainer2.setVisibility(View.VISIBLE);
                 cardViewContainer3.setVisibility(View.VISIBLE);
                 clickLinearLayout.setVisibility(View.VISIBLE);
-                displayImage(attachments.get(0).getCloudFilePath(), imageViewThumbnail1);
-                displayImage(attachments.get(1).getCloudFilePath(), imageViewThumbnail2);
-                displayImage(attachments.get(2).getCloudFilePath(), imageViewThumbnail3);
+                displayImage(attachments.get(0).getFilePath(), imageViewThumbnail1);
+                displayImage(attachments.get(1).getFilePath(), imageViewThumbnail2);
+                displayImage(attachments.get(2).getFilePath(), imageViewThumbnail3);
                 String countText = attachments.size() - 3 + "";
                 imageCountTextView.setText(countText);
                 break;
@@ -409,13 +424,13 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
         Attachment clickedAttachment = null;
         switch (view.getId()){
             case R.id.image_view_thumbnail_1:
-                displayImage(currentNote.getAttachments().get(0).getCloudFilePath(), topImageView);
+                displayImage(currentNote.getAttachments().get(0).getFilePath(), topImageView);
                 break;
             case R.id.image_view_thumbnail_2:
-                displayImage(currentNote.getAttachments().get(1).getCloudFilePath(), topImageView);
+                displayImage(currentNote.getAttachments().get(1).getFilePath(), topImageView);
                 break;
             case R.id.image_view_thumbnail_3:
-                displayImage(currentNote.getAttachments().get(2).getCloudFilePath(), topImageView);
+                displayImage(currentNote.getAttachments().get(2).getFilePath(), topImageView);
                 break;
             default:
                 clickedAttachment = currentNote.getAttachments().get(0);
@@ -565,7 +580,7 @@ public class NewNoteDetailFragment extends Fragment implements View.OnClickListe
         shareIntent.setType(note.getAttachments().get(0).getMime_type());
 
 
-        String cloudString = note.getAttachments().get(0).getCloudFilePath();
+        String cloudString = note.getAttachments().get(0).getFilePath();
         StorageReference storageReference = mFirebaseStorage.getReferenceFromUrl(cloudString);
         try {
             final File localFile = FileUtility.createImageFile(Constants.MIME_TYPE_IMAGE_EXT);

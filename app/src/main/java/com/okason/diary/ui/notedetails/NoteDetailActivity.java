@@ -42,7 +42,7 @@ public class NoteDetailActivity extends AppCompatActivity {
             if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
                 String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
                 Note passedInNote = new NoteDao(realm).getNoteEntityById(noteId);
-                NewNoteDetailFragment fragment = NewNoteDetailFragment.newInstance(noteId);
+                NoteDetailFragment fragment = NoteDetailFragment.newInstance(noteId);
                 if (passedInNote != null) {
                     openFragment(fragment, passedInNote.getTitle());
                 } else {

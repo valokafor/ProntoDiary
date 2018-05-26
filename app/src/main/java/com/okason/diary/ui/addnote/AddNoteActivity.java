@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.data.NoteDao;
 import com.okason.diary.models.realmentities.Note;
-import com.okason.diary.ui.notedetails.NewNoteDetailFragment;
+import com.okason.diary.ui.notedetails.NoteDetailFragment;
 import com.okason.diary.utils.Constants;
 
 import butterknife.BindView;
@@ -53,11 +53,11 @@ public class AddNoteActivity extends AppCompatActivity {
             if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
                 String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
                 Note passedInNote = new NoteDao(realm).getNoteEntityById(noteId);
-                NewNoteDetailFragment fragment = NewNoteDetailFragment.newInstance(noteId);
-                openFragment(NewNoteEditorFragment.newInstance(noteId),
+                NoteDetailFragment fragment = NoteDetailFragment.newInstance(noteId);
+                openFragment(NoteEditorFragment.newInstance(noteId),
                         passedInNote.getTitle());
             } else {
-                openFragment(NewNoteEditorFragment.newInstance(""), getString(R.string.add_new_journal));
+                openFragment(NoteEditorFragment.newInstance(""), getString(R.string.add_new_journal));
             }
         }
 

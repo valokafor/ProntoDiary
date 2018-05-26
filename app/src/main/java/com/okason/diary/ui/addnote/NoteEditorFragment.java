@@ -57,6 +57,7 @@ import com.okason.diary.core.events.TagListChangeEvent;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.core.services.FileUploadIntentService;
 import com.okason.diary.data.FolderDao;
 import com.okason.diary.data.NoteDao;
 import com.okason.diary.models.realmentities.Attachment;
@@ -74,6 +75,7 @@ import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.FileUtility;
 import com.okason.diary.utils.IntentChecker;
+import com.okason.diary.utils.SettingsHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -96,7 +98,7 @@ import io.realm.RealmObjectChangeListener;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NewNoteEditorFragment extends Fragment {
+public class NoteEditorFragment extends Fragment {
 
 
     private final static String LOG_TAG = "NoteEditorFragment";
@@ -179,7 +181,7 @@ public class NewNoteEditorFragment extends Fragment {
     private FolderDao folderDao;
 
 
-    public NewNoteEditorFragment() {
+    public NoteEditorFragment() {
         // Required empty public constructor
     }
 
@@ -198,8 +200,8 @@ public class NewNoteEditorFragment extends Fragment {
 
     }
 
-    public static NewNoteEditorFragment newInstance(String noteId){
-        NewNoteEditorFragment fragment = new NewNoteEditorFragment();
+    public static NoteEditorFragment newInstance(String noteId){
+        NoteEditorFragment fragment = new NoteEditorFragment();
         if (!TextUtils.isEmpty(noteId)){
             Bundle args = new Bundle();
             args.putString(Constants.NOTE_ID, noteId);
@@ -342,18 +344,22 @@ public class NewNoteEditorFragment extends Fragment {
         int id = item.getItemId();
         switch (id) {
             case R.id.action_attachment:
+                updateContentIfNeeded();
                 showSelectAttachmentDialog();
                 break;
             case R.id.action_delete:
+                updateContentIfNeeded();
                 showDeleteConfirmation(mCurrentNote);
                 break;
             case R.id.action_share:
+                updateContentIfNeeded();
                 displayShareIntent(mCurrentNote);
                 break;
             case android.R.id.home:
                 onSaveAndExit();
                 break;
             case R.id.action_tag:
+                updateContentIfNeeded();
                 showSelectTag();
                 break;
 
@@ -414,14 +420,12 @@ public class NewNoteEditorFragment extends Fragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAttachmentAdded(AttachingFileCompleteEvent event) {
-        if (event.isResultOk()) {
-            //Attachment was created successfully
-            //hideProgressDialog();
-            if (mCurrentNote == null){
-                mCurrentNote = noteDao.createNewNote();
-            }
-            noteDao.onAttachmentAdded(event.getAttachment().getId(), mCurrentNote.getId());
-
+        if (SettingsHelper.getHelper(getContext()).isRegisteredUser()) {
+            //  Kick off an Intent Service that uploads the attachments to cloud
+            Intent uploadIntent = new Intent(getActivity(), FileUploadIntentService.class);
+            uploadIntent.putExtra(Constants.JOURNAL_ID, mCurrentNote.getId());
+            uploadIntent.putExtra(Constants.ATTACHMENT_ID, event.getAttachmentId());
+            getActivity().startService(uploadIntent);
         }
     }
 
@@ -483,7 +487,14 @@ public class NewNoteEditorFragment extends Fragment {
 
             }
         });
+        updateContentIfNeeded();
         selectFolderDialogFragment.show(getActivity().getFragmentManager(), "Dialog");
+    }
+
+    private void updateContentIfNeeded() {
+        if (mTitle.getText().toString().length() > 0 || mContent.getText().toString().length() > 0){
+            noteDao.updatedNoteContent(mCurrentNote.getId(), mContent.getText().toString(), mTitle.getText().toString());
+        }
     }
 
 
@@ -1363,31 +1374,6 @@ public class NewNoteEditorFragment extends Fragment {
             }
 
             noteDao.updatedNoteContent(mCurrentNote.getId(), content, title);
-
-
-            //Upload the attachments to cloud
-//            if (ProntoDiaryApplication.isCloudSyncEnabled() && mCurrentNote != null &&
-//                    !TextUtils.isEmpty(mCurrentNote.getId()) && mCurrentNote.getAttachments().size() > 0){
-//                // Start MyUploadService to upload the file, so that the file is uploaded
-//                // even if this Activity is killed or put in the background
-//                Toast.makeText(ProntoDiaryApplication.getAppContext(),ProntoDiaryApplication.getAppContext()
-//                        .getString(R.string.progress_uploading), Toast.LENGTH_SHORT );
-//                Intent uploadServiceIntent = new Intent( mView.getContext(), AttachmentUploadService.class)
-//                        .putExtra(AttachmentUploadService.NOTE_ID, mCurrentNote.getId())
-//                        .setAction(AttachmentUploadService.ACTION_UPLOAD);
-//               mView.getContext().startService(uploadServiceIntent);
-//            }
-
-            //After updating the Journal
-            //Kick off an Intent Service that uploads the attachments to cloud
-//            Intent uploadIntent = new Intent(getActivity(),
-//                    FileUploadIntentService.class);
-//            uploadIntent.putExtra(Constants.JOURNAL_ID, mCurrentNote.getId());
-//            getActivity().startService(uploadIntent);
-//
-//            startActivity(new Intent(getActivity(), NoteListActivity.class));
-
-
             goBackToParent();
         } else {
             goBackToParent();

@@ -410,6 +410,7 @@
         or non-characteristic words etc.</string>
     <string name="explain_note_detail">CLick on Journal entry to expand.</string>
     <string name="no_application_found">No application found</string>
+    <string name="title_activity_folder">FolderActivity</string>
 
 
 </resources>
