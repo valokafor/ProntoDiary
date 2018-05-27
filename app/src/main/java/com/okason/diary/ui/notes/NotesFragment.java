@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -37,7 +36,6 @@ import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.data.NoteDao;
 import com.okason.diary.models.realmentities.Attachment;
 import com.okason.diary.models.realmentities.Note;
-import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
@@ -90,7 +88,7 @@ public class NotesFragment extends Fragment
     @BindView(R.id.adView)
     AdView mAdView;
 
-    private FloatingActionButton floatingActionButton;
+
 
 
 
@@ -149,26 +147,10 @@ public class NotesFragment extends Fragment
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         firebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
 
-        showFloatingActionButton();
+       // showFloatingActionButton();
         return mRootView;
     }
 
-    /**
-     * Only show Floating Action Button when this Fragment is attached to the Main Activity
-     * Do not show when this Fragment is attached to Folder Activity
-     */
-    private void showFloatingActionButton() {
-        if (getArguments() != null && getArguments().containsKey(Constants.FOLDER_ID)){
-            return;
-        }
-        floatingActionButton = getActivity().findViewById(R.id.fab);
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(getActivity(), AddNoteActivity.class));
-            }
-        });
-    }
 
 
     private void goToImageGallery(Note clickedNote, Attachment clickedAttachment) {

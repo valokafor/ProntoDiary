@@ -93,7 +93,9 @@ public class NoteDao {
             @Override
             public void execute(Realm backgroundRealm) {
                 Note note = backgroundRealm.where(Note.class).equalTo("id", noteId).findFirst();
-                note.deleteFromRealm();
+                if (note != null){
+                    note.deleteFromRealm();
+                }
             }
         });
 

@@ -23,7 +23,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.TaskItemListener;
 import com.okason.diary.data.TaskDao;
@@ -34,6 +33,8 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.OrderedCollectionChangeSet;
+import io.realm.OrderedRealmCollectionChangeListener;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -53,7 +54,6 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     private List<Task> filteredTasks;
     private TaskListAdapter mListAdapter;
     private View mRootView;
-    private boolean shouldUpdateAdapter = true;
     private String sortColumn = "title";
     private Realm realm;
     private TaskDao taskDao;
@@ -134,6 +134,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         super.onResume();
         getTasks();
         showTodoLists(allTasks);
+        allTasks.addChangeListener(changeListener);
     }
 
 
@@ -141,6 +142,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     @Override
     public void onPause() {
+        allTasks.removeAllChangeListeners();
         super.onPause();
     }
 
@@ -218,13 +220,13 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
             //  mAdView.setVisibility(View.GONE);
             switch (priority){
                 case 1:
-                    mEmptyText.setText(getString(R.string.no_todo_list_found_high_priority));
+                    mEmptyText.setText(getString(R.string.no_todo_list_found_low_priority));
                     break;
                 case 2:
                     mEmptyText.setText(getString(R.string.no_todo_list_found_medium_priority));
                     break;
                 case 3:
-                    mEmptyText.setText(getString(R.string.no_todo_list_found_low_priority));
+                    mEmptyText.setText(getString(R.string.no_todo_list_found_high_priority));
                     break;
                 default:
                     mEmptyText.setText(getString(R.string.no_todo_list_found_default));
@@ -244,8 +246,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public void onEditTaskButtonClicked(Task clickedTask) {
         Intent editTaskIntent = new Intent(getActivity(), AddTaskActivity.class);
-        String serializedTask = new Gson().toJson(clickedTask);
-        editTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
+        editTaskIntent.putExtra(Constants.TASK_ID, clickedTask.getId());
         startActivity(editTaskIntent);
     }
 
@@ -269,9 +270,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public void onAddSubTasksButtonClicked(Task clickedTask) {
         Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
-        Gson gson = new Gson();
-        String serializedTask = gson.toJson(clickedTask);
-        addSubTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
+        addSubTaskIntent.putExtra(Constants.TASK_ID, clickedTask.getId());
         startActivity(addSubTaskIntent);
 
     }
@@ -331,6 +330,43 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
             e.printStackTrace();
         }
     }
+
+
+    private final OrderedRealmCollectionChangeListener<RealmResults<Task>> changeListener =
+            new OrderedRealmCollectionChangeListener<RealmResults<Task>>() {
+                @Override
+                public void onChange(RealmResults<Task> allTasks, OrderedCollectionChangeSet changeSet) {
+                    // `null`  means the async query returns the first time.
+                    if (changeSet == null) {
+                        return;
+                    }
+
+                    // For deletions, the adapter has to be notified in reverse order.
+                    OrderedCollectionChangeSet.Range[] deletions = changeSet.getDeletionRanges();
+                    for (int i = deletions.length - 1; i >= 0; i--) {
+                        OrderedCollectionChangeSet.Range range = deletions[i];
+                        mListAdapter.notifyItemRangeRemoved(range.startIndex, range.length);
+                        //Re-run the ViewPager setup so that the ViewPager title will be updated
+                        //To reflect accurate count of the labels
+                        try {
+                            TodoListActivity parentActivity = (TodoListActivity) getActivity();
+                            parentActivity.setupViewPager();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
+                    for (OrderedCollectionChangeSet.Range range : insertions) {
+                        mListAdapter.notifyItemRangeInserted(range.startIndex, range.length);
+                    }
+
+                    OrderedCollectionChangeSet.Range[] modifications = changeSet.getChangeRanges();
+                    for (OrderedCollectionChangeSet.Range range : modifications) {
+                        mListAdapter.notifyItemRangeChanged(range.startIndex, range.length);
+                    }
+                }
+            };
 
 
 

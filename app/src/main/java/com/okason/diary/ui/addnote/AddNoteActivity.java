@@ -48,7 +48,6 @@ public class AddNoteActivity extends AppCompatActivity {
         toolbar.setNavigationIcon(R.drawable.ic_check_white_24dp);
 
 
-
         if (savedInstanceState == null) {
             if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
                 String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
@@ -80,10 +79,14 @@ public class AddNoteActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        realm.close();
+    protected void onPause() {
+        if (realm != null && !realm.isClosed()){
+            realm.close();
+        }
+        super.onPause();
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -93,11 +96,11 @@ public class AddNoteActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        int count = getFragmentManager().getBackStackEntryCount();
+        int count = getSupportFragmentManager().getBackStackEntryCount();
         if (count == 0) {
             super.onBackPressed();
         } else {
-            getFragmentManager().popBackStack();
+            getSupportFragmentManager().popBackStackImmediate();
         }
     }
 

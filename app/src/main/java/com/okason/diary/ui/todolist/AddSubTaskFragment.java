@@ -11,15 +11,14 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
 import com.okason.diary.R;
-import com.okason.diary.core.events.TaskChangedEvent;
 import com.okason.diary.core.listeners.SubTaskItemListener;
 import com.okason.diary.data.TaskDao;
 import com.okason.diary.models.realmentities.SubTask;
@@ -27,19 +26,18 @@ import com.okason.diary.models.realmentities.Task;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.realm.ObjectChangeSet;
 import io.realm.Realm;
+import io.realm.RealmObjectChangeListener;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class AddSubTaskFragment extends Fragment implements SubTaskItemListener {
+    private final static String TAG = "AddSubTaskFragment";
 
     private View rootView;
     @BindView(R.id.text_view_edit_task_label)
@@ -123,34 +121,16 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         if (parentTask != null){
             populateTaskDetails(parentTask);
             showSubTasks(parentTask);
+            parentTask.addChangeListener(taskChangeListener);
         }
 
     }
 
-
-
     @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
+    public void onPause() {
+        parentTask.removeAllChangeListeners();
+        super.onPause();
     }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
-
-    }
-
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onTaskChange(TaskChangedEvent event){
-        parentTask = event.getChangedTask();
-        populateTaskDetails(parentTask);
-        showSubTasks(parentTask);
-    }
-
-
 
     private void showSubTasks(Task task) {
         if (task != null && task.getSubTask().size() > 0){
@@ -249,8 +229,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     public void onClickEditTaskTextView(View view){
         if (parentTask != null){
             Intent editTaskIntent = new Intent(getActivity(), AddTaskActivity.class);
-            String serializedTask = new Gson().toJson(parentTask);
-            editTaskIntent.putExtra(Constants.SERIALIZED_TASK, serializedTask);
+            editTaskIntent.putExtra(Constants.TASK_ID, parentTask.getId());
             startActivity(editTaskIntent);
         }else {
             makeToast(getString(R.string.no_parent_task_found));
@@ -312,4 +291,25 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         super.onDestroy();
         realm.close();
     }
+
+    private final RealmObjectChangeListener<Task> taskChangeListener = new RealmObjectChangeListener<Task>() {
+        @Override
+        public void onChange(Task task, @javax.annotation.Nullable ObjectChangeSet changeSet) {
+
+            if (changeSet == null){
+                return;
+            }
+            if (changeSet.isDeleted()){
+                return;
+            }
+
+            for (String fieldName: changeSet.getChangedFields()){
+                if (fieldName.equals("subTask")){
+                    Log.i(TAG, "Field " + fieldName + " was changed.");
+                    showSubTasks(task);
+                }
+            }
+
+        }
+    };
 }

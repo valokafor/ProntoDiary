@@ -63,11 +63,12 @@ public class NoteDetailActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        int count = getFragmentManager().getBackStackEntryCount();
+        int count = getSupportFragmentManager().getBackStackEntryCount();
         if (count == 0) {
             super.onBackPressed();
         } else {
-            getFragmentManager().popBackStack();
+            getSupportFragmentManager().popBackStackImmediate();
+            return;
         }
     }
 
@@ -98,7 +99,6 @@ public class NoteDetailActivity extends AppCompatActivity {
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.container, fragment)
-                .addToBackStack(screenTitle)
                 .commit();
         getSupportActionBar().setTitle(screenTitle);
     }

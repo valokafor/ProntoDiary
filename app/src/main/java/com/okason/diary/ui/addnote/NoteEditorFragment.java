@@ -286,11 +286,17 @@ public class NoteEditorFragment extends Fragment {
     private final RealmObjectChangeListener<Note> noteChangeListener = new RealmObjectChangeListener<Note>() {
         @Override
         public void onChange(Note note, @javax.annotation.Nullable ObjectChangeSet changeSet) {
-            if (changeSet.isDeleted()){
-                //this note has been deleted
-                goBackToParent();
+            try {
+                if (changeSet.isDeleted()){
+                    //this note has been deleted
+                    goBackToParent();
+                } else {
+                    populateNote(note);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            populateNote(note);
+
 
         }
     };
@@ -324,12 +330,16 @@ public class NoteEditorFragment extends Fragment {
     @Override
     public void onDestroy() {
         //Remove empty note if user did not add anything
-        if (mCurrentNote != null && TextUtils.isEmpty(mCurrentNote.getContent())
-                && TextUtils.isEmpty(mCurrentNote.getTitle())){
-            noteDao.deleteNote(mCurrentNote.getId());
+        try {
+            if (mCurrentNote != null && TextUtils.isEmpty(mCurrentNote.getContent())
+                    && TextUtils.isEmpty(mCurrentNote.getTitle())){
+                noteDao.deleteNote(mCurrentNote.getId());
+            }
+            mCurrentNote.removeAllChangeListeners();
+            realm.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        mCurrentNote.removeAllChangeListeners();
-        realm.close();
         super.onDestroy();
     }
 

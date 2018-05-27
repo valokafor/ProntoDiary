@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -41,6 +42,7 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.mikepenz.materialdrawer.model.interfaces.Nameable;
 import com.mikepenz.materialdrawer.util.KeyboardUtil;
+import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.folder.FolderListActivity;
 import com.okason.diary.ui.notes.NotesFragment;
@@ -82,6 +84,7 @@ public class NoteListActivity extends AppCompatActivity {
     private Drawer drawer = null;
     private SettingsHelper settingsHelper;
     private Uri mInvitationUrl;
+    private FloatingActionButton floatingActionButton;
 
 
     @BindView(R.id.root)
@@ -105,9 +108,24 @@ public class NoteListActivity extends AppCompatActivity {
         settingsHelper = SettingsHelper.getHelper(mActivity);
         firebaseAnalytics = FirebaseAnalytics.getInstance(mActivity);
         setupNavigationDrawer(savedInstanceBundle);
-       // new SampleData(mActivity).getSampleNotesRealm();
+        showFloatingActionButton();
 
     }
+
+    /**
+     * Only show Floating Action Button when this Fragment is attached to the Main Activity
+     * Do not show when this Fragment is attached to Folder Activity
+     */
+    private void showFloatingActionButton() {
+        floatingActionButton = findViewById(R.id.fab);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(NoteListActivity.this, AddNoteActivity.class));
+            }
+        });
+    }
+
 
     @Override
     public void onStart() {
@@ -470,6 +488,8 @@ public class NoteListActivity extends AppCompatActivity {
             }
         }
     }
+
+
 
 
 

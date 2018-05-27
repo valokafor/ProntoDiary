@@ -23,9 +23,9 @@
 
     <!--Errors and Warning-->
     <string name="no_todo_list_found_default">No Todo List item found, use + button to start</string>
-    <string name="no_todo_list_found_high_priority">No Todo List item with high priority found, use + button to start</string>
-    <string name="no_todo_list_found_medium_priority">No Todo List item with medium piority found, use + button to start</string>
-    <string name="no_todo_list_found_low_priority">No Todo List item with low found, use + button to start</string>
+    <string name="no_todo_list_found_high_priority">No high priority task found, use + button to start</string>
+    <string name="no_todo_list_found_medium_priority">No medium piority task found, use + button to start</string>
+    <string name="no_todo_list_found_low_priority">No low priority task found, use + button to start</string>
     <string name="no_folder_found">No Folder found, use + button to start</string>
     <string name="no_notes_found">No Journal entry found, use the + button to start</string>
     <string name="error_message_account_does_not_exist">Account does not exists.</string>
@@ -411,6 +411,8 @@
     <string name="explain_note_detail">CLick on Journal entry to expand.</string>
     <string name="no_application_found">No application found</string>
     <string name="title_activity_folder">FolderActivity</string>
+    <string name="edit_task">Edit Task</string>
+    <string name="task_detail">Task Detail</string>
 
 
 </resources>

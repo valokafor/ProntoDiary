@@ -75,8 +75,6 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
 
     private final static String TAG = "NoteDetail";
 
-    //Todo - Make Category clickable
-    //Todo - Make Tags clickable, and when clicked open Tag Activity and display the Notes that belong to that tag
     //Todo - add more fonts
 
     private View mRootView;

@@ -1,6 +1,7 @@
 package com.okason.diary.models.realmentities;
 
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by valokafor on 7/4/17.
@@ -8,6 +9,7 @@ import io.realm.RealmObject;
 
 public class SubTask extends RealmObject{
 
+    @PrimaryKey
     private String id;
     private String title;
     private long dateCreated;

@@ -46,6 +46,7 @@ import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
+import com.okason.diary.utils.reminder.MyAlarmManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -302,7 +303,20 @@ public class AddTaskFragment extends Fragment{
                 mReminderTime.getTimeInMillis(),
                 repeatFrequency,
                 repeatEndDate.getTimeInMillis());
-        goBackToParent();
+
+        if (currentTask.getDueDateAndTime() > System.currentTimeMillis()) {
+            MyAlarmManager.createAlarm(getActivity(), currentTask);
+        }
+
+
+        if (shouldAddSubTasks) {
+            Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
+            addSubTaskIntent.putExtra(Constants.TASK_ID, currentTask.getId());
+            addSubTaskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(addSubTaskIntent);
+        } else {
+            goBackToParent();
+        }
 
 
     }
