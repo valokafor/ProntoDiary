@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
-import com.okason.diary.models.realmentities.Folder;
+import com.okason.diary.models.Folder;
 
 import java.util.List;
 

@@ -72,7 +72,7 @@ public abstract class AttachmentBaseService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* requestCode */, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
 
-        int icon = success ? R.drawable.ic_check_white_24dp : R.drawable.ic_error_white_24dp;
+        int icon = success ? R.drawable.ic_action_check_white : R.drawable.ic_error_white_24dp;
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setSmallIcon(icon)

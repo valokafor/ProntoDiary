@@ -24,7 +24,7 @@ import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.data.TagDao;
-import com.okason.diary.models.realmentities.Tag;
+import com.okason.diary.models.Tag;
 import com.okason.diary.utils.Constants;
 
 import java.util.List;

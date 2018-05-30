@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.SubTaskItemListener;
-import com.okason.diary.models.realmentities.SubTask;
+import com.okason.diary.models.SubTask;
 
 import java.util.List;
 

@@ -26,7 +26,7 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.TaskItemListener;
 import com.okason.diary.data.TaskDao;
-import com.okason.diary.models.realmentities.Task;
+import com.okason.diary.models.Task;
 import com.okason.diary.utils.Constants;
 
 import java.util.List;
@@ -114,7 +114,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
                 startActivity(new Intent(getActivity(), AddTaskActivity.class));
             }
         });
-        sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("sort_options","title");
+        sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("sort_options","title").toLowerCase();
         realm = Realm.getDefaultInstance();
         taskDao = new TaskDao(realm);
         return mRootView;

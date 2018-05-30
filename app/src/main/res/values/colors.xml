@@ -42,6 +42,21 @@
 
     <color name="colorTextWhite">#ffffffff</color>
     <color name="colorMonthText">#ffcccccc</color>
+
     <!--<color name="material_drawer_dark_header_">@color/primary_dark</color>-->
     <!--<color name="material_drawer_header_selection_text">#33691E</color>-->
+
+
+    <color name="primaryDark">#294E7D</color>
+    <color name="accentLight">#ff988db6</color>
+    <color name="background">#eeeeee</color>
+    <color name="lightGray">#e6e6e6</color>
+    <color name="textLightGray">#8f8f8f</color>
+    <color name="textGreyHeader">#ff818181</color>
+    <color name="notificationContentText">#737373</color>
+    <color name="error">#da1b21</color>
+    <color name="iconTint">#8e8e8e</color>
+    <color name="default_colour_grey">#8e8e8e</color>
+    <color name="emptyColour">#bababa</color>
+
 </resources>

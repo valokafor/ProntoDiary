@@ -1,6 +1,6 @@
 package com.okason.diary.data;
 
-import com.okason.diary.models.realmentities.Tag;
+import com.okason.diary.models.Tag;
 
 import java.util.UUID;
 

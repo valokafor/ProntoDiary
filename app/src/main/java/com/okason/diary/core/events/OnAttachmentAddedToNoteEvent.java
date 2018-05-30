@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.realmentities.Note;
+import com.okason.diary.models.Note;
 
 /**
  * Created by valokafor on 6/24/17.

@@ -24,11 +24,12 @@ import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.utils.Constants;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-
+import java.util.Locale;
 
 
 /**
@@ -139,7 +140,10 @@ public class DateHelper {
             return "";
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(time);
-        return DateUtils.formatDateTime(mContext, time, DateUtils.FORMAT_SHOW_TIME);
+       // return DateUtils.formatDateTime(mContext, time, DateUtils.FORMAT_SHOW_TIME);
+
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.FULL, Locale.getDefault());
+        return dateFormat.format(c.getTime());
     }
 
 

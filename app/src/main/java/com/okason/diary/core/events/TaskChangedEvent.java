@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.realmentities.Task;
+import com.okason.diary.models.Task;
 
 /**
  * Created by valokafor on 10/17/17.

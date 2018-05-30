@@ -4,7 +4,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.Attachment;
 
 import java.io.File;
 import java.util.List;

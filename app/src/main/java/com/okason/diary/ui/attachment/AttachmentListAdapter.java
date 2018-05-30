@@ -14,7 +14,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
-import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.Attachment;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.date.DateHelper;

@@ -21,8 +21,10 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.SubTaskItemListener;
 import com.okason.diary.data.TaskDao;
-import com.okason.diary.models.realmentities.SubTask;
-import com.okason.diary.models.realmentities.Task;
+import com.okason.diary.models.SubTask;
+import com.okason.diary.models.Task;
+import com.okason.diary.reminder.Reminder;
+import com.okason.diary.reminder.TextFormatUtil;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
@@ -31,6 +33,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.realm.ObjectChangeSet;
 import io.realm.Realm;
+import io.realm.RealmList;
 import io.realm.RealmObjectChangeListener;
 
 /**
@@ -155,9 +158,10 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     }
 
     private void populateTaskDetails(Task parentTask) {
+        Reminder reminder = parentTask.getReminder();
         String dueDate = null;
         try {
-            dueDate = TimeUtils.getReadableModifiedDateWithTime(parentTask.getDueDateAndTime());
+            dueDate = TimeUtils.getReadableModifiedDateWithTime(parentTask.getReminder().getDateAndTime());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -168,27 +172,27 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
             dueDateTextView.setVisibility(View.GONE);
         }
 
-        String repeat = "";
-        try {
-            repeat = parentTask.getRepeatFrequency();
-        } catch (Exception e) {
-            e.printStackTrace();
+        int repeatType = reminder.getRepeatType();
+        int interval = reminder.getInterval();
+        String repeatText = "";
+        if ( repeatType != Constants.DOES_NOT_REPEAT) {
+            if (interval> 1) {
+                repeatText = TextFormatUtil.formatAdvancedRepeatText(getContext(), repeatType, interval);
+                repeatTextView.setText(repeatText);
+            } else {
+                repeatText = getResources().getStringArray(R.array.repeat_array)[repeatType];
+                repeatTextView.setText(repeatText);
+            }
         }
 
-        if (repeat != null){
-            if (repeat.equals(Constants.REMINDER_NO_REMINDER)) {
-                repeatTextView.setText(getString(R.string.one_time_event));
-            } else {
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append("Repeats every  ");
-                stringBuilder.append(repeat);
-                stringBuilder.append(" until ");
-                stringBuilder.append(TimeUtils.getReadableDateWithoutTime(parentTask.getRepeatEndDate()));
-                repeatTextView.setText(stringBuilder.toString());
-            }
-        }else {
-            //Create Notification text based on Notification preferences
-            repeatTextView.setText("Notify 30 minutes before due time");
+//        if (reminder.getRepeatType() == Constants.SPECIFIC_DAYS) {
+//            repeatText = TextFormatUtil.formatDaysOfWeekText(getContext(), reminder.getDaysOfWeek());
+//            repeatTextView.setText(repeatText);
+//        }
+
+        if (reminder.getRepeatType() == Constants.SPECIFIC_DAYS) {
+            RealmList<Boolean> daysOfWeek = reminder.getDaysOfWeek();
+            repeatTextView.setText(TextFormatUtil.formatDaysOfWeekText(getContext(), daysOfWeek));
         }
 
         try {

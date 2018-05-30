@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.events.TagListChangeEvent;
 import com.okason.diary.data.TagDao;
-import com.okason.diary.models.realmentities.Tag;
+import com.okason.diary.models.Tag;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;

@@ -2,8 +2,8 @@ package com.okason.diary.utils.date;
 
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.models.realmentities.SubTask;
-import com.okason.diary.models.realmentities.Task;
+import com.okason.diary.models.SubTask;
+import com.okason.diary.models.Task;
 import com.okason.diary.utils.Constants;
 
 import java.text.SimpleDateFormat;

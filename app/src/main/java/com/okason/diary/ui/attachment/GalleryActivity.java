@@ -13,8 +13,8 @@ import android.widget.LinearLayout;
 
 import com.okason.diary.R;
 import com.okason.diary.data.NoteDao;
-import com.okason.diary.models.realmentities.Attachment;
-import com.okason.diary.models.realmentities.Note;
+import com.okason.diary.models.Attachment;
+import com.okason.diary.models.Note;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;

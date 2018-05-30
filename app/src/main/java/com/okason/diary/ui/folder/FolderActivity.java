@@ -12,7 +12,7 @@ import android.view.MenuItem;
 
 import com.okason.diary.R;
 import com.okason.diary.data.FolderDao;
-import com.okason.diary.models.realmentities.Folder;
+import com.okason.diary.models.Folder;
 import com.okason.diary.ui.notes.NotesFragment;
 import com.okason.diary.utils.Constants;
 

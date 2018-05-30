@@ -22,8 +22,8 @@ import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.data.FolderDao;
-import com.okason.diary.models.realmentities.Folder;
-import com.okason.diary.models.realmentities.Tag;
+import com.okason.diary.models.Folder;
+import com.okason.diary.models.Tag;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;

@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.models.realmentities.Tag;
+import com.okason.diary.models.Tag;
 
 import java.util.List;
 

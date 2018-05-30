@@ -11,7 +11,7 @@ import android.view.MenuItem;
 
 import com.okason.diary.R;
 import com.okason.diary.data.TaskDao;
-import com.okason.diary.models.realmentities.Task;
+import com.okason.diary.models.Task;
 import com.okason.diary.utils.Constants;
 
 import io.realm.Realm;

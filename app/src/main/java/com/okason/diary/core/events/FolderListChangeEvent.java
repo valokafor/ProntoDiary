@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.realmentities.Folder;
+import com.okason.diary.models.Folder;
 
 import java.util.List;
 

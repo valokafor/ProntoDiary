@@ -1,6 +1,6 @@
 package com.okason.diary.core.listeners;
 
-import com.okason.diary.models.realmentities.SubTask;
+import com.okason.diary.models.SubTask;
 
 /**
  * Created by valokafor on 7/4/17.

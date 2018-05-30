@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.data.NoteDao;
-import com.okason.diary.models.realmentities.Note;
+import com.okason.diary.models.Note;
 import com.okason.diary.utils.Constants;
 
 import io.realm.Realm;

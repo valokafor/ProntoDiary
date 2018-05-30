@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.TaskItemListener;
-import com.okason.diary.models.realmentities.Task;
+import com.okason.diary.models.Task;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
 
@@ -69,7 +69,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         String statusText = TimeUtils.getSubTaskStatus(task);
         holder.taskCountTextView.setText(statusText);
-        String time = DateHelper.getTimeShort(mContext, task.getDueDateAndTime());
+        String time = DateHelper.getTimeShort(mContext, task.getReminder().getDateAndTime());
         holder.dueTimeTextView.setText(time);
 
         holder.showMore.setOnClickListener(new View.OnClickListener() {

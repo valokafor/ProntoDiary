@@ -3,9 +3,6 @@ package com.okason.diary.models;
 import android.content.Context;
 
 import com.okason.diary.R;
-import com.okason.diary.models.realmentities.Attachment;
-import com.okason.diary.models.realmentities.Note;
-import com.okason.diary.models.realmentities.Tag;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;

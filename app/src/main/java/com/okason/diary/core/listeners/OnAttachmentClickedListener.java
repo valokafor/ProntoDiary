@@ -1,6 +1,6 @@
 package com.okason.diary.core.listeners;
 
-import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.Attachment;
 
 /**
  * Created by Valentine on 5/16/2017.

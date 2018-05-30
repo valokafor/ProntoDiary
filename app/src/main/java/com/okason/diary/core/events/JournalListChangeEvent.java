@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.realmentities.Note;
+import com.okason.diary.models.Note;
 
 import java.util.List;
 

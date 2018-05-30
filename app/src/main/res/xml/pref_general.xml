@@ -49,7 +49,7 @@
             android:key="@string/pref_daysummary_key"
             android:title="@string/pref_daysummary_title"/>
 
-        <com.okason.diary.utils.reminder.TimePreference
+        <com.okason.diary.reminder.TimePreference
             android:dependency="@string/pref_daysummary_key"
             android:key="@string/pref_time_key"
             android:negativeButtonText="@string/pref_cancel"

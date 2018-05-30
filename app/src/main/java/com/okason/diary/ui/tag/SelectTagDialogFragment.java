@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.data.TagDao;
-import com.okason.diary.models.realmentities.Tag;
+import com.okason.diary.models.Tag;
 
 import io.realm.Realm;
 import io.realm.RealmResults;

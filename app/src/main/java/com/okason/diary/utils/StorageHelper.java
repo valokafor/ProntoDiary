@@ -33,7 +33,7 @@ import android.widget.Toast;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.Attachment;
 
 import org.apache.commons.io.FileUtils;
 

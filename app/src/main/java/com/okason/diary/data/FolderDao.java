@@ -1,7 +1,7 @@
 package com.okason.diary.data;
 
 import com.okason.diary.core.events.FolderAddedEvent;
-import com.okason.diary.models.realmentities.Folder;
+import com.okason.diary.models.Folder;
 
 import org.greenrobot.eventbus.EventBus;
 

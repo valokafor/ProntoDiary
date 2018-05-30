@@ -15,7 +15,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.okason.diary.data.NoteDao;
-import com.okason.diary.models.realmentities.Attachment;
+import com.okason.diary.models.Attachment;
 import com.okason.diary.utils.Constants;
 
 import java.io.ByteArrayOutputStream;
@@ -56,7 +56,7 @@ public class FileUploadIntentService extends IntentService {
             attachmentReference = firebaseStorageReference.child("attachments");
             realm = Realm.getDefaultInstance();
             noteDao = new NoteDao(realm);
-            
+
             attachment = noteDao.getAttachmentById(attachmentId);
 
             if (attachment != null){

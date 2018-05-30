@@ -15,12 +15,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.data.FolderDao;
-import com.okason.diary.models.realmentities.Folder;
+import com.okason.diary.models.Folder;
 import com.okason.diary.utils.Constants;
-
-import org.greenrobot.eventbus.EventBus;
 
 import io.realm.Realm;
 

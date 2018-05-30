@@ -328,36 +328,86 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="@dimen/activity_horizontal_margin"
-            android:visibility="gone"
-            android:orientation="vertical">
+            android:visibility="visible"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_repeat_end_date"
+                    android:textColor="@color/secondary_text"/>
+
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:paddingBottom="@dimen/margin_padding_tiny"
+                    android:paddingLeft="@dimen/margin_padding_tiny"
+                    android:paddingTop="@dimen/margin_padding_tiny">
+
+                    <EditText
+                        android:id="@+id/edit_text_repeat_end_date"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/margin_padding_tiny"
+                        android:background="@android:color/transparent"
+                        android:clickable="true"
+                        android:drawableLeft="@drawable/ic_action_date"
+                        android:drawablePadding="@dimen/margin_padding_xtiny"
+                        android:focusable="false"
+                        android:hint="@string/select_reminder_end_date"
+                        android:textSize="@dimen/text_size_xnormal" />
+                </RelativeLayout>
+
+
+
+
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_repeat_end_date"
-                android:textColor="@color/secondary_text"/>
+                android:textSize="@dimen/text_size_header"
+                android:textStyle="bold"
+                android:layout_margin="@dimen/margin_padding_tiny"
+                android:text="OR"/>
 
-            <RelativeLayout
-                android:layout_width="fill_parent"
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:paddingBottom="@dimen/margin_padding_tiny"
                 android:paddingLeft="@dimen/margin_padding_tiny"
-                android:paddingTop="@dimen/margin_padding_tiny">
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_repeat_number_of_times"
+                    android:textColor="@color/secondary_text"/>
 
                 <EditText
-                    android:id="@+id/edit_text_repeat_end_date"
+                    android:id="@+id/show_times_number"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/margin_padding_tiny"
-                    android:background="@android:color/transparent"
-                    android:clickable="true"
-                    android:drawableLeft="@drawable/ic_action_date"
-                    android:drawablePadding="@dimen/margin_padding_xtiny"
-                    android:focusable="false"
-                    android:hint="@string/select_reminder_end_date"
+                    android:gravity="center"
+                    android:inputType="number"
+                    android:maxLength="4"
+                    android:minWidth="30dp"
+                    android:paddingLeft="12dp"
+                    android:paddingRight="12dp"
+                    android:text="@string/one"
                     android:textSize="@dimen/text_size_xnormal" />
-            </RelativeLayout>
+
+
+
+
+            </LinearLayout>
 
 
 

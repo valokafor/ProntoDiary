@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.data.NoteDao;
-import com.okason.diary.models.realmentities.Note;
+import com.okason.diary.models.Note;
 import com.okason.diary.ui.notedetails.NoteDetailFragment;
 import com.okason.diary.utils.Constants;
 
@@ -45,7 +45,7 @@ public class AddNoteActivity extends AppCompatActivity {
         mActivity = this;
         realm = Realm.getDefaultInstance();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setNavigationIcon(R.drawable.ic_check_white_24dp);
+        toolbar.setNavigationIcon(R.drawable.ic_action_check_white);
 
 
         if (savedInstanceState == null) {

@@ -11,7 +11,7 @@ import android.support.v7.widget.Toolbar;
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.data.NoteDao;
-import com.okason.diary.models.realmentities.Note;
+import com.okason.diary.models.Note;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.utils.Constants;
 

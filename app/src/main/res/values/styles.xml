@@ -66,5 +66,15 @@
         <item name="colorButtonNormal">@color/material_green_500</item>
     </style>
 
+    <style name="Dialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/accent</item>
+    </style>
+
+    <style name="TitleEditText">
+        <item name="colorControlNormal">#d2d2d2</item>
+    </style>
+
+
+
 
 </resources>

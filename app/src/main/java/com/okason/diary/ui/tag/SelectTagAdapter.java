@@ -15,8 +15,8 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.models.realmentities.Note;
-import com.okason.diary.models.realmentities.Tag;
+import com.okason.diary.models.Note;
+import com.okason.diary.models.Tag;
 
 import java.util.List;
 

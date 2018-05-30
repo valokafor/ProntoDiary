@@ -8,10 +8,10 @@ import android.text.TextUtils;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AttachingFileCompleteEvent;
-import com.okason.diary.models.realmentities.Attachment;
-import com.okason.diary.models.realmentities.Folder;
-import com.okason.diary.models.realmentities.Note;
-import com.okason.diary.models.realmentities.Tag;
+import com.okason.diary.models.Attachment;
+import com.okason.diary.models.Folder;
+import com.okason.diary.models.Note;
+import com.okason.diary.models.Tag;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.StorageHelper;
 

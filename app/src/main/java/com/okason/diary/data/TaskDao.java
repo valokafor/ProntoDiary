@@ -1,8 +1,9 @@
 package com.okason.diary.data;
 
-import com.okason.diary.models.realmentities.Folder;
-import com.okason.diary.models.realmentities.SubTask;
-import com.okason.diary.models.realmentities.Task;
+import com.okason.diary.models.Folder;
+import com.okason.diary.models.SubTask;
+import com.okason.diary.models.Task;
+import com.okason.diary.reminder.Reminder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class TaskDao {
         this.realm = realm;
     }
 
-    public Task createNewTask(String taskName) {
+    public Task createNewTask() {
         String taskId = UUID.randomUUID().toString();
         realm.beginTransaction();
         Task task = realm.createObject(Task.class, taskId);
@@ -52,43 +53,8 @@ public class TaskDao {
         return subTask;
     }
 
-    public Task createNewTask(int priority, String taskName, long dueDateAndTime, String repeat, long repeatEndDate, String folderId) {
-        realm.beginTransaction();
-        Task task = createNewTask(taskName);
-        task.setDateModified(System.currentTimeMillis());
-        task.setPriority(priority);
-        task.setDueDateAndTime(dueDateAndTime);
-        task.setRepeatEndDate(repeatEndDate);
-        task.setRepeatFrequency(repeat);
 
-        Folder selectedFolder = realm.where(Folder.class).equalTo("id", folderId).findFirst();
-        if (selectedFolder != null){
-            task.setFolder(selectedFolder);
-            selectedFolder.getTodoLists().add(task);
-        }
 
-        realm.commitTransaction();
-
-        return task;
-    }
-
-    public void updateTask(String taskId, int priority, String taskName, long dueDateAndTime, String repeat, long repeatEndDate) {
-        realm.executeTransactionAsync(new Realm.Transaction() {
-            @Override
-            public void execute(Realm backgroundRealm) {
-                Task updatedTask = backgroundRealm.where(Task.class).equalTo("id", taskId).findFirst();
-                if (updatedTask != null) {
-                    updatedTask.setTitle(taskName);
-                    updatedTask.setDateModified(System.currentTimeMillis());
-                    updatedTask.setPriority(priority);
-                    updatedTask.setDueDateAndTime(dueDateAndTime);
-                    updatedTask.setRepeatEndDate(repeatEndDate);
-                    updatedTask.setRepeatFrequency(repeat);
-                }
-            }
-        });
-
-    }
 
     public void updateTaskStatus(final Task task, final boolean completed) {
         try (Realm realm = Realm.getDefaultInstance()) {
@@ -207,5 +173,38 @@ public class TaskDao {
             }
         }
         return taskList;
+    }
+
+    public void updateTask(String taskId, String taskName, String description, int priority, String folderId) {
+
+        realm.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm backgroundRealm) {
+                Task updatedTask = backgroundRealm.where(Task.class).equalTo("id", taskId).findFirst();
+                Folder selectedFolder = backgroundRealm.where(Folder.class).equalTo("id", folderId).findFirst();
+                if (updatedTask != null) {
+                    updatedTask.setTitle(taskName);
+                    updatedTask.setDescription(description);
+                    updatedTask.setDateModified(System.currentTimeMillis());
+                    updatedTask.setPriority(priority);
+                    updatedTask.setFolder(selectedFolder);
+                }
+            }
+        });
+
+    }
+
+    public void addReminder(String taskId, String reminderId) {
+        realm.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm backgroundRealm) {
+                Task task = backgroundRealm.where(Task.class).equalTo("id", taskId).findFirst();
+                Reminder reminder = backgroundRealm.where(Reminder.class).equalTo("id", reminderId).findFirst();
+                if (task != null && reminder != null) {
+                    task.setReminder(reminder);
+                    reminder.setParentTask(task);
+                }
+            }
+        });
     }
 }

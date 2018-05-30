@@ -327,7 +327,7 @@
     <string name="reminder">Reminder</string>
     <string name="no_sub_task_found">No Sub Task found for this task, use the + button to start</string>
     <string name="title_edit_task">View or Edit Task</string>
-    <string name="title_activity_add_task">AddTaskActivity</string>
+    <string name="title_activity_add_task">Add Task</string>
     <string name="title_activity_add_sub_task">AddSubTaskActivity</string>
     <string name="repeat_date_before_due_date">Task repeat date is before Task due date.</string>
     <string name="no_parent_task_found">No Parent Task found</string>
@@ -375,7 +375,7 @@
     <string name="pref_cancel">Cancel</string>
     <string name="pref_ok">OK</string>
 
-    <string name="reminder_no">no_reminder</string>
+    <string name="reminder_no">Does not Repeat</string>
     <string name="reminder_hourly">hourly</string>
     <string name="reminder_daily">daily</string>
     <string name="reminder_weekly">weekly</string>
@@ -413,6 +413,32 @@
     <string name="title_activity_folder">FolderActivity</string>
     <string name="edit_task">Edit Task</string>
     <string name="task_detail">Task Detail</string>
+    <string name="date_today">Today</string>
+    <string name="repeat_every">Repeat every</string>
+    <string name="repeats_every">Repeats every: %1$d %2$s</string>
+    <string name="times">times</string>
+    <string name="repeat_notification">Number of times to repeat: </string>
+    <string name="one">1</string>
+    <string name="label_repeat_number_of_times">Number of Times to Repeat</string>
+    <string name="task_description_hint">Add Task Description</string>
+    <string name="time_now">Now</string>
+    <string name="indefinite">Indefinite</string>
+    <string name="select_repeat_days">Select Repeat Days</string>
+    <string name="toast_past_date">Cannot set initial date in the past</string>
+    <string name="toast_higher_number">Repeat number must be higher</string>
+    <string name="times_shown_edit">Shown %1$d out of</string>
+    <string name="repeats_on">Repeats on:</string>
+
+    <string-array name="repeat_array">
+        <item>Does not repeat</item>
+        <item>Every hour</item>
+        <item>Every day</item>
+        <item>Every week</item>
+        <item>Every month</item>
+        <item>Every year</item>
+        <item>Specific days of the week</item>
+        <item>Advanced</item>
+    </string-array>
 
 
 </resources>
