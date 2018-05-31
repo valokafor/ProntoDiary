@@ -5,11 +5,11 @@ import android.content.Context;
 import com.okason.diary.R;
 import com.okason.diary.utils.Constants;
 
-import io.realm.RealmList;
+import java.util.List;
 
 public class TextFormatUtil {
 
-    public static String formatDaysOfWeekText(Context context, RealmList<Boolean> daysOfWeek) {
+    public static String formatDaysOfWeekText(Context context, List<Boolean> daysOfWeek) {
         final String[] shortWeekDays = DateAndTimeUtil.getShortWeekDays();
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(context.getString(R.string.repeats_on));

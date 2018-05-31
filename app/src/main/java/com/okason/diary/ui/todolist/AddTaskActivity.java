@@ -31,6 +31,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
@@ -42,6 +43,8 @@ import com.okason.diary.models.Folder;
 import com.okason.diary.models.Tag;
 import com.okason.diary.models.Task;
 import com.okason.diary.reminder.AdvancedRepeatSelector;
+import com.okason.diary.reminder.AlarmReceiver;
+import com.okason.diary.reminder.AlarmUtil;
 import com.okason.diary.reminder.DateAndTimeUtil;
 import com.okason.diary.reminder.DaysOfWeekSelector;
 import com.okason.diary.reminder.Reminder;
@@ -66,7 +69,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.realm.Realm;
-import io.realm.RealmList;
 
 public class AddTaskActivity extends AppCompatActivity implements
         AdvancedRepeatSelector.AdvancedRepeatSelectionListener,
@@ -118,7 +120,7 @@ public class AddTaskActivity extends AppCompatActivity implements
     private List<Tag> selectedTags;
 
     private Calendar calendar;
-    private RealmList<Boolean> daysOfWeek;
+    private List<Boolean> daysOfWeek = new ArrayList<>();
     private int timesShown = 0;
     private int timesToShow = 1;
     private int repeatType;
@@ -285,7 +287,7 @@ public class AddTaskActivity extends AppCompatActivity implements
         }
 
         if (reminder.getRepeatType() == Constants.SPECIFIC_DAYS) {
-            daysOfWeek = reminder.getDaysOfWeek();
+            daysOfWeek = reminder.getDaysOfWeekList();
             repeatTextView.setText(TextFormatUtil.formatDaysOfWeekText(this, daysOfWeek));
         }
 
@@ -470,7 +472,7 @@ public class AddTaskActivity extends AppCompatActivity implements
 
     @Override
     public void onDaysOfWeekSelected(boolean[] days) {
-        RealmList<Boolean> selectedDays = new RealmList<>();
+        List<Boolean> selectedDays = new ArrayList<>();
         for (int i = 0; i < days.length; i++) {
             selectedDays.add(days[i]);
         }
@@ -589,8 +591,9 @@ public class AddTaskActivity extends AppCompatActivity implements
         if (currentReminder == null){
             currentReminder = reminderDao.createNewReminder();
         }
+        String daysOfWeekString = new Gson().toJson(daysOfWeek);
 
-       // reminderDao.updateReminder(calendar, repeatType, foreverSwitch.isChecked(), timesToShow, interval, daysOfWeek, currentReminder.getId());
+        reminderDao.updateReminder(calendar, repeatType, foreverSwitch.isChecked(), timesToShow, interval, daysOfWeekString, currentReminder.getId());
 
         String taskName = taskNameEditText.getText().toString();
         String description = taskDescriptionEditText.getText().toString();
@@ -598,6 +601,12 @@ public class AddTaskActivity extends AppCompatActivity implements
         taskDao.updateTask(currentTask.getId(), taskName, description, priority, selectedFolder.getId());
 
         taskDao.addReminder(currentTask.getId(), currentReminder.getId());
+
+        if (currentReminder != null){
+            Intent alarmIntent = new Intent(this, AlarmReceiver.class);
+            calendar.set(Calendar.SECOND, 0);
+            AlarmUtil.setAlarm(this, alarmIntent, currentReminder.getId(), calendar);
+        }
 
         if (shouldAddSubTasks) {
             Intent addSubTaskIntent = new Intent(activity, AddSubTaskActivity.class);

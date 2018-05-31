@@ -1,12 +1,12 @@
 package com.okason.diary.data;
 
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.reminder.Reminder;
 
 import java.util.Calendar;
-import java.util.UUID;
 
 import io.realm.Realm;
-import io.realm.RealmList;
+import io.realm.RealmResults;
 
 /**
  * Created by valokafor on 5/27/18.
@@ -20,9 +20,15 @@ public class ReminderDao {
         this.realm = realm;
     }
 
+    public RealmResults<Reminder> getAllReminders() {
+        RealmResults<Reminder> reminderResult = realm.where(Reminder.class).findAll();
+        return reminderResult;
+
+    }
+
 
     public Reminder createNewReminder() {
-        String reminderId = UUID.randomUUID().toString();
+        int reminderId = (int) ProntoDiaryApplication.reminderPrimaryKey.incrementAndGet();
         realm.beginTransaction();
         Reminder reminder = realm.createObject(Reminder.class, reminderId);
         reminder.setDateCreated(System.currentTimeMillis());
@@ -31,7 +37,7 @@ public class ReminderDao {
         return reminder;
     }
 
-    public Reminder getReminderById(String reminderId) {
+    public Reminder getReminderById(int reminderId) {
         try {
             Reminder reminder = realm.where(Reminder.class).equalTo("id", reminderId).findFirst();
             return reminder;
@@ -41,12 +47,12 @@ public class ReminderDao {
     }
 
     public void updateReminder(Calendar calendar, int repeatType, boolean indefinite,
-                               int timesToShow, int interval, RealmList<Boolean> daysOfWeek, String reminderId) {
+                               int timesToShow, int interval, String daysOfWeek, int reminderId) {
 
-        realm.executeTransaction(new Realm.Transaction() {
+        realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
-            public void execute(Realm realm) {
-                Reminder reminder = realm.where(Reminder.class).equalTo("id", reminderId).findFirst();
+            public void execute(Realm backgroundRealm) {
+                Reminder reminder = backgroundRealm.where(Reminder.class).equalTo("id", reminderId).findFirst();
                 if (reminder != null) {
                     reminder.setDateAndTime(calendar.getTimeInMillis());
                     reminder.setRepeatType(repeatType);
@@ -58,5 +64,34 @@ public class ReminderDao {
             }
         });
 
+    }
+
+    public void setDateAndTime(long timeInMillis, int reminderId) {
+        realm.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm backgroundRealm) {
+                Reminder reminder = backgroundRealm.where(Reminder.class).equalTo("id", reminderId).findFirst();
+                reminder.setDateAndTime(timeInMillis);
+                reminder.setDateModified(System.currentTimeMillis());
+
+            }
+        });
+    }
+
+    public void incrementNumberOfTimesReminderShown(int reminderId) {
+        realm.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm backgroundRealm) {
+                Reminder reminder = backgroundRealm.where(Reminder.class).equalTo("id", reminderId).findFirst();
+                reminder.setNumberShown(reminder.getNumberShown() + 1);
+                reminder.setDateModified(System.currentTimeMillis());
+
+            }
+        });
+
+    }
+
+    public boolean isNotificationPresent(int reminderId) {
+        return false;
     }
 }

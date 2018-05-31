@@ -28,12 +28,13 @@ import com.okason.diary.reminder.TextFormatUtil;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.realm.ObjectChangeSet;
 import io.realm.Realm;
-import io.realm.RealmList;
 import io.realm.RealmObjectChangeListener;
 
 /**
@@ -191,7 +192,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 //        }
 
         if (reminder.getRepeatType() == Constants.SPECIFIC_DAYS) {
-            RealmList<Boolean> daysOfWeek = reminder.getDaysOfWeek();
+            List<Boolean> daysOfWeek = reminder.getDaysOfWeekList();
             repeatTextView.setText(TextFormatUtil.formatDaysOfWeekText(getContext(), daysOfWeek));
         }
 

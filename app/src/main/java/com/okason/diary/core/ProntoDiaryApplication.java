@@ -13,10 +13,14 @@ import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerUIUtils;
 import com.okason.diary.R;
 import com.okason.diary.models.ProntoDiaryUser;
+import com.okason.diary.reminder.Reminder;
 import com.squareup.leakcanary.LeakCanary;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 
 /**
  * Created by Valentine on 4/20/2017.
@@ -27,6 +31,7 @@ public class ProntoDiaryApplication extends Application {
 
     private static Context mContext;
     private static ProntoDiaryUser prontoDiaryUser;
+    public static AtomicLong reminderPrimaryKey;
 
 
 
@@ -58,6 +63,20 @@ public class ProntoDiaryApplication extends Application {
                 .name("Pronto_Journal.realm")
                 .build();
         Realm.setDefaultConfiguration(configuration);
+
+        Realm realm = Realm.getInstance(configuration);
+
+        try {
+            reminderPrimaryKey = new AtomicLong(realm.where(Reminder.class).max("id").longValue() + 1);
+        } catch (Exception e) {
+
+            realm.beginTransaction();
+            Reminder reminder = realm.createObject(Reminder.class, 0);
+            reminderPrimaryKey = new AtomicLong(realm.where(Reminder.class).max("id").longValue() + 1);
+            RealmResults<Reminder> results = realm.where(Reminder.class).equalTo("id", 0).findAll();
+            results.deleteAllFromRealm();
+            realm.commitTransaction();
+        }
 
     }
 

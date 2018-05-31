@@ -1,15 +1,20 @@
 package com.okason.diary.reminder;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.okason.diary.models.Task;
 
-import io.realm.RealmList;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
 public class Reminder extends RealmObject {
 
     @PrimaryKey
-    private String id;
+    private int id;
     private Task parentTask;
     private long dateAndTime;
     private int repeatType;
@@ -19,16 +24,16 @@ public class Reminder extends RealmObject {
     private int numberShown;
     private long dateCreated;
     private long dateModified;
-    private RealmList<Boolean> daysOfWeek;
+    private String daysOfWeek;
 
     public Reminder(){}
 
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -88,11 +93,11 @@ public class Reminder extends RealmObject {
         this.numberShown = numberShown;
     }
 
-    public RealmList<Boolean> getDaysOfWeek() {
+    public String getDaysOfWeek() {
         return daysOfWeek;
     }
 
-    public void setDaysOfWeek(RealmList<Boolean> daysOfWeek) {
+    public void setDaysOfWeek(String daysOfWeek) {
         this.daysOfWeek = daysOfWeek;
     }
 
@@ -110,5 +115,14 @@ public class Reminder extends RealmObject {
 
     public void setDateModified(long dateModified) {
         this.dateModified = dateModified;
+    }
+
+    public List<Boolean> getDaysOfWeekList(){
+        List<Boolean> daysOfWeekList = new ArrayList<>();
+        Gson gson = new Gson();
+        String daysOfWeekString = getDaysOfWeek();
+        Type collectionType = new TypeToken<List<Boolean>>(){}.getType();
+        daysOfWeekList= (List<Boolean>) gson.fromJson( daysOfWeekString , collectionType);
+        return daysOfWeekList;
     }
 }

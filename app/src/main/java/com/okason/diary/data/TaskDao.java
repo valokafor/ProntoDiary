@@ -194,7 +194,7 @@ public class TaskDao {
 
     }
 
-    public void addReminder(String taskId, String reminderId) {
+    public void addReminder(String taskId, int reminderId) {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
