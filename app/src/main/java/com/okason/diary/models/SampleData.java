@@ -55,69 +55,69 @@ public class SampleData {
 
         try (Realm realm = Realm.getDefaultInstance()) {
             realm.beginTransaction();
-            Note note1 = realm.createObject(Note.class, UUID.randomUUID().toString());
-            note1.setTitle("DisneyLand Trip");
-            note1.setContent(context.getString(R.string.sample_text_disneyland));
+            Journal journal1 = realm.createObject(Journal.class, UUID.randomUUID().toString());
+            journal1.setTitle("DisneyLand Trip");
+            journal1.setContent(context.getString(R.string.sample_text_disneyland));
             Calendar calendar1 = GregorianCalendar.getInstance();
-            note1.setDateModified(calendar1.getTimeInMillis());
+            journal1.setDateModified(calendar1.getTimeInMillis());
 
-            Tag tag1 = realm.createObject(Tag.class, UUID.randomUUID().toString());
-            tag1.setTagName("Social");
+            ProntoTag prontoTag1 = realm.createObject(ProntoTag.class, UUID.randomUUID().toString());
+            prontoTag1.setTagName("Social");
 
-            Tag tag2 = realm.createObject(Tag.class, UUID.randomUUID().toString());
-            tag2.setTagName("Funny");
+            ProntoTag prontoTag2 = realm.createObject(ProntoTag.class, UUID.randomUUID().toString());
+            prontoTag2.setTagName("Funny");
 
-            Tag tag3 = realm.createObject(Tag.class, UUID.randomUUID().toString());
-            tag3.setTagName("Work");
+            ProntoTag prontoTag3 = realm.createObject(ProntoTag.class, UUID.randomUUID().toString());
+            prontoTag3.setTagName("Work");
 
-            note1.getTags().add(tag1);
-            note1.getTags().add(tag2);
-            note1.getTags().add(tag3);
+            journal1.getProntoTags().add(prontoTag1);
+            journal1.getProntoTags().add(prontoTag2);
+            journal1.getProntoTags().add(prontoTag3);
 
             Attachment attachment1 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
             attachment1.setCloudFilePath("https://randomuser.me/api/portraits/women/83.jpg");
             attachment1.setMime_type(Constants.MIME_TYPE_IMAGE);
-            note1.getAttachments().add(attachment1);
+            journal1.getAttachments().add(attachment1);
 
             Attachment attachment2 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
             attachment2.setCloudFilePath("https://randomuser.me/api/portraits/women/45.jpg");
             attachment2.setMime_type(Constants.MIME_TYPE_IMAGE);
-            note1.getAttachments().add(attachment2);
+            journal1.getAttachments().add(attachment2);
 
             Attachment attachment3 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
             attachment3.setCloudFilePath("https://randomuser.me/api/portraits/men/82.jpg");
             attachment3.setMime_type(Constants.MIME_TYPE_IMAGE);
-            note1.getAttachments().add(attachment3);
+            journal1.getAttachments().add(attachment3);
 
             Attachment attachment4 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
             attachment4.setCloudFilePath("https://randomuser.me/api/portraits/men/59.jpg");
             attachment4.setMime_type(Constants.MIME_TYPE_IMAGE);
-            note1.getAttachments().add(attachment4);
+            journal1.getAttachments().add(attachment4);
 
 
 
-            Note note2 = realm.createObject(Note.class, UUID.randomUUID().toString());
-            note2.setTitle("Gym Work Out");
-            note2.setContent("I went to the Gym today and I got a lot of exercises");
+            Journal journal2 = realm.createObject(Journal.class, UUID.randomUUID().toString());
+            journal2.setTitle("Gym Work Out");
+            journal2.setContent("I went to the Gym today and I got a lot of exercises");
 
             //change the date to random time
             Calendar calendar2 = GregorianCalendar.getInstance();
             calendar2.add(Calendar.DAY_OF_WEEK, -1);
             calendar2.add(Calendar.MILLISECOND, 10005623);
-            note2.setDateModified(calendar2.getTimeInMillis());
+            journal2.setDateModified(calendar2.getTimeInMillis());
 
-            Tag tag4 = realm.createObject(Tag.class, UUID.randomUUID().toString());
-            tag4.setTagName("Friends");
+            ProntoTag prontoTag4 = realm.createObject(ProntoTag.class, UUID.randomUUID().toString());
+            prontoTag4.setTagName("Friends");
 
-            Tag tag5 = realm.createObject(Tag.class, UUID.randomUUID().toString());
-            tag5.setTagName("Family");
+            ProntoTag prontoTag5 = realm.createObject(ProntoTag.class, UUID.randomUUID().toString());
+            prontoTag5.setTagName("Family");
 
-            Tag tag6 = realm.createObject(Tag.class, UUID.randomUUID().toString());
-            tag6.setTagName("Kids");
+            ProntoTag prontoTag6 = realm.createObject(ProntoTag.class, UUID.randomUUID().toString());
+            prontoTag6.setTagName("Kids");
 
-            note2.getTags().add(tag4);
-            note2.getTags().add(tag5);
-            note2.getTags().add(tag6);
+            journal2.getProntoTags().add(prontoTag4);
+            journal2.getProntoTags().add(prontoTag5);
+            journal2.getProntoTags().add(prontoTag6);
 
 
 

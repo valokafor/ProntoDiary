@@ -16,8 +16,8 @@ public class Folder extends RealmObject {
     private long dateCreated;
     private long dateModified;
 
-    private RealmList<Note> notes;
-    private RealmList<Task> todoLists;
+    private RealmList<Journal> journals;
+    private RealmList<ProntoTask> todoLists;
 
     public String getId() {
         return id;
@@ -51,19 +51,19 @@ public class Folder extends RealmObject {
         this.dateModified = dateModified;
     }
 
-    public RealmList<Task> getTodoLists() {
+    public RealmList<ProntoTask> getTodoLists() {
         return todoLists;
     }
 
-    public void setTodoLists(RealmList<Task> todoLists) {
+    public void setTodoLists(RealmList<ProntoTask> todoLists) {
         this.todoLists = todoLists;
     }
 
-    public RealmList<Note> getNoteEntitys() {
-        return notes;
+    public RealmList<Journal> getNoteEntitys() {
+        return journals;
     }
 
-    public void setNoteEntitys(RealmList<Note> notes) {
-        this.notes = notes;
+    public void setNoteEntitys(RealmList<Journal> journals) {
+        this.journals = journals;
     }
 }

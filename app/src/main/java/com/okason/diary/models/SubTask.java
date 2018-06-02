@@ -15,7 +15,7 @@ public class SubTask extends RealmObject{
     private long dateCreated;
     private long dateModified;
     private boolean checked;
-    private Task parentTask;
+    private ProntoTask parentProntoTask;
 
     public String getId() {
         return id;
@@ -57,11 +57,11 @@ public class SubTask extends RealmObject{
         this.checked = checked;
     }
 
-    public Task getParentTask() {
-        return parentTask;
+    public ProntoTask getParentProntoTask() {
+        return parentProntoTask;
     }
 
-    public void setParentTask(Task parentTask) {
-        this.parentTask = parentTask;
+    public void setParentProntoTask(ProntoTask parentProntoTask) {
+        this.parentProntoTask = parentProntoTask;
     }
 }
