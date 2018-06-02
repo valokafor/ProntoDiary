@@ -29,7 +29,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             if (reminder != null) {
                 reminderDao.incrementNumberOfTimesReminderShown(reminder.getId());
 
-                NotificationUtil.createNotification(context, reminder.getParentTask());
+                NotificationUtil.createNotification(context, reminder.getParentProntoTask());
 
                 // Check if new alarm needs to be set
                 if (reminder.getNumberToShow() > reminder.getNumberShown() || reminder.isIndefinite()) {

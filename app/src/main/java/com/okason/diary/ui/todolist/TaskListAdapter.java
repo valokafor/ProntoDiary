@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.TaskItemListener;
-import com.okason.diary.models.Task;
+import com.okason.diary.models.ProntoTask;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
 
@@ -31,12 +31,12 @@ import butterknife.ButterKnife;
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
-    private final List<Task> mTasks;
+    private final List<ProntoTask> mProntoTasks;
     private final Context mContext;
     private final TaskItemListener taskItemListener;
 
-    public TaskListAdapter(List<Task> todoLists, Context context, TaskItemListener taskItemListener) {
-        mTasks = todoLists;
+    public TaskListAdapter(List<ProntoTask> todoLists, Context context, TaskItemListener taskItemListener) {
+        mProntoTasks = todoLists;
         mContext = context;
         this.taskItemListener = taskItemListener;
     }
@@ -53,9 +53,9 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        final Task task = mTasks.get(position);
+        final ProntoTask prontoTask = mProntoTasks.get(position);
 
-        boolean isChecked = task.isChecked();
+        boolean isChecked = prontoTask.isChecked();
         if (isChecked){
             holder.titleTextView.setTypeface(holder.titleTextView.getTypeface(), Typeface.ITALIC);
             holder.checkBox.setChecked(true);
@@ -63,13 +63,13 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         }
 
 
-        String title = task.getTitle();
+        String title = prontoTask.getTitle();
 
         holder.titleTextView.setText(title);
 
-        String statusText = TimeUtils.getSubTaskStatus(task);
+        String statusText = TimeUtils.getSubTaskStatus(prontoTask);
         holder.taskCountTextView.setText(statusText);
-        String time = DateHelper.getTimeShort(mContext, task.getReminder().getDateAndTime());
+        String time = DateHelper.getTimeShort(mContext, prontoTask.getReminder().getDateAndTime());
         holder.dueTimeTextView.setText(time);
 
         holder.showMore.setOnClickListener(new View.OnClickListener() {
@@ -82,16 +82,16 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()){
                             case R.id.action_edit:
-                                //Edit the Task
-                                taskItemListener.onEditTaskButtonClicked(task);
+                                //Edit the ProntoTask
+                                taskItemListener.onEditTaskButtonClicked(prontoTask);
                                 break;
                             case R.id.action_delete:
                                 //Prompt for delete
-                                taskItemListener.onDeleteTaskButtonClicked(task);
+                                taskItemListener.onDeleteTaskButtonClicked(prontoTask);
                                 break;
                             case R.id.action_add_sub_task:
-                                //Go to add Sub Task
-                                taskItemListener.onAddSubTasksButtonClicked(task);
+                                //Go to add Sub ProntoTask
+                                taskItemListener.onAddSubTasksButtonClicked(prontoTask);
                                 break;
                         }
                         return false;
@@ -108,8 +108,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        if (mTasks != null){
-            return mTasks.size();
+        if (mProntoTasks != null){
+            return mProntoTasks.size();
         }else {
             return 0;
         }
@@ -142,12 +142,12 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked) {
-                        final Task checkedTask = mTasks.get(getLayoutPosition());
-                        taskItemListener.onTaskChecked(checkedTask);
+                        final ProntoTask checkedProntoTask = mProntoTasks.get(getLayoutPosition());
+                        taskItemListener.onTaskChecked(checkedProntoTask);
 
                     } else {
-                        final Task uncheckedTask = mTasks.get(getLayoutPosition());
-                        taskItemListener.onTaskUnChecked(uncheckedTask);
+                        final ProntoTask uncheckedProntoTask = mProntoTasks.get(getLayoutPosition());
+                        taskItemListener.onTaskUnChecked(uncheckedProntoTask);
                     }
 
                 }

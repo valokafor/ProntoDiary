@@ -35,7 +35,7 @@ import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.data.NoteDao;
 import com.okason.diary.models.Attachment;
-import com.okason.diary.models.Note;
+import com.okason.diary.models.Journal;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
@@ -62,8 +62,8 @@ public class NotesFragment extends Fragment
 
     private FirebaseAnalytics firebaseAnalytics;
     private Realm realm;
-    private RealmResults<Note> allNotes;
-    private List<Note> filteredJournals;
+    private RealmResults<Journal> allJournals;
+    private List<Journal> filteredJournals;
     private NoteDao noteDao;
     private final static String TAG = "NotesFragment";
 
@@ -142,20 +142,16 @@ public class NotesFragment extends Fragment
         realm = Realm.getDefaultInstance();
         noteDao = new NoteDao(realm);
         filteredJournals = new ArrayList<>();
-
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         firebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
-
-       // showFloatingActionButton();
+        initRecyclerView();
         return mRootView;
     }
 
 
 
-    private void goToImageGallery(Note clickedNote, Attachment clickedAttachment) {
+    private void goToImageGallery(Journal clickedJournal, Attachment clickedAttachment) {
         Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-        galleryIntent.putExtra(Constants.NOTE_ID, clickedNote.getId());
+        galleryIntent.putExtra(Constants.NOTE_ID, clickedJournal.getId());
         galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getLocalFilePath());
         startActivity(galleryIntent);
     }
@@ -179,25 +175,25 @@ public class NotesFragment extends Fragment
     private void fetchNotes() {
         if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
             tagName = getArguments().getString(Constants.TAG_FILTER);
-            allNotes = noteDao.getAllNotes(tagName);
+            allJournals = noteDao.getAllNotes(tagName);
         } else if (getArguments() != null && getArguments().containsKey(Constants.FOLDER_ID)){
             folderId = getArguments().getString(Constants.FOLDER_ID);
-            allNotes = noteDao.getNotesByFolder(folderId);
+            allJournals = noteDao.getNotesByFolder(folderId);
         } else{
-            allNotes = noteDao.getAllNotes("").sort("dateModified");
+            allJournals = noteDao.getAllNotes("").sort("dateModified");
         }
 
 
 
-        allNotes.addChangeListener(changeListener);
-        showNotes(allNotes);
+        allJournals.addChangeListener(changeListener);
+        showNotes(allJournals);
     }
 
 
     @Override
     public void onPause() {
         super.onPause();
-        allNotes.removeChangeListener(changeListener);
+        allJournals.removeChangeListener(changeListener);
         if (mPlayer != null) {
             mPlayer.release();
             mPlayer = null;
@@ -257,8 +253,16 @@ public class NotesFragment extends Fragment
         return super.onOptionsItemSelected(item);
     }
 
+    private void initRecyclerView(){
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mListAdapter = new NotesAdapter(new ArrayList<>(), getContext());
+        mRecyclerView.setAdapter(mListAdapter);
+        mListAdapter.setNoteItemListener(this);
+    }
 
-    public void showNotes(List<Note> journals) {
+
+    public void showNotes(List<Journal> journals) {
         if (journals != null && journals.size() > 0) {
             showEmptyText(false);
             mListAdapter = null;
@@ -273,14 +277,14 @@ public class NotesFragment extends Fragment
 
     }
 
-    private final OrderedRealmCollectionChangeListener<RealmResults<Note>> changeListener =
-            new OrderedRealmCollectionChangeListener<RealmResults<Note>>() {
+    private final OrderedRealmCollectionChangeListener<RealmResults<Journal>> changeListener =
+            new OrderedRealmCollectionChangeListener<RealmResults<Journal>>() {
         @Override
-        public void onChange(RealmResults<Note> allNotes, OrderedCollectionChangeSet changeSet) {
+        public void onChange(RealmResults<Journal> allJournals, OrderedCollectionChangeSet changeSet) {
             // `null`  means the async query returns the first time.
             if (changeSet == null) {
-                if (allNotes != null && allNotes.size() > 0) {
-                    mListAdapter.replaceData(allNotes);
+                if (allJournals != null && allJournals.size() > 0) {
+                    mListAdapter.replaceData(allJournals);
                     showEmptyText(false);
                 }
                 return;
@@ -322,13 +326,13 @@ public class NotesFragment extends Fragment
     }
 
 
-    public void showDeleteConfirmation(Note note) {
+    public void showDeleteConfirmation(Journal journal) {
         boolean shouldPromptForDelete = PreferenceManager
                 .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
         if (shouldPromptForDelete) {
-            promptForDelete(note);
+            promptForDelete(journal);
         } else {
-            deleteNote(note.getId());
+            deleteNote(journal.getId());
         }
 
     }
@@ -341,18 +345,18 @@ public class NotesFragment extends Fragment
     }
 
 
-    public void showSingleDetailUi(Note selectedJournal) {
+    public void showSingleDetailUi(Journal selectedJournal) {
         String id = selectedJournal.getId();
         startActivity(NoteDetailActivity.getStartIntent(getContext(), id));
     }
 
 
-    public void showDualDetailUi(Note journal) {
+    public void showDualDetailUi(Journal journal) {
         NoteListActivity activity = (NoteListActivity)getActivity();
      //   activity.showTwoPane(journal);
     }
 
-    public void promptForDelete(final Note journal) {
+    public void promptForDelete(final Journal journal) {
         String content;
         if (!TextUtils.isEmpty(journal.getContent())) {
             content = journal.getContent();
@@ -446,7 +450,7 @@ public class NotesFragment extends Fragment
     }
 
     @Override
-    public void onNoteClick(Note clickedJournal) {
+    public void onNoteClick(Journal clickedJournal) {
         if (isDualScreen) {
             showDualDetailUi(clickedJournal);
         } else {
@@ -456,14 +460,14 @@ public class NotesFragment extends Fragment
     }
 
     @Override
-    public void onDeleteButtonClicked(Note clickedJournal) {
+    public void onDeleteButtonClicked(Journal clickedJournal) {
         showDeleteConfirmation(clickedJournal);
     }
 
     @Override
-    public void onAttachmentClicked(Note clickedNote, int position) {
+    public void onAttachmentClicked(Journal clickedJournal, int position) {
         //An attachment in the Journal list has been clicked
-        Attachment clickedAttachment = clickedNote.getAttachments().get(clickedNote.getAttachments().size() - 1);
+        Attachment clickedAttachment = clickedJournal.getAttachments().get(clickedJournal.getAttachments().size() - 1);
         if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
             //Play Audio
             startPlaying(clickedAttachment, position);
@@ -472,7 +476,7 @@ public class NotesFragment extends Fragment
             viewMedia(clickedAttachment);
         }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
             //Show Image Gallery
-            goToImageGallery(clickedNote, clickedAttachment);
+            goToImageGallery(clickedJournal, clickedAttachment);
         }else if (clickedAttachment.getMime_type().equals(Constants.MIME_TYPE_FILES)){
             //Show file
 

@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.events.TagListChangeEvent;
 import com.okason.diary.data.TagDao;
-import com.okason.diary.models.Tag;
+import com.okason.diary.models.ProntoTag;
 import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
@@ -30,7 +30,7 @@ import io.realm.Realm;
 public class AddTagDialogFragment extends DialogFragment {
 
     private EditText tagEditText;
-    private Tag mTag = null;
+    private ProntoTag mProntoTag = null;
     private Realm realm;
     private TagDao tagDao;
 
@@ -65,7 +65,7 @@ public class AddTagDialogFragment extends DialogFragment {
         if (getArguments() != null && getArguments().containsKey(Constants.TAG_ID)){
             String tagId = getArguments().getString(Constants.TAG_ID);
             if (!TextUtils.isEmpty(tagId)){
-                mTag = tagDao.getTagById(tagId);
+                mProntoTag = tagDao.getTagById(tagId);
 
             }
         }
@@ -87,7 +87,7 @@ public class AddTagDialogFragment extends DialogFragment {
 
             View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
             TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
-            titleText.setText(mTag != null ? getString(R.string.title_edit_tag) : getString(R.string.title_add_tag));
+            titleText.setText(mProntoTag != null ? getString(R.string.title_edit_tag) : getString(R.string.title_add_tag));
             addTagDialog.setCustomTitle(titleView);
 
             tagEditText = (EditText)convertView.findViewById(R.id.edit_text_add_category);
@@ -100,7 +100,7 @@ public class AddTagDialogFragment extends DialogFragment {
 
                 }
             });
-            addTagDialog.setPositiveButton(mTag != null ? getString(R.string.label_update) : getString(R.string.label_add), new DialogInterface.OnClickListener() {
+            addTagDialog.setPositiveButton(mProntoTag != null ? getString(R.string.label_update) : getString(R.string.label_add), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
@@ -108,9 +108,9 @@ public class AddTagDialogFragment extends DialogFragment {
                 }
             });
 
-            if (mTag != null && !TextUtils.isEmpty(mTag.getTagName())){
-                populateFields(mTag);
-                //addTagDialog.setTitle(mTag.getTagName());
+            if (mProntoTag != null && !TextUtils.isEmpty(mProntoTag.getTagName())){
+                populateFields(mProntoTag);
+                //addTagDialog.setTitle(mProntoTag.getTagName());
                 tagEditText.setSelection(tagEditText.getText().length());
             }
 
@@ -120,8 +120,8 @@ public class AddTagDialogFragment extends DialogFragment {
         return addTagDialog.create();
     }
 
-    private void populateFields(Tag tag) {
-        tagEditText.setText(tag.getTagName());
+    private void populateFields(ProntoTag prontoTag) {
+        tagEditText.setText(prontoTag.getTagName());
     }
 
     private boolean requiredFieldCompleted(){
@@ -162,10 +162,10 @@ public class AddTagDialogFragment extends DialogFragment {
 
     private void saveTag() {
         final String tagName = tagEditText.getText().toString().trim();
-        if (mTag == null){
-            mTag = tagDao.createNewTag();
+        if (mProntoTag == null){
+            mProntoTag = tagDao.createNewTag();
         }
-        tagDao.updatedTagTitle(mTag.getId(), tagName);
+        tagDao.updatedTagTitle(mProntoTag.getId(), tagName);
         EventBus.getDefault().post(new TagListChangeEvent());
     }
 

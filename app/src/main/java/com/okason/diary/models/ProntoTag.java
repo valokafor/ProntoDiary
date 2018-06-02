@@ -8,7 +8,7 @@ import io.realm.annotations.PrimaryKey;
  * Created by Valentine on 4/10/2017.
  */
 
-public class Tag extends RealmObject {
+public class ProntoTag extends RealmObject {
 
     @PrimaryKey
     private String id;
@@ -16,16 +16,16 @@ public class Tag extends RealmObject {
     private long dateCreated;
     private long dateModified;
 
-    private RealmList<Note> notes;
-    private RealmList<Task> tasks;
+    private RealmList<Journal> journals;
+    private RealmList<ProntoTask> prontoTasks;
 
-    public Tag(){
+    public ProntoTag(){
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
 
     }
 
-    public Tag(String name){
+    public ProntoTag(String name){
         tagName = name;
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
@@ -65,19 +65,19 @@ public class Tag extends RealmObject {
         this.dateModified = dateModified;
     }
 
-    public RealmList<Note> getNotes() {
-        return notes;
+    public RealmList<Journal> getJournals() {
+        return journals;
     }
 
-    public void setNotes(RealmList<Note> notes) {
-        this.notes = notes;
+    public void setJournals(RealmList<Journal> journals) {
+        this.journals = journals;
     }
 
-    public RealmList<Task> getTasks() {
-        return tasks;
+    public RealmList<ProntoTask> getProntoTasks() {
+        return prontoTasks;
     }
 
-    public void setTasks(RealmList<Task> tasks) {
-        this.tasks = tasks;
+    public void setProntoTasks(RealmList<ProntoTask> prontoTasks) {
+        this.prontoTasks = prontoTasks;
     }
 }

@@ -23,7 +23,7 @@ import butterknife.ButterKnife;
  */
 
 public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.ViewHolder> {
-  //  private final Task parentTask;
+  //  private final ProntoTask parentTask;
     private final SubTaskItemListener taskItemListener;
     private final List<SubTask> subTasks;
 

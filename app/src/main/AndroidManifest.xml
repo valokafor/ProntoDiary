@@ -171,7 +171,7 @@
                 android:value="com.okason.diary.NoteListActivity"/>
         </activity>
         <activity
-            android:name=".ui.tag.TagListActivity"
+            android:name=".ui.prontoTag.TagListActivity"
             android:label="@string/title_activity_tag_list"
             android:parentActivityName=".NoteListActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -204,13 +204,28 @@
             android:parentActivityName=".NoteListActivity"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
-        <receiver android:name=".reminder.receivers.BootReceiver"
-                  android:enabled="true">
+
+        <receiver
+            android:name=".reminder.receivers.BootReceiver"
+            android:enabled="true">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
             </intent-filter>
         </receiver>
+
+        <service
+            android:name=".core.services.FirebaseToRealmIntentService"
+            android:exported="false">
+        </service>
+        <service
+            android:name=".core.services.DeleteFirebaseDataIntentService"
+            android:exported="false">
+        </service>
+        <service
+            android:name=".core.services.RealmFirebaseSyncIntentService"
+            android:exported="false">
+        </service>
     </application>
 
 </manifest>

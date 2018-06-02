@@ -54,7 +54,7 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
         holder.noteCountTextView.setText(journalCount + " " + label);
 
         int taskCount = folder.getTodoLists().size();
-        String taskLabel = taskCount > 1 ? "Tasks" : "Task";
+        String taskLabel = taskCount > 1 ? "Tasks" : "ProntoTask";
         holder.taskCountTextView.setText(taskCount + " " + taskLabel);
 
 

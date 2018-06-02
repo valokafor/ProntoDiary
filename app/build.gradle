@@ -8,8 +8,8 @@ android {
         applicationId "com.okason.diary"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 24
-        versionName "1.24"
+        versionCode 26
+        versionName "2.0"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -67,7 +67,7 @@ ext {
     runnerVersion = "1.0.1"
     espressoVersion = "3.0.1"
     floatingSearchViewVersion = "2.1.1"
-    firebaseLibraryVersion = "15.0.0"
+    firebaseLibraryVersion = "16.0.1"
     firebaseUIVersion = "3.2.2"
     gsonVersion = "2.2.4"
     glideVersion = "3.7.0"
@@ -92,6 +92,7 @@ dependencies {
     implementation "com.google.android.gms:play-services-location:$firebaseLibraryVersion"
     implementation "com.google.android.gms:play-services-maps:$firebaseLibraryVersion"
     implementation "com.google.firebase:firebase-database:$firebaseLibraryVersion"
+    implementation "com.google.firebase:firebase-firestore:$firebaseLibraryVersion"
     implementation "com.google.firebase:firebase-storage:$firebaseLibraryVersion"
     implementation "com.google.firebase:firebase-invites:$firebaseLibraryVersion"
     implementation "com.firebaseui:firebase-ui-auth:$firebaseUIVersion"

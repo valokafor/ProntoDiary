@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.Task;
+import com.okason.diary.models.ProntoTask;
 
 import java.util.List;
 
@@ -9,13 +9,13 @@ import java.util.List;
  */
 
 public class UpdateTagLayoutEvent {
-    private final List<Task> mTags;
+    private final List<ProntoTask> mTags;
 
-    public UpdateTagLayoutEvent(List<Task> tags) {
+    public UpdateTagLayoutEvent(List<ProntoTask> tags) {
         mTags = tags;
     }
 
-    public List<Task> getTags() {
+    public List<ProntoTask> getTags() {
         return mTags;
     }
 }

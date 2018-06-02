@@ -23,7 +23,7 @@ import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.data.FolderDao;
 import com.okason.diary.models.Folder;
-import com.okason.diary.models.Tag;
+import com.okason.diary.models.ProntoTag;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -45,7 +45,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         SearchView.OnCloseListener, SearchView.OnQueryTextListener{
 
 
-    // private List<Note> mNotes;
+    // private List<Journal> mNotes;
     private FolderListAdapter mAdapter;
     private View mRootView;
 
@@ -59,7 +59,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     private Realm realm;
     private RealmResults<Folder> mFolders;
     private FolderDao folderDao;
-    private Tag tag;
+    private ProntoTag prontoTag;
     private FloatingActionButton floatingActionButton;
 
 
@@ -260,7 +260,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
             public void onClick(DialogInterface dialog, int which) {
                 //Delete Category
                 folderDao.deleteFolder(folder.getId());
-//                int noteCount = folder.getNotes().size();
+//                int noteCount = folder.getJournals().size();
 //                if (noteCount > 0){
 //                    Intent intent = new Intent(getContext(), DeleteCategoryIntentService.class);
 //                    intent.putExtra(Constants.SELECTED_FOLDER_ID, folder.getId());

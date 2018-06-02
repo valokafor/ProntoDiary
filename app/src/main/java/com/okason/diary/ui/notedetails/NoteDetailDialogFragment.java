@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.data.NoteDao;
-import com.okason.diary.models.Note;
+import com.okason.diary.models.Journal;
 import com.okason.diary.utils.Constants;
 
 import io.realm.Realm;
@@ -31,7 +31,7 @@ public class NoteDetailDialogFragment extends DialogFragment {
 
     private View rootView;
     private Realm realm;
-    private Note currentNote;
+    private Journal currentJournal;
     private String title;
 
     public static NoteDetailDialogFragment newInstance(String noteId){
@@ -73,16 +73,16 @@ public class NoteDetailDialogFragment extends DialogFragment {
         EditText noteSummary = convertView.findViewById(R.id.edit_text_summary);
         String currentNoteId = getPassedInNoteId();
         if (!TextUtils.isEmpty(currentNoteId)){
-            currentNote = new NoteDao(realm).getNoteEntityById(currentNoteId);
-            if (currentNote != null){
-                title = currentNote.getTitle();
-                noteSummary.setText(currentNote.getContent());
+            currentJournal = new NoteDao(realm).getNoteEntityById(currentNoteId);
+            if (currentJournal != null){
+                title = currentJournal.getTitle();
+                noteSummary.setText(currentJournal.getContent());
             }
         }
 
         View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
         TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
-        titleText.setText(TextUtils.isEmpty(title) ? "Note Details" : title);
+        titleText.setText(TextUtils.isEmpty(title) ? "Journal Details" : title);
         addFolderDialog.setCustomTitle(titleView);
 
         addFolderDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {

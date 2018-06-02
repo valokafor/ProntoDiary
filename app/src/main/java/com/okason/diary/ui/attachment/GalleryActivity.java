@@ -14,7 +14,7 @@ import android.widget.LinearLayout;
 import com.okason.diary.R;
 import com.okason.diary.data.NoteDao;
 import com.okason.diary.models.Attachment;
-import com.okason.diary.models.Note;
+import com.okason.diary.models.Journal;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class GalleryActivity extends AppCompatActivity {
     private List<Attachment> imageOnlyAttachments;
     private String title = "";
 
-    private Note parentNote;
+    private Journal parentJournal;
     private Realm realm;
 
     @Override
@@ -57,11 +57,11 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
 
-    //Get the Note object that was passed in
+    //Get the Journal object that was passed in
     private void getPassedInNote() {
         if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)){
             String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
-            parentNote = new NoteDao(realm).getNoteEntityById(noteId);
+            parentJournal = new NoteDao(realm).getNoteEntityById(noteId);
         }
 
     }
@@ -71,11 +71,11 @@ public class GalleryActivity extends AppCompatActivity {
         String selectAttachmentPath = getIntent().getStringExtra(Constants.FILE_PATH);
         int selectedPosition = 0;
 
-        if (parentNote != null) {
+        if (parentJournal != null) {
             //Create an Arraylist to hold Ids of Attachments that are image or Video
 
-            //Get the list of attachments in the Note
-            for (Attachment attachment : parentNote.getAttachments()) {
+            //Get the list of attachments in the Journal
+            for (Attachment attachment : parentJournal.getAttachments()) {
                 if (Constants.MIME_TYPE_IMAGE.equals(attachment.getMime_type())
                         || Constants.MIME_TYPE_SKETCH.equals(attachment.getMime_type())
                         || Constants.MIME_TYPE_VIDEO.equals(attachment.getMime_type())) {
@@ -100,7 +100,7 @@ public class GalleryActivity extends AppCompatActivity {
             mViewPager.setAdapter(pagerAdapter);
             mViewPager.setCurrentItem(selectedPosition);
 
-            getSupportActionBar().setTitle(parentNote.getTitle());
+            getSupportActionBar().setTitle(parentJournal.getTitle());
             getSupportActionBar().setSubtitle("(" + (selectedPosition + 1) + "/" + imageOnlyAttachments.size() + ")");
         }
 

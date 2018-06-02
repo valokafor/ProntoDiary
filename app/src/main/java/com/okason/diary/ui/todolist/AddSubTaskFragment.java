@@ -21,8 +21,8 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.SubTaskItemListener;
 import com.okason.diary.data.TaskDao;
+import com.okason.diary.models.ProntoTask;
 import com.okason.diary.models.SubTask;
-import com.okason.diary.models.Task;
 import com.okason.diary.reminder.Reminder;
 import com.okason.diary.reminder.TextFormatUtil;
 import com.okason.diary.utils.Constants;
@@ -61,7 +61,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
     private SubTaskListAdapter subTaskListAdapter;
     private boolean shouldUpdateAdapter = true;
-    private Task parentTask;
+    private ProntoTask parentProntoTask;
     private Realm realm;
     private TaskDao taskDao;
 
@@ -91,13 +91,13 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
 
     /**
-     * The method gets the parent Task that was passed in
+     * The method gets the parent ProntoTask that was passed in
      */
     public void getParentTask(){
         if (getArguments() != null && getArguments().containsKey(Constants.TASK_ID)){
             String taskId = getArguments().getString(Constants.TASK_ID);
             if (!TextUtils.isEmpty(taskId)){
-                parentTask = taskDao.getTaskById(taskId);
+                parentProntoTask = taskDao.getTaskById(taskId);
             }
         }
     }
@@ -122,24 +122,24 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     @Override
     public void onResume() {
         super.onResume();
-        if (parentTask != null){
-            populateTaskDetails(parentTask);
-            showSubTasks(parentTask);
-            parentTask.addChangeListener(taskChangeListener);
+        if (parentProntoTask != null){
+            populateTaskDetails(parentProntoTask);
+            showSubTasks(parentProntoTask);
+            parentProntoTask.addChangeListener(taskChangeListener);
         }
 
     }
 
     @Override
     public void onPause() {
-        parentTask.removeAllChangeListeners();
+        parentProntoTask.removeAllChangeListeners();
         super.onPause();
     }
 
-    private void showSubTasks(Task task) {
-        if (task != null && task.getSubTask().size() > 0){
+    private void showSubTasks(ProntoTask prontoTask) {
+        if (prontoTask != null && prontoTask.getSubTask().size() > 0){
             showEmptyText(false);
-            subTaskListAdapter = new SubTaskListAdapter(task.getSubTask(), this);
+            subTaskListAdapter = new SubTaskListAdapter(prontoTask.getSubTask(), this);
             mRecyclerView.setAdapter(subTaskListAdapter);
         }else {
             showEmptyText(true);
@@ -154,15 +154,15 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
             return;
         }
         String subTaskText = addSubTaskEditText.getText().toString();
-        taskDao.createNewSubTask(subTaskText, parentTask.getId());
+        taskDao.createNewSubTask(subTaskText, parentProntoTask.getId());
         addSubTaskEditText.setText("");
     }
 
-    private void populateTaskDetails(Task parentTask) {
-        Reminder reminder = parentTask.getReminder();
+    private void populateTaskDetails(ProntoTask parentProntoTask) {
+        Reminder reminder = parentProntoTask.getReminder();
         String dueDate = null;
         try {
-            dueDate = TimeUtils.getReadableModifiedDateWithTime(parentTask.getReminder().getDateAndTime());
+            dueDate = TimeUtils.getReadableModifiedDateWithTime(parentProntoTask.getReminder().getDateAndTime());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -197,7 +197,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         }
 
         try {
-            int priority = parentTask.getPriority();
+            int priority = parentProntoTask.getPriority();
             if (priority > 0){
                 switch (priority){
                     case Constants.PRIORITY_LOW:
@@ -218,7 +218,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
         String folderName = null;
         try {
-            folderName = parentTask.getFolder().getFolderName();
+            folderName = parentProntoTask.getFolder().getFolderName();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -232,9 +232,9 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
     @OnClick(R.id.text_view_edit_task_label)
     public void onClickEditTaskTextView(View view){
-        if (parentTask != null){
+        if (parentProntoTask != null){
             Intent editTaskIntent = new Intent(getActivity(), AddTaskActivity.class);
-            editTaskIntent.putExtra(Constants.TASK_ID, parentTask.getId());
+            editTaskIntent.putExtra(Constants.TASK_ID, parentProntoTask.getId());
             startActivity(editTaskIntent);
         }else {
             makeToast(getString(R.string.no_parent_task_found));
@@ -269,14 +269,14 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     @Override
     public void onSubTaskChecked(String subTaskId) {
         shouldUpdateAdapter = false;
-        taskDao.updateSubTaskStatus(parentTask.getId(), subTaskId, true);
+        taskDao.updateSubTaskStatus(parentProntoTask.getId(), subTaskId, true);
     }
 
 
     @Override
     public void onSubTaskUnChecked(String subTaskId) {
         shouldUpdateAdapter = false;
-        taskDao.updateSubTaskStatus(parentTask.getId(), subTaskId, false);
+        taskDao.updateSubTaskStatus(parentProntoTask.getId(), subTaskId, false);
 
     }
 
@@ -297,9 +297,9 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
         realm.close();
     }
 
-    private final RealmObjectChangeListener<Task> taskChangeListener = new RealmObjectChangeListener<Task>() {
+    private final RealmObjectChangeListener<ProntoTask> taskChangeListener = new RealmObjectChangeListener<ProntoTask>() {
         @Override
-        public void onChange(Task task, @javax.annotation.Nullable ObjectChangeSet changeSet) {
+        public void onChange(ProntoTask prontoTask, @javax.annotation.Nullable ObjectChangeSet changeSet) {
 
             if (changeSet == null){
                 return;
@@ -311,7 +311,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
             for (String fieldName: changeSet.getChangedFields()){
                 if (fieldName.equals("subTask")){
                     Log.i(TAG, "Field " + fieldName + " was changed.");
-                    showSubTasks(task);
+                    showSubTasks(prontoTask);
                 }
             }
 

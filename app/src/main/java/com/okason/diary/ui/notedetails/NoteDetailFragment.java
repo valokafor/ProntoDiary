@@ -45,8 +45,8 @@ import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.data.NoteDao;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
-import com.okason.diary.models.Note;
-import com.okason.diary.models.Tag;
+import com.okason.diary.models.Journal;
+import com.okason.diary.models.ProntoTag;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.folder.FolderActivity;
 import com.okason.diary.utils.Constants;
@@ -119,7 +119,7 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
 
 
     private String currentNoteId;
-    private Note currentNote;
+    private Journal currentJournal;
     private Realm realm;
 
     private FirebaseAuth mFirebaseAuth;
@@ -161,7 +161,7 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         mFirebaseStorage = FirebaseStorage.getInstance();
         if (!TextUtils.isEmpty(currentNoteId)){
-            currentNote = new NoteDao(realm).getNoteEntityById(currentNoteId);
+            currentJournal = new NoteDao(realm).getNoteEntityById(currentNoteId);
         }
         return mRootView;
     }
@@ -169,7 +169,7 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
     @Override
     public void onResume() {
         super.onResume();
-        if (currentNote != null){
+        if (currentJournal != null){
             populateScreen();
         }
     }
@@ -187,13 +187,13 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
         int id = item.getItemId();
         switch (id){
             case R.id.action_edit:
-               EventBus.getDefault().post(new EditNoteButtonClickedEvent(currentNote.getId()));
+               EventBus.getDefault().post(new EditNoteButtonClickedEvent(currentJournal.getId()));
                 break;
             case R.id.action_delete:
-                showDeleteConfirmation(currentNote);
+                showDeleteConfirmation(currentJournal);
                 break;
             case R.id.action_share:
-                displayShareIntent(currentNote);
+                displayShareIntent(currentJournal);
                 break;
             case R.id.action_play:
                 // onPlayAudioButtonClicked();
@@ -205,11 +205,11 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
 
 
     private void populateScreen() {
-        if (currentNote != null){
-            if (currentNote.getAttachments() != null && currentNote.getAttachments().size() > 0){
-                showHideImageViews(currentNote.getAttachments());
+        if (currentJournal != null){
+            if (currentJournal.getAttachments() != null && currentJournal.getAttachments().size() > 0){
+                showHideImageViews(currentJournal.getAttachments());
                 topImageView.setVisibility(View.VISIBLE);
-                displayImage(currentNote.getAttachments().get(0).getFilePath(), topImageView);
+                displayImage(currentJournal.getAttachments().get(0).getFilePath(), topImageView);
             }else {
                 attachmentLinearLayout.setVisibility(View.GONE);
                 divider_2.setVisibility(View.GONE);
@@ -217,12 +217,12 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
             }
         }
 
-        String dateString = getDateString(currentNote.getDateCreated(), currentNote.getDateModified());
+        String dateString = getDateString(currentJournal.getDateCreated(), currentJournal.getDateModified());
         dateTextView.setText(dateString);
 
         //Display Folder name and make that folder name clickable
-        if (currentNote.getFolder() != null && !TextUtils.isEmpty(currentNote.getFolder().getFolderName())){
-            folderTextView.setText(currentNote.getFolder().getFolderName());
+        if (currentJournal.getFolder() != null && !TextUtils.isEmpty(currentJournal.getFolder().getFolderName())){
+            folderTextView.setText(currentJournal.getFolder().getFolderName());
         } else {
             folderTextView.setText(getString(R.string.general));
         }
@@ -233,25 +233,25 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
             @Override
             public void onClick(View v) {
                 //Go to Folder screen
-                onFolderClicked(currentNote.getFolder());
+                onFolderClicked(currentJournal.getFolder());
             }
         });
 
         //Show or Hide Audio Player icon
-        if (containsAudioRecording(currentNote)){
+        if (containsAudioRecording(currentJournal)){
             audioLinearLayout.setVisibility(View.VISIBLE);
         } else {
             audioLinearLayout.setVisibility(View.GONE);
         }
 
-        //Display Tag names and make each Tag name clickable
-        if (currentNote.getTags() != null && currentNote.getTags().size() > 0){
-            for (int i = 0; i < currentNote.getTags().size(); i++){
-                Tag tag = currentNote.getTags().get(i);
+        //Display ProntoTag names and make each ProntoTag name clickable
+        if (currentJournal.getProntoTags() != null && currentJournal.getProntoTags().size() > 0){
+            for (int i = 0; i < currentJournal.getProntoTags().size(); i++){
+                ProntoTag prontoTag = currentJournal.getProntoTags().get(i);
                 TextView textView = new TextView(getActivity());
                 int viewId = textView.generateViewId();
                 textView.setId(viewId);
-                textView.setText("#" + tag.getTagName());
+                textView.setText("#" + prontoTag.getTagName());
                 textView.setPaintFlags(folderTextView.getPaintFlags() |   Paint.UNDERLINE_TEXT_FLAG);
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -264,8 +264,8 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
                 textView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        //Go to Tag Detail
-                        onTagClicked(tag);
+                        //Go to ProntoTag Detail
+                        onTagClicked(prontoTag);
                     }
                 });
                 tagsLinearLayout.addView(textView);
@@ -275,15 +275,15 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
         }else {
             tagsLinearLayout.setVisibility(View.GONE);
         }
-        noteSummary.setText(currentNote.getContent());
+        noteSummary.setText(currentJournal.getContent());
         noteSummary.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                NoteDetailDialogFragment fragment = NoteDetailDialogFragment.newInstance(currentNote.getId());
+                NoteDetailDialogFragment fragment = NoteDetailDialogFragment.newInstance(currentJournal.getId());
                 fragment.show(getActivity().getSupportFragmentManager(), "Dialog");
             }
         });
-        if (currentNote.getContent().length() > 300 && SettingsHelper.getHelper(getContext()).shouldShowNoteDetailExplainer()){
+        if (currentJournal.getContent().length() > 300 && SettingsHelper.getHelper(getContext()).shouldShowNoteDetailExplainer()){
             MaterialDialog dialog = new MaterialDialog.Builder(getContext())
                     .title(R.string.note_detail)
                     .content(R.string.explain_note_detail)
@@ -303,9 +303,9 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
 
     }
 
-    private void onTagClicked(Tag clickedTag) {
+    private void onTagClicked(ProntoTag clickedProntoTag) {
         Intent tagIntent = new Intent(getActivity(), NoteListActivity.class);
-        tagIntent.putExtra(Constants.TAG_FILTER, clickedTag.getTagName());
+        tagIntent.putExtra(Constants.TAG_FILTER, clickedProntoTag.getTagName());
         startActivity(tagIntent);
     }
 
@@ -315,8 +315,8 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
         startActivity(folderIntent);
     }
 
-    private boolean containsAudioRecording(Note currentNote) {
-        for (Attachment attachment: currentNote.getAttachments()){
+    private boolean containsAudioRecording(Journal currentJournal) {
+        for (Attachment attachment: currentJournal.getAttachments()){
             if (attachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
                 return true;
             }
@@ -422,16 +422,16 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
         Attachment clickedAttachment = null;
         switch (view.getId()){
             case R.id.image_view_thumbnail_1:
-                displayImage(currentNote.getAttachments().get(0).getFilePath(), topImageView);
+                displayImage(currentJournal.getAttachments().get(0).getFilePath(), topImageView);
                 break;
             case R.id.image_view_thumbnail_2:
-                displayImage(currentNote.getAttachments().get(1).getFilePath(), topImageView);
+                displayImage(currentJournal.getAttachments().get(1).getFilePath(), topImageView);
                 break;
             case R.id.image_view_thumbnail_3:
-                displayImage(currentNote.getAttachments().get(2).getFilePath(), topImageView);
+                displayImage(currentJournal.getAttachments().get(2).getFilePath(), topImageView);
                 break;
             default:
-                clickedAttachment = currentNote.getAttachments().get(0);
+                clickedAttachment = currentJournal.getAttachments().get(0);
                 goToGallery(clickedAttachment);
                 break;
         }
@@ -471,7 +471,7 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
 
         }else {
             Intent galleryIntent = new Intent(getActivity(), GalleryActivity.class);
-            galleryIntent.putExtra(Constants.NOTE_ID, currentNote.getId());
+            galleryIntent.putExtra(Constants.NOTE_ID, currentJournal.getId());
             galleryIntent.putExtra(Constants.FILE_PATH, clickedAttachment.getFilePath());
             startActivity(galleryIntent);
         }
@@ -484,8 +484,8 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
         }
     }
 
-    public void showDeleteConfirmation(Note note) {
-        final String titleOfNoteTobeDeleted = note.getTitle();
+    public void showDeleteConfirmation(Journal journal) {
+        final String titleOfNoteTobeDeleted = journal.getTitle();
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -499,7 +499,7 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                deleteNote(currentNote);
+                deleteNote(currentJournal);
                 displayPreviousActivity();
             }
         });
@@ -518,32 +518,32 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
 
     }
 
-    private void deleteNote(Note note) {
-        if (!TextUtils.isEmpty(note.getId())) {
-            new NoteDao(realm).deleteNote(note.getId());
+    private void deleteNote(Journal journal) {
+        if (!TextUtils.isEmpty(journal.getId())) {
+            new NoteDao(realm).deleteNote(journal.getId());
         }
         displayPreviousActivity();
     }
 
 
-    public void displayShareIntent(final Note note) {
-        final String titleText = note.getTitle();
+    public void displayShareIntent(final Journal journal) {
+        final String titleText = journal.getTitle();
 
         final String contentText = titleText
                 + System.getProperty("line.separator")
-                + note.getContent();
+                + journal.getContent();
 
-        if (note.getAttachments().size() == 0){
+        if (journal.getAttachments().size() == 0){
             shareTextOnly(titleText, contentText);
-        } else if (note.getAttachments().size() == 1) {
-            shareTextAndOneAttachment(titleText, contentText, note);
-        } else if (note.getAttachments().size() > 1) {
-            shareTextAndMultipleAttachment(titleText, contentText, note);
+        } else if (journal.getAttachments().size() == 1) {
+            shareTextAndOneAttachment(titleText, contentText, journal);
+        } else if (journal.getAttachments().size() > 1) {
+            shareTextAndMultipleAttachment(titleText, contentText, journal);
         }
 
     }
 
-    private void shareTextAndMultipleAttachment(String titleText, String contentText, Note note) {
+    private void shareTextAndMultipleAttachment(String titleText, String contentText, Journal journal) {
         final Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
         ArrayList<Uri> uris = new ArrayList<>();
@@ -552,7 +552,7 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
 
         // A check to decide the mime type of attachments to share is done here
         HashMap<String, Boolean> mimeTypes = new HashMap<>();
-        for (Attachment attachment : note.getAttachments()) {
+        for (Attachment attachment : journal.getAttachments()) {
             if (attachment.getFilePath().contains("http")){
                 continue;
             }
@@ -571,14 +571,14 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
 
     }
 
-    private void shareTextAndOneAttachment(final String titleText, final String contentText, Note note) {
+    private void shareTextAndOneAttachment(final String titleText, final String contentText, Journal journal) {
         final Intent shareIntent = new Intent();
 
         shareIntent.setAction(Intent.ACTION_SEND);
-        shareIntent.setType(note.getAttachments().get(0).getMime_type());
+        shareIntent.setType(journal.getAttachments().get(0).getMime_type());
 
 
-        String cloudString = note.getAttachments().get(0).getFilePath();
+        String cloudString = journal.getAttachments().get(0).getFilePath();
         StorageReference storageReference = mFirebaseStorage.getReferenceFromUrl(cloudString);
         try {
             final File localFile = FileUtility.createImageFile(Constants.MIME_TYPE_IMAGE_EXT);

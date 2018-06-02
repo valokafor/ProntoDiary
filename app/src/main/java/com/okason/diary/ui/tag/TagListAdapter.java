@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.models.Tag;
+import com.okason.diary.models.ProntoTag;
 
 import java.util.List;
 
@@ -24,14 +24,14 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     private final static String LOG_CAT = TagListAdapter.class.getSimpleName();
     private final static boolean DEBUG = true;
 
-    private List<Tag> mTags;
+    private List<ProntoTag> mProntoTags;
     private final OnTagSelectedListener mListener;
     private final Context mContext;
 
 
 
-    public TagListAdapter(Context mContext, List<Tag> mTags, OnTagSelectedListener mListener) {
-        this.mTags = mTags;
+    public TagListAdapter(Context mContext, List<ProntoTag> mProntoTags, OnTagSelectedListener mListener) {
+        this.mProntoTags = mProntoTags;
         this.mContext = mContext;
         this.mListener = mListener;
     }
@@ -46,10 +46,10 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
 
-        final Tag tag = mTags.get(position);
-        String tagName = tag.getTagName();
+        final ProntoTag prontoTag = mProntoTags.get(position);
+        String tagName = prontoTag.getTagName();
         holder.tagName.setText(tagName);
-        int numNote = tag.getNotes().size();
+        int numNote = prontoTag.getJournals().size();
         String notes = numNote > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
         holder.noteCountTextView.setText(numNote + " " + notes);
 
@@ -59,9 +59,9 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
 
     }
 
-    public void replaceData(List<Tag> tags){
-        this.mTags.clear();
-        mTags.addAll(tags);
+    public void replaceData(List<ProntoTag> prontoTags){
+        this.mProntoTags.clear();
+        mProntoTags.addAll(prontoTags);
         notifyDataSetChanged();
     }
 
@@ -69,7 +69,7 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
 
     @Override
     public int getItemCount() {
-        return mTags.size();
+        return mProntoTags.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -86,29 +86,29 @@ public class TagListAdapter extends RecyclerView.Adapter<TagListAdapter.ViewHold
             editTag.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Tag categoryToBeEdited = mTags.get(getLayoutPosition());
+                    ProntoTag categoryToBeEdited = mProntoTags.get(getLayoutPosition());
                     mListener.onEditTagButtonClicked(categoryToBeEdited);
                 }
             });
             deleteTag.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Tag tagToBeDeleted = mTags.get(getLayoutPosition());
-                    mListener.onDeleteTagButtonClicked(tagToBeDeleted);
+                    ProntoTag prontoTagToBeDeleted = mProntoTags.get(getLayoutPosition());
+                    mListener.onDeleteTagButtonClicked(prontoTagToBeDeleted);
                 }
             });
 
             tagName.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mListener.onTagClicked(mTags.get(getLayoutPosition()));
+                    mListener.onTagClicked(mProntoTags.get(getLayoutPosition()));
                 }
             });
 
             noteCountTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mListener.onTagClicked(mTags.get(getLayoutPosition()));
+                    mListener.onTagClicked(mProntoTags.get(getLayoutPosition()));
                 }
             });
 

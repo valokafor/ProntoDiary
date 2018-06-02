@@ -8,7 +8,7 @@ import io.realm.annotations.PrimaryKey;
  * Created by valokafor on 4/28/18.
  */
 
-public class Note extends RealmObject{
+public class Journal extends RealmObject{
 
     @PrimaryKey
     private String id;
@@ -18,7 +18,7 @@ public class Note extends RealmObject{
     private long dateModified;
 
 
-    public Note(){
+    public Journal(){
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
     }
@@ -26,24 +26,11 @@ public class Note extends RealmObject{
 
     //Relationships
     private RealmList<Attachment> attachments;
-    private RealmList<Tag> tags;
+    private RealmList<ProntoTag> prontoTags;
     private Folder folder;
 
 
-    private RealmList<Task> tasks;
 
-
-    public void update(Note note){
-        this.title = note.getTitle();
-        this.content = note.getContent();
-        this.dateCreated = note.getDateCreated();
-        this.dateModified = note.getDateModified();
-        this.attachments = note.getAttachments();
-        this.tags = note.getTags();
-        this.folder = note.getFolder();
-        this.tasks = note.getTasks();
-
-    }
 
     public String getId() {
         return id;
@@ -93,12 +80,12 @@ public class Note extends RealmObject{
         this.attachments = attachments;
     }
 
-    public RealmList<Tag> getTags() {
-        return tags;
+    public RealmList<ProntoTag> getProntoTags() {
+        return prontoTags;
     }
 
-    public void setTags(RealmList<Tag> tags) {
-        this.tags = tags;
+    public void setProntoTags(RealmList<ProntoTag> prontoTags) {
+        this.prontoTags = prontoTags;
     }
 
     public Folder getFolder() {
@@ -109,12 +96,5 @@ public class Note extends RealmObject{
         this.folder = folder;
     }
 
-    public RealmList<Task> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(RealmList<Task> tasks) {
-        this.tasks = tasks;
-    }
 
 }

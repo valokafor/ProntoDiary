@@ -24,7 +24,7 @@ import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.data.TagDao;
-import com.okason.diary.models.Tag;
+import com.okason.diary.models.ProntoTag;
 import com.okason.diary.utils.Constants;
 
 import java.util.List;
@@ -57,7 +57,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     private String sortColumn = "title";
     private Realm realm;
     private TagDao tagDao;
-    private RealmResults<Tag> tags;
+    private RealmResults<ProntoTag> prontoTags;
 
 
 
@@ -88,14 +88,14 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         });
         realm = Realm.getDefaultInstance();
         tagDao = new TagDao(realm);
-        tags = tagDao.getAllTags();
+        prontoTags = tagDao.getAllTags();
         return mRootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-       showTags(tags);
+       showTags(prontoTags);
 
     }
 
@@ -109,12 +109,12 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     @Override
     public void onStart() {
         super.onStart();
-        tags.addChangeListener(listener);
+        prontoTags.addChangeListener(listener);
     }
 
     @Override
     public void onStop() {
-        tags.removeAllChangeListeners();
+        prontoTags.removeAllChangeListeners();
         super.onStop();
     }
 
@@ -142,10 +142,10 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
 
 
-    public void showTags(List<Tag> tags) {
-        if (tags.size() > 0){
+    public void showTags(List<ProntoTag> prontoTags) {
+        if (prontoTags.size() > 0){
             hideEmptyText();
-            mAdapter = new TagListAdapter(getActivity(), tags, this);
+            mAdapter = new TagListAdapter(getActivity(), prontoTags, this);
             mRecyclerView.setAdapter(mAdapter);
         }else {
             showEmptyText();
@@ -164,12 +164,12 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     }
 
     @Override
-    public void onTagChecked(Tag selectedTag) {
+    public void onTagChecked(ProntoTag selectedProntoTag) {
 
     }
 
     @Override
-    public void onTagUnChecked(Tag unSelectedTag) {
+    public void onTagUnChecked(ProntoTag unSelectedProntoTag) {
 
     }
 
@@ -179,30 +179,30 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     }
 
     @Override
-    public void onTagClicked(Tag clickedTag) {
+    public void onTagClicked(ProntoTag clickedProntoTag) {
         Intent tagIntent = new Intent(getActivity(), NoteListActivity.class);
-        tagIntent.putExtra(Constants.TAG_FILTER, clickedTag.getTagName());
+        tagIntent.putExtra(Constants.TAG_FILTER, clickedProntoTag.getTagName());
         startActivity(tagIntent);
     }
 
     @Override
-    public void onEditTagButtonClicked(Tag clickedTag) {
-        showEditTagForm(clickedTag);
+    public void onEditTagButtonClicked(ProntoTag clickedProntoTag) {
+        showEditTagForm(clickedProntoTag);
     }
 
-    private void showEditTagForm(Tag clickedTag) {
-        addTagDialog = AddTagDialogFragment.newInstance(clickedTag.getId());
+    private void showEditTagForm(ProntoTag clickedProntoTag) {
+        addTagDialog = AddTagDialogFragment.newInstance(clickedProntoTag.getId());
         addTagDialog.show(getActivity().getFragmentManager(), "Dialog");
     }
 
     @Override
-    public void onDeleteTagButtonClicked(Tag clickedTag) {
-        showConfirmDeleteTagPrompt(clickedTag);
+    public void onDeleteTagButtonClicked(ProntoTag clickedProntoTag) {
+        showConfirmDeleteTagPrompt(clickedProntoTag);
     }
 
-    private void showConfirmDeleteTagPrompt(final Tag clickedTag) {
+    private void showConfirmDeleteTagPrompt(final ProntoTag clickedProntoTag) {
         String title = getString(R.string.are_you_sure);
-        String message =  getString(R.string.action_delete) + " " + clickedTag.getTagName();
+        String message =  getString(R.string.action_delete) + " " + clickedProntoTag.getTagName();
 
 
         android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext());
@@ -216,7 +216,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                tagDao.deleteTag(clickedTag.getId());
+                tagDao.deleteTag(clickedProntoTag.getId());
             }
         });
         alertDialog.setNegativeButton(R.string.label_cancel, new DialogInterface.OnClickListener() {
@@ -247,10 +247,10 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         realm.close();
     }
 
-    private OrderedRealmCollectionChangeListener<RealmResults<Tag>> listener
-            = new OrderedRealmCollectionChangeListener<RealmResults<Tag>>() {
+    private OrderedRealmCollectionChangeListener<RealmResults<ProntoTag>> listener
+            = new OrderedRealmCollectionChangeListener<RealmResults<ProntoTag>>() {
         @Override
-        public void onChange(RealmResults<Tag> folderEntities, OrderedCollectionChangeSet changeSet) {
+        public void onChange(RealmResults<ProntoTag> folderEntities, OrderedCollectionChangeSet changeSet) {
 
             if (changeSet == null) {
                 mAdapter.notifyDataSetChanged();

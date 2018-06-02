@@ -46,6 +46,9 @@ public class Constants {
     public static final String TASK_PRIORITY = "task_priority";
     public static final String NOTE_ID = "note_id";
     public static final String NOTE_DETAIL_EXPLAINER_COUNT = "note_detail_explainer_count";
+    public static final String SHOULD_DOWNLOAD_FROM_FIREBASE = "download_from_firebase";
+    public static final String DATE_LAST_SYNC = "date_last_sync";
+    public static final String INITIAL_SYNC = "initial_sync";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();

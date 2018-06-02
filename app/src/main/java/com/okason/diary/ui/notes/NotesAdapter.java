@@ -16,7 +16,7 @@ import com.bumptech.glide.Glide;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.models.Attachment;
-import com.okason.diary.models.Note;
+import com.okason.diary.models.Journal;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.date.TimeUtils;
@@ -31,14 +31,14 @@ import butterknife.ButterKnife;
  * Created by Valentine on 2/6/2016.
  */
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> {
-    private List<Note> mJournals;
+    private List<Journal> mJournals;
     private final Context mContext;
     private NoteItemListener mItemListener;
     private View noteView;
     private boolean isAudioPlaying = false;
 
 
-    public NotesAdapter(List<Note> journals, Context mContext){
+    public NotesAdapter(List<Journal> journals, Context mContext){
         mJournals = journals;
         this.mContext = mContext;
     }
@@ -53,7 +53,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final Note journal = mJournals.get(position);
+        final Journal journal = mJournals.get(position);
         if (journal != null && !TextUtils.isEmpty(journal.getContent()) && !TextUtils.isEmpty(journal.getTitle())) {
             String firstLetter;
             TextDrawable drawable;
@@ -137,21 +137,21 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
         return mJournals.size();
     }
 
-    public Note getItem(int position) {
+    public Journal getItem(int position) {
         return mJournals.get(position);
     }
 
-    public void replaceData(List<Note> journals) {
+    public void replaceData(List<Journal> journals) {
         setList(journals);
         notifyDataSetChanged();
     }
 
-    public void addNote(Note journal){
+    public void addNote(Journal journal){
         mJournals.add(journal);
         notifyItemInserted(mJournals.size() - 1);
     }
 
-    private void setList(List<Note> journals) {
+    private void setList(List<Journal> journals) {
         mJournals = journals;
     }
 
@@ -199,7 +199,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    Note journal = getItem(position);
+                    Journal journal = getItem(position);
                     mItemListener.onNoteClick(journal);
                 }
             });
@@ -207,7 +207,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    Note journal = getItem(position);
+                    Journal journal = getItem(position);
                    mItemListener.onNoteClick(journal);
                 }
             });
@@ -215,7 +215,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
-                    Note journal = getItem(position);
+                    Journal journal = getItem(position);
                     mItemListener.onDeleteButtonClicked(journal);
                 }
             });
@@ -224,7 +224,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
                     int postion = getAdapterPosition();
-                    Note journal = getItem(postion);
+                    Journal journal = getItem(postion);
                     mItemListener.onAttachmentClicked(journal, postion);
                 }
             });

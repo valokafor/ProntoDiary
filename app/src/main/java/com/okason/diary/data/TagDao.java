@@ -1,6 +1,6 @@
 package com.okason.diary.data;
 
-import com.okason.diary.models.Tag;
+import com.okason.diary.models.ProntoTag;
 
 import java.util.UUID;
 
@@ -20,48 +20,48 @@ public class TagDao {
     }
 
 
-    public RealmResults<Tag> getAllTags() {
-        RealmResults<Tag> tags = realm.where(Tag.class).findAll();
-        return tags;
+    public RealmResults<ProntoTag> getAllTags() {
+        RealmResults<ProntoTag> prontoTags = realm.where(ProntoTag.class).findAll();
+        return prontoTags;
     }
 
 
-    public Tag getTagById(String tagId) {
+    public ProntoTag getTagById(String tagId) {
         try {
-            Tag selectedTag = realm.where(Tag.class).equalTo("id", tagId).findFirst();
-            return selectedTag;
+            ProntoTag selectedProntoTag = realm.where(ProntoTag.class).equalTo("id", tagId).findFirst();
+            return selectedProntoTag;
         } catch (Exception e) {
             return null;
         }
     }
 
 
-    public Tag createNewTag() {
+    public ProntoTag createNewTag() {
         String id = UUID.randomUUID().toString();
         realm.beginTransaction();
-        Tag tag = realm.createObject(Tag.class, id);
-        tag.setDateCreated(System.currentTimeMillis());
-        tag.setDateModified(System.currentTimeMillis());
+        ProntoTag prontoTag = realm.createObject(ProntoTag.class, id);
+        prontoTag.setDateCreated(System.currentTimeMillis());
+        prontoTag.setDateModified(System.currentTimeMillis());
         realm.commitTransaction();
-        return tag;
+        return prontoTag;
     }
 
-    public Tag getTagByName(String tagName) {
+    public ProntoTag getTagByName(String tagName) {
         try {
-            Tag selectedTag = realm.where(Tag.class).equalTo("tagName", tagName).findFirst();
-            return selectedTag;
+            ProntoTag selectedProntoTag = realm.where(ProntoTag.class).equalTo("tagName", tagName).findFirst();
+            return selectedProntoTag;
         } catch (Exception e) {
             return null;
         }
     }
 
 
-    public Tag getOrCreateTag(String tagName) {
-        Tag tag = getTagById(tagName);
-        if (tag == null){
-            tag = createNewTag();
+    public ProntoTag getOrCreateTag(String tagName) {
+        ProntoTag prontoTag = getTagById(tagName);
+        if (prontoTag == null){
+            prontoTag = createNewTag();
         }
-        return tag;
+        return prontoTag;
     }
 
 
@@ -69,10 +69,10 @@ public class TagDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                Tag selectedTag = backgroundRealm.where(Tag.class).equalTo("id", id).findFirst();
-                if (selectedTag != null) {
-                    selectedTag.setTagName(title);
-                    selectedTag.setDateModified(System.currentTimeMillis());
+                ProntoTag selectedProntoTag = backgroundRealm.where(ProntoTag.class).equalTo("id", id).findFirst();
+                if (selectedProntoTag != null) {
+                    selectedProntoTag.setTagName(title);
+                    selectedProntoTag.setDateModified(System.currentTimeMillis());
                 }
             }
         });
@@ -84,7 +84,7 @@ public class TagDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                backgroundRealm.where(Tag.class).equalTo("id", tagId).findFirst().deleteFromRealm();
+                backgroundRealm.where(ProntoTag.class).equalTo("id", tagId).findFirst().deleteFromRealm();
             }
         });
     }

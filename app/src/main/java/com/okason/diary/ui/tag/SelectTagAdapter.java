@@ -15,8 +15,8 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
-import com.okason.diary.models.Note;
-import com.okason.diary.models.Tag;
+import com.okason.diary.models.Journal;
+import com.okason.diary.models.ProntoTag;
 
 import java.util.List;
 
@@ -28,16 +28,16 @@ import butterknife.ButterKnife;
  */
 
 public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.ViewHolder> {
-    private List<Tag> mTags;
+    private List<ProntoTag> mProntoTags;
     private final Context mContext;
     private final OnTagSelectedListener mListener;
 
-    //The id of the calling Note
+    //The id of the calling Journal
     private final String noteId;
 
 
-    public SelectTagAdapter(List<Tag> tags, Context context, OnTagSelectedListener listener, String noteId) {
-        mTags = tags;
+    public SelectTagAdapter(List<ProntoTag> prontoTags, Context context, OnTagSelectedListener listener, String noteId) {
+        mProntoTags = prontoTags;
         mContext = context;
         mListener = listener;
         this.noteId = noteId;
@@ -54,12 +54,12 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final Tag selectedTag = mTags.get(position);
+        final ProntoTag selectedProntoTag = mProntoTags.get(position);
 
-        if (!TextUtils.isEmpty(selectedTag.getTagName())){
-            holder.tagCheckbox.setText(selectedTag.getTagName());
+        if (!TextUtils.isEmpty(selectedProntoTag.getTagName())){
+            holder.tagCheckbox.setText(selectedProntoTag.getTagName());
 
-            int count = selectedTag.getNotes().size();
+            int count = selectedProntoTag.getJournals().size();
             ColorGenerator generator = ColorGenerator.MATERIAL;
             int color = generator.getRandomColor();
             TextDrawable drawable = TextDrawable.builder()
@@ -67,9 +67,9 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
             holder.tagCountImage.setImageDrawable(drawable);
         }
 
-        if (selectedTag.getNotes().size() > 0){
-            for (Note note : selectedTag.getNotes()){
-                if (note.getId().equals(noteId)){
+        if (selectedProntoTag.getJournals().size() > 0){
+            for (Journal journal : selectedProntoTag.getJournals()){
+                if (journal.getId().equals(noteId)){
                     holder.tagCheckbox.setChecked(true);
                 }
             }
@@ -79,15 +79,15 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
 
     @Override
     public int getItemCount() {
-        if (mTags != null){
-            return mTags.size();
+        if (mProntoTags != null){
+            return mProntoTags.size();
         }else {
             return 0;
         }
     }
 
-    private void setTasks(List<Tag> tags) {
-        mTags = tags;
+    private void setTasks(List<ProntoTag> prontoTags) {
+        mProntoTags = prontoTags;
         notifyDataSetChanged();
     }
 
@@ -111,11 +111,11 @@ public class SelectTagAdapter extends RecyclerView.Adapter<SelectTagAdapter.View
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked){
-                        Tag checkedTag = mTags.get(getLayoutPosition());
-                        mListener.onTagChecked(checkedTag);
+                        ProntoTag checkedProntoTag = mProntoTags.get(getLayoutPosition());
+                        mListener.onTagChecked(checkedProntoTag);
                     }else {
-                        Tag unCheckedTag = mTags.get(getLayoutPosition());
-                        mListener.onTagUnChecked(unCheckedTag);
+                        ProntoTag unCheckedProntoTag = mProntoTags.get(getLayoutPosition());
+                        mListener.onTagUnChecked(unCheckedProntoTag);
                     }
                 }
             });

@@ -95,15 +95,15 @@
 
     <changelogversion versionName="5.2.11" changeDate="May 12, 2016">
         <changelogtext>[i]Improved[/i] Updated hungarian and simplified chinese translations</changelogtext>
-        <changelogtext>[u]Fix[/u] Search by tag</changelogtext>
+        <changelogtext>[u]Fix[/u] Search by prontoTag</changelogtext>
     </changelogversion>
 
     <changelogversion versionName="5.2.10" changeDate="May 3, 2016">
-        <changelogtext>[i]Improved[/i] Is now possible to create tags using any kind of words. For example you can use "#thisIsA_tag!" and it'll be correctly recognized</changelogtext>
+        <changelogtext>[i]Improved[/i] Is now possible to create prontoTags using any kind of words. For example you can use "#thisIsA_tag!" and it'll be correctly recognized</changelogtext>
         <changelogtext>[i]Improved[/i] Changed selected journals colorization</changelogtext>
         <changelogtext>[i]Improved[/i] Disabled checklist items'vibration on drag</changelogtext>
         <changelogtext>[i]Improved[/i] Updated French, Galician, Hungarian, Italian, Japanese translations (very thanks to translators)</changelogtext>
-        <changelogtext>[u]Fix[/u] Search by tags will now make search by match and no more by prefix (ex. searching for "#tag" will no more find "#tagged")</changelogtext>
+        <changelogtext>[u]Fix[/u] Search by prontoTags will now make search by match and no more by prefix (ex. searching for "#prontoTag" will no more find "#tagged")</changelogtext>
     </changelogversion>
 
     <changelogversion versionName="5.2.9" changeDate="Apr 9, 2016">
@@ -421,7 +421,7 @@
     <changelogversion versionName="5.0.0 Beta 11" changeDate="Feb 17, 2015">
         <changelogtext>[b]New![/b] Crash reports can now be deactivated from settings (not recommended)</changelogtext>
         <changelogtext>[u]Fix[/u] Toolbar title not changing on navigation</changelogtext>
-        <changelogtext>[u]Fix[/u] Search using tags</changelogtext>
+        <changelogtext>[u]Fix[/u] Search using prontoTags</changelogtext>
     </changelogversion>
 
     <changelogversion versionName="5.0.0 Beta 10" changeDate="Feb 15, 2015">
@@ -459,8 +459,8 @@
     </changelogversion>
 
     <changelogversion versionName="5.0.0 Beta 5" changeDate="Jan 12, 2015">
-        <changelogtext>[b]New![/b] The current number of occurrences of each tag is shown in the
-            add-tag dialog (the underlying code has changed so performances could be changed)</changelogtext>
+        <changelogtext>[b]New![/b] The current number of occurrences of each prontoTag is shown in the
+            add-prontoTag dialog (the underlying code has changed so performances could be changed)</changelogtext>
         <changelogtext>[b]New![/b] Navigation panel is fully scrollable to further optimize spaces</changelogtext>
         <changelogtext>Revisited layout for tablets</changelogtext>
         <changelogtext>Updated translations</changelogtext>
@@ -492,7 +492,7 @@
         <changelogtext>[b]New![/b] Dynamic menu: only used items are shown withing navigation list (option in settings)</changelogtext>
         <changelogtext>Sorting dialog is now an overflow menu</changelogtext>
         <changelogtext>[u]Fix[/u] Missing space at bottom of the toolbar</changelogtext>
-        <changelogtext>[u]Fix[/u] Action mode is no more deactivated pressing back when trying tocategorize or tag multiple journals</changelogtext>
+        <changelogtext>[u]Fix[/u] Action mode is no more deactivated pressing back when trying tocategorize or prontoTag multiple journals</changelogtext>
         <changelogtext>[u]Fix[/u] Toolbar actions icon sizes and overflow color</changelogtext>
         <changelogtext>[u]Fix[/u] Sketch mode works again</changelogtext>
         <changelogtext>[u]Fix[/u] Empty the trash now works again</changelogtext>
@@ -505,7 +505,7 @@
         <changelogtext>[b]New![/b] Exceptionally improved image loading! Forget the lag!</changelogtext>
         <changelogtext>[b]New![/b] Support for animated gif in journals list and detail</changelogtext>
         <changelogtext>[b]New![/b] More efficient tagging system: single journal operations will show you
-            the already set tags and will remove the one of them you'll uncheck!</changelogtext>
+            the already set prontoTags and will remove the one of them you'll uncheck!</changelogtext>
         <changelogtext>[u]Fix[/u] Sorting by reminder criteria is now correctly working with last
             dates on top</changelogtext>
         <changelogtext>[u]Fix[/u] Fixed wrong Asturian translation</changelogtext>
@@ -517,7 +517,7 @@
         <changelogtext>Pressing "next" from title field will now move to the end of content</changelogtext>
         <changelogtext>[u]Fix[/u] Attachments deletion when the app was restarted (on some hardware
             configurations)</changelogtext>
-        <changelogtext>[u]Fix[/u] Search by tag now uses also journal titles</changelogtext>
+        <changelogtext>[u]Fix[/u] Search by prontoTag now uses also journal titles</changelogtext>
         <changelogtext>[u]Fix[/u] Notes queued one to each other when app is opened many times from
             widget</changelogtext>
     </changelogversion>
@@ -581,7 +581,7 @@
 
     <changelogversion versionName="4.6.0" changeDate="Jul 7, 2014">
 		<changelogtext>[b]New![/b] Import journals from Springpad</changelogtext>
-		<changelogtext>[b]New![/b] Real tags! Old tags are now Categories and tags are now managed directly by inserting "#..." into journals content. You can filter by tag using the tag icon when in search mode</changelogtext>
+		<changelogtext>[b]New![/b] Real prontoTags! Old prontoTags are now Categories and prontoTags are now managed directly by inserting "#..." into journals content. You can filter by prontoTag using the prontoTag icon when in search mode</changelogtext>
 		<changelogtext>[b]New![/b] Draggable checklist items to sort them as you like!</changelogtext>
 		<changelogtext>[b]New![/b] Images and videos will be displayed directly inside ON, in this way you'll be able to cycle all the media of the selected journal</changelogtext>
 		<changelogtext>[b]New![/b] A trash is now available to perform one step more before permanently destroy your journals!</changelogtext>
@@ -610,7 +610,7 @@
 
     <changelogversion versionName="4.6.0 Beta 14" changeDate="Jul 2, 2014">
   		<changelogtext>[b]New![/b] Fast scroll enabled in journals list by dragging the scrolling handle</changelogtext>
-  		<changelogtext>Changed the behavior or search by tag: now will be retrieved the journals that matches all the selected tags</changelogtext>
+  		<changelogtext>Changed the behavior or search by prontoTag: now will be retrieved the journals that matches all the selected prontoTags</changelogtext>
   		<changelogtext>[u]Fix[/u] Notes list title and content extraction</changelogtext>
   		<changelogtext>[u]Fix[/u] Blank navigation side panel when rotating screen</changelogtext>
   		<changelogtext>[u]Fix[/u] Huge fonts on some devices</changelogtext>
@@ -639,7 +639,7 @@
     <changelogversion versionName="4.6.0 Beta 11" changeDate="Jun 22, 2014">
   		<changelogtext>[b]New![/b] Asturian and Catalan languages supported</changelogtext>
   		<changelogtext>[b]New![/b] Higher resolution icons for notifications and journals shortcuts on home launcher</changelogtext>
-  		<changelogtext>[b]New![/b] During data backup/restore/input an incon informing about the task state is shown</changelogtext>
+  		<changelogtext>[b]New![/b] During data backup/restore/input an incon informing about the prontoTask state is shown</changelogtext>
   		<changelogtext>[b]New![/b] Bottom margins are now calculated to adapt to device's navigation bar size. Even for the hacked ones...</changelogtext>
   		<changelogtext>[u]Fix[/u] Some journals imported from Springpad caused app crash during list scrolling</changelogtext>
     </changelogversion>
@@ -660,8 +660,8 @@
     <changelogversion versionName="4.6.0 Beta 8" changeDate="Jun 3, 2014">
   		<changelogtext>[b]New![/b] Draggable checklist items!</changelogtext>
   		<changelogtext>[b]New![/b] Revisited side panel with settings and shadow</changelogtext>
-  		<changelogtext>[b]New![/b] Search improved by allowing non-stop text and tags insertion without resetting the results</changelogtext>
-  		<changelogtext>[b]New![/b] Non-ascii alphabet support for tags</changelogtext>
+  		<changelogtext>[b]New![/b] Search improved by allowing non-stop text and prontoTags insertion without resetting the results</changelogtext>
+  		<changelogtext>[b]New![/b] Non-ascii alphabet support for prontoTags</changelogtext>
   		<changelogtext>[b]New![/b] Added new Chines (Taiwan) language and updated the others</changelogtext>
   		<changelogtext>[u]Fix[/u] Categorization actions broken when inside journal editor or when undoing multipe journals categories removal</changelogtext>
   		<changelogtext>[u]Fix[/u] Wrong locations count in statistics</changelogtext>
@@ -696,7 +696,7 @@
     <changelogversion versionName="4.6.0 Beta 4" changeDate="May 14 2014">
         <changelogtext>[b]New![/b] Swipe on journals behavior can now be changed from settings: by default now a journal will be first archived, then trashed. Swiping into trash will instead restore journals to their previous state. Swiping into categories will remove the category.</changelogtext>
         <changelogtext>[b]New![/b] Show or hide the number of associated journals to the categories</changelogtext>
-  		<changelogtext>[b]New![/b] More precise hashtag parsing to avoid false positives. Search by tag will now works differently when in trash.</changelogtext>
+  		<changelogtext>[b]New![/b] More precise hashtag parsing to avoid false positives. Search by prontoTag will now works differently when in trash.</changelogtext>
   		<changelogtext>Improved speed in archive/trash undo actions by avoiding data refresh</changelogtext>
   		<changelogtext>[u]Fix[/u] Missing trashing or archiving if changing navigation immediatelly after having swiped a journal</changelogtext>
   		<changelogtext>[u]Fix[/u] Trashed journals are now correctly retrieved only by performing searches directly from trash</changelogtext>
@@ -707,7 +707,7 @@
 
     <changelogversion versionName="4.6.0 Beta 3" changeDate="May 13 2014">
         <changelogtext>[b]New![/b] Help Online</changelogtext>
-        <changelogtext>[b]New![/b] Real tags!! Old tags are now Categories and tags are now managed directly by inserting "#..." into journals content. You can filter by tag using the tag icon when in search mode</changelogtext>
+        <changelogtext>[b]New![/b] Real prontoTags!! Old prontoTags are now Categories and prontoTags are now managed directly by inserting "#..." into journals content. You can filter by prontoTag using the prontoTag icon when in search mode</changelogtext>
         <changelogtext>[b]New![/b] Trash is now available to perform one step more before permanently destroy your journals!</changelogtext>
         <changelogtext>[b]New![/b] A lot search feature changes: persistent search results (search query can't be unfortunately restored if I want to keep retrocompatibility); Trashed journals will be fine only performing search from inside trash itself; Bugfixes</changelogtext>
         <changelogtext>[b]New![/b] Automatic and faster journal saving</changelogtext>
@@ -848,9 +848,9 @@
 
     <changelogversion versionName="4.4.0 Beta 7" changeDate="Mar 02, 2014">
         <changelogtext>[b]New![/b] More space for content journal list when using expanded view</changelogtext>
-        <changelogtext>[b]New![/b] Widget showing a single tag journals now will directly create a journal with that tag by default</changelogtext>
+        <changelogtext>[b]New![/b] Widget showing a single prontoTag journals now will directly create a journal with that prontoTag by default</changelogtext>
         <changelogtext>Application will no more return to journals list if opened from a journal shortcut or if handled a third party app data sharing</changelogtext>
-        <changelogtext>Changing journals tag will no more update their last modification date</changelogtext>
+        <changelogtext>Changing journals prontoTag will no more update their last modification date</changelogtext>
         <changelogtext>[u]Fix[/u] Google Now voice launch</changelogtext>
         <changelogtext>[u]Fix[/u] Widget persistence on reboot and on new widget addition</changelogtext>
         <changelogtext>[u]Fix[/u] Broken links opening</changelogtext>
@@ -861,7 +861,7 @@
     <changelogversion versionName="4.4.0 Beta 6" changeDate="Feb 28, 2014">
         <changelogtext>[b]New![/b] Google Now integration</changelogtext>
         <changelogtext>[b]New![/b] New links recognition allows you to double-click on them to choose if copy or open web url o email adresses</changelogtext>
-        <changelogtext>[b]New![/b] Added saturation to tag color choosing</changelogtext>
+        <changelogtext>[b]New![/b] Added saturation to prontoTag color choosing</changelogtext>
         <changelogtext>[b]New![/b] Widget journals coloration mode is distinct from the one in the app</changelogtext>
         <changelogtext>Many modifications have been made to settings to make them simplier</changelogtext>
         <changelogtext>Contracted view in journals list occupies now less vertical space</changelogtext>
@@ -893,7 +893,7 @@
         <changelogtext>Improved thumbnails quality</changelogtext>
         <changelogtext>Parallelized many operation to improve performances on multicore devices with installed Android >= Honeycomb</changelogtext>
         <changelogtext>[u]Fix[/u] Locked journals thumbs are no more shown in journals list</changelogtext>
-        <changelogtext>[u]Fix[/u] Empty journal creation misbehavior when created from inside a tag</changelogtext>
+        <changelogtext>[u]Fix[/u] Empty journal creation misbehavior when created from inside a prontoTag</changelogtext>
         <changelogtext>[u]Fix[/u] Crash when pressing delete key on empty first checklist item</changelogtext>
         <changelogtext>[u]Fix[/u] Location icon indicator was showed wrongly sometimes</changelogtext>
     </changelogversion>
@@ -965,13 +965,13 @@
 
     <changelogversion versionName="4.3.1" changeDate="Feb 9, 2014">
         <changelogtext>Auto-link recognition is now disabled by default to avoid Samsung keyboard crashes</changelogtext>
-        <changelogtext>[u]Fix[/u] Now tags color are shown correctly even in smaller devices and Nexus tablets</changelogtext>
+        <changelogtext>[u]Fix[/u] Now prontoTags color are shown correctly even in smaller devices and Nexus tablets</changelogtext>
         <changelogtext>[u]Fix[/u] Black sub-settings screen's background on Gingerbread is now white</changelogtext>
         <changelogtext>[u]Fix[/u] Fixed crash when batch deleting journals in list for some devices</changelogtext>
     </changelogversion>
 
     <changelogversion versionName="4.3.0" changeDate="Feb 8, 2014">
-        <changelogtext>[b]New![/b] Implemented new tags creation directly from journal tagging dialog</changelogtext>
+        <changelogtext>[b]New![/b] Implemented new prontoTags creation directly from journal tagging dialog</changelogtext>
         <changelogtext>[b]New![/b] Expanded notifications on Android versions major than Jelly Bean to allow dismissing reminder or delay it</changelogtext>
         <changelogtext>[b]New![/b] Users can now choose to use default Android calendar and time pickers dialog instead of Googleìs ones</changelogtext>
         <changelogtext>[b]New![/b] You can now force the application language from settings</changelogtext>
@@ -996,14 +996,14 @@
  	</changelogversion>
 
     <changelogversion versionName="4.2.0 Beta 8" changeDate="Feb 3, 2014">
-      <changelogtext>[b]New![/b] Tags colors have been moved to pastel family for a better looking and can be set to cover not only the small tag markers in journals but also the full journal item!</changelogtext>
+      <changelogtext>[b]New![/b] Tags colors have been moved to pastel family for a better looking and can be set to cover not only the small prontoTag markers in journals but also the full journal item!</changelogtext>
       <changelogtext>[b]New![/b] More elegant password setting screen. Now, if trying to lock a journal without having inserted a security password before, you'll be prompted for it just once.</changelogtext>
       <changelogtext>[b]New![/b] Notification ringtone customizable from settings</changelogtext>
       <changelogtext>[b]New![/b] New sharing mode</changelogtext>
       <changelogtext>[b]New![/b] Tags creations and deletions are now notified with color contextual dialogs</changelogtext>
       <changelogtext>[b]New![/b] Added opacity bar in Sketch and fixed popup position</changelogtext>
       <changelogtext>[b]New![/b] Swedish language support (thanks Mattias Lundqvist)</changelogtext>
-      <changelogtext>Tags are now ordered by name, when name is left blank the tag will stay on tail</changelogtext>
+      <changelogtext>Tags are now ordered by name, when name is left blank the prontoTag will stay on tail</changelogtext>
       <changelogtext>Updated Turkish translation</changelogtext>
       <changelogtext>[u]Fix[/u] Crash when trying to delete a backup on some devices</changelogtext>
       <changelogtext>[u]Fix[/u] Crash when switching to other app while drawing a sketch</changelogtext>
@@ -1042,7 +1042,7 @@
     <changelogversion versionName="4.2.0 Beta 3" changeDate="Jan 29, 2014">
       <changelogtext>[b]New![/b] Notes can now be sorted by ascending reminder date</changelogtext>
       <changelogtext>[b]New![/b] If a journal is locked its content is not masked in journals' list</changelogtext>
-      <changelogtext>When a journal is going to be tagged and no tags already exist the tag creation window is shown</changelogtext>
+      <changelogtext>When a journal is going to be tagged and no prontoTags already exist the prontoTag creation window is shown</changelogtext>
       <changelogtext>[u]Fix[/u] Finally resolved bug affecting Samsung keyboard and Flesky that caused app crashing when trying to write title or content on empty field and when double-tapping to select text</changelogtext>
       <changelogtext>[u]Fix[/u] App crashing from when a new journal with new-line only is inserted untile when app data are erased</changelogtext>
       <changelogtext>[u]Fix[/u] Tag color is no more reset to default color when saving it without changes</changelogtext>
@@ -1063,12 +1063,12 @@
       <changelogtext>Tag markers layout modified: slightly thicker and now both in journals list or in detail will appear like a vertical-left-border for the container card element</changelogtext>
       <changelogtext>German translation updated (thanks to Lycox)</changelogtext>
       <changelogtext>[u]Fix[/u] attachments added when discarding journal changes will be correctly removed</changelogtext>
-      <changelogtext>[u]Fix[/u] wrong tag association when just one journal without previous tag was selected</changelogtext>
+      <changelogtext>[u]Fix[/u] wrong prontoTag association when just one journal without previous prontoTag was selected</changelogtext>
  	</changelogversion>
 
     <changelogversion versionName="4.1.4" changeDate="Jan 30, 2014">
       <changelogtext>[u]Fix[/u] Crashes with Samsung or Flesky keyboards</changelogtext>
- 	  <changelogtext>[u]Fix[/u] Possible crashes on tags creation</changelogtext>
+ 	  <changelogtext>[u]Fix[/u] Possible crashes on prontoTags creation</changelogtext>
  	</changelogversion>
 
     <changelogversion versionName="4.1.3" changeDate="Jan 21, 2014">
@@ -1098,7 +1098,7 @@
     <changelogversion versionName="4.1.0 Beta 3" changeDate="Jan 11, 2014">
       <changelogtext>[b]New![/b] Audio attachments now are shown with their name to avoid confusing them</changelogtext>
       <changelogtext>Faster app launches thanks to heavy code cleaning</changelogtext>
-      <changelogtext>Batch tagging journals on list now pre-sets actual tag if just one journal is selected</changelogtext>
+      <changelogtext>Batch tagging journals on list now pre-sets actual prontoTag if just one journal is selected</changelogtext>
       <changelogtext>[u]Fix[/u] Playing audio recordings without having stopped the previuos one now works correctly</changelogtext>
       <changelogtext>[u]Fix[/u] Tags colored circle are now displayed also on versions previously than Jelly Bean</changelogtext>
      </changelogversion>
@@ -1114,7 +1114,7 @@
     </changelogversion>
 
     <changelogversion versionName="4.1.0 Beta 1" changeDate="Jan 6, 2014">
-      <changelogtext>[b]New![/b] Associate journals with colored [u]tags[/u] to categorize and filter them!</changelogtext>
+      <changelogtext>[b]New![/b] Associate journals with colored [u]prontoTags[/u] to categorize and filter them!</changelogtext>
       <changelogtext>[b]New![/b] Protect single journals from unauthorized accesses using a security password</changelogtext>
       <changelogtext>[u]Fix[/u] Many other minor issues have been resolved</changelogtext>
 	</changelogversion>

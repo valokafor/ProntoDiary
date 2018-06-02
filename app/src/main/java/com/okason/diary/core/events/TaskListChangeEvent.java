@@ -1,6 +1,6 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.Task;
+import com.okason.diary.models.ProntoTask;
 
 import java.util.List;
 
@@ -9,14 +9,14 @@ import java.util.List;
  */
 
 public class TaskListChangeEvent {
-    private final List<Task> tasklList;
+    private final List<ProntoTask> tasklList;
 
 
-    public TaskListChangeEvent(List<Task> tasklList) {
+    public TaskListChangeEvent(List<ProntoTask> tasklList) {
         this.tasklList = tasklList;
     }
 
-    public List<Task> getTasklList() {
+    public List<ProntoTask> getTasklList() {
         return tasklList;
     }
 }

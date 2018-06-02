@@ -1,18 +1,15 @@
-package com.okason.diary.models;
+package com.okason.diary.models.dto;
 
-import com.okason.diary.reminder.Reminder;
+import com.okason.diary.models.ProntoTask;
 
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
+import java.util.List;
 
 /**
- * Created by Valentine on 4/10/2017.
+ * Created by valokafor on 6/1/18.
  */
 
-public class Task extends RealmObject{
+public class ProntoTaskDto {
 
-    @PrimaryKey
     private String id;
     private String title;
     private String description;
@@ -20,17 +17,19 @@ public class Task extends RealmObject{
     private long dateModified;
     private boolean checked;
     private int priority;
-    private Double latitude;
-    private Double longitude;
 
 
-    private Folder folder;
-    private Reminder reminder;
-    private RealmList<Tag> tags;
-    private RealmList<SubTask> subTask;
+    private FolderDto folder;
+    private ReminderDto reminder;
+    private List<TaskDto> tags;
+    private List<SubTaskDto> subTask;
 
-    public Task(){
+    public ProntoTaskDto(){
         dateCreated = System.currentTimeMillis();
+    }
+
+    public ProntoTaskDto(ProntoTask prontoTask){
+
     }
 
     public String getId() {
@@ -89,52 +88,35 @@ public class Task extends RealmObject{
         this.priority = priority;
     }
 
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
-
-
-    public Folder getFolder() {
+    public FolderDto getFolder() {
         return folder;
     }
 
-    public void setFolder(Folder folder) {
+    public void setFolder(FolderDto folder) {
         this.folder = folder;
     }
 
-    public RealmList<Tag> getTags() {
-        return tags;
-    }
-
-    public void setTags(RealmList<Tag> tags) {
-        this.tags = tags;
-    }
-
-    public RealmList<SubTask> getSubTask() {
-        return subTask;
-    }
-
-    public void setSubTask(RealmList<SubTask> subTask) {
-        this.subTask = subTask;
-    }
-
-    public Reminder getReminder() {
+    public ReminderDto getReminder() {
         return reminder;
     }
 
-    public void setReminder(Reminder reminder) {
+    public void setReminder(ReminderDto reminder) {
         this.reminder = reminder;
+    }
+
+    public List<TaskDto> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<TaskDto> tags) {
+        this.tags = tags;
+    }
+
+    public List<SubTaskDto> getSubTask() {
+        return subTask;
+    }
+
+    public void setSubTask(List<SubTaskDto> subTask) {
+        this.subTask = subTask;
     }
 }

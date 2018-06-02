@@ -100,4 +100,21 @@ public class SettingsHelper {
     noteDetailExplainerShownCount++;
     getSharedPreferences().edit().putBoolean(Constants.NOTE_DETAIL_EXPLAINER_COUNT, show).commit();
   }
+
+  public boolean shouldDownloadDataFromFirebase() {
+    SharedPreferences mSharedPreferences = getSharedPreferences();
+    return mSharedPreferences.getBoolean(Constants.SHOULD_DOWNLOAD_FROM_FIREBASE, true);
+  }
+
+  public void setDownloadDataFromFirebase(boolean shouldDownload) {
+    SharedPreferences.Editor editor = getSharedPreferences().edit();
+    editor.putBoolean(Constants.SHOULD_DOWNLOAD_FROM_FIREBASE, shouldDownload);
+    editor.commit();
+  }
+
+
+  public long getLastSyncDate() {
+    long lastSync = getSharedPreferences().getLong(Constants.DATE_LAST_SYNC, 0);
+    return 0;
+  }
 }

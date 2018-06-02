@@ -26,7 +26,7 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.TaskItemListener;
 import com.okason.diary.data.TaskDao;
-import com.okason.diary.models.Task;
+import com.okason.diary.models.ProntoTask;
 import com.okason.diary.utils.Constants;
 
 import java.util.List;
@@ -50,8 +50,8 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
 
 
-    private RealmResults<Task> allTasks;
-    private List<Task> filteredTasks;
+    private RealmResults<ProntoTask> allProntoTasks;
+    private List<ProntoTask> filteredProntoTasks;
     private TaskListAdapter mListAdapter;
     private View mRootView;
     private String sortColumn = "title";
@@ -122,9 +122,9 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     private void getTasks() {
         if (priority == Constants.PRIORITY_ALL){
-            allTasks = taskDao.getAllTask().sort(sortColumn);
+            allProntoTasks = taskDao.getAllTask().sort(sortColumn);
         } else {
-            allTasks = taskDao.getAllTasksForPriority(priority).sort(sortColumn);
+            allProntoTasks = taskDao.getAllTasksForPriority(priority).sort(sortColumn);
         }
 
     }
@@ -133,8 +133,8 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     public void onResume() {
         super.onResume();
         getTasks();
-        showTodoLists(allTasks);
-        allTasks.addChangeListener(changeListener);
+        showTodoLists(allProntoTasks);
+        allProntoTasks.addChangeListener(changeListener);
     }
 
 
@@ -142,7 +142,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     @Override
     public void onPause() {
-        allTasks.removeAllChangeListeners();
+        allProntoTasks.removeAllChangeListeners();
         super.onPause();
     }
 
@@ -177,15 +177,15 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public boolean onClose() {
         getTasks();
-        showTodoLists(allTasks);
+        showTodoLists(allProntoTasks);
         return false;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (query.length() > 0) {
-            filteredTasks = taskDao.filterTasks(query);
-            showTodoLists(filteredTasks);
+            filteredProntoTasks = taskDao.filterTasks(query);
+            showTodoLists(filteredProntoTasks);
         }
         return true;
     }
@@ -195,18 +195,18 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     @Override
     public boolean onQueryTextChange(String newText) {
         if (newText.length() > 0) {
-            filteredTasks = taskDao.filterTasks(newText);
-            showTodoLists(filteredTasks);
+            filteredProntoTasks = taskDao.filterTasks(newText);
+            showTodoLists(filteredProntoTasks);
         }
         return true;
     }
 
 
-    private void showTodoLists(List<Task> tasks) {
+    private void showTodoLists(List<ProntoTask> prontoTasks) {
 
-        if (tasks != null && tasks.size() > 0){
+        if (prontoTasks != null && prontoTasks.size() > 0){
             showEmptyText(false);
-            mListAdapter = new TaskListAdapter(tasks, getActivity(), this);
+            mListAdapter = new TaskListAdapter(prontoTasks, getActivity(), this);
             mRecyclerView.setAdapter(mListAdapter);
         }else {
             showEmptyText(true);
@@ -244,54 +244,54 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
 
     @Override
-    public void onEditTaskButtonClicked(Task clickedTask) {
+    public void onEditTaskButtonClicked(ProntoTask clickedProntoTask) {
         Intent editTaskIntent = new Intent(getActivity(), AddTaskActivity.class);
-        editTaskIntent.putExtra(Constants.TASK_ID, clickedTask.getId());
+        editTaskIntent.putExtra(Constants.TASK_ID, clickedProntoTask.getId());
         startActivity(editTaskIntent);
     }
 
     @Override
-    public void onDeleteTaskButtonClicked(Task clickedTask) {
+    public void onDeleteTaskButtonClicked(ProntoTask clickedProntoTask) {
         boolean shouldPromptForDelete = PreferenceManager
                 .getDefaultSharedPreferences(getContext()).getBoolean("prompt_for_delete", true);
         if (shouldPromptForDelete) {
-            promptForDelete(clickedTask);
+            promptForDelete(clickedProntoTask);
         } else {
-            deleteTask(clickedTask);
+            deleteTask(clickedProntoTask);
         }
 
     }
 
-    private void deleteTask(Task clickedTask) {
-        taskDao.deleteTask(clickedTask.getId());
+    private void deleteTask(ProntoTask clickedProntoTask) {
+        taskDao.deleteTask(clickedProntoTask.getId());
 
     }
 
     @Override
-    public void onAddSubTasksButtonClicked(Task clickedTask) {
+    public void onAddSubTasksButtonClicked(ProntoTask clickedProntoTask) {
         Intent addSubTaskIntent = new Intent(getActivity(), AddSubTaskActivity.class);
-        addSubTaskIntent.putExtra(Constants.TASK_ID, clickedTask.getId());
+        addSubTaskIntent.putExtra(Constants.TASK_ID, clickedProntoTask.getId());
         startActivity(addSubTaskIntent);
 
     }
 
     @Override
-    public void onTaskChecked(Task task) {
-        taskDao.updateTaskStatus(task, true);
+    public void onTaskChecked(ProntoTask prontoTask) {
+        taskDao.updateTaskStatus(prontoTask, true);
 
     }
 
 
 
     @Override
-    public void onTaskUnChecked(Task task) {
-        taskDao.updateTaskStatus(task, false);
+    public void onTaskUnChecked(ProntoTask prontoTask) {
+        taskDao.updateTaskStatus(prontoTask, false);
     }
 
 
-    private void promptForDelete(final Task clickedTask) {
+    private void promptForDelete(final ProntoTask clickedProntoTask) {
         String title = getString(R.string.are_you_sure);
-        String message =  getString(R.string.action_delete) + " " + clickedTask.getTitle();
+        String message =  getString(R.string.action_delete) + " " + clickedProntoTask.getTitle();
 
 
         android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(getContext());
@@ -305,7 +305,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                taskDao.deleteTask(clickedTask.getId());
+                taskDao.deleteTask(clickedProntoTask.getId());
             }
         });
         alertDialog.setNegativeButton(R.string.label_cancel, new DialogInterface.OnClickListener() {
@@ -332,10 +332,10 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     }
 
 
-    private final OrderedRealmCollectionChangeListener<RealmResults<Task>> changeListener =
-            new OrderedRealmCollectionChangeListener<RealmResults<Task>>() {
+    private final OrderedRealmCollectionChangeListener<RealmResults<ProntoTask>> changeListener =
+            new OrderedRealmCollectionChangeListener<RealmResults<ProntoTask>>() {
                 @Override
-                public void onChange(RealmResults<Task> allTasks, OrderedCollectionChangeSet changeSet) {
+                public void onChange(RealmResults<ProntoTask> allProntoTasks, OrderedCollectionChangeSet changeSet) {
                     // `null`  means the async query returns the first time.
                     if (changeSet == null) {
                         return;

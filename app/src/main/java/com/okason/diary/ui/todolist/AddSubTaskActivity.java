@@ -11,7 +11,7 @@ import android.view.MenuItem;
 
 import com.okason.diary.R;
 import com.okason.diary.data.TaskDao;
-import com.okason.diary.models.Task;
+import com.okason.diary.models.ProntoTask;
 import com.okason.diary.utils.Constants;
 
 import io.realm.Realm;
@@ -31,15 +31,15 @@ public class AddSubTaskActivity extends AppCompatActivity {
         realm = Realm.getDefaultInstance();
         taskDao = new TaskDao(realm);
 
-        //Only start the Add Sub Task Fragment if a valid Task object was passed in
+        //Only start the Add Sub ProntoTask Fragment if a valid ProntoTask object was passed in
         if (savedInstanceState == null) {
             if (getIntent() != null && getIntent().hasExtra(Constants.TASK_ID)) {
                 String taskId = getIntent().getStringExtra(Constants.TASK_ID);
                 if (!TextUtils.isEmpty(taskId)) {
-                    Task task = taskDao.getTaskById(taskId);
-                    if (task != null) {
+                    ProntoTask prontoTask = taskDao.getTaskById(taskId);
+                    if (prontoTask != null) {
                         AddSubTaskFragment fragment = AddSubTaskFragment.newInstance(taskId);
-                        openFragment(fragment, task.getTitle());
+                        openFragment(fragment, prontoTask.getTitle());
                     } else {
                         finish();
                     }

@@ -1,21 +1,21 @@
-package com.okason.diary.reminder;
+package com.okason.diary.models.dto;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.okason.diary.models.ProntoTask;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
 
-public class Reminder extends RealmObject {
+/**
+ * Class used to transfer Reminder Objects to Firebase
+ */
+public class ReminderDto{
 
-    @PrimaryKey
+
     private int id;
-    private ProntoTask parentProntoTask;
+    private String parentTaskId;
     private long dateAndTime;
     private int repeatType;
     private boolean indefinite;
@@ -26,7 +26,7 @@ public class Reminder extends RealmObject {
     private long dateModified;
     private String daysOfWeek;
 
-    public Reminder(){}
+    public ReminderDto(){}
 
 
     public int getId() {
@@ -37,12 +37,12 @@ public class Reminder extends RealmObject {
         this.id = id;
     }
 
-    public ProntoTask getParentProntoTask() {
-        return parentProntoTask;
+    public String getParentTaskId() {
+        return parentTaskId;
     }
 
-    public void setParentProntoTask(ProntoTask parentProntoTask) {
-        this.parentProntoTask = parentProntoTask;
+    public void setParentTaskId(String parentTaskId) {
+        this.parentTaskId = parentTaskId;
     }
 
     public long getDateAndTime() {

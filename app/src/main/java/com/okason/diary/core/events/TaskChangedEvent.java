@@ -1,19 +1,19 @@
 package com.okason.diary.core.events;
 
-import com.okason.diary.models.Task;
+import com.okason.diary.models.ProntoTask;
 
 /**
  * Created by valokafor on 10/17/17.
  */
 
 public class TaskChangedEvent {
-    private final Task changedTask;
+    private final ProntoTask changedProntoTask;
 
-    public TaskChangedEvent(Task changedTask) {
-        this.changedTask = changedTask;
+    public TaskChangedEvent(ProntoTask changedProntoTask) {
+        this.changedProntoTask = changedProntoTask;
     }
 
-    public Task getChangedTask() {
-        return changedTask;
+    public ProntoTask getChangedProntoTask() {
+        return changedProntoTask;
     }
 }

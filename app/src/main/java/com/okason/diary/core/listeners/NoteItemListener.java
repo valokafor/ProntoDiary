@@ -1,16 +1,16 @@
 package com.okason.diary.core.listeners;
 
 
-import com.okason.diary.models.Note;
+import com.okason.diary.models.Journal;
 
 /**
  * Created by Valentine on 3/12/2016.
  */
 public interface NoteItemListener {
 
-    void onNoteClick(Note clickedJournal);
+    void onNoteClick(Journal clickedJournal);
 
-    void onDeleteButtonClicked(Note clickedJournal);
+    void onDeleteButtonClicked(Journal clickedJournal);
 
-    void onAttachmentClicked(Note clickedJournal, int position);
+    void onAttachmentClicked(Journal clickedJournal, int position);
 }

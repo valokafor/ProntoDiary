@@ -2,8 +2,8 @@ package com.okason.diary.utils.date;
 
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.models.ProntoTask;
 import com.okason.diary.models.SubTask;
-import com.okason.diary.models.Task;
 import com.okason.diary.utils.Constants;
 
 import java.text.SimpleDateFormat;
@@ -120,12 +120,12 @@ public class TimeUtils {
 
     }
 
-    public static String getSubTaskStatus(Task task) {
+    public static String getSubTaskStatus(ProntoTask prontoTask) {
         StringBuilder stringBuilder = new StringBuilder(40);
 
         int numberOfTasks = 0;
         String tasksLabel = ProntoDiaryApplication.getAppContext().getString(R.string.label_sub_task);
-        numberOfTasks = task.getSubTask().size();
+        numberOfTasks = prontoTask.getSubTask().size();
 
         if (numberOfTasks > 1){
             tasksLabel = tasksLabel + "s";
@@ -137,8 +137,8 @@ public class TimeUtils {
         int completedTasks = 0;
         int pendingTasks = 0;
 
-        if (task.getSubTask().size() > 0){
-            for (SubTask subTask: task.getSubTask()){
+        if (prontoTask.getSubTask().size() > 0){
+            for (SubTask subTask: prontoTask.getSubTask()){
                 if (subTask.isChecked()){
                     completedTasks++;
                 }else {

@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.data.TagDao;
-import com.okason.diary.models.Tag;
+import com.okason.diary.models.ProntoTag;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -28,7 +28,7 @@ import io.realm.RealmResults;
 public class SelectTagDialogFragment extends DialogFragment {
 
     private View mRooView;
-    private RealmResults<Tag> allTags;
+    private RealmResults<ProntoTag> allProntoTags;
     private SelectTagAdapter mTagAdapter;
     private OnTagSelectedListener mListener;
     private String noteId = "";
@@ -59,7 +59,7 @@ public class SelectTagDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         realm = Realm.getDefaultInstance();
         tagDao = new TagDao(realm);
-        allTags = tagDao.getAllTags();
+        allProntoTags = tagDao.getAllTags();
     }
 
     @Override
@@ -87,7 +87,7 @@ public class SelectTagDialogFragment extends DialogFragment {
             }
         });
 
-        mTagAdapter = new SelectTagAdapter(allTags, getActivity(), mListener, noteId);
+        mTagAdapter = new SelectTagAdapter(allProntoTags, getActivity(), mListener, noteId);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         tagRecyclerView.setLayoutManager(layoutManager);
         tagRecyclerView.setAdapter(mTagAdapter);

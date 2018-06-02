@@ -40,8 +40,8 @@ import com.okason.diary.data.ReminderDao;
 import com.okason.diary.data.TagDao;
 import com.okason.diary.data.TaskDao;
 import com.okason.diary.models.Folder;
-import com.okason.diary.models.Tag;
-import com.okason.diary.models.Task;
+import com.okason.diary.models.ProntoTag;
+import com.okason.diary.models.ProntoTask;
 import com.okason.diary.reminder.AdvancedRepeatSelector;
 import com.okason.diary.reminder.AlarmReceiver;
 import com.okason.diary.reminder.AlarmUtil;
@@ -103,7 +103,7 @@ public class AddTaskActivity extends AppCompatActivity implements
     // private String repeatFrequency = "";
     private int priority = Constants.PRIORITY_LOW;
 
-    //Flag that indicates if the Add Sub Task screen should be opened
+    //Flag that indicates if the Add Sub ProntoTask screen should be opened
     private boolean shouldAddSubTasks = false;
 
 
@@ -114,10 +114,10 @@ public class AddTaskActivity extends AppCompatActivity implements
     private ReminderDao reminderDao;
     private Activity activity;
 
-    private Task currentTask;
+    private ProntoTask currentProntoTask;
     private Reminder currentReminder;
     private Folder selectedFolder;
-    private List<Tag> selectedTags;
+    private List<ProntoTag> selectedProntoTags;
 
     private Calendar calendar;
     private List<Boolean> daysOfWeek = new ArrayList<>();
@@ -147,7 +147,7 @@ public class AddTaskActivity extends AppCompatActivity implements
         folderDao = new FolderDao(realm);
         tagDao = new TagDao(realm);
         reminderDao = new ReminderDao(realm);
-        selectedTags = new ArrayList<>();
+        selectedProntoTags = new ArrayList<>();
         repeatArray = getResources().getStringArray(R.array.repeat_array);
 
         calendar = Calendar.getInstance();
@@ -159,7 +159,7 @@ public class AddTaskActivity extends AppCompatActivity implements
 
         if (getIntent() != null && getIntent().hasExtra(Constants.TASK_ID)) {
             String taskId = getIntent().getStringExtra(Constants.TASK_ID);
-            currentTask = taskDao.getTaskById(taskId);
+            currentProntoTask = taskDao.getTaskById(taskId);
         }
 
 
@@ -184,9 +184,9 @@ public class AddTaskActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        if (currentTask != null){
-            currentReminder = currentTask.getReminder();
-            showTaskDetail(currentTask);
+        if (currentProntoTask != null){
+            currentReminder = currentProntoTask.getReminder();
+            showTaskDetail(currentProntoTask);
             showReminderDetail(currentReminder);
             getSupportActionBar().setTitle(getString(R.string.edit_task));
         }
@@ -195,23 +195,23 @@ public class AddTaskActivity extends AppCompatActivity implements
     /**
      * This method populates the AddTask screen
      * When it is in Edit mode
-     * @param task - the passed in Task
+     * @param prontoTask - the passed in ProntoTask
      */
-    public void showTaskDetail(Task task) {
+    public void showTaskDetail(ProntoTask prontoTask) {
         try {
-            taskNameEditText.setText(task.getTitle());
+            taskNameEditText.setText(prontoTask.getTitle());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            taskDescriptionEditText.setText(task.getDescription());
+            taskDescriptionEditText.setText(prontoTask.getDescription());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            int priority = task.getPriority();
+            int priority = prontoTask.getPriority();
             if (priority > 0){
                 switch (priority){
                     case Constants.PRIORITY_LOW:
@@ -230,14 +230,14 @@ public class AddTaskActivity extends AppCompatActivity implements
         }
 
         try {
-            String formattedDueDate = TimeUtils.getReadableDateWithoutTime(task.getReminder().getDateAndTime());
+            String formattedDueDate = TimeUtils.getReadableDateWithoutTime(prontoTask.getReminder().getDateAndTime());
             dateTextView.setText(formattedDueDate);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            String formattedDueTime = DateHelper.getTimeShort(activity, task.getReminder().getDateAndTime());
+            String formattedDueTime = DateHelper.getTimeShort(activity, prontoTask.getReminder().getDateAndTime());
             timeTextView.setText(formattedDueTime);
         } catch (Exception e) {
             e.printStackTrace();
@@ -245,16 +245,16 @@ public class AddTaskActivity extends AppCompatActivity implements
 
 
         try {
-            onFolderSelected(currentTask.getFolder());
+            onFolderSelected(currentProntoTask.getFolder());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        //Show Tags assigned to this task
-        if (currentTask.getTags() != null && currentTask.getTags().size() > 0){
+        //Show Tags assigned to this prontoTask
+        if (currentProntoTask.getProntoTags() != null && currentProntoTask.getProntoTags().size() > 0){
             String tagText = "";
-            for (Tag tag: currentTask.getTags()){
-                tagText = tagText + "#" + tag.getTagName() + ", ";
+            for (ProntoTag prontoTag : currentProntoTask.getProntoTags()){
+                tagText = tagText + "#" + prontoTag.getTagName() + ", ";
             }
             tagsTextView.setText(tagText);
             tagsTextView.setTextColor(ContextCompat.getColor(activity, R.color.primary_dark));
@@ -584,8 +584,8 @@ public class AddTaskActivity extends AppCompatActivity implements
 
     private void saveNotification() {
 
-        if (currentTask == null){
-            currentTask = taskDao.createNewTask();
+        if (currentProntoTask == null){
+            currentProntoTask = taskDao.createNewTask();
         }
 
         if (currentReminder == null){
@@ -598,9 +598,13 @@ public class AddTaskActivity extends AppCompatActivity implements
         String taskName = taskNameEditText.getText().toString();
         String description = taskDescriptionEditText.getText().toString();
 
-        taskDao.updateTask(currentTask.getId(), taskName, description, priority, selectedFolder.getId());
+        if (selectedFolder == null){
+            selectedFolder = folderDao.getOrCreateFolder(getString(R.string.general));
+        }
 
-        taskDao.addReminder(currentTask.getId(), currentReminder.getId());
+        taskDao.updateTask(currentProntoTask.getId(), taskName, description, priority, selectedFolder.getId());
+
+        taskDao.addReminder(currentProntoTask.getId(), currentReminder.getId());
 
         if (currentReminder != null){
             Intent alarmIntent = new Intent(this, AlarmReceiver.class);
@@ -610,7 +614,7 @@ public class AddTaskActivity extends AppCompatActivity implements
 
         if (shouldAddSubTasks) {
             Intent addSubTaskIntent = new Intent(activity, AddSubTaskActivity.class);
-            addSubTaskIntent.putExtra(Constants.TASK_ID, currentTask.getId());
+            addSubTaskIntent.putExtra(Constants.TASK_ID, currentProntoTask.getId());
             addSubTaskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(addSubTaskIntent);
         } else {
