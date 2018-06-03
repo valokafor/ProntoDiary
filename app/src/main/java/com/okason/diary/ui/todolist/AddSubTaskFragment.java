@@ -23,7 +23,7 @@ import com.okason.diary.core.listeners.SubTaskItemListener;
 import com.okason.diary.data.TaskDao;
 import com.okason.diary.models.ProntoTask;
 import com.okason.diary.models.SubTask;
-import com.okason.diary.reminder.Reminder;
+import com.okason.diary.models.Reminder;
 import com.okason.diary.reminder.TextFormatUtil;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;

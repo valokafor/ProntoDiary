@@ -21,15 +21,21 @@ public class ProntoTaskDto {
 
     private FolderDto folder;
     private ReminderDto reminder;
-    private List<TaskDto> tags;
+    private List<ProntoTagDto> tags;
     private List<SubTaskDto> subTask;
 
     public ProntoTaskDto(){
         dateCreated = System.currentTimeMillis();
     }
 
-    public ProntoTaskDto(ProntoTask prontoTask){
-
+    public ProntoTaskDto(ProntoTask task){
+        this.id = task.getId();
+        this.title = task.getTitle();
+        this.description = task.getDescription();
+        this.dateCreated = task.getDateCreated();
+        this.dateModified = task.getDateModified();
+        this.checked = task.isChecked();
+        this.priority = task.getPriority();
     }
 
     public String getId() {
@@ -104,11 +110,11 @@ public class ProntoTaskDto {
         this.reminder = reminder;
     }
 
-    public List<TaskDto> getTags() {
+    public List<ProntoTagDto> getTags() {
         return tags;
     }
 
-    public void setTags(List<TaskDto> tags) {
+    public void setTags(List<ProntoTagDto> tags) {
         this.tags = tags;
     }
 

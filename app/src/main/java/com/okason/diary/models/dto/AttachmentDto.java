@@ -14,6 +14,7 @@ import java.io.File;
 
 /**
  * Created by valokafor on 5/31/18.
+ * Used to transfer Attachments to and From Firebase
  */
 
 public class AttachmentDto {

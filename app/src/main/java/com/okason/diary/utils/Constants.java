@@ -129,6 +129,7 @@ public class Constants {
     public static final String TAG_CLOUD_END_POINT = "tags";
     public static final String ATTACHMENT_CLOUD_END_POINT = "attachments";
     public static final String USERS_CLOUD_END_POINT = "users";
+    public static final String SYNC_CLOUD_END_POINT = "sync";
 
 
     public final static String CATEGORY_ID = "selected_category_id";

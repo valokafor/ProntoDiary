@@ -49,11 +49,11 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
         Folder folder = mFolders.get(position);
         String folderName = folder.getFolderName();
         holder.folderName.setText(folderName);
-        int journalCount = folder.getNoteEntitys().size();
+        int journalCount = folder.getJournals().size();
         String label = journalCount > 1 ? mContext.getString(R.string.label_journals) : mContext.getString(R.string.label_journal);
         holder.noteCountTextView.setText(journalCount + " " + label);
 
-        int taskCount = folder.getTodoLists().size();
+        int taskCount = folder.getTasks().size();
         String taskLabel = taskCount > 1 ? "Tasks" : "ProntoTask";
         holder.taskCountTextView.setText(taskCount + " " + taskLabel);
 

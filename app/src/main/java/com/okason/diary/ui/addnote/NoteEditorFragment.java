@@ -240,7 +240,7 @@ public class NoteEditorFragment extends Fragment {
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         mFirebaseStorage = FirebaseStorage.getInstance();
         mFirebaseStorageReference = mFirebaseStorage.getReferenceFromUrl(Constants.FIREBASE_STORAGE_BUCKET);
-        mAttachmentStorageReference = mFirebaseStorageReference.child("users/" + mFirebaseUser.getUid() + "/attachments");
+        mAttachmentStorageReference = mFirebaseStorageReference.child("attachments");
 
 
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -551,7 +551,7 @@ public class NoteEditorFragment extends Fragment {
         }
         mContent.requestFocus();
         initViewAttachments(journal.getAttachments());
-        initTagLayout(journal.getProntoTags());
+        initTagLayout(journal.getTags());
 
 
     }

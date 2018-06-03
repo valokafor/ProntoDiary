@@ -80,11 +80,11 @@ public class Journal extends RealmObject{
         this.attachments = attachments;
     }
 
-    public RealmList<ProntoTag> getProntoTags() {
+    public RealmList<ProntoTag> getTags() {
         return prontoTags;
     }
 
-    public void setProntoTags(RealmList<ProntoTag> prontoTags) {
+    public void setTags(RealmList<ProntoTag> prontoTags) {
         this.prontoTags = prontoTags;
     }
 

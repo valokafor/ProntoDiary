@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * Created by valokafor on 4/28/18.
+ * Used to transfer Journals to and From Firebase
+ *
  */
 
 public class JournalDto {
@@ -18,7 +20,7 @@ public class JournalDto {
     private long dateModified;
     private List<AttachmentDto> attachments;
     private FolderDto folder;
-    private List<TagDto> tags;
+    private List<ProntoTagDto> tags;
 
 
     public JournalDto(){
@@ -100,11 +102,11 @@ public class JournalDto {
         this.folder = folder;
     }
 
-    public List<TagDto> getTags() {
+    public List<ProntoTagDto> getTags() {
         return tags;
     }
 
-    public void setTags(List<TagDto> tags) {
+    public void setTags(List<ProntoTagDto> tags) {
         this.tags = tags;
     }
 }

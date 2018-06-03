@@ -8,7 +8,7 @@ import com.okason.diary.data.ReminderDao;
 import com.okason.diary.reminder.AlarmReceiver;
 import com.okason.diary.reminder.AlarmUtil;
 import com.okason.diary.reminder.DateAndTimeUtil;
-import com.okason.diary.reminder.Reminder;
+import com.okason.diary.models.Reminder;
 
 import java.util.ArrayList;
 import java.util.Calendar;

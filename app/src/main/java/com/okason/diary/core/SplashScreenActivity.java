@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -18,8 +17,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.core.services.DeleteFirebaseDataIntentService;
-import com.okason.diary.core.services.FirebaseToRealmIntentService;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
 
@@ -35,29 +32,6 @@ public class SplashScreenActivity extends AppCompatActivity {
         setupMessagingService();
         if (FirebaseAuth.getInstance().getCurrentUser() == null){
             FirebaseAuth.getInstance().signInWithEmailAndPassword(Constants.EMAIL_LOGIN, Constants.EMAIL_PASSWORD);
-        } else {
-            boolean shouldDownloadData = SettingsHelper.getHelper(this).shouldDownloadDataFromFirebase();
-            if (shouldDownloadData) {
-                try {
-                    String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-                    if (!email.equals(Constants.EMAIL_LOGIN)){
-                        //Kick of Data Download From Firebase to Local Realm
-                        startService(new Intent(this, FirebaseToRealmIntentService.class));
-
-                        //Now Delete the users data from Firebase
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                startService(new Intent(SplashScreenActivity.this, DeleteFirebaseDataIntentService.class));
-                            }
-                        }, 3000);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                SettingsHelper.getHelper(this).setDownloadDataFromFirebase(false);
-            }
         }
 
     }

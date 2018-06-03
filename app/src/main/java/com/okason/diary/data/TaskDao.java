@@ -2,10 +2,11 @@ package com.okason.diary.data;
 
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.ProntoTask;
+import com.okason.diary.models.Reminder;
 import com.okason.diary.models.SubTask;
+import com.okason.diary.models.dto.ProntoTaskDto;
 import com.okason.diary.models.dto.SubTaskDto;
-import com.okason.diary.models.dto.TaskDto;
-import com.okason.diary.reminder.Reminder;
+import com.okason.diary.utils.date.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,7 +140,7 @@ public class TaskDao {
                 Folder folder = backgroundRealm.where(Folder.class).equalTo("id", folderId).findFirst();
                 if (prontoTask != null && folder != null) {
                     prontoTask.setFolder(folder);
-                    folder.getTodoLists().add(prontoTask);
+                    folder.getTasks().add(prontoTask);
                     prontoTask.setDateModified(System.currentTimeMillis());
                 }
             }
@@ -210,28 +211,43 @@ public class TaskDao {
         });
     }
 
-    public void addTaskFromCloud(TaskDto dto) {
+    public void addTaskFromCloud(ProntoTaskDto dto) {
         realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                String taskId = UUID.randomUUID().toString();
-                ProntoTask prontoTask = realm.createObject(ProntoTask.class, taskId);
-                prontoTask.setDateCreated(System.currentTimeMillis());
-                prontoTask.setDateModified(System.currentTimeMillis());
+
+
+                ProntoTask prontoTask = getTaskById(dto.getId());
+
+                if (prontoTask != null && !TimeUtils.isCloudModifiedDateAfterLocalModifiedDate(dto.getDateModified(),
+                        prontoTask.getDateModified())){
+                    return;
+                }
+
+
+                if (prontoTask == null) {
+
+                    String taskId = UUID.randomUUID().toString();
+                    prontoTask = realm.createObject(ProntoTask.class, taskId);
+                }
+
+
+                prontoTask.setDateCreated(dto.getDateCreated());
+                prontoTask.setDateModified(dto.getDateModified());
                 prontoTask.setTitle(dto.getTitle());
                 if (dto.getFolder() != null){
-                    Folder folder = realm.where(Folder.class).equalTo("folderName", dto.getFolder().getTitle(), Case.INSENSITIVE).findFirst();
+                    Folder folder = realm.where(Folder.class).equalTo("folderName", dto.getFolder().getFolderName(), Case.INSENSITIVE).findFirst();
                     if (folder == null){
                         String id = UUID.randomUUID().toString();
                         folder = realm.createObject(Folder.class, id);
                         folder.setDateCreated(System.currentTimeMillis());
                         folder.setDateModified(System.currentTimeMillis());
-                        folder.setFolderName(dto.getFolder().getTitle());
+                        folder.setFolderName(dto.getFolder().getFolderName());
                     }
 
                     if (folder != null){
                         prontoTask.setFolder(folder);
-                        folder.getTodoLists().add(prontoTask);
+                        folder.getTasks().add(prontoTask);
                     }
                 }
                 if (dto.getSubTask() != null){

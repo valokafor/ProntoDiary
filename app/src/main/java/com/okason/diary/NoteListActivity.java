@@ -235,14 +235,14 @@ public class NoteListActivity extends AppCompatActivity {
                 .withFireOnInitialOnClick(true)
                 .withSavedInstance(savedInstanceState)
                 .build();
-//        drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Login").withIcon(GoogleMaterial.Icon.gmd_lock_open).withIdentifier(Constants.LOGIN));
-//        drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Logout").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.LOGOUT));
-//
-//        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-//            drawer.removeStickyFooterItemAtPosition(0);
-//        } else {
-//            drawer.removeStickyFooterItemAtPosition(1);
-//        }
+        drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Enable Sync").withIcon(GoogleMaterial.Icon.gmd_lock_open).withIdentifier(Constants.LOGIN));
+        drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Logout").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.LOGOUT));
+
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
+            drawer.removeStickyFooterItemAtPosition(0);
+        } else {
+            drawer.removeStickyFooterItemAtPosition(1);
+        }
 
 
     }
@@ -458,7 +458,7 @@ public class NoteListActivity extends AppCompatActivity {
                             if (deepLink != null && deepLink.getBooleanQueryParameter("invitedby", false)) {
                                 String referrerUid = deepLink.getQueryParameter("invitedby");
                                 if (!TextUtils.isEmpty(referrerUid)) {
-//                                    ProntoDiaryUser referrer = UserManager.getProntoDiaryUserById(referrerUid);
+//                                    ProntoJournalUser referrer = UserManager.getProntoDiaryUserById(referrerUid);
 //                                    if (referrer != null){
 //                                        makeToast("Welcome " + referrer.getDisplayName() + " friend!");
 //                                    }

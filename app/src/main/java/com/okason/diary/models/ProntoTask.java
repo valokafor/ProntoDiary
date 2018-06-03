@@ -1,13 +1,13 @@
 package com.okason.diary.models;
 
-import com.okason.diary.reminder.Reminder;
-
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Valentine on 4/10/2017.
+ * This model class is used to work with Tasks
+ * Renamed to ProntoTask to avoid name collision with framework Task
  */
 
 public class ProntoTask extends RealmObject{

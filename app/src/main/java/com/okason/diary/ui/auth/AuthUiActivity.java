@@ -23,6 +23,8 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.common.Scopes;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.services.DataUploadIntentService;
+import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
 
 import java.util.ArrayList;
@@ -149,6 +151,10 @@ public class AuthUiActivity extends AppCompatActivity {
         // Successfully signed in
         if (resultCode == RESULT_OK) {
             SettingsHelper.getHelper(mActivity).setRegisteredUser(true);
+
+            Intent syncService = new Intent(mActivity, DataUploadIntentService.class);
+            syncService.putExtra(Constants.INITIAL_SYNC, true);
+            DataUploadIntentService.enqueueWork(mActivity, syncService);
 
 
             Intent restartIntent = new Intent(mActivity, NoteListActivity.class);

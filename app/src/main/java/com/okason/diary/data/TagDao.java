@@ -1,6 +1,10 @@
 package com.okason.diary.data;
 
+import com.okason.diary.models.Journal;
 import com.okason.diary.models.ProntoTag;
+import com.okason.diary.models.ProntoTask;
+import com.okason.diary.models.dto.ProntoTagDto;
+import com.okason.diary.utils.date.TimeUtils;
 
 import java.util.UUID;
 
@@ -88,6 +92,53 @@ public class TagDao {
             }
         });
     }
+
+    public void addTagFromCloud(ProntoTagDto tagDto) {
+
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                ProntoTag tag = realm.where(ProntoTag.class).equalTo("id", tagDto.getId()).findFirst();
+
+                if (tag != null && !TimeUtils.isCloudModifiedDateAfterLocalModifiedDate(tagDto.getDateModified(),
+                        tag.getDateModified())){
+                    return;
+                }
+
+
+                if (tag == null) {
+                    String tagId = UUID.randomUUID().toString();
+                    tag = realm.createObject(ProntoTag.class, tagId);
+                }
+
+                tag.setDateCreated(tagDto.getDateCreated());
+                tag.setDateModified(tagDto.getDateModified());
+                tag.setTagName(tagDto.getTagName());
+
+                if (tagDto.getTaskIds().size() > 0){
+                    for (String taskId: tagDto.getTaskIds()){
+                        ProntoTask task = new TaskDao(realm).getTaskById(taskId);
+                        if (task != null){
+                            tag.getTasks().add(task);
+                        }
+                    }
+                }
+
+                if (tagDto.getJournalIds().size() > 0){
+                    for (String journalId: tagDto.getJournalIds()){
+                        Journal note = new NoteDao(realm).getNoteEntityById(journalId);
+                        if (note != null){
+                            tag.getJournals().add(note);
+                        }
+                    }
+                }
+
+            }
+        });
+
+    }
+
+
 }
 
 

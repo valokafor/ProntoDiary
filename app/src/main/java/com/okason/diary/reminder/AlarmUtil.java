@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Build;
 
 import com.okason.diary.data.ReminderDao;
+import com.okason.diary.models.Reminder;
 import com.okason.diary.utils.Constants;
 
 import java.util.Calendar;

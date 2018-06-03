@@ -51,6 +51,21 @@ public class TimeUtils {
         }
     }
 
+    public static boolean isCloudModifiedDateAfterLocalModifiedDate(long cloudDate, long localDate){
+        Calendar cloudCalendar = Calendar.getInstance();
+        cloudCalendar.setTimeInMillis(cloudDate);
+        Date cloudModifiedDate = cloudCalendar.getTime();
+
+        Calendar localCalendar = Calendar.getInstance();
+        localCalendar.setTimeInMillis(localDate);
+        Date localModifiedDate = localCalendar.getTime();
+
+        boolean result = cloudModifiedDate.after(localModifiedDate);
+        return result;
+
+
+    }
+
 
     public static String getReadableModifiedDateWithTime(long date){
 

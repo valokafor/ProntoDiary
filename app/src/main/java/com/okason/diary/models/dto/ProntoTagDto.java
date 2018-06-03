@@ -2,29 +2,37 @@ package com.okason.diary.models.dto;
 
 import com.okason.diary.models.ProntoTag;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Valentine on 4/10/2017.
  */
 
-public class TagDto{
+public class ProntoTagDto {
 
     private String id;
     private String tagName;
     private long dateCreated;
     private long dateModified;
+    private List<String> journalIds;
+    private List<String> taskIds;
 
 
-    public TagDto(){
+
+    public ProntoTagDto(){
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
 
     }
 
-    public TagDto(ProntoTag prontoTag){
+    public ProntoTagDto(ProntoTag prontoTag){
         this.id = prontoTag.getId();
         this.tagName = prontoTag.getTagName();
         this.dateCreated = prontoTag.getDateCreated();
         this.dateModified = prontoTag.getDateModified();
+        journalIds = new ArrayList<>();
+        taskIds = new ArrayList<>();
 
     }
 
@@ -61,7 +69,19 @@ public class TagDto{
         this.dateModified = dateModified;
     }
 
+    public List<String> getJournalIds() {
+        return journalIds;
+    }
 
+    public void setJournalIds(List<String> journalIds) {
+        this.journalIds = journalIds;
+    }
 
+    public List<String> getTaskIds() {
+        return taskIds;
+    }
 
+    public void setTaskIds(List<String> taskIds) {
+        this.taskIds = taskIds;
+    }
 }

@@ -1,4 +1,4 @@
-package com.okason.diary.models;
+package com.okason.diary.models.inactive;
 
 /**
  * Created by valokafor on 6/8/17.

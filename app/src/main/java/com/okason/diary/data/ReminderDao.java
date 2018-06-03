@@ -1,7 +1,7 @@
 package com.okason.diary.data;
 
 import com.okason.diary.core.ProntoDiaryApplication;
-import com.okason.diary.reminder.Reminder;
+import com.okason.diary.models.Reminder;
 
 import java.util.Calendar;
 

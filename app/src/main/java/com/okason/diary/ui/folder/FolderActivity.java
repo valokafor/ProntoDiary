@@ -95,10 +95,10 @@ public class FolderActivity extends AppCompatActivity {
             String title = "";
             switch (position){
                 case 0:
-                    title = getString(R.string.label_journals) + " (" + folder.getNoteEntitys().size() + ")";
+                    title = getString(R.string.label_journals) + " (" + folder.getJournals().size() + ")";
                     break;
                 case 1:
-                    title = getString(R.string.label_todo_list) + " (" + folder.getTodoLists().size() + ")";;
+                    title = getString(R.string.label_todo_list) + " (" + folder.getTasks().size() + ")";;
                     break;
             }
             return title;

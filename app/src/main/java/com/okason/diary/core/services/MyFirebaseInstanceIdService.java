@@ -7,13 +7,13 @@ import android.util.Log;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
-import com.okason.diary.models.ProntoDiaryUser;
+import com.okason.diary.models.inactive.ProntoJournalUser;
 import com.okason.diary.utils.SettingsHelper;
 
 public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
     private DatabaseReference mDatabase;
     private DatabaseReference mProntoDiaryUserRef;
-    private ProntoDiaryUser prontoDiaryUser;
+    private ProntoJournalUser prontoJournalUser;
 
         public static final String TAG = MyFirebaseInstanceIdService.class.getSimpleName();
 
@@ -36,9 +36,9 @@ public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
 //                    public void onDataChange(DataSnapshot dataSnapshot) {
 //                        if (dataSnapshot.exists()) {
 //                            DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
-//                            prontoDiaryUser = snapshot.getValue(ProntoDiaryUser.class);
-//                            prontoDiaryUser.setFcmToken(token);
-//                            mProntoDiaryUserRef.child(prontoDiaryUser.getId()).setValue(prontoDiaryUser);
+//                            prontoJournalUser = snapshot.getValue(ProntoJournalUser.class);
+//                            prontoJournalUser.setFcmToken(token);
+//                            mProntoDiaryUserRef.child(prontoJournalUser.getId()).setValue(prontoJournalUser);
 //                        }
 //                    }
 //

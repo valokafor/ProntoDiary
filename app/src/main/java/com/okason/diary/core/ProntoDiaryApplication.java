@@ -7,15 +7,17 @@ import android.net.Uri;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.crashlytics.android.Crashlytics;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerUIUtils;
 import com.okason.diary.R;
-import com.okason.diary.models.ProntoDiaryUser;
-import com.okason.diary.reminder.Reminder;
+import com.okason.diary.models.inactive.ProntoJournalUser;
+import com.okason.diary.models.Reminder;
 import com.squareup.leakcanary.LeakCanary;
 
+import io.fabric.sdk.android.Fabric;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.realm.Realm;
@@ -30,7 +32,7 @@ public class ProntoDiaryApplication extends Application {
 
 
     private static Context mContext;
-    private static ProntoDiaryUser prontoDiaryUser;
+    private static ProntoJournalUser prontoJournalUser;
     public static AtomicLong reminderPrimaryKey;
 
 
@@ -42,6 +44,7 @@ public class ProntoDiaryApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Fabric.with(this, new Crashlytics());
         if (LeakCanary.isInAnalyzerProcess(this)) {
             // This process is dedicated to LeakCanary for heap analysis.
             // You should not init your app in this process.
@@ -63,6 +66,7 @@ public class ProntoDiaryApplication extends Application {
                 .name("Pronto_Journal.realm")
                 .build();
         Realm.setDefaultConfiguration(configuration);
+
 
         Realm realm = Realm.getInstance(configuration);
 
@@ -118,12 +122,12 @@ public class ProntoDiaryApplication extends Application {
         return ProntoDiaryApplication.mContext;
     }
 
-    public static ProntoDiaryUser getProntoDiaryUser() {
-        return prontoDiaryUser;
+    public static ProntoJournalUser getProntoJournalUser() {
+        return prontoJournalUser;
     }
 
-    public static void setProntoDiaryUser(ProntoDiaryUser prontoDiaryUser) {
-        ProntoDiaryApplication.prontoDiaryUser = prontoDiaryUser;
+    public static void setProntoJournalUser(ProntoJournalUser prontoJournalUser) {
+        ProntoDiaryApplication.prontoJournalUser = prontoJournalUser;
     }
 
 

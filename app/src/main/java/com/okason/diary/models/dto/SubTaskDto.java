@@ -1,7 +1,11 @@
 package com.okason.diary.models.dto;
 
+import com.okason.diary.models.SubTask;
+
 /**
  * Created by valokafor on 5/31/18.
+ * Class used to transfer SubTasks to and from Firebase
+ * Contains the Id of the Parent Class instead of the Parent class object
  */
 
 public class SubTaskDto {
@@ -10,7 +14,18 @@ public class SubTaskDto {
     private long dateCreated;
     private long dateModified;
     private boolean checked;
-    private String parentTaskName;
+    private String parentTaskId;
+
+    public SubTaskDto(){}
+
+    public SubTaskDto(SubTask subTask){
+        this.id = subTask.getId();
+        this.title = subTask.getTitle();
+        this.dateCreated = subTask.getDateCreated();
+        this.dateModified = subTask.getDateModified();
+        this.checked = subTask.isChecked();
+        this.parentTaskId = subTask.getParentProntoTask().getId();
+    }
 
     public String getId() {
         return id;
@@ -53,11 +68,11 @@ public class SubTaskDto {
     }
 
     public String getParentTaskName() {
-        return parentTaskName;
+        return parentTaskId;
     }
 
-    public void setParentTaskName(String parentTaskName) {
-        this.parentTaskName = parentTaskName;
+    public void setParentTaskName(String parentTaskId) {
+        this.parentTaskId = parentTaskId;
     }
 
 }

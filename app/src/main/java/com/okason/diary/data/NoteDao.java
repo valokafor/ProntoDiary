@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.okason.diary.BuildConfig;
 import com.okason.diary.core.ProntoDiaryApplication;
@@ -15,6 +16,7 @@ import com.okason.diary.models.ProntoTag;
 import com.okason.diary.models.dto.JournalDto;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.StorageHelper;
+import com.okason.diary.utils.date.TimeUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -24,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import io.realm.Case;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -122,7 +123,7 @@ public class NoteDao {
                 Journal journal = backgroundRealm.where(Journal.class).equalTo("id", noteId).findFirst();
                 Folder folder = backgroundRealm.where(Folder.class).equalTo("id", folderId).findFirst();
                 journal.setFolder(folder);
-                folder.getNoteEntitys().add(journal);
+                folder.getJournals().add(journal);
                 journal.setDateModified(System.currentTimeMillis());
             }
         });
@@ -215,7 +216,7 @@ public class NoteDao {
 
                 if (selectedJournal != null && selectedProntoTag != null){
                     //Add ProntoTag to Journal
-                    selectedJournal.getProntoTags().add(selectedProntoTag);
+                    selectedJournal.getTags().add(selectedProntoTag);
                     selectedProntoTag.getJournals().add(selectedJournal);
                 }
 
@@ -226,7 +227,7 @@ public class NoteDao {
 
     //Preventds adding duplicate tag to Journal
     private boolean noteContainsTag(Journal selectedJournal, ProntoTag selectedProntoTag) {
-        List<ProntoTag> prontoTags = selectedJournal.getProntoTags();
+        List<ProntoTag> prontoTags = selectedJournal.getTags();
         for (ProntoTag t: prontoTags){
             if (t.getId().equals(selectedProntoTag.getId())){
                 return true;
@@ -241,7 +242,7 @@ public class NoteDao {
             public void execute(Realm backgroundRealm) {
                 Journal selectedJournal = backgroundRealm.where(Journal.class).equalTo("id", noteId).findFirst();
                 ProntoTag selectedProntoTag = backgroundRealm.where(ProntoTag.class).equalTo("id", tagId).findFirst();
-                selectedJournal.getProntoTags().remove(selectedProntoTag);
+                selectedJournal.getTags().remove(selectedProntoTag);
                 selectedProntoTag.getJournals().remove(selectedJournal);
             }
         });
@@ -289,28 +290,42 @@ public class NoteDao {
         realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                String noteId = UUID.randomUUID().toString();
-                Journal journal = realm.createObject(Journal.class, noteId);
+
+                Journal journal = getNoteEntityById(dto.getId());
+
+                if (journal != null && !TimeUtils.isCloudModifiedDateAfterLocalModifiedDate(dto.getDateModified(),
+                        journal.getDateModified())){
+                    return;
+                }
+
+
+                if (journal == null) {
+                    String noteId = UUID.randomUUID().toString();
+                    journal = realm.createObject(Journal.class, noteId);
+                }
+
                 journal.setDateCreated(System.currentTimeMillis());
                 journal.setDateModified(System.currentTimeMillis());
                 journal.setTitle(dto.getTitle());
                 journal.setContent(dto.getContent());
                 if (dto.getFolder() != null){
-                    Folder folder = realm.where(Folder.class).equalTo("folderName", dto.getFolder().getTitle(), Case.INSENSITIVE).findFirst();
+                    String fId = dto.getFolder().getId();
+                    Log.d(TAG, "Folder Id: " + fId);
+                    Folder folder = realm.where(Folder.class).equalTo("id", fId).findFirst();
                     if (folder == null){
                         String id = UUID.randomUUID().toString();
                         folder = realm.createObject(Folder.class, id);
                         folder.setDateCreated(System.currentTimeMillis());
                         folder.setDateModified(System.currentTimeMillis());
-                        folder.setFolderName(dto.getFolder().getTitle());
+                        folder.setFolderName(dto.getFolder().getFolderName());
                     }
 
                     if (folder != null){
                         journal.setFolder(folder);
-                        folder.getNoteEntitys().add(journal);
+                        folder.getJournals().add(journal);
                     }
-                }
 
+                }
             }
         });
     }

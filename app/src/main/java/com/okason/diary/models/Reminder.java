@@ -1,8 +1,7 @@
-package com.okason.diary.reminder;
+package com.okason.diary.models;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.okason.diary.models.ProntoTask;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

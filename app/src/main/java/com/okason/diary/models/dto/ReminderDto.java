@@ -2,6 +2,7 @@ package com.okason.diary.models.dto;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.okason.diary.models.Reminder;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -27,6 +28,22 @@ public class ReminderDto{
     private String daysOfWeek;
 
     public ReminderDto(){}
+
+
+    public ReminderDto(Reminder reminder){
+        this.id = reminder.getId();
+        this.parentTaskId = reminder.getParentProntoTask().getId();
+        this.dateAndTime = reminder.getDateAndTime();
+        this.repeatType = reminder.getRepeatType();
+        this.indefinite = reminder.isIndefinite();
+        this.interval = reminder.getInterval();
+        this.numberToShow = reminder.getNumberToShow();
+        this.numberShown = reminder.getNumberShown();
+        this.dateCreated = reminder.getDateCreated();
+        this.dateModified = reminder.getDateModified();
+        this.daysOfWeek = reminder.getDaysOfWeek();
+
+    }
 
 
     public int getId() {

@@ -171,7 +171,7 @@
                 android:value="com.okason.diary.NoteListActivity"/>
         </activity>
         <activity
-            android:name=".ui.prontoTag.TagListActivity"
+            android:name=".ui.tag.TagListActivity"
             android:label="@string/title_activity_tag_list"
             android:parentActivityName=".NoteListActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -215,17 +215,18 @@
         </receiver>
 
         <service
-            android:name=".core.services.FirebaseToRealmIntentService"
-            android:exported="false">
-        </service>
-        <service
             android:name=".core.services.DeleteFirebaseDataIntentService"
             android:exported="false">
         </service>
         <service
-            android:name=".core.services.RealmFirebaseSyncIntentService"
-            android:exported="false">
+            android:name=".core.services.DataUploadIntentService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE">
         </service>
+        <service
+            android:name=".core.services.DataDownloadIntentService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
     </application>
 
 </manifest>

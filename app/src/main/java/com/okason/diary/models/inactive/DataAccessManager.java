@@ -1,4 +1,4 @@
-package com.okason.diary.models.dto;
+package com.okason.diary.models.inactive;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -17,6 +17,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.data.NoteDao;
 import com.okason.diary.data.TaskDao;
+import com.okason.diary.models.dto.JournalDto;
+import com.okason.diary.models.dto.ProntoTaskDto;
+import com.okason.diary.models.dto.SubTaskDto;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
@@ -117,14 +120,14 @@ public class DataAccessManager {
 
 
     public void getAllTasks(Context context) {
-        final List<TaskDto> tasks = new ArrayList<>();
+        final List<ProntoTaskDto> tasks = new ArrayList<>();
         try {
             taskCloudReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                     if (task.isSuccessful()) {
                         for (DocumentSnapshot snapshot : task.getResult()) {
-                            TaskDto item = snapshot.toObject(TaskDto.class);
+                            ProntoTaskDto item = snapshot.toObject(ProntoTaskDto.class);
                             if (item != null) {
                                 tasks.add(item);
                             }
@@ -133,7 +136,7 @@ public class DataAccessManager {
                             logDataDownloadCount(tasks.size(), context, "Tasks");
                             try(Realm realm = Realm.getDefaultInstance()) {
                                 TaskDao taskDao = new TaskDao(realm);
-                                for (TaskDto taskDto: tasks){
+                                for (ProntoTaskDto taskDto: tasks){
                                     taskDao.addTaskFromCloud(taskDto);
                                   //  deleteTask(taskDto );
                                 }
@@ -172,7 +175,7 @@ public class DataAccessManager {
     }
 
 
-    public void deleteSubTask(final TaskDto parentTask, String subTaskTitle) {
+    public void deleteSubTask(final ProntoTaskDto parentTask, String subTaskTitle) {
         for (int i = 0; i < parentTask.getSubTask().size(); i++){
             SubTaskDto subTask = parentTask.getSubTask().get(i);
             if (subTask.getTitle().equals(subTaskTitle)){
@@ -183,7 +186,7 @@ public class DataAccessManager {
         taskCloudReference.document(parentTask.getId()).set(parentTask);
     }
 
-    public void deleteTask(TaskDto clickedTask) {
+    public void deleteTask(ProntoTaskDto clickedTask) {
         taskCloudReference.document(clickedTask.getId()).delete();
 
     }

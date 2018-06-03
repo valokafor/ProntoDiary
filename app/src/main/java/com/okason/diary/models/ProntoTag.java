@@ -73,11 +73,11 @@ public class ProntoTag extends RealmObject {
         this.journals = journals;
     }
 
-    public RealmList<ProntoTask> getProntoTasks() {
+    public RealmList<ProntoTask> getTasks() {
         return prontoTasks;
     }
 
-    public void setProntoTasks(RealmList<ProntoTask> prontoTasks) {
+    public void setTasks(RealmList<ProntoTask> prontoTasks) {
         this.prontoTasks = prontoTasks;
     }
 }

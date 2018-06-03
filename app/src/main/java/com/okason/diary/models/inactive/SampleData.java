@@ -1,8 +1,11 @@
-package com.okason.diary.models;
+package com.okason.diary.models.inactive;
 
 import android.content.Context;
 
 import com.okason.diary.R;
+import com.okason.diary.models.Attachment;
+import com.okason.diary.models.Journal;
+import com.okason.diary.models.ProntoTag;
 import com.okason.diary.utils.Constants;
 
 import java.util.ArrayList;
@@ -70,9 +73,9 @@ public class SampleData {
             ProntoTag prontoTag3 = realm.createObject(ProntoTag.class, UUID.randomUUID().toString());
             prontoTag3.setTagName("Work");
 
-            journal1.getProntoTags().add(prontoTag1);
-            journal1.getProntoTags().add(prontoTag2);
-            journal1.getProntoTags().add(prontoTag3);
+            journal1.getTags().add(prontoTag1);
+            journal1.getTags().add(prontoTag2);
+            journal1.getTags().add(prontoTag3);
 
             Attachment attachment1 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
             attachment1.setCloudFilePath("https://randomuser.me/api/portraits/women/83.jpg");
@@ -115,9 +118,9 @@ public class SampleData {
             ProntoTag prontoTag6 = realm.createObject(ProntoTag.class, UUID.randomUUID().toString());
             prontoTag6.setTagName("Kids");
 
-            journal2.getProntoTags().add(prontoTag4);
-            journal2.getProntoTags().add(prontoTag5);
-            journal2.getProntoTags().add(prontoTag6);
+            journal2.getTags().add(prontoTag4);
+            journal2.getTags().add(prontoTag5);
+            journal2.getTags().add(prontoTag6);
 
 
 

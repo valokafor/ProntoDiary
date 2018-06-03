@@ -245,9 +245,9 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
         }
 
         //Display ProntoTag names and make each ProntoTag name clickable
-        if (currentJournal.getProntoTags() != null && currentJournal.getProntoTags().size() > 0){
-            for (int i = 0; i < currentJournal.getProntoTags().size(); i++){
-                ProntoTag prontoTag = currentJournal.getProntoTags().get(i);
+        if (currentJournal.getTags() != null && currentJournal.getTags().size() > 0){
+            for (int i = 0; i < currentJournal.getTags().size(); i++){
+                ProntoTag prontoTag = currentJournal.getTags().get(i);
                 TextView textView = new TextView(getActivity());
                 int viewId = textView.generateViewId();
                 textView.setId(viewId);

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.okason.diary.data.ReminderDao;
+import com.okason.diary.models.Reminder;
 import com.okason.diary.ui.todolist.AddTaskActivity;
 
 import io.realm.Realm;

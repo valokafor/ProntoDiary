@@ -161,7 +161,7 @@ public class NotesFragment extends Fragment
         super.onResume();
         fetchNotes();
 
-        if (ProntoDiaryApplication.getProntoDiaryUser() != null && ProntoDiaryApplication.getProntoDiaryUser().isPremium()){
+        if (ProntoDiaryApplication.getProntoJournalUser() != null && ProntoDiaryApplication.getProntoJournalUser().isPremium()){
             //Do not show Ad
         }else {
             mAdView.setVisibility(View.VISIBLE);
