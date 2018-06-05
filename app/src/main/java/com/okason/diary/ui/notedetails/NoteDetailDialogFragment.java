@@ -18,7 +18,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.data.NoteDao;
+import com.okason.diary.data.JournalDao;
 import com.okason.diary.models.Journal;
 import com.okason.diary.utils.Constants;
 
@@ -73,7 +73,7 @@ public class NoteDetailDialogFragment extends DialogFragment {
         EditText noteSummary = convertView.findViewById(R.id.edit_text_summary);
         String currentNoteId = getPassedInNoteId();
         if (!TextUtils.isEmpty(currentNoteId)){
-            currentJournal = new NoteDao(realm).getNoteEntityById(currentNoteId);
+            currentJournal = new JournalDao(realm).getJournalById(currentNoteId);
             if (currentJournal != null){
                 title = currentJournal.getTitle();
                 noteSummary.setText(currentJournal.getContent());

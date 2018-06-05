@@ -42,7 +42,7 @@ import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
-import com.okason.diary.data.NoteDao;
+import com.okason.diary.data.JournalDao;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Journal;
@@ -161,7 +161,7 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         mFirebaseStorage = FirebaseStorage.getInstance();
         if (!TextUtils.isEmpty(currentNoteId)){
-            currentJournal = new NoteDao(realm).getNoteEntityById(currentNoteId);
+            currentJournal = new JournalDao(realm).getJournalById(currentNoteId);
         }
         return mRootView;
     }
@@ -297,6 +297,8 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
                     })
                     .show();
         }
+
+
 
 
 
@@ -520,7 +522,7 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
 
     private void deleteNote(Journal journal) {
         if (!TextUtils.isEmpty(journal.getId())) {
-            new NoteDao(realm).deleteNote(journal.getId());
+            new JournalDao(realm).deleteJournal(journal.getId());
         }
         displayPreviousActivity();
     }

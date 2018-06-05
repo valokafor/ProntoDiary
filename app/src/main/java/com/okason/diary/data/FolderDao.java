@@ -1,12 +1,16 @@
 package com.okason.diary.data;
 
+import android.content.Intent;
 import android.util.Log;
 
+import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.FolderAddedEvent;
+import com.okason.diary.core.services.DataUploadIntentService;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Journal;
 import com.okason.diary.models.ProntoTask;
 import com.okason.diary.models.dto.FolderDto;
+import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -60,6 +64,11 @@ public class FolderDao {
                     selectedFolder.setFolderName(title);
                     selectedFolder.setDateModified(System.currentTimeMillis());
                     EventBus.getDefault().post(new FolderAddedEvent(selectedFolder.getId()));
+
+                    //Update Firebase Record
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.FOLDER_ID, id);
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
                 }
             }
         });
@@ -72,6 +81,12 @@ public class FolderDao {
                 Folder folder =  backgroundRealm.where(Folder.class).equalTo("id", folderId).findFirst();
                 if (folder != null) {
                     folder.deleteFromRealm();
+
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.DELETE_EVENT, true);
+                    intent.putExtra(Constants.DELETE_EVENT_TYPE, Constants.FOLDERS);
+                    intent.putExtra(Constants.ITEM_ID, folderId);
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
                 }
             }
         });
@@ -131,7 +146,7 @@ public class FolderDao {
 
                 if (folderDto.getJournalIds().size() > 0){
                     for (String journalId: folderDto.getJournalIds()){
-                        Journal note = new NoteDao(realm).getNoteEntityById(journalId);
+                        Journal note = new JournalDao(realm).getJournalById(journalId);
                         if (note != null){
                             folder.getJournals().add(note);
                             note.setFolder(folder);

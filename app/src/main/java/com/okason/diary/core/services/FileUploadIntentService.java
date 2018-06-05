@@ -14,7 +14,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.okason.diary.data.NoteDao;
+import com.okason.diary.data.JournalDao;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.utils.Constants;
 
@@ -31,7 +31,7 @@ public class FileUploadIntentService extends IntentService {
     private StorageReference firebaseStorageReference;
     private StorageReference attachmentReference;
     private Realm realm;
-    private NoteDao noteDao;
+    private JournalDao journalDao;
 
 
     private String noteId;
@@ -55,9 +55,9 @@ public class FileUploadIntentService extends IntentService {
             firebaseStorageReference = FirebaseStorage.getInstance().getReference();
             attachmentReference = firebaseStorageReference.child("attachments");
             realm = Realm.getDefaultInstance();
-            noteDao = new NoteDao(realm);
+            journalDao = new JournalDao(realm);
 
-            attachment = noteDao.getAttachmentById(attachmentId);
+            attachment = journalDao.getAttachmentById(attachmentId);
 
             if (attachment != null){
                 try {
@@ -111,7 +111,7 @@ public class FileUploadIntentService extends IntentService {
                     String downloadUrl = taskSnapshot.getDownloadUrl().toString();
                     if (!TextUtils.isEmpty(downloadUrl)){
                         try (Realm realm = Realm.getDefaultInstance()){
-                            new NoteDao(realm).updateAttachmentUrl(attachmentId, downloadUrl);
+                            new JournalDao(realm).updateAttachmentUrl(attachmentId, downloadUrl);
                         }
                     }
 

@@ -1,6 +1,7 @@
 package com.okason.diary.data;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
@@ -9,11 +10,13 @@ import android.util.Log;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AttachingFileCompleteEvent;
+import com.okason.diary.core.services.DataUploadIntentService;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Journal;
 import com.okason.diary.models.ProntoTag;
 import com.okason.diary.models.dto.JournalDto;
+import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.StorageHelper;
 import com.okason.diary.utils.date.TimeUtils;
@@ -33,11 +36,11 @@ import io.realm.RealmResults;
  * Created by valokafor on 4/28/18.
  */
 
-public class NoteDao {
+public class JournalDao {
     private Realm realm;
-    private final static String TAG = "NoteDao";
+    private final static String TAG = "JournalDao";
 
-    public NoteDao(Realm realm) {
+    public JournalDao(Realm realm) {
         this.realm = realm;
     }
 
@@ -52,26 +55,17 @@ public class NoteDao {
         for (Journal journal : journals){
             if (journal != null && TextUtils.isEmpty(journal.getContent())
                     && TextUtils.isEmpty(journal.getTitle())){
-                deleteNote(journal.getId());
+                deleteJournal(journal.getId());
             }
         }
         return journals;
     }
 
 
-    public int getNoteEntityPosition(String noteId) {
-        RealmResults<Journal> journals = realm.where(Journal.class).findAll();
-        for (int i = 0; i < journals.size(); i++){
-            if (journals.get(i).getId().equals(noteId)){
-                return i;
-            }
-        }
-        return -1;
-    }
 
-    public Journal getNoteEntityById(String noteId) {
+    public Journal getJournalById(String journalId) {
         try {
-            Journal selectedJournal = realm.where(Journal.class).equalTo("id", noteId).findFirst();
+            Journal selectedJournal = realm.where(Journal.class).equalTo("id", journalId).findFirst();
             return selectedJournal;
         } catch (Exception e) {
             return null;
@@ -91,13 +85,19 @@ public class NoteDao {
     }
 
 
-    public void deleteNote(String noteId) {
+    public void deleteJournal(String journalId) {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                Journal journal = backgroundRealm.where(Journal.class).equalTo("id", noteId).findFirst();
+                Journal journal = backgroundRealm.where(Journal.class).equalTo("id", journalId).findFirst();
                 if (journal != null){
                     journal.deleteFromRealm();
+
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.DELETE_EVENT, true);
+                    intent.putExtra(Constants.DELETE_EVENT_TYPE, Constants.JOURNALS);
+                    intent.putExtra(Constants.ITEM_ID, journalId);
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
                 }
             }
         });
@@ -105,10 +105,10 @@ public class NoteDao {
 
     }
 
-    public Journal createNewNote() {
-        String noteId = UUID.randomUUID().toString();
+    public Journal createNewJournal() {
+        String journalId = UUID.randomUUID().toString();
         realm.beginTransaction();
-        Journal journal = realm.createObject(Journal.class, noteId);
+        Journal journal = realm.createObject(Journal.class, journalId);
         journal.setDateCreated(System.currentTimeMillis());
         journal.setDateModified(System.currentTimeMillis());
         realm.commitTransaction();
@@ -116,11 +116,11 @@ public class NoteDao {
     }
 
 
-    public void setFolder(String noteId, String folderId) {
+    public void setFolder(String journalId, String folderId) {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                Journal journal = backgroundRealm.where(Journal.class).equalTo("id", noteId).findFirst();
+                Journal journal = backgroundRealm.where(Journal.class).equalTo("id", journalId).findFirst();
                 Folder folder = backgroundRealm.where(Folder.class).equalTo("id", folderId).findFirst();
                 journal.setFolder(folder);
                 folder.getJournals().add(journal);
@@ -129,7 +129,7 @@ public class NoteDao {
         });
     }
 
-    public void createNewAttachment(Uri attachmentUri, String filPath, String mimeType, String noteId) {
+    public void createNewAttachment(Uri attachmentUri, String filPath, String mimeType, String journalId) {
 
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
@@ -140,7 +140,7 @@ public class NoteDao {
                 attachment.setLocalFilePath(filPath);
                 attachment.setMime_type(mimeType);
 
-                Journal journal = backgroundRealm.where(Journal.class).equalTo("id", noteId).findFirst();
+                Journal journal = backgroundRealm.where(Journal.class).equalTo("id", journalId).findFirst();
                 if (journal != null && attachment != null){
                     journal.getAttachments().add(attachment);
                     journal.setDateModified(System.currentTimeMillis());
@@ -149,22 +149,27 @@ public class NoteDao {
         });
     }
 
-    public void updatedNoteContent(String noteId, String content, String title ) {
+    public void updatedJournalContent(String journalId, String content, String title ) {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                Journal journal = backgroundRealm.where(Journal.class).equalTo("id", noteId).findFirst();
+                Journal journal = backgroundRealm.where(Journal.class).equalTo("id", journalId).findFirst();
                 if (journal != null){
                     journal.setTitle(title);
                     journal.setContent(content);
                     journal.setDateModified(System.currentTimeMillis());
+
+                    //Send Intent to update Firestore data
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.JOURNAL_ID, journalId);
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
                 }
             }
         });
 
     }
 
-    public void createAttachmentFromUri(Context mContext, Uri uri, String noteId) {
+    public void createAttachmentFromUri(Context mContext, Uri uri, String journalId) {
         String name = FileHelper.getNameFromUri(mContext, uri);
         String extension = FileHelper.getFileExtension(FileHelper.getNameFromUri(mContext, uri)).toLowerCase(
                 Locale.getDefault());
@@ -190,11 +195,15 @@ public class NoteDao {
                     attachment.setName(name);
                     attachment.setSize(f.length());
 
-                    Journal journal = backgroundRealm.where(Journal.class).equalTo("id", noteId).findFirst();
+                    Journal journal = backgroundRealm.where(Journal.class).equalTo("id", journalId).findFirst();
                     if (journal != null && attachment != null){
                         journal.getAttachments().add(attachment);
                         journal.setDateModified(System.currentTimeMillis());
                         EventBus.getDefault().post(new AttachingFileCompleteEvent(attachment.getId()));
+
+                        Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                        intent.putExtra(Constants.JOURNAL_ID, journalId);
+                        DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
                     }
                 }
     ;
@@ -203,11 +212,11 @@ public class NoteDao {
 
     }
 
-    public void addTag(final String noteId, final String tagId) {
+    public void addTag(final String journalId, final String tagId) {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                Journal selectedJournal = backgroundRealm.where(Journal.class).equalTo("id", noteId).findFirst();
+                Journal selectedJournal = backgroundRealm.where(Journal.class).equalTo("id", journalId).findFirst();
                 ProntoTag selectedProntoTag = backgroundRealm.where(ProntoTag.class).equalTo("id", tagId).findFirst();
 
                 if (noteContainsTag(selectedJournal, selectedProntoTag)){
@@ -218,6 +227,10 @@ public class NoteDao {
                     //Add ProntoTag to Journal
                     selectedJournal.getTags().add(selectedProntoTag);
                     selectedProntoTag.getJournals().add(selectedJournal);
+
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.JOURNAL_ID, journalId);
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
                 }
 
             }
@@ -236,14 +249,27 @@ public class NoteDao {
         return false;
     }
 
-    public void removeTag(final String noteId, final String tagId) {
+    public void removeTag(final String journalId, final String tagId) {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                Journal selectedJournal = backgroundRealm.where(Journal.class).equalTo("id", noteId).findFirst();
+                Journal selectedJournal = backgroundRealm.where(Journal.class).equalTo("id", journalId).findFirst();
                 ProntoTag selectedProntoTag = backgroundRealm.where(ProntoTag.class).equalTo("id", tagId).findFirst();
-                selectedJournal.getTags().remove(selectedProntoTag);
-                selectedProntoTag.getJournals().remove(selectedJournal);
+                if (selectedJournal != null && selectedProntoTag != null) {
+                    selectedJournal.getTags().remove(selectedProntoTag);
+                    selectedProntoTag.getJournals().remove(selectedJournal);
+
+
+                    //Update Firebase Journal Object
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.JOURNAL_ID, journalId);
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
+
+                    //Update Firebase Tag Object
+                    Intent tagIntent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.TAG_ID, selectedProntoTag.getId());
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), tagIntent);
+                }
             }
         });
     }
@@ -291,7 +317,7 @@ public class NoteDao {
             @Override
             public void execute(Realm realm) {
 
-                Journal journal = getNoteEntityById(dto.getId());
+                Journal journal = getJournalById(dto.getId());
 
                 if (journal != null && !TimeUtils.isCloudModifiedDateAfterLocalModifiedDate(dto.getDateModified(),
                         journal.getDateModified())){
@@ -300,8 +326,8 @@ public class NoteDao {
 
 
                 if (journal == null) {
-                    String noteId = UUID.randomUUID().toString();
-                    journal = realm.createObject(Journal.class, noteId);
+                    String journalId = UUID.randomUUID().toString();
+                    journal = realm.createObject(Journal.class, journalId);
                 }
 
                 journal.setDateCreated(System.currentTimeMillis());

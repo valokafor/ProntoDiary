@@ -1,9 +1,14 @@
 package com.okason.diary.data;
 
+import android.content.Intent;
+
+import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.services.DataUploadIntentService;
 import com.okason.diary.models.Journal;
 import com.okason.diary.models.ProntoTag;
 import com.okason.diary.models.ProntoTask;
 import com.okason.diary.models.dto.ProntoTagDto;
+import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
 import java.util.UUID;
@@ -77,6 +82,12 @@ public class TagDao {
                 if (selectedProntoTag != null) {
                     selectedProntoTag.setTagName(title);
                     selectedProntoTag.setDateModified(System.currentTimeMillis());
+
+
+                    //Send Intent to update Firestore data
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.TAG_ID, id);
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
                 }
             }
         });
@@ -89,6 +100,12 @@ public class TagDao {
             @Override
             public void execute(Realm backgroundRealm) {
                 backgroundRealm.where(ProntoTag.class).equalTo("id", tagId).findFirst().deleteFromRealm();
+
+                Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                intent.putExtra(Constants.DELETE_EVENT, true);
+                intent.putExtra(Constants.DELETE_EVENT_TYPE, Constants.TAGS);
+                intent.putExtra(Constants.ITEM_ID, tagId);
+                DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
             }
         });
     }
@@ -126,7 +143,7 @@ public class TagDao {
 
                 if (tagDto.getJournalIds().size() > 0){
                     for (String journalId: tagDto.getJournalIds()){
-                        Journal note = new NoteDao(realm).getNoteEntityById(journalId);
+                        Journal note = new JournalDao(realm).getJournalById(journalId);
                         if (note != null){
                             tag.getJournals().add(note);
                         }

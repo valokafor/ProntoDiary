@@ -33,7 +33,7 @@ import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.listeners.NoteItemListener;
-import com.okason.diary.data.NoteDao;
+import com.okason.diary.data.JournalDao;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Journal;
 import com.okason.diary.ui.attachment.GalleryActivity;
@@ -64,7 +64,7 @@ public class NotesFragment extends Fragment
     private Realm realm;
     private RealmResults<Journal> allJournals;
     private List<Journal> filteredJournals;
-    private NoteDao noteDao;
+    private JournalDao journalDao;
     private final static String TAG = "NotesFragment";
 
 
@@ -140,10 +140,9 @@ public class NotesFragment extends Fragment
         mRootView = inflater.inflate(R.layout.fragment_note_list, container, false);
         ButterKnife.bind(this, mRootView);
         realm = Realm.getDefaultInstance();
-        noteDao = new NoteDao(realm);
+        journalDao = new JournalDao(realm);
         filteredJournals = new ArrayList<>();
         firebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
-        initRecyclerView();
         return mRootView;
     }
 
@@ -159,6 +158,7 @@ public class NotesFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
+        initRecyclerView();
         fetchNotes();
 
         if (ProntoDiaryApplication.getProntoJournalUser() != null && ProntoDiaryApplication.getProntoJournalUser().isPremium()){
@@ -175,12 +175,12 @@ public class NotesFragment extends Fragment
     private void fetchNotes() {
         if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
             tagName = getArguments().getString(Constants.TAG_FILTER);
-            allJournals = noteDao.getAllNotes(tagName);
+            allJournals = journalDao.getAllNotes(tagName);
         } else if (getArguments() != null && getArguments().containsKey(Constants.FOLDER_ID)){
             folderId = getArguments().getString(Constants.FOLDER_ID);
-            allJournals = noteDao.getNotesByFolder(folderId);
+            allJournals = journalDao.getNotesByFolder(folderId);
         } else{
-            allJournals = noteDao.getAllNotes("").sort("dateModified");
+            allJournals = journalDao.getAllNotes("").sort("dateModified");
         }
 
 
@@ -221,7 +221,7 @@ public class NotesFragment extends Fragment
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (query.length() > 0) {
-            filteredJournals = noteDao.filterNotes(query, tagName);
+            filteredJournals = journalDao.filterNotes(query, tagName);
             showNotes(filteredJournals);
             return true;
         }
@@ -233,7 +233,7 @@ public class NotesFragment extends Fragment
     @Override
     public boolean onQueryTextChange(String newText) {
         if (newText.length() > 0) {
-            filteredJournals = noteDao.filterNotes(newText, tagName);
+            filteredJournals = journalDao.filterNotes(newText, tagName);
             showNotes(filteredJournals);
             return true;
         }
@@ -339,8 +339,8 @@ public class NotesFragment extends Fragment
 
     private void deleteNote(String noteId) {
         if (!TextUtils.isEmpty(noteId)) {
-            //dataAccessManager.deleteNote(journal.getId());
-            new NoteDao(realm).deleteNote(noteId);
+            //dataAccessManager.deleteJournal(journal.getId());
+            new JournalDao(realm).deleteJournal(noteId);
         }
     }
 

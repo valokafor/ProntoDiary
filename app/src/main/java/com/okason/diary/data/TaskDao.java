@@ -1,11 +1,16 @@
 package com.okason.diary.data;
 
+import android.content.Intent;
+
+import com.okason.diary.core.ProntoDiaryApplication;
+import com.okason.diary.core.services.DataUploadIntentService;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.ProntoTask;
 import com.okason.diary.models.Reminder;
 import com.okason.diary.models.SubTask;
 import com.okason.diary.models.dto.ProntoTaskDto;
 import com.okason.diary.models.dto.SubTaskDto;
+import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.date.TimeUtils;
 
 import java.util.ArrayList;
@@ -72,6 +77,11 @@ public class TaskDao {
                             subTask.setChecked(completed);
                         }
                     }
+
+                    //Send Intent to update Firestore data
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.TASK_ID, prontoTask.getId());
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
                 }
             });
         }
@@ -93,6 +103,12 @@ public class TaskDao {
                 if (updatedSubTask != null){
                     updatedSubTask.setChecked(completed);
                     updatedProntoTask.setDateModified(System.currentTimeMillis());
+
+                    //Send Intent to update Firestore data
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.TASK_ID, taskId);
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
+
                 }
             }
         });
@@ -110,15 +126,26 @@ public class TaskDao {
             @Override
             public void execute(Realm backgroundRealm) {
                 backgroundRealm.where(ProntoTask.class).equalTo("id", taskId).findFirst().deleteFromRealm();
+
+                Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                intent.putExtra(Constants.DELETE_EVENT, true);
+                intent.putExtra(Constants.DELETE_EVENT_TYPE, Constants.TODO_LIST);
+                intent.putExtra(Constants.ITEM_ID, taskId);
+                DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
             }
         });
     }
 
-    public void deleteSubTask(final String subTaskId) {
+    public void deleteSubTask(final String subTaskId, String parentId) {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
                 backgroundRealm.where(SubTask.class).equalTo("id", subTaskId).findFirst().deleteFromRealm();
+
+                //Send Intent to update Firestore data
+                Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                intent.putExtra(Constants.TASK_ID, parentId);
+                DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
             }
         });
     }
@@ -190,7 +217,14 @@ public class TaskDao {
                     updatedProntoTask.setDescription(description);
                     updatedProntoTask.setDateModified(System.currentTimeMillis());
                     updatedProntoTask.setPriority(priority);
-                    updatedProntoTask.setFolder(selectedFolder);
+                    if (selectedFolder != null) {
+                        updatedProntoTask.setFolder(selectedFolder);
+                    }
+
+                    //Send Intent to update Firestore data
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.TASK_ID, taskId);
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
                 }
             }
         });
@@ -206,6 +240,12 @@ public class TaskDao {
                 if (prontoTask != null && reminder != null) {
                     prontoTask.setReminder(reminder);
                     reminder.setParentProntoTask(prontoTask);
+
+
+                    //Send Intent to update Firestore data
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.TASK_ID, taskId);
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
                 }
             }
         });
@@ -254,13 +294,15 @@ public class TaskDao {
                     List<SubTaskDto> subTasks = dto.getSubTask();
                     if (subTasks.size() > 0){
                         for(SubTaskDto subTaskDto: subTasks){
-                            String subTaskId = UUID.randomUUID().toString();
-                            SubTask subTask = realm.createObject(SubTask.class, subTaskId);
+                            String subTaskId = subTaskDto.getId();
+                            SubTask subTask = new SubTask();
+                            subTask.setId(subTaskId);
                             subTask.setDateCreated(System.currentTimeMillis());
                             subTask.setDateModified(System.currentTimeMillis());
                             subTask.setTitle(subTaskDto.getTitle());
                             subTask.setChecked(false);
                             subTask.setParentProntoTask(prontoTask);
+                            realm.copyToRealmOrUpdate(subTask);
                             prontoTask.getSubTask().add(subTask);
                         }
                     }

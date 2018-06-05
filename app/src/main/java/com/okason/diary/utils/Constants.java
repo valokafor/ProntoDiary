@@ -49,6 +49,9 @@ public class Constants {
     public static final String SHOULD_DOWNLOAD_FROM_FIREBASE = "download_from_firebase";
     public static final String DATE_LAST_SYNC = "date_last_sync";
     public static final String INITIAL_SYNC = "initial_sync";
+    public static final String DELETE_EVENT = "delete_event";
+    public static final String DELETE_EVENT_TYPE = "delete_event_type";
+    public static final String ITEM_ID = "item_id";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
@@ -68,7 +71,7 @@ public class Constants {
     public static final int PRIORITY_HIGH = 3;
     public static final int PRIORITY_ALL = 4;
 
-    public final static int NOTES = 1;
+    public final static int JOURNALS = 1;
     public final static int FOLDERS = 2;
     public final static int SETTINGS = 3;
     public final static int LOGOUT = 4;

@@ -10,7 +10,7 @@ import android.support.v7.widget.Toolbar;
 
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
-import com.okason.diary.data.NoteDao;
+import com.okason.diary.data.JournalDao;
 import com.okason.diary.models.Journal;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.utils.Constants;
@@ -41,7 +41,7 @@ public class NoteDetailActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
                 String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
-                Journal passedInJournal = new NoteDao(realm).getNoteEntityById(noteId);
+                Journal passedInJournal = new JournalDao(realm).getJournalById(noteId);
                 NoteDetailFragment fragment = NoteDetailFragment.newInstance(noteId);
                 if (passedInJournal != null) {
                     openFragment(fragment, passedInJournal.getTitle());

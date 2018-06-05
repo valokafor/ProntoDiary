@@ -15,7 +15,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.okason.diary.R;
-import com.okason.diary.data.NoteDao;
+import com.okason.diary.data.JournalDao;
 import com.okason.diary.models.Journal;
 import com.okason.diary.ui.notedetails.NoteDetailFragment;
 import com.okason.diary.utils.Constants;
@@ -51,7 +51,7 @@ public class AddNoteActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)) {
                 String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
-                Journal passedInJournal = new NoteDao(realm).getNoteEntityById(noteId);
+                Journal passedInJournal = new JournalDao(realm).getJournalById(noteId);
                 NoteDetailFragment fragment = NoteDetailFragment.newInstance(noteId);
                 openFragment(NoteEditorFragment.newInstance(noteId),
                         passedInJournal.getTitle());

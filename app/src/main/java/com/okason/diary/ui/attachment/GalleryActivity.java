@@ -12,7 +12,7 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 
 import com.okason.diary.R;
-import com.okason.diary.data.NoteDao;
+import com.okason.diary.data.JournalDao;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Journal;
 import com.okason.diary.utils.Constants;
@@ -61,7 +61,7 @@ public class GalleryActivity extends AppCompatActivity {
     private void getPassedInNote() {
         if (getIntent() != null && getIntent().hasExtra(Constants.NOTE_ID)){
             String noteId = getIntent().getStringExtra(Constants.NOTE_ID);
-            parentJournal = new NoteDao(realm).getNoteEntityById(noteId);
+            parentJournal = new JournalDao(realm).getJournalById(noteId);
         }
 
     }

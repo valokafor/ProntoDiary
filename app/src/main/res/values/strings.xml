@@ -39,7 +39,7 @@
     <string name="sync_reason_4">Peace of mind, if something happens to your device, be rest assured that your data will be waiting for you on your next device.</string>
     <string name="sync_reason_5">Your app will continue to work 100% offline. Only syncs when you have internet access.</string>
 
-    <string name="sync_reason">  Welcome to Pronto Diary! \n Enable Cloud Backup \n\nLogin or create an account and enable secure, cloud backup of your Diaries, Journal and Todo List. You can access them from any Android device. It\'s free. Always!.</string>
+    <string name="sync_reason">  Welcome to Pronto Journal! \n Enable Cloud Backup \n\nLogin or create an account and enable secure, cloud backup of your Diaries, Journals and Todo List. You can access them from any Android device. It\'s free. Always!.</string>
 
 
     <!--Account Register and Login Related-->
@@ -396,18 +396,7 @@
     <string name="sample_text">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean. A small river named Duden flows by their place and supplies it with the necessary regelialia. It is a paradisematic country, in which roasted parts of sentences fly into your mouth. Even the all-powerful Pointing has no control about the blind texts it is an almost unorthographic life One day however a small line of blind text by the name of Lorem Ipsum decided to leave for the far World of Grammar. The Big Oxmox advised her not to do so, because there were thousands of bad Commas, wild Question Marks and devious Semikoli, but the Little Blind Text didn’t listen. She packed her seven versalia, put her initial into the belt and made herself on the way. When she reached the first hills of the Italic Mountains, she had a last view back on the skyline of her hometown Bookmarksgrove, the headline of Alphabet Village and the subline of her own road, the Line Lane. Pityful a rethoric question ran over her</string>
     <string name="attachments">Attachments</string>
     <string name="last_modified">Last Modified</string>
-    <string name="sample_text_disneyland">It is a long established fact that a reader will be distracted by the readable content
-        of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of
-        letters, as opposed to using Content here, content here, making it look like readable English. Many desktop publishing
-        packages and web page editors now use Lorem Ipsum as their default model text, and a search for lorem ipsum will uncover
-        many web sites still in their infancy.Various versions have evolved over the years, sometimes by accident, sometimes on
-        purpose (injected humour and the like).! /n/n There are many variations of passages of Lorem Ipsum available, but the
-        majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.
-        If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text.
-        All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on
-        the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem
-        Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour,
-        or non-characteristic words etc.</string>
+
     <string name="explain_note_detail">CLick on Journal entry to expand.</string>
     <string name="no_application_found">No application found</string>
     <string name="title_activity_folder">FolderActivity</string>
@@ -439,6 +428,73 @@
         <item>Specific days of the week</item>
         <item>Advanced</item>
     </string-array>
+
+
+    <string name="sample_journal_1" translatable="false">Disneyland is a work of love. We didn’t go into Disneyland just with the idea of making money.
+        What were we thinking? On Monday, December 30th my wife and I woke up and decided to take our seven and nine year old daughters to Disneyland
+        for a day of family fun. It was a decision that we soon came to deeply regret.
+        The “Magic Kingdom” of my childhood has become a crowd-swamped purgatory where snaking lines of zombies text and tweet on their smartphones
+        while their kids fiddle with hand-held Nintendo games. There isn’t much else to do while waiting two hours for a five minute theme ride.
+        Instead of showing our kids a wholesome good time we ended our day at the “Happiest Place on Earth” feeling stressed out and ripped off.
+        /n/nJust how bad was our visit? After six hours and just three rides our kids were ready — even relieved — to leave early, although the
+        crowds waiting for a parade made it nearly impossible for us to get to the exit. When your kids want to leave Disneyland early something is very, very wrong.
+        </string>
+
+
+    <string name="sample_journal_2" translatable="false">The European languages are members of the same family.
+        Their separate existence is a myth. For science, music, sport, etc, Europe uses the same vocabulary.
+        The languages only differ in their grammar, their pronunciation and their most common words. Everyone realizes why a new common
+        language would be desirable: one could refuse to pay expensive translators. To achieve this, it would be necessary to have uniform grammar,
+        pronunciation and more common words. /n/n If several languages coalesce, the grammar of the resulting language is more simple and regular
+        than that of the individual languages. The new common language will be more simple and regular than the existing European languages.
+        It will be as simple as Occidental; in fact, it will be Occidental. To an English person, it will seem like simplified English, as a skeptical
+        Cambridge friend of mine told me what Occidental is. The European languages are members of the same family. Their separate existence is a myth.</string>
+
+    <string name="sample_journal_3" translatable="false">It is a long established fact that a reader will be distracted by the readable content
+        of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of
+        letters, as opposed to using Content here, content here, making it look like readable English. Many desktop publishing
+        packages and web page editors now use Lorem Ipsum as their default model text, and a search for lorem ipsum will uncover
+        many web sites still in their infancy.Various versions have evolved over the years, sometimes by accident, sometimes on
+        purpose (injected humour and the like).! /n/n There are many variations of passages of Lorem Ipsum available, but the
+        majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.
+        If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text.
+        All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on
+        the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem
+        Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour,
+        or non-characteristic words etc.</string>
+
+
+    <string name="sample_journal_4" translatable="false">Received the likewise law graceful his. Nor might set along charm now equal green.
+        Pleased yet equally correct colonel not one. Say anxious carried compact conduct sex general nay certain. Mrs for recommend exquisite
+        household eagerness preserved now. My improved honoured he am ecstatic quitting greatest formerly. /n/n There are many variations of
+        passages of Lorem Ipsum available, but themajority have suffered alteration in some form, by injected humour, or randomised words which
+        dont look even slightly believable.If you are going to use a passage of Lorem Ipsum, you need to be sure there isnt anything embarrassing
+        hidden in the middle of text.All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making
+        this the first true generator onthe Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures,
+        to generate LoremIpsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour,
+        or non-characteristic words etc./n/nAn so vulgar to on points wanted. Not rapturous resolving continued household northward gay.
+        He it otherwise supported instantly. Unfeeling agreeable suffering it on smallness newspaper be. So come must time no as.
+        Do on unpleasing possession as of unreserved. Yet joy exquisite put sometimes enjoyment perpetual now. Behind lovers eat having length horses
+        vanity say had its. /n/nSurprise steepest recurred landlord mr wandered amounted of. Continuing devonshire but considered its.
+        Rose past oh shew roof is song neat. Do depend better praise do friend garden an wonder to. Intention age nay otherwise but breakfast.
+        Around garden beyond to extent by. </string>
+
+    <string name="sample_journal_5" translatable="false">A wonderful serenity has taken possession of my entire soul,
+        like these sweet mornings of spring which I enjoy with my whole heart. I am alone, and feel the charm of existence in this spot,
+        which was created for the bliss of souls like mine. I am so happy, my dear friend, so absorbed in the exquisite sense of mere tranquil existence,
+        that I neglect my talents./n/nWhen, while the lovely valley teems with vapour around me, and the meridian sun strikes the upper surface of the
+        impenetrable foliage of my trees, and but a few stray gleams steal into the inner sanctuary, I throw myself down among the tall grass by the
+        trickling stream; and, as I lie close to the earth, a thousand unknown plants are noticed by me: when I hear the buzz of the little world among
+        the stalks, and grow familiar with the countless indescribable forms of the insects and flies, then I feel the presence of the Almighty,
+        who formed us in his own image, and the breath of that universal love which bears and sustains us, as it floats around us in an eternity of bliss;
+        and then, my friend, when darkness overspreads my eyes, and heaven and earth seem to dwell in my soul and absorb its power, like the form of a
+        beloved mistress, then I often think with longing, Oh, would I could describe these conceptions, could impress upon paper all that is living so
+        full and warm within me, that it might be the mirror of my soul, as my soul is the mirror of the infinite God!/n/nO my friend -- but it is too
+        much for my strength -- I sink under the weight of the splendour of these visions! A wonderful serenity has taken possession of my entire soul,
+        like these sweet mornings of spring which I enjoy with my whole heart. I am alone, and feel the charm of existence in this spot,
+        which was created for the bliss of souls like mine.</string>
+
+
 
 
 </resources>

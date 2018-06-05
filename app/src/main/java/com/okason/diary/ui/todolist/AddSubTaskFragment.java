@@ -283,7 +283,9 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
 
     @Override
     public void onSubTaskDeleted(String subTaskId) {
-       taskDao.deleteSubTask(subTaskId);
+        if (parentProntoTask != null) {
+            taskDao.deleteSubTask(subTaskId, parentProntoTask.getId());
+        }
     }
 
     @Override

@@ -160,6 +160,26 @@ public class DataUploadIntentService extends JobIntentService {
                 }
 
             }
+        } else if (intent.hasExtra(Constants.DELETE_EVENT)){
+            int itemType = intent.getIntExtra(Constants.DELETE_EVENT_TYPE, 0);
+            String itemId = intent.getStringExtra(Constants.ITEM_ID);
+            switch (itemType){
+                case Constants.JOURNALS:
+                    journalCloudReference.document(itemId).delete();
+                    break;
+                case Constants.FOLDERS:
+                    folderCloudReference.document(itemId).delete();
+                    break;
+                case Constants.TODO_LIST:
+                    taskCloudReference.document(itemId).delete();
+                    break;
+                case Constants.TAGS:
+                    tagCloudReference.document(itemId).delete();
+                    break;
+            }
+
+
+
         }
 
         //Kick of download of Data from

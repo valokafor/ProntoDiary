@@ -19,7 +19,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.data.FolderDao;
-import com.okason.diary.data.NoteDao;
+import com.okason.diary.data.JournalDao;
 import com.okason.diary.data.TagDao;
 import com.okason.diary.data.TaskDao;
 import com.okason.diary.models.dto.FolderDto;
@@ -172,10 +172,10 @@ public class DataDownloadIntentService extends IntentService {
                         logDataDownloadCount(journals.size(), context, "Journals Sync");
 
                         try(Realm realm = Realm.getDefaultInstance()) {
-                            NoteDao noteDao = new NoteDao(realm);
+                            JournalDao journalDao = new JournalDao(realm);
                             for (JournalDto journalDto: journals){
                                 if (journalDto != null) {
-                                    noteDao.addJournalFromCloud(journalDto);
+                                    journalDao.addJournalFromCloud(journalDto);
                                 }
                             }
                         } catch (Exception e) {

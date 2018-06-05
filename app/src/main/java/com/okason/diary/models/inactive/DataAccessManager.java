@@ -15,7 +15,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.okason.diary.NoteListActivity;
-import com.okason.diary.data.NoteDao;
+import com.okason.diary.data.JournalDao;
 import com.okason.diary.data.TaskDao;
 import com.okason.diary.models.dto.JournalDto;
 import com.okason.diary.models.dto.ProntoTaskDto;
@@ -92,10 +92,10 @@ public class DataAccessManager {
                         logDataDownloadCount(journals.size(), context, "Journals");
 
                         try(Realm realm = Realm.getDefaultInstance()) {
-                            NoteDao noteDao = new NoteDao(realm);
+                            JournalDao journalDao = new JournalDao(realm);
                             for (JournalDto journalDto: journals){
                                 if (journalDto != null) {
-                                    noteDao.addJournalFromCloud(journalDto);
+                                    journalDao.addJournalFromCloud(journalDto);
                                 }
                             }
                         } catch (Exception e) {

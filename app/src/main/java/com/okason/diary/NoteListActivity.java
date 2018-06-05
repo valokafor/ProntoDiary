@@ -109,6 +109,7 @@ public class NoteListActivity extends AppCompatActivity {
         firebaseAnalytics = FirebaseAnalytics.getInstance(mActivity);
         setupNavigationDrawer(savedInstanceBundle);
         showFloatingActionButton();
+        //new SampleData(this).getSampleNotesRealm();;
 
     }
 
@@ -194,7 +195,7 @@ public class NoteListActivity extends AppCompatActivity {
                 .withToolbar(toolbar)
                 .withActionBarDrawerToggle(true)
                 .addDrawerItems(
-                        new PrimaryDrawerItem().withName("Journals").withIcon(GoogleMaterial.Icon.gmd_calendar_note).withIdentifier(Constants.NOTES),
+                        new PrimaryDrawerItem().withName("Journals").withIcon(GoogleMaterial.Icon.gmd_calendar_note).withIdentifier(Constants.JOURNALS),
                         new PrimaryDrawerItem().withName("Todo List").withIcon(GoogleMaterial.Icon.gmd_format_list_bulleted).withIdentifier(Constants.TODO_LIST),
                         new PrimaryDrawerItem().withName("Folders").withIcon(GoogleMaterial.Icon.gmd_folder).withIdentifier(Constants.FOLDERS),
                         new PrimaryDrawerItem().withName("Tags").withIcon(GoogleMaterial.Icon.gmd_tag).withIdentifier(Constants.TAGS),
@@ -236,13 +237,14 @@ public class NoteListActivity extends AppCompatActivity {
                 .withSavedInstance(savedInstanceState)
                 .build();
         drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Enable Sync").withIcon(GoogleMaterial.Icon.gmd_lock_open).withIdentifier(Constants.LOGIN));
-        drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Logout").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.LOGOUT));
+     //   drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Logout").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.LOGOUT));
 
         if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             drawer.removeStickyFooterItemAtPosition(0);
-        } else {
-            drawer.removeStickyFooterItemAtPosition(1);
         }
+//        else {
+//            drawer.removeStickyFooterItemAtPosition(1);
+//        }
 
 
     }
@@ -328,7 +330,7 @@ public class NoteListActivity extends AppCompatActivity {
 
     private void onTouchDrawer(int position) {
         switch (position) {
-            case Constants.NOTES:
+            case Constants.JOURNALS:
                 //Do Nothing, we are already on Notes
                 //openFragment(new NoteListFragment(), getString(R.string.label_journals));
                 break;

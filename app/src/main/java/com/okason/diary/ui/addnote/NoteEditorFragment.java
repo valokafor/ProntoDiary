@@ -59,7 +59,7 @@ import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.core.services.FileUploadIntentService;
 import com.okason.diary.data.FolderDao;
-import com.okason.diary.data.NoteDao;
+import com.okason.diary.data.JournalDao;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Journal;
@@ -177,7 +177,7 @@ public class NoteEditorFragment extends Fragment {
     private MaterialDialog mDialog;
 
 
-    private NoteDao noteDao;
+    private JournalDao journalDao;
     private FolderDao folderDao;
 
 
@@ -219,18 +219,18 @@ public class NoteEditorFragment extends Fragment {
         mRootView = inflater.inflate(R.layout.fragment_note_editor, container, false);
         ButterKnife.bind(this, mRootView);
         realm = Realm.getDefaultInstance();
-        noteDao = new NoteDao(realm);
+        journalDao = new JournalDao(realm);
         folderDao = new FolderDao(realm);
 
         //Get passed Journal to edit or create new one
         String noteId = getPassedInNoteId();
         if (!TextUtils.isEmpty(noteId)){
-            mCurrentJournal = noteDao.getNoteEntityById(noteId);
+            mCurrentJournal = journalDao.getJournalById(noteId);
             if (mCurrentJournal != null){
                 isInEditMode = true;
             }
         } else {
-            mCurrentJournal = noteDao.createNewNote();
+            mCurrentJournal = journalDao.createNewJournal();
         }
 
         mCurrentJournal.addChangeListener(noteChangeListener);
@@ -333,7 +333,7 @@ public class NoteEditorFragment extends Fragment {
         try {
             if (mCurrentJournal != null && TextUtils.isEmpty(mCurrentJournal.getContent())
                     && TextUtils.isEmpty(mCurrentJournal.getTitle())){
-                noteDao.deleteNote(mCurrentJournal.getId());
+                journalDao.deleteJournal(mCurrentJournal.getId());
             }
             mCurrentJournal.removeAllChangeListeners();
             realm.close();
@@ -385,13 +385,13 @@ public class NoteEditorFragment extends Fragment {
         selectTagDialogFragment.setListener(new OnTagSelectedListener() {
             @Override
             public void onTagChecked(ProntoTag selectedProntoTag) {
-                noteDao.addTag(mCurrentJournal.getId(), selectedProntoTag.getId());
+                journalDao.addTag(mCurrentJournal.getId(), selectedProntoTag.getId());
 
             }
 
             @Override
             public void onTagUnChecked(ProntoTag unSelectedProntoTag) {
-                noteDao.removeTag(mCurrentJournal.getId(), unSelectedProntoTag.getId());
+                journalDao.removeTag(mCurrentJournal.getId(), unSelectedProntoTag.getId());
             }
 
             @Override
@@ -457,10 +457,10 @@ public class NoteEditorFragment extends Fragment {
             mCategory.setText(folderName);
         }
         if (mCurrentJournal == null){
-            mCurrentJournal = noteDao.createNewNote();
+            mCurrentJournal = journalDao.createNewJournal();
         }
         dataChanged = true;
-        noteDao.setFolder(mCurrentJournal.getId(), selectedFolder.getId());
+        journalDao.setFolder(mCurrentJournal.getId(), selectedFolder.getId());
     }
 
 
@@ -477,7 +477,7 @@ public class NoteEditorFragment extends Fragment {
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
             @Override
             public void onCategorySelected(Folder selectedCategory) {
-                noteDao.setFolder(mCurrentJournal.getId(), selectedCategory.getId());
+                journalDao.setFolder(mCurrentJournal.getId(), selectedCategory.getId());
                 selectFolderDialogFragment.dismiss();
             }
 
@@ -503,7 +503,7 @@ public class NoteEditorFragment extends Fragment {
 
     private void updateContentIfNeeded() {
         if (mTitle.getText().toString().length() > 0 || mContent.getText().toString().length() > 0){
-            noteDao.updatedNoteContent(mCurrentJournal.getId(), mContent.getText().toString(), mTitle.getText().toString());
+            journalDao.updatedJournalContent(mCurrentJournal.getId(), mContent.getText().toString(), mTitle.getText().toString());
         }
     }
 
@@ -1018,9 +1018,9 @@ public class NoteEditorFragment extends Fragment {
             mRecorder = null;
 
             if (mCurrentJournal == null){
-                mCurrentJournal = noteDao.createNewNote();
+                mCurrentJournal = journalDao.createNewJournal();
             }
-            noteDao.createNewAttachment(attachmentUri, mLocalAudioFilePath, Constants.MIME_TYPE_AUDIO, mCurrentJournal.getId());
+            journalDao.createNewAttachment(attachmentUri, mLocalAudioFilePath, Constants.MIME_TYPE_AUDIO, mCurrentJournal.getId());
         }
         makeToast("Recording added");
     }
@@ -1083,11 +1083,11 @@ public class NoteEditorFragment extends Fragment {
             switch (requestCode) {
                 case IMAGE_CAPTURE_REQUEST:
                     addPhotoToGallery(mLocalImagePath);
-                    noteDao.createNewAttachment(attachmentUri, mLocalImagePath, Constants.MIME_TYPE_IMAGE, mCurrentJournal.getId());
+                    journalDao.createNewAttachment(attachmentUri, mLocalImagePath, Constants.MIME_TYPE_IMAGE, mCurrentJournal.getId());
                     dataChanged = true;
                     break;
                 case VIDEO_CAPTURE_REQUEST:
-                    noteDao.createNewAttachment(attachmentUri, mLocalVideoPath, Constants.MIME_TYPE_VIDEO, mCurrentJournal.getId());
+                    journalDao.createNewAttachment(attachmentUri, mLocalVideoPath, Constants.MIME_TYPE_VIDEO, mCurrentJournal.getId());
                     dataChanged = true;
                     break;
                 case FILE_PICK_REQUEST:
@@ -1100,7 +1100,7 @@ public class NoteEditorFragment extends Fragment {
                             BuildConfig.APPLICATION_ID + ".provider",
                             sketchFile);
                     if (!TextUtils.isEmpty(sketchFilePath)) {
-                        noteDao.createNewAttachment(fileUri, sketchFilePath, Constants.MIME_TYPE_SKETCH, mCurrentJournal.getId());
+                        journalDao.createNewAttachment(fileUri, sketchFilePath, Constants.MIME_TYPE_SKETCH, mCurrentJournal.getId());
                     } else {
                         makeToast(getString(R.string.error_sketch_is_empty));
                     }
@@ -1166,7 +1166,7 @@ public class NoteEditorFragment extends Fragment {
 
 
         for (Uri uri : uris) {
-            noteDao.createAttachmentFromUri(getContext(), uri, mCurrentJournal.getId());
+            journalDao.createAttachmentFromUri(getContext(), uri, mCurrentJournal.getId());
         }
     }
 
@@ -1184,7 +1184,7 @@ public class NoteEditorFragment extends Fragment {
 
 
         for (Uri uri : uris) {
-            noteDao.createAttachmentFromUri(getContext(), uri, mCurrentJournal.getId());
+            journalDao.createAttachmentFromUri(getContext(), uri, mCurrentJournal.getId());
         }
     }
 
@@ -1348,7 +1348,7 @@ public class NoteEditorFragment extends Fragment {
 
     private void deleteNote(Journal journal) {
         if (!TextUtils.isEmpty(journal.getId())) {
-            new NoteDao(realm).deleteNote(journal.getId());
+            new JournalDao(realm).deleteJournal(journal.getId());
         }
         goBackToParent();
     }
@@ -1383,7 +1383,7 @@ public class NoteEditorFragment extends Fragment {
                 content = mContent.getText().toString();
             }
 
-            noteDao.updatedNoteContent(mCurrentJournal.getId(), content, title);
+            journalDao.updatedJournalContent(mCurrentJournal.getId(), content, title);
             goBackToParent();
         } else {
             goBackToParent();
