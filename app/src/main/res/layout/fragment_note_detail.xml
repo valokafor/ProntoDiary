@@ -146,12 +146,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
+                    android:background="?attr/selectableItemBackground"
                     android:orientation="horizontal">
 
-                    <ImageView
+                    <ImageButton
                         android:id="@+id/image_view_audio_icon"
                         android:layout_width="@dimen/vector_icon_size"
                         android:layout_height="@dimen/vector_icon_size"
+                        android:background="@null"
                         android:src="@drawable/ic_action_headset"/>
 
                     <TextView
@@ -161,7 +163,8 @@
                         android:layout_marginLeft="@dimen/margin_padding_small"
                         android:layout_marginTop="@dimen/margin_padding_xxtiny"
                         android:layout_weight="1"
-                        android:text="Listen to the Audio"
+                        android:text="@string/start_listening"
+                        android:textColor="@color/primary"
                         android:textAllCaps="true"/>
 
                 </LinearLayout>

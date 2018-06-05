@@ -2,13 +2,26 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
-        android:title="Editor">
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="prompt_for_delete"
-            android:summary="Toogle to prompt for Confirm delete"
-            android:title="Delete"/>
+        android:title="Sample Data">
+
+        <Preference
+            android:title="@string/pref_add_sample_data"
+            android:key="add_sample_data"/>
+
+        <Preference
+            android:title="@string/pref_remove_sample_data"
+            android:key="remove_sample_data"/>
+
     </PreferenceCategory>
+
+    <!--<PreferenceCategory-->
+        <!--android:title="Editor">-->
+        <!--<SwitchPreference-->
+            <!--android:defaultValue="true"-->
+            <!--android:key="prompt_for_delete"-->
+            <!--android:summary="Toogle to prompt for Confirm delete"-->
+            <!--android:title="Delete"/>-->
+    <!--</PreferenceCategory>-->
 
     <!--<PreferenceCategory-->
     <!--android:title="Default Sort" >-->
@@ -60,7 +73,7 @@
     <PreferenceCategory
         android:title="Default Sort">
         <ListPreference
-            android:defaultValue="@string/label_title"
+            android:defaultValue="title"
             android:dialogTitle="Select Sort Option"
             android:entries="@array/sortOptionsEntries"
             android:entryValues="@array/sortOptionsValues"

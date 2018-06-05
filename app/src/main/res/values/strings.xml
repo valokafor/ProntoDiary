@@ -335,15 +335,24 @@
 
     <!-- Settings screen -->
     <string name="pref_header_notifications">Notifications</string>
-
     <string name="pref_sound_key">pref_key_sound</string>
     <string name="pref_sound_title">Sound</string>
-
     <string name="pref_vibration_key">pref_vibration_key</string>
     <string name="pref_vibration_title">Vibration</string>
-
     <string name="pref_tasknotification_key">pref_key_tasknotification</string>
     <string name="pref_tasknotification_title">Task notification</string>
+    <string name="pref_daysummary_key">pref_daysummary_key</string>
+    <string name="pref_daysummary_title">Day summary</string>
+    <string name="pref_time_key">pref_time_key</string>
+    <string name="pref_time_title">Choice time</string>
+    <string name="pref_enabled">Enabled</string>
+    <string name="pref_disabled">Disabled</string>
+    <string name="pref_no_sound">No sound</string>
+    <string name="pref_cancel">Cancel</string>
+    <string name="pref_ok">OK</string>
+    <string name="pref_add_sample_data">Add Sample Data</string>
+    <string name="pref_remove_sample_data">Remove Sample Data</string>
+
     <string-array name="pref_tasknotification_list_titles">
         <item>On time</item>
         <item>5 mins before</item>
@@ -362,18 +371,6 @@
         <item>120</item>
         <item>180</item>
     </string-array>
-
-    <string name="pref_daysummary_key">pref_daysummary_key</string>
-    <string name="pref_daysummary_title">Day summary</string>
-
-    <string name="pref_time_key">pref_time_key</string>
-    <string name="pref_time_title">Choice time</string>
-
-    <string name="pref_enabled">Enabled</string>
-    <string name="pref_disabled">Disabled</string>
-    <string name="pref_no_sound">No sound</string>
-    <string name="pref_cancel">Cancel</string>
-    <string name="pref_ok">OK</string>
 
     <string name="reminder_no">Does not Repeat</string>
     <string name="reminder_hourly">hourly</string>
@@ -493,8 +490,8 @@
         much for my strength -- I sink under the weight of the splendour of these visions! A wonderful serenity has taken possession of my entire soul,
         like these sweet mornings of spring which I enjoy with my whole heart. I am alone, and feel the charm of existence in this spot,
         which was created for the bliss of souls like mine.</string>
-
-
+    <string name="start_listening">Listen to the Audio</string>
+    <string name="stop_listening">Stop listening</string>
 
 
 </resources>

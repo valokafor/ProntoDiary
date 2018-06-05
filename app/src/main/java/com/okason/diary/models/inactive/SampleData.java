@@ -123,7 +123,7 @@ public class SampleData {
             folder1.setFolderName(FOLDER_NAME_5);
 
 
-            Journal journal1 = realm.createObject(Journal.class, UUID.randomUUID().toString());
+            Journal journal1 = realm.createObject(Journal.class, JOURNAL_ID_1);
             journal1.setTitle("DisneyLand Trip");
             journal1.setContent(context.getString(R.string.sample_journal_1));
             Calendar calendar1 = GregorianCalendar.getInstance();
@@ -167,7 +167,7 @@ public class SampleData {
 
 
 
-            Journal journal2 = realm.createObject(Journal.class, UUID.randomUUID().toString());
+            Journal journal2 = realm.createObject(Journal.class, JOURNAL_ID_2);
             journal2.setTitle("European Language");
             journal2.setContent(context.getString(R.string.sample_journal_2));
 
@@ -213,7 +213,7 @@ public class SampleData {
             journal2.getAttachments().add(attachment5);
 
 
-            Journal journal3 = realm.createObject(Journal.class, UUID.randomUUID().toString());
+            Journal journal3 = realm.createObject(Journal.class, JOURNAL_ID_3);
             journal3.setTitle("Enduring Tradition");
             journal3.setContent(context.getString(R.string.sample_journal_3));
 
@@ -244,7 +244,7 @@ public class SampleData {
 
 
             Attachment attachment10 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
-            attachment10.setLocalFilePath("sample_audio_file.mp3");
+            attachment10.setCloudFilePath("https://firebasestorage.googleapis.com/v0/b/prontodiary-bee92.appspot.com/o/sample_audio_file.mp3?alt=media&token=4f658e12-d848-452c-812a-408083532b8d");
             attachment10.setMime_type(Constants.MIME_TYPE_AUDIO);
             journal3.getAttachments().add(attachment10);
 
@@ -262,26 +262,41 @@ public class SampleData {
                 public void execute(Realm backgroundRealm) {
                     Journal sampleJournal1 = backgroundRealm.where(Journal.class).equalTo("id", JOURNAL_ID_1).findFirst();
                     if (sampleJournal1 != null){
+                        for (Attachment attachment: sampleJournal1.getAttachments()){
+                            attachment.deleteFromRealm();
+                        }
                         sampleJournal1.deleteFromRealm();
                     }
 
                     Journal sampleJournal2 = backgroundRealm.where(Journal.class).equalTo("id", JOURNAL_ID_2).findFirst();
                     if (sampleJournal2 != null){
+                        for (Attachment attachment: sampleJournal2.getAttachments()){
+                            attachment.deleteFromRealm();
+                        }
                         sampleJournal2.deleteFromRealm();
                     }
 
                     Journal sampleJournal3 = backgroundRealm.where(Journal.class).equalTo("id", JOURNAL_ID_3).findFirst();
                     if (sampleJournal3 != null){
+                        for (Attachment attachment: sampleJournal3.getAttachments()){
+                            attachment.deleteFromRealm();
+                        }
                         sampleJournal3.deleteFromRealm();
                     }
 
                     Journal sampleJournal4 = backgroundRealm.where(Journal.class).equalTo("id", JOURNAL_ID_4).findFirst();
                     if (sampleJournal4 != null){
+                        for (Attachment attachment: sampleJournal4.getAttachments()){
+                            attachment.deleteFromRealm();
+                        }
                         sampleJournal4.deleteFromRealm();
                     }
 
                     Journal sampleJournal5 = backgroundRealm.where(Journal.class).equalTo("id", JOURNAL_ID_5).findFirst();
                     if (sampleJournal5 != null){
+                        for (Attachment attachment: sampleJournal5.getAttachments()){
+                            attachment.deleteFromRealm();
+                        }
                         sampleJournal5.deleteFromRealm();
                     }
 

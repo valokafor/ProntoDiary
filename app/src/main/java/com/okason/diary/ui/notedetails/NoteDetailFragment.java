@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -24,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -65,6 +67,7 @@ import java.util.HashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.realm.Realm;
 import io.realm.RealmList;
 
@@ -78,44 +81,27 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
     //Todo - add more fonts
 
     private View mRootView;
-    @BindView(R.id.image_view_top)
-    ImageView topImageView;
-    @BindView(R.id.text_view_title)
-    TextView titleTextView;
-    @BindView(R.id.text_view_date)
-    TextView dateTextView;
-    @BindView(R.id.text_view_folder)
-    TextView folderTextView;
-    @BindView(R.id.text_view_summary)
-    TextView noteSummary;
-    @BindView(R.id.text_view_attachment_count)
-    TextView imageCountTextView;
-    @BindView(R.id.linear_layout_date)
-    LinearLayout dateLinearLayout;
-    @BindView(R.id.linear_layout_folder)
-    LinearLayout folderLinearLayout;
-    @BindView(R.id.linear_layout_tags)
-    LinearLayout tagsLinearLayout;
-    @BindView(R.id.linear_layout_audio)
-    LinearLayout audioLinearLayout;
-    @BindView(R.id.linear_layout_attachment)
-    LinearLayout attachmentLinearLayout;
-    @BindView(R.id.image_view_thumbnail_1)
-    ImageView imageViewThumbnail1;
-    @BindView(R.id.image_view_thumbnail_2)
-    ImageView imageViewThumbnail2;
-    @BindView(R.id.image_view_thumbnail_3)
-    ImageView imageViewThumbnail3;
-    @BindView(R.id.linear_layout_click)
-    LinearLayout clickLinearLayout;
+    @BindView(R.id.image_view_top) ImageView topImageView;
+    @BindView(R.id.text_view_title) TextView titleTextView;
+    @BindView(R.id.text_view_date) TextView dateTextView;
+    @BindView(R.id.text_view_folder) TextView folderTextView;
+    @BindView(R.id.text_view_summary) TextView noteSummary;
+    @BindView(R.id.text_view_attachment_count) TextView imageCountTextView;
+    @BindView(R.id.linear_layout_date) LinearLayout dateLinearLayout;
+    @BindView(R.id.linear_layout_folder) LinearLayout folderLinearLayout;
+    @BindView(R.id.linear_layout_tags) LinearLayout tagsLinearLayout;
+    @BindView(R.id.linear_layout_audio) LinearLayout audioLinearLayout;
+    @BindView(R.id.linear_layout_attachment) LinearLayout attachmentLinearLayout;
+    @BindView(R.id.image_view_thumbnail_1) ImageView imageViewThumbnail1;
+    @BindView(R.id.image_view_thumbnail_2) ImageView imageViewThumbnail2;
+    @BindView(R.id.image_view_thumbnail_3) ImageView imageViewThumbnail3;
+    @BindView(R.id.linear_layout_click) LinearLayout clickLinearLayout;
     @BindView(R.id.divider_2) View divider_2;
-
-    @BindView(R.id.card_view_thumbnail_1)
-    CardView cardViewContainer1;
-    @BindView(R.id.card_view_thumbnail_2)
-    CardView cardViewContainer2;
-    @BindView(R.id.card_view_thumbnail_3)
-    CardView cardViewContainer3;
+    @BindView(R.id.text_view_audio) TextView playAudioTextView;
+    @BindView(R.id.image_view_audio_icon) ImageButton playAudioImageButton;
+    @BindView(R.id.card_view_thumbnail_1) CardView cardViewContainer1;
+    @BindView(R.id.card_view_thumbnail_2) CardView cardViewContainer2;
+    @BindView(R.id.card_view_thumbnail_3) CardView cardViewContainer3;
 
 
     private String currentNoteId;
@@ -125,6 +111,8 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
     private FirebaseStorage mFirebaseStorage;
+    private MediaPlayer mPlayer = null;
+    private boolean isAudioPlaying = false;
 
 
     public NoteDetailFragment() {
@@ -174,6 +162,14 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
         }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mPlayer != null){
+            mPlayer.release();
+            mPlayer = null;
+        }
+    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -622,11 +618,54 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
         } else {
             Log.d(TAG, getString(R.string.no_application_found));
         }
+    }
 
-
+    @OnClick(R.id.linear_layout_audio)
+    public void onAudioIconClicked(View view){
+        for (Attachment attachment: currentJournal.getAttachments()){
+            if (attachment.getMime_type().equals(Constants.MIME_TYPE_AUDIO)){
+                startPlaying(attachment);
+            }
+        }
     }
 
 
+
+
+
+    private void startPlaying(Attachment attachment) {
+        if (isAudioPlaying) {
+            mPlayer.stop();
+            mPlayer.release();
+            isAudioPlaying = false;
+            playAudioTextView.setText(getString(R.string.start_listening));
+            playAudioImageButton.setImageResource(R.drawable.ic_action_headset);
+
+        } else {
+            mPlayer = new MediaPlayer();
+            try {
+                mPlayer.setDataSource(attachment.getFilePath());
+                mPlayer.prepare();
+                mPlayer.start();
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        if (!mp.isPlaying()) {
+                            isAudioPlaying = false;
+                            playAudioTextView.setText(getString(R.string.start_listening));
+                            playAudioImageButton.setImageResource(R.drawable.ic_action_headset);
+                        }
+                    }
+                });
+                isAudioPlaying = true;
+                playAudioTextView.setText(getString(R.string.stop_listening));
+                playAudioImageButton.setImageResource(R.drawable.ic_action_pause);
+            } catch (IOException e) {
+                Log.e(TAG, "Play audio failed " + e.getLocalizedMessage());
+            }
+        }
+
+    }
 
 
 }

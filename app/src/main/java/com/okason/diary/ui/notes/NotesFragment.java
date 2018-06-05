@@ -73,6 +73,7 @@ public class NotesFragment extends Fragment
 
     private  String tagName = "";
     private String folderId = "";
+    private String sortMethod = "";
 
 
     private View mRootView;
@@ -143,6 +144,7 @@ public class NotesFragment extends Fragment
         journalDao = new JournalDao(realm);
         filteredJournals = new ArrayList<>();
         firebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
+        sortMethod = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("sort_options", "title");
         return mRootView;
     }
 
@@ -175,12 +177,12 @@ public class NotesFragment extends Fragment
     private void fetchNotes() {
         if (getArguments() != null && getArguments().containsKey(Constants.TAG_FILTER)){
             tagName = getArguments().getString(Constants.TAG_FILTER);
-            allJournals = journalDao.getAllNotes(tagName);
+            allJournals = journalDao.getAllNotes(tagName).sort(sortMethod);
         } else if (getArguments() != null && getArguments().containsKey(Constants.FOLDER_ID)){
             folderId = getArguments().getString(Constants.FOLDER_ID);
-            allJournals = journalDao.getNotesByFolder(folderId);
+            allJournals = journalDao.getNotesByFolder(folderId).sort(sortMethod);
         } else{
-            allJournals = journalDao.getAllNotes("").sort("dateModified");
+            allJournals = journalDao.getAllNotes("").sort(sortMethod);
         }
 
 

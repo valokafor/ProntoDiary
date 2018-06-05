@@ -54,7 +54,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
     private List<ProntoTask> filteredProntoTasks;
     private TaskListAdapter mListAdapter;
     private View mRootView;
-    private String sortColumn = "title";
+    private String sortMethod = "";
     private Realm realm;
     private TaskDao taskDao;
 
@@ -114,7 +114,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
                 startActivity(new Intent(getActivity(), AddTaskActivity.class));
             }
         });
-        sortColumn = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("sort_options","title").toLowerCase();
+        sortMethod = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("sort_options", "title");
         realm = Realm.getDefaultInstance();
         taskDao = new TaskDao(realm);
         return mRootView;
@@ -122,9 +122,9 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
     private void getTasks() {
         if (priority == Constants.PRIORITY_ALL){
-            allProntoTasks = taskDao.getAllTask().sort(sortColumn);
+            allProntoTasks = taskDao.getAllTask().sort(sortMethod);
         } else {
-            allProntoTasks = taskDao.getAllTasksForPriority(priority).sort(sortColumn);
+            allProntoTasks = taskDao.getAllTasksForPriority(priority).sort(sortMethod);
         }
 
     }
