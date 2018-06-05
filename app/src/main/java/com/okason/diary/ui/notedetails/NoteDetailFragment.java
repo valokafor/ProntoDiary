@@ -30,7 +30,6 @@ import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -41,6 +40,7 @@ import com.google.firebase.storage.StorageReference;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.GlideApp;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.data.JournalDao;
 import com.okason.diary.models.Attachment;
@@ -378,7 +378,7 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
     }
 
     private void displayImage(String imageUrl, ImageView imageViewThumbnail){
-        Glide.with(getContext())
+        GlideApp.with(getContext())
                 .load(imageUrl)
                 .placeholder(R.drawable.default_image)
                 .centerCrop()

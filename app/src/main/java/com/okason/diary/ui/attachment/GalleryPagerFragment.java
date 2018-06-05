@@ -9,8 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
 import com.okason.diary.R;
+import com.okason.diary.core.GlideApp;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -54,10 +54,9 @@ public class GalleryPagerFragment extends Fragment {
         ButterKnife.bind(this, mRootView);
 
 
-        Glide.with(getActivity().getApplicationContext())
+        GlideApp.with(getActivity().getApplicationContext())
                 .load(mImagePath)
                 .fitCenter()
-                .crossFade()
                 .into(mImageView);
         return mRootView;
     }

@@ -12,8 +12,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
-import com.bumptech.glide.Glide;
 import com.okason.diary.R;
+import com.okason.diary.core.GlideApp;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Journal;
@@ -85,7 +85,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
                     }
 
                 } else if(lastAttachment.getMime_type().equals(Constants.MIME_TYPE_IMAGE)){
-                    Glide.with(mContext)
+                    GlideApp.with(mContext)
                             .load(lastAttachment.getFilePath())
                             .placeholder(R.drawable.default_image)
                             .into(holder.noteAttachment);
@@ -98,13 +98,13 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
 
                     String extension = FileHelper.getFileExtension(lastAttachment.getFilePath()).toLowerCase();
                     if (extension.contains("pdf")){
-                        Glide.with(mContext)
+                        GlideApp.with(mContext)
                                 .load(R.drawable.pdf_icon_2)
                                 .placeholder(R.drawable.default_image)
                                 .centerCrop()
                                 .into(holder.noteAttachment);
                     } else {
-                        Glide.with(mContext)
+                        GlideApp.with(mContext)
                                 .load(R.drawable.ic_action_document)
                                 .placeholder(R.drawable.default_image)
                                 .centerCrop()
@@ -113,7 +113,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
 
 
                 } else {
-                    Glide.with(mContext)
+                    GlideApp.with(mContext)
                             .load(lastAttachment.getFilePath())
                             .placeholder(R.drawable.default_image)
                             .centerCrop()

@@ -11,8 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.okason.diary.R;
+import com.okason.diary.core.GlideApp;
 import com.okason.diary.core.listeners.OnAttachmentClickedListener;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.utils.Constants;
@@ -104,33 +104,29 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
 
             if (extension.equals(".png") || extension.equals(".jpg") || extension.equals(".jpeg")){
 
-                Glide.with(context.getApplicationContext())
+                GlideApp.with(context.getApplicationContext())
                         .load(filePath)
                         .centerCrop()
-                        .crossFade()
                         .placeholder(R.drawable.image_broken)
                         .into(holder.image);
             }else if (extension.equals(".pdf")){
-                Glide.with(context.getApplicationContext())
+                GlideApp.with(context.getApplicationContext())
                         .load(R.drawable.pdf_icon_2)
                         .centerCrop()
-                        .crossFade()
                         .placeholder(R.drawable.image_broken)
                         .into(holder.image);
             }else {
-                Glide.with(context.getApplicationContext())
+                GlideApp.with(context.getApplicationContext())
                         .load(R.drawable.ic_action_document)
                         .centerCrop()
-                        .crossFade()
                         .placeholder(R.drawable.image_broken)
                         .into(holder.image);
             }
 
         } else {
-            Glide.with(context.getApplicationContext())
+            GlideApp.with(context.getApplicationContext())
                     .load(filePath)
                     .centerCrop()
-                    .crossFade()
                     .placeholder(R.drawable.image_broken)
                     .into(holder.image);
         }

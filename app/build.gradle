@@ -74,7 +74,7 @@ ext {
     firebaseLibraryVersion = "16.0.1"
     firebaseUIVersion = "3.2.2"
     gsonVersion = "2.2.4"
-    glideVersion = "3.7.0"
+    glideVersion = "4.7.1"
     materialDialogVersion = "0.9.6.0";
     eventBusVersion = "3.1.1"
     crashlyticsVersion = "2.9.3"
@@ -115,6 +115,7 @@ dependencies {
     }
     implementation "com.google.code.gson:gson:$gsonVersion"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
     implementation "com.afollestad.material-dialogs:core:$materialDialogVersion"
     implementation "org.greenrobot:eventbus:$eventBusVersion"
     implementation 'com.github.apl-devs:appintro:v4.2.3'

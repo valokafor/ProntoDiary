@@ -6,20 +6,19 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
 import com.crashlytics.android.Crashlytics;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerUIUtils;
 import com.okason.diary.R;
-import com.okason.diary.models.inactive.ProntoJournalUser;
 import com.okason.diary.models.Reminder;
+import com.okason.diary.models.inactive.ProntoJournalUser;
 import com.squareup.leakcanary.LeakCanary;
 
-import io.fabric.sdk.android.Fabric;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.fabric.sdk.android.Fabric;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
@@ -89,12 +88,12 @@ public class ProntoDiaryApplication extends Application {
         DrawerImageLoader.init(new AbstractDrawerImageLoader() {
             @Override
             public void set(ImageView imageView, Uri uri, Drawable placeholder, String tag) {
-                Glide.with(imageView.getContext()).load(uri).placeholder(placeholder).into(imageView);
+                GlideApp.with(imageView.getContext()).load(uri).placeholder(placeholder).into(imageView);
             }
 
             @Override
             public void cancel(ImageView imageView) {
-                Glide.clear(imageView);
+               // GlideApp.clear(imageView);
             }
 
             @Override
