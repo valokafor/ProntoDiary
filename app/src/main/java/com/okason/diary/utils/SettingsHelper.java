@@ -117,4 +117,8 @@ public class SettingsHelper {
     long lastSync = getSharedPreferences().getLong(Constants.DATE_LAST_SYNC, 0);
     return 0;
   }
+
+  public boolean isPremiumUser() {
+    return false;
+  }
 }

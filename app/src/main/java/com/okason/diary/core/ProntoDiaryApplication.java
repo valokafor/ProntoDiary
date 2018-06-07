@@ -1,17 +1,21 @@
 package com.okason.diary.core;
 
-import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.multidex.MultiDexApplication;
 import android.widget.ImageView;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.core.CrashlyticsCore;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerUIUtils;
+import com.okason.diary.BuildConfig;
 import com.okason.diary.R;
+import com.okason.diary.core.services.DataDownloadIntentService;
 import com.okason.diary.models.Reminder;
 import com.okason.diary.models.inactive.ProntoJournalUser;
 import com.squareup.leakcanary.LeakCanary;
@@ -27,23 +31,17 @@ import io.realm.RealmResults;
  * Created by Valentine on 4/20/2017.
  */
 
-public class ProntoDiaryApplication extends Application {
+public class ProntoDiaryApplication extends MultiDexApplication {
 
 
     private static Context mContext;
     private static ProntoJournalUser prontoJournalUser;
     public static AtomicLong reminderPrimaryKey;
 
-
-
-
-
-
-
     @Override
     public void onCreate() {
         super.onCreate();
-        Fabric.with(this, new Crashlytics());
+        configureCrashlytics();
         if (LeakCanary.isInAnalyzerProcess(this)) {
             // This process is dedicated to LeakCanary for heap analysis.
             // You should not init your app in this process.
@@ -53,7 +51,15 @@ public class ProntoDiaryApplication extends Application {
         initRealm();
         mContext = getApplicationContext();
         LeakCanary.install(this);
+        startService(new Intent(getApplicationContext(), DataDownloadIntentService.class));
+    }
 
+    private void configureCrashlytics() {
+
+        CrashlyticsCore crashlyticsCore = new CrashlyticsCore.Builder()
+                .disabled(BuildConfig.DEBUG)
+                .build();
+        Fabric.with(this, new Crashlytics.Builder().core(crashlyticsCore).build());
 
     }
 
@@ -61,7 +67,6 @@ public class ProntoDiaryApplication extends Application {
         Realm.init(this);
         RealmConfiguration configuration = new RealmConfiguration.Builder()
                 .schemaVersion(1)
-                .deleteRealmIfMigrationNeeded()
                 .name("Pronto_Journal.realm")
                 .build();
         Realm.setDefaultConfiguration(configuration);

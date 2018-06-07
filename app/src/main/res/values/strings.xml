@@ -17,6 +17,8 @@
     <string name="facebook_application_id" translatable="false">1084180085015342</string>
     <string name="facebook_login_protocol_scheme" translatable="false">fb1084180085015342</string>
     <string name="banner_ad_unit_id" translatable="false">ca-app-pub-0685840031635412/8579377308</string>
+    <string name="banner_ad_unit_id_note_editor" translatable="false">ca-app-pub-0685840031635412/9352114794</string>
+
     <string name="server_client_id" translatable="false">498554407152-49454rjtf4o83jkhejfk5kgvc90kru2b.apps.googleusercontent.com</string>
     <string name="invitation_custom_image">https://developers.google.com/identity/images/g-logo.png</string>
     <string name="invitation_cta">Install</string>
@@ -267,9 +269,9 @@
 
 
     <string-array name="sortOptionsEntries">
-        <item>Title</item>
-        <item>Date Added</item>
-        <item>Date Modified</item>
+        <item>"Title"</item>
+        <item>"Date Created"</item>
+        <item>"Date Modified"</item>
     </string-array>
 
     <string-array name="sortOptionsValues">

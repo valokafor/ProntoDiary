@@ -82,12 +82,9 @@ public class NotesFragment extends Fragment
     private boolean isDualScreen = false;
     private final static String LOG_TAG = "NoteListFragment";
 
-    @BindView(R.id.note_recycler_view)
-    RecyclerView mRecyclerView;
-    @BindView(R.id.empty_text)
-    TextView mEmptyText;
-    @BindView(R.id.adView)
-    AdView mAdView;
+    @BindView(R.id.note_recycler_view) RecyclerView mRecyclerView;
+    @BindView(R.id.empty_text) TextView mEmptyText;
+    @BindView(R.id.adView) AdView mAdView;
 
 
 
@@ -144,7 +141,23 @@ public class NotesFragment extends Fragment
         journalDao = new JournalDao(realm);
         filteredJournals = new ArrayList<>();
         firebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
-        sortMethod = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("sort_options", "title");
+
+
+
+
+        if (ProntoDiaryApplication.getProntoJournalUser() != null && ProntoDiaryApplication.getProntoJournalUser().isPremium()){
+            //Do not show Ad
+        }else {
+            mAdView.setVisibility(View.VISIBLE);
+            AdRequest adRequest = new AdRequest.Builder()
+                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                    .build();
+            mAdView.loadAd(adRequest);
+        }
+
+
+
+
         return mRootView;
     }
 
@@ -160,17 +173,12 @@ public class NotesFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
+        sortMethod = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("sort_options", "title");
+        Log.d(TAG, "sortMethod: " + sortMethod);
         initRecyclerView();
         fetchNotes();
-
-        if (ProntoDiaryApplication.getProntoJournalUser() != null && ProntoDiaryApplication.getProntoJournalUser().isPremium()){
-            //Do not show Ad
-        }else {
-            mAdView.setVisibility(View.VISIBLE);
-            AdRequest adRequest = new AdRequest.Builder()
-                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                    .build();
-            mAdView.loadAd(adRequest);
+        if (mAdView != null){
+            mAdView.resume();
         }
     }
 
@@ -199,6 +207,9 @@ public class NotesFragment extends Fragment
         if (mPlayer != null) {
             mPlayer.release();
             mPlayer = null;
+        }
+        if (mAdView != null){
+            mAdView.pause();
         }
     }
 
@@ -444,9 +455,15 @@ public class NotesFragment extends Fragment
 
     @Override
     public void onDestroy() {
-        if (realm != null){
-            realm.close();;
-            realm = null;
+        try {
+            if (realm != null){
+                realm.close();;
+                realm = null;
+            }
+            mAdView.destroy();
+            mAdView = null;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         super.onDestroy();
     }

@@ -50,6 +50,8 @@ public class SettingsFragment extends PreferenceFragment {
             }
         });
 
+
+
 //        PreferenceScreen screen = this.getPreferenceScreen(); // "null". See onViewCreated.
 //
 //        // Create the Preferences Manually - so that the key can be set programatically.

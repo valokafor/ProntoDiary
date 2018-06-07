@@ -2,7 +2,6 @@ package com.okason.diary.core.services;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.JobIntentService;
 import android.util.Log;
@@ -51,6 +50,7 @@ public class DataUploadIntentService extends JobIntentService {
     private CollectionReference tagCloudReference;
     private CollectionReference taskCloudReference;
     private FirebaseUser firebaseUser;
+    private FirebaseAuth firebaseAuth;
     private String userId;
     private FirebaseFirestore database;
 
@@ -71,15 +71,26 @@ public class DataUploadIntentService extends JobIntentService {
 
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (firebaseUser != null){
-            userId = firebaseUser.getUid();
-            database = FirebaseFirestore.getInstance();
-            journalCloudReference = database.collection(Constants.SYNC_CLOUD_END_POINT).document(userId).collection(Constants.NOTE_CLOUD_END_POINT);
-            folderCloudReference = database.collection(Constants.SYNC_CLOUD_END_POINT).document(userId).collection(Constants.FOLDER_CLOUD_END_POINT);
-            tagCloudReference = database.collection(Constants.SYNC_CLOUD_END_POINT).document(userId).collection(Constants.TAG_CLOUD_END_POINT);
-            taskCloudReference = database.collection(Constants.SYNC_CLOUD_END_POINT).document(userId).collection(Constants.TASK_CLOUD_END_POINT);
+        firebaseAuth = FirebaseAuth.getInstance();
+        if (firebaseAuth == null){
+            return;
         }
+
+        firebaseUser = firebaseAuth.getCurrentUser();
+
+        if (firebaseUser == null){
+            return;
+        }
+
+        if (firebaseUser.getEmail().equals(Constants.EMAIL_LOGIN)){
+            return;
+        }
+        userId = firebaseUser.getUid();
+        database = FirebaseFirestore.getInstance();
+        journalCloudReference = database.collection(Constants.SYNC_CLOUD_END_POINT).document(userId).collection(Constants.NOTE_CLOUD_END_POINT);
+        folderCloudReference = database.collection(Constants.SYNC_CLOUD_END_POINT).document(userId).collection(Constants.FOLDER_CLOUD_END_POINT);
+        tagCloudReference = database.collection(Constants.SYNC_CLOUD_END_POINT).document(userId).collection(Constants.TAG_CLOUD_END_POINT);
+        taskCloudReference = database.collection(Constants.SYNC_CLOUD_END_POINT).document(userId).collection(Constants.TASK_CLOUD_END_POINT);
 
         if (intent.hasExtra(Constants.INITIAL_SYNC)){
             Log.d(TAG, "Initial data sync called");
@@ -181,15 +192,6 @@ public class DataUploadIntentService extends JobIntentService {
 
 
         }
-
-        //Kick of download of Data from
-        new android.os.Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                startService(new Intent(getApplicationContext(), DataDownloadIntentService.class));
-            }
-        }, 5000);
-
     }
 
     private void uploadTagsToFirebase(ProntoTag tag) {

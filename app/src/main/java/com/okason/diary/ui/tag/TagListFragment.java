@@ -260,17 +260,23 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
             OrderedCollectionChangeSet.Range[] deletions = changeSet.getDeletionRanges();
             for (int i = deletions.length - 1; i >= 0; i--) {
                 OrderedCollectionChangeSet.Range range = deletions[i];
-                mAdapter.notifyItemRangeRemoved(range.startIndex, range.length);
+                if (mAdapter != null) {
+                    mAdapter.notifyItemRangeRemoved(range.startIndex, range.length);
+                }
             }
 
             OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
             for (OrderedCollectionChangeSet.Range range : insertions) {
-                mAdapter.notifyItemRangeInserted(range.startIndex, range.length);
+                if (mAdapter != null) {
+                    mAdapter.notifyItemRangeInserted(range.startIndex, range.length);
+                }
             }
 
             OrderedCollectionChangeSet.Range[] modifications = changeSet.getChangeRanges();
             for (OrderedCollectionChangeSet.Range range : modifications) {
-                mAdapter.notifyItemRangeChanged(range.startIndex, range.length);
+                if (mAdapter != null) {
+                    mAdapter.notifyItemRangeChanged(range.startIndex, range.length);
+                }
             }
         }
     };

@@ -43,6 +43,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
@@ -179,6 +181,7 @@ public class NoteEditorFragment extends Fragment {
 
     private JournalDao journalDao;
     private FolderDao folderDao;
+    @BindView(R.id.adView) AdView mAdView;
 
 
     public NoteEditorFragment() {
@@ -280,6 +283,16 @@ public class NoteEditorFragment extends Fragment {
                 dataChanged = true;
             }
         });
+
+        if (SettingsHelper.getHelper(getContext()).isPremiumUser()){
+            //Do not show Ad
+        }else {
+            mAdView.setVisibility(View.VISIBLE);
+            AdRequest adRequest = new AdRequest.Builder()
+                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                    .build();
+            mAdView.loadAd(adRequest);
+        }
         return mRootView;
     }
 
@@ -309,6 +322,9 @@ public class NoteEditorFragment extends Fragment {
         if (isInEditMode){
             populateNote(mCurrentJournal);
         }
+        if (mAdView != null){
+            mAdView.resume();
+        }
     }
 
     @Override
@@ -325,6 +341,10 @@ public class NoteEditorFragment extends Fragment {
             mPlayer = null;
         }
 
+        if (mAdView != null){
+            mAdView.pause();
+        }
+
     }
 
     @Override
@@ -337,6 +357,8 @@ public class NoteEditorFragment extends Fragment {
             }
             mCurrentJournal.removeAllChangeListeners();
             realm.close();
+            mAdView.destroy();
+            mAdView = null;
         } catch (Exception e) {
             e.printStackTrace();
         }

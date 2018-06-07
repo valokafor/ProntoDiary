@@ -316,43 +316,58 @@ public class JournalDao {
         realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-
-                Journal journal = getJournalById(dto.getId());
-
-                if (journal != null && !TimeUtils.isCloudModifiedDateAfterLocalModifiedDate(dto.getDateModified(),
-                        journal.getDateModified())){
-                    return;
-                }
-
-
-                if (journal == null) {
-                    String journalId = UUID.randomUUID().toString();
-                    journal = realm.createObject(Journal.class, journalId);
-                }
-
-                journal.setDateCreated(System.currentTimeMillis());
-                journal.setDateModified(System.currentTimeMillis());
-                journal.setTitle(dto.getTitle());
-                journal.setContent(dto.getContent());
-                if (dto.getFolder() != null){
-                    String fId = dto.getFolder().getId();
-                    Log.d(TAG, "Folder Id: " + fId);
-                    Folder folder = realm.where(Folder.class).equalTo("id", fId).findFirst();
-                    if (folder == null){
-                        String id = UUID.randomUUID().toString();
-                        folder = realm.createObject(Folder.class, id);
-                        folder.setDateCreated(System.currentTimeMillis());
-                        folder.setDateModified(System.currentTimeMillis());
-                        folder.setFolderName(dto.getFolder().getFolderName());
+                Log.d(TAG, "addJournalFromCloud called");
+                if (dto != null && !TextUtils.isEmpty(dto.getId())) {
+                    Journal journal = getJournalById(dto.getId());
+                    if (journal == null) {
+                        Log.d(TAG, "journal " + dto.getTitle() + "from Cloud does not exist locally");
+                        String journalId = UUID.randomUUID().toString();
+                        journal = realm.createObject(Journal.class, journalId);
+                        updateJournalFromCloud(realm, journal, dto);
+                        return;
                     }
 
-                    if (folder != null){
-                        journal.setFolder(folder);
-                        folder.getJournals().add(journal);
-                    }
 
+                    boolean recentlyUpdated = TimeUtils.isCloudModifiedDateAfterLocalModifiedDate(dto.getDateModified(),
+                            journal.getDateModified());
+
+                    if (recentlyUpdated){
+                        Log.d(TAG, "journal " + dto.getTitle() + "from Cloud does has been updated recently");
+                        updateJournalFromCloud(realm, journal, dto);
+                        return;
+                    } else {
+                        return;
+                    }
                 }
             }
+
         });
     }
+
+    private void updateJournalFromCloud(Realm realm, Journal journal, JournalDto dto) {
+        journal.setDateCreated(dto.getDateCreated());
+        journal.setDateModified(dto.getDateModified());
+        journal.setTitle(dto.getTitle());
+        journal.setContent(dto.getContent());
+        if (dto.getFolder() != null){
+            String fId = dto.getFolder().getId();
+            Log.d(TAG, "Folder Id: " + fId);
+            Folder folder = realm.where(Folder.class).equalTo("id", fId).findFirst();
+            if (folder == null){
+                folder = realm.createObject(Folder.class, fId);
+                folder.setDateCreated(dto.getFolder().getDateCreated());
+                folder.setDateModified(dto.getFolder().getDateModified());
+                folder.setFolderName(dto.getFolder().getFolderName());
+            }
+
+            if (folder != null){
+                journal.setFolder(folder);
+                folder.getJournals().add(journal);
+            }
+
+        }
+
+    }
+
+
 }

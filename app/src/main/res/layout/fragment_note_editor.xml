@@ -1,8 +1,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+                xmlns:ads="http://schemas.android.com/apk/res-auto"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
     <LinearLayout
         android:id="@+id/root_layout"
@@ -11,6 +12,7 @@
         android:animateLayoutChanges="true"
         android:focusableInTouchMode="true"
         android:orientation="vertical"
+        android:layout_above="@+id/adView"
         android:padding="@dimen/margin_padding_tiny">
 
         <FrameLayout
@@ -23,7 +25,7 @@
                 android:id="@+id/attachment_list_recyclerview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal" />
+                android:orientation="horizontal"/>
 
         </FrameLayout>
 
@@ -43,14 +45,14 @@
 
 
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:app="http://schemas.android.com/apk/res-auto"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:paddingBottom="@dimen/margin_padding_tiny"
-                    android:paddingLeft="@dimen/margin_padding_tiny"
-                    android:paddingRight="@dimen/margin_padding_tiny">
+                              xmlns:app="http://schemas.android.com/apk/res-auto"
+                              xmlns:tools="http://schemas.android.com/tools"
+                              android:layout_width="match_parent"
+                              android:layout_height="match_parent"
+                              android:orientation="vertical"
+                              android:paddingBottom="@dimen/margin_padding_tiny"
+                              android:paddingLeft="@dimen/margin_padding_tiny"
+                              android:paddingRight="@dimen/margin_padding_tiny">
 
                     <RelativeLayout
                         android:id="@+id/toplayout1"
@@ -75,13 +77,13 @@
                             android:drawablePadding="@dimen/activity_horizontal_margin"
                             android:focusable="false"
                             android:hint="@string/select_folder"
-                            android:textSize="@dimen/text_size_xnormal" />
+                            android:textSize="@dimen/text_size_xnormal"/>
                     </RelativeLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@color/divider" />
+                        android:background="@color/divider"/>
 
 
                     <RelativeLayout
@@ -105,13 +107,13 @@
                             android:hint="@string/placeholder_journal_title"
                             android:imeOptions="actionNext"
                             android:inputType="textCapWords"
-                            android:textSize="@dimen/text_size_xnormal" />
+                            android:textSize="@dimen/text_size_xnormal"/>
                     </RelativeLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@color/divider" />
+                        android:background="@color/divider"/>
 
 
                     <RelativeLayout
@@ -136,7 +138,7 @@
                             android:inputType="textMultiLine"
                             android:minHeight="100dp"
                             android:scrollbars="none"
-                            android:textSize="@dimen/text_size_normal" />
+                            android:textSize="@dimen/text_size_normal"/>
 
                     </RelativeLayout>
 
@@ -146,7 +148,7 @@
                         android:layout_height="200dp"
                         android:background="@null"
                         android:contentDescription="@string/image_attachment"
-                        android:visibility="gone" />
+                        android:visibility="gone"/>
 
                     <ImageView
                         android:id="@+id/sketch_attachment"
@@ -154,7 +156,7 @@
                         android:layout_height="200dp"
                         android:background="@null"
                         android:contentDescription="@string/image_attachment"
-                        android:visibility="gone" />
+                        android:visibility="gone"/>
 
                 </LinearLayout>
             </ScrollView>
@@ -168,8 +170,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:paddingBottom="3dp"
-            android:visibility="gone"
-            android:paddingTop="3dp">
+            android:paddingTop="3dp"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/creation"
@@ -179,8 +181,8 @@
                 android:gravity="left|start"
                 android:padding="0dp"
                 android:text="Updated Today"
-                android:visibility="gone"
-                android:textSize="@dimen/text_size_small" />
+                android:textSize="@dimen/text_size_small"
+                android:visibility="gone"/>
 
             <TextView
                 android:id="@+id/last_modification"
@@ -190,64 +192,21 @@
                 android:gravity="end"
                 android:padding="0dp"
                 android:text="Modified Today"
-                android:visibility="gone"
-                android:textSize="@dimen/text_size_small" />
+                android:textSize="@dimen/text_size_small"
+                android:visibility="gone"/>
         </LinearLayout>
 
 
     </LinearLayout>
 
-    <HorizontalScrollView
-        android:id="@+id/bottom_scrollview"
-        android:layout_width="match_parent"
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/primary"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <ImageButton
-                android:id="@+id/image_button_undo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_margin="@dimen/margin_padding_small"
-                android:background="@null"
-                android:src="@drawable/ic_sort_white_24dp" />
-
-            <ImageButton
-                android:id="@+id/image_button_record"
-                android:layout_width="@dimen/note_editor_icon_size"
-                android:layout_height="@dimen/note_editor_icon_size"
-                android:layout_margin="@dimen/margin_padding_small"
-                android:background="@null"
-                android:scaleType="center"
-                android:src="@drawable/ic_mic_white_24dp" />
-
-            <ImageButton
-                android:id="@+id/image_button_play"
-                android:layout_width="@dimen/note_editor_icon_size"
-                android:layout_height="@dimen/note_editor_icon_size"
-                android:layout_margin="@dimen/margin_padding_small"
-                android:background="@null"
-                android:scaleType="center"
-                android:src="@drawable/ic_play_arrow_white_24dp" />
-
-            <ImageButton
-                android:id="@+id/image_button_camara"
-                android:layout_width="@dimen/note_editor_icon_size"
-                android:layout_height="@dimen/note_editor_icon_size"
-                android:layout_margin="@dimen/margin_padding_small"
-                android:background="@null"
-                android:scaleType="center"
-                android:src="@drawable/ic_photo_camera_white_24dp" />
-
-
-        </LinearLayout>
-    </HorizontalScrollView>
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+        ads:adSize="BANNER"
+        ads:adUnitId="@string/banner_ad_unit_id_note_editor"/>
 </RelativeLayout>

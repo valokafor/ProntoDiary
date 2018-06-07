@@ -358,12 +358,16 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
                     OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
                     for (OrderedCollectionChangeSet.Range range : insertions) {
-                        mListAdapter.notifyItemRangeInserted(range.startIndex, range.length);
+                        if (mListAdapter != null) {
+                            mListAdapter.notifyItemRangeInserted(range.startIndex, range.length);
+                        }
                     }
 
                     OrderedCollectionChangeSet.Range[] modifications = changeSet.getChangeRanges();
                     for (OrderedCollectionChangeSet.Range range : modifications) {
-                        mListAdapter.notifyItemRangeChanged(range.startIndex, range.length);
+                        if (mListAdapter != null) {
+                            mListAdapter.notifyItemRangeChanged(range.startIndex, range.length);
+                        }
                     }
                 }
             };
