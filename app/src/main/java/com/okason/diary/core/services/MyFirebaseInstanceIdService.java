@@ -2,18 +2,28 @@ package com.okason.diary.core.services;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.google.firebase.database.DatabaseReference;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 import com.okason.diary.models.inactive.ProntoJournalUser;
+import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
 
 public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
-    private DatabaseReference mDatabase;
-    private DatabaseReference mProntoDiaryUserRef;
-    private ProntoJournalUser prontoJournalUser;
+
+    private DocumentReference profileCloudReference;
+    private FirebaseUser firebaseUser;
+    private String userId;
+    private FirebaseFirestore database;
 
         public static final String TAG = MyFirebaseInstanceIdService.class.getSimpleName();
 
@@ -22,33 +32,6 @@ public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
         public void onTokenRefresh() {
             super.onTokenRefresh();
             final String token = FirebaseInstanceId.getInstance().getToken();
-
-
-            //Update Token in Database after token refresh
-
-//            mDatabase = FirebaseDatabase.getInstance().getReference();
-//            mProntoDiaryUserRef = mDatabase.child(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE);
-//
-//            final String oldToken = SettingsHelper.getHelper(getApplicationContext()).getMessagingToken();
-//            if (!TextUtils.isEmpty(oldToken)){
-//                mProntoDiaryUserRef.orderByChild("fcmToken").equalTo(oldToken).addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(DataSnapshot dataSnapshot) {
-//                        if (dataSnapshot.exists()) {
-//                            DataSnapshot snapshot = dataSnapshot.getChildren().iterator().next();
-//                            prontoJournalUser = snapshot.getValue(ProntoJournalUser.class);
-//                            prontoJournalUser.setFcmToken(token);
-//                            mProntoDiaryUserRef.child(prontoJournalUser.getId()).setValue(prontoJournalUser);
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(DatabaseError databaseError) {
-//
-//                    }
-//                });
-//
-//            }
 
             Log.d(TAG, "FCM token retrieved: " + token);
 
@@ -59,6 +42,36 @@ public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
                     SettingsHelper.getHelper(getApplicationContext()).setMessagingToken(token);
                 }
             });
+
+
+            //Update Token in Database after token refresh
+
+            firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (firebaseUser != null && !firebaseUser.getEmail().equals(Constants.EMAIL_LOGIN)) {
+                userId = firebaseUser.getUid();
+                database = FirebaseFirestore.getInstance();
+                profileCloudReference = database.collection(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE).document(userId);
+
+                profileCloudReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()){
+                            DocumentSnapshot snapshot = task.getResult();
+                            if (snapshot.exists()){
+                                ProntoJournalUser user = snapshot.toObject(ProntoJournalUser.class);
+                                if (user != null){
+                                    user.getFcmTokens().add(token);
+                                    user.setDateModified(System.currentTimeMillis());
+                                    profileCloudReference.set(user);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+
+
 
         }
 }

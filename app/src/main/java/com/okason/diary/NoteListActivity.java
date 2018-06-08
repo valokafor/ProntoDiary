@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.android.billingclient.api.BillingClient;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -42,6 +43,9 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.mikepenz.materialdrawer.model.interfaces.Nameable;
 import com.mikepenz.materialdrawer.util.KeyboardUtil;
+import com.okason.diary.billing.BillingManager;
+import com.okason.diary.billing.BillingProvider;
+import com.okason.diary.billing.MainViewController;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.folder.FolderListActivity;
@@ -55,7 +59,7 @@ import com.okason.diary.utils.SettingsHelper;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class NoteListActivity extends AppCompatActivity {
+public class NoteListActivity extends AppCompatActivity implements BillingProvider {
     private SharedPreferences preferences;
     SharedPreferences.Editor editor;
     private boolean unregisteredUser = false;
@@ -86,6 +90,9 @@ public class NoteListActivity extends AppCompatActivity {
     private Uri mInvitationUrl;
     private FloatingActionButton floatingActionButton;
 
+    private BillingManager mBillingManager;
+    private MainViewController mViewController;
+
 
     @BindView(R.id.root)
     View mRootView;
@@ -110,6 +117,10 @@ public class NoteListActivity extends AppCompatActivity {
         setupNavigationDrawer(savedInstanceBundle);
         showFloatingActionButton();
         //new SampleData(this).getSampleNotesRealm();;
+
+        mViewController = new MainViewController(this);
+        // Create and initialize BillingManager which talks to BillingLibrary
+        mBillingManager = new BillingManager(this, mViewController.getUpdateListener());
 
     }
 
@@ -145,6 +156,10 @@ public class NoteListActivity extends AppCompatActivity {
         super.onResume();
        showNoteListFragment();
       //  checkForDynamicLinkInvite(getIntent());
+        if (mBillingManager != null
+                && mBillingManager.getBillingClientResponseCode() == BillingClient.BillingResponse.OK) {
+            mBillingManager.queryPurchases();
+        }
 
     }
 
@@ -492,12 +507,27 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public BillingManager getBillingManager() {
+        return mBillingManager;
+    }
 
+    @Override
+    public boolean isPremiumPurchased() {
+        return mViewController.isPremiumPurchased();
+    }
 
-
-
-
-
-
+    public void onBillingManagerSetupFinished() {
+        makeToast("onBillingManagerSetupFinished");
+//        if (mAcquireFragment != null) {
+//            mAcquireFragment.onManagerReady(this);
+//        }
+    }
+    /**
+     * Remove loading spinner and refresh the UI
+     */
+    public void showRefreshedUi() {
+        makeToast("showRefreshedUi");
+    }
 
 }
