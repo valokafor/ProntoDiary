@@ -259,6 +259,10 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
         if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
             drawer.removeStickyFooterItemAtPosition(0);
         }
+
+        if (SettingsHelper.getHelper(mActivity).isPremiumUser()){
+            drawer.removeItem(Constants.REMOVE_ADS);
+        }
 //        else {
 //            drawer.removeStickyFooterItemAtPosition(1);
 //        }
@@ -273,14 +277,6 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
     }
 
 
-//    private void checkLoginStatus() {
-//        if (firebaseUser != null) {
-//            showNoteListFragment();
-//        }else {
-//            startActivity(AuthUiActivity.createIntent(mActivity));
-//        }
-//
-//    }
 
     private void showNoteListFragment() {
         //Apply ProntoTag filter is one exist.
@@ -300,29 +296,6 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
     }
 
 
-
-
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    public void onShowFragmentEvent(ShowFragmentEvent event) {
-//
-//        Fragment fragment = getSupportFragmentManager().findFragmentByTag(event.getTag());
-//        if (fragment != null) {
-//            openFragment(fragment, event.getTitle());
-//        } else {
-//            openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list));
-//        }
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    public void onDisplayFragmentEvent(DisplayFragmentEvent event) {
-//
-//        Fragment fragment = event.getFragment();
-//        if (fragment != null) {
-//            openFragment(fragment, event.getTitle());
-//        } else {
-//            openFragment(new NoteListFragment(), getString(R.string.title_activity_note_list));
-//        }
-//    }
 
 
     private void makeToast(String message) {
@@ -535,10 +508,7 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
     }
 
     public void onBillingManagerSetupFinished() {
-        makeToast("onBillingManagerSetupFinished");
-//        if (mAcquireFragment != null) {
-//            mAcquireFragment.onManagerReady(this);
-//        }
+
     }
     /**
      * Remove loading spinner and refresh the UI

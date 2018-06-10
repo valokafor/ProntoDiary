@@ -40,8 +40,6 @@ public class MainViewController {
     private final UpdateListener mUpdateListener;
     private NoteListActivity mActivity;
 
-    // Tracks if we currently own a premium car
-    private boolean mIsPremium;
 
     public MainViewController(NoteListActivity activity) {
         mUpdateListener = new UpdateListener();
@@ -90,7 +88,6 @@ public class MainViewController {
                 switch (purchase.getSku()) {
                     case SKU_ID_PREMIUM:
                         Log.d(TAG, "You are Premium! Congratulations!!!");
-                        mIsPremium = true;
                         SettingsHelper.getHelper(mActivity).setPremiumUser(true);
                         break;
 

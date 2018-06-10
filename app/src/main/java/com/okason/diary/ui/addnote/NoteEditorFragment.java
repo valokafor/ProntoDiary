@@ -221,6 +221,42 @@ public class NoteEditorFragment extends Fragment {
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_note_editor, container, false);
         ButterKnife.bind(this, mRootView);
+        return mRootView;
+    }
+
+    private final RealmObjectChangeListener<Journal> noteChangeListener = new RealmObjectChangeListener<Journal>() {
+        @Override
+        public void onChange(Journal journal, @javax.annotation.Nullable ObjectChangeSet changeSet) {
+            try {
+                if (changeSet.isDeleted()){
+                    //this journal has been deleted
+                    goBackToParent();
+                } else {
+                    populateNote(journal);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+        }
+    };
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        initResources();
+        EventBus.getDefault().register(this);
+        if (isInEditMode){
+            populateNote(mCurrentJournal);
+        }
+        if (mAdView != null){
+            mAdView.resume();
+        }
+    }
+
+    private void initResources() {
         realm = Realm.getDefaultInstance();
         journalDao = new JournalDao(realm);
         folderDao = new FolderDao(realm);
@@ -292,38 +328,6 @@ public class NoteEditorFragment extends Fragment {
                     .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                     .build();
             mAdView.loadAd(adRequest);
-        }
-        return mRootView;
-    }
-
-    private final RealmObjectChangeListener<Journal> noteChangeListener = new RealmObjectChangeListener<Journal>() {
-        @Override
-        public void onChange(Journal journal, @javax.annotation.Nullable ObjectChangeSet changeSet) {
-            try {
-                if (changeSet.isDeleted()){
-                    //this journal has been deleted
-                    goBackToParent();
-                } else {
-                    populateNote(journal);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-        }
-    };
-
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        EventBus.getDefault().register(this);
-        if (isInEditMode){
-            populateNote(mCurrentJournal);
-        }
-        if (mAdView != null){
-            mAdView.resume();
         }
     }
 

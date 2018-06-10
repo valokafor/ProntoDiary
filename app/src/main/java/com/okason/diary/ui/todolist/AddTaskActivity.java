@@ -110,6 +110,9 @@ public class AddTaskActivity extends AppCompatActivity implements
     //Flag that indicates if the Add Sub ProntoTask screen should be opened
     private boolean shouldAddSubTasks = false;
 
+    //Flag to indicate if a Reminder should be added
+    private boolean shouldSetReminder = false;
+
 
     private Realm realm;
     private TaskDao taskDao;
@@ -390,6 +393,7 @@ public class AddTaskActivity extends AppCompatActivity implements
         TimePickerDialog TimePicker = new TimePickerDialog(AddTaskActivity.this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int hour, int minute) {
+                shouldSetReminder = true;
                 calendar.set(Calendar.HOUR_OF_DAY, hour);
                 calendar.set(Calendar.MINUTE, minute);
                 timeTextView.setText(DateAndTimeUtil.toStringReadableTime(calendar, getApplicationContext()));
@@ -403,6 +407,7 @@ public class AddTaskActivity extends AppCompatActivity implements
         DatePickerDialog DatePicker = new DatePickerDialog(AddTaskActivity.this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker DatePicker, int year, int month, int dayOfMonth) {
+                shouldSetReminder = true;
                 calendar.set(Calendar.YEAR, year);
                 calendar.set(Calendar.MONTH, month);
                 calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -420,6 +425,7 @@ public class AddTaskActivity extends AppCompatActivity implements
                 .itemsCallback(new MaterialDialog.ListCallback() {
                     @Override
                     public void onSelection(MaterialDialog dialog, View view, int which, CharSequence text) {
+                        shouldSetReminder = true;
                         if (which == Constants.SPECIFIC_DAYS) {
                             DialogFragment daysOfWeekDialog = new DaysOfWeekSelector();
                             daysOfWeekDialog.show(getSupportFragmentManager(), "DaysOfWeekSelector");
@@ -505,6 +511,7 @@ public class AddTaskActivity extends AppCompatActivity implements
 
     @Override
     public void onDaysOfWeekSelected(boolean[] days) {
+        shouldSetReminder = true;
         List<Boolean> selectedDays = new ArrayList<>();
         for (int i = 0; i < days.length; i++) {
             selectedDays.add(days[i]);
@@ -517,6 +524,7 @@ public class AddTaskActivity extends AppCompatActivity implements
 
 
     public void onRepeatSelection(int which, String repeatText) {
+        shouldSetReminder = true;
         interval = 1;
         repeatType = which;
         this.repeatTextView.setText(repeatText);
@@ -532,6 +540,7 @@ public class AddTaskActivity extends AppCompatActivity implements
     public void toggleSwitch() {
         foreverSwitch.toggle();
         if (foreverSwitch.isChecked()) {
+            shouldSetReminder = true;
             bottomRow.setVisibility(View.GONE);
         } else {
             bottomRow.setVisibility(View.VISIBLE);
@@ -541,6 +550,7 @@ public class AddTaskActivity extends AppCompatActivity implements
     @OnClick(R.id.switch_toggle)
     public void switchClicked() {
         if (foreverSwitch.isChecked()) {
+            shouldSetReminder = true;
             bottomRow.setVisibility(View.GONE);
         } else {
             bottomRow.setVisibility(View.VISIBLE);
@@ -621,13 +631,6 @@ public class AddTaskActivity extends AppCompatActivity implements
             currentProntoTask = taskDao.createNewTask();
         }
 
-        if (currentReminder == null){
-            currentReminder = reminderDao.createNewReminder();
-        }
-        String daysOfWeekString = new Gson().toJson(daysOfWeek);
-
-        reminderDao.updateReminder(calendar, repeatType, foreverSwitch.isChecked(), timesToShow, interval, daysOfWeekString, currentReminder.getId());
-
         String taskName = taskNameEditText.getText().toString();
         String description = taskDescriptionEditText.getText().toString();
 
@@ -637,12 +640,22 @@ public class AddTaskActivity extends AppCompatActivity implements
 
         taskDao.updateTask(currentProntoTask.getId(), taskName, description, priority, selectedFolder.getId());
 
-        taskDao.addReminder(currentProntoTask.getId(), currentReminder.getId());
+        if (shouldSetReminder) {
+            if (currentReminder == null){
+                currentReminder = reminderDao.createNewReminder();
+            }
 
-        if (currentReminder != null){
-            Intent alarmIntent = new Intent(this, AlarmReceiver.class);
-            calendar.set(Calendar.SECOND, 0);
-            AlarmUtil.setAlarm(this, alarmIntent, currentReminder.getId(), calendar);
+            String daysOfWeekString = new Gson().toJson(daysOfWeek);
+
+            reminderDao.updateReminder(calendar, repeatType, foreverSwitch.isChecked(), timesToShow, interval, daysOfWeekString, currentReminder.getId());
+
+            if (currentReminder != null){
+                Intent alarmIntent = new Intent(this, AlarmReceiver.class);
+                calendar.set(Calendar.SECOND, 0);
+                AlarmUtil.setAlarm(this, alarmIntent, currentReminder.getId(), calendar);
+            }
+
+            taskDao.addReminder(currentProntoTask.getId(), currentReminder.getId());
         }
 
         if (shouldAddSubTasks) {
@@ -653,7 +666,5 @@ public class AddTaskActivity extends AppCompatActivity implements
         } else {
             onBackPressed();
         }
-
-
     }
 }
