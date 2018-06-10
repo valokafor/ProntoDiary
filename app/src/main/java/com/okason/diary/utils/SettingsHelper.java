@@ -119,6 +119,12 @@ public class SettingsHelper {
   }
 
   public boolean isPremiumUser() {
-    return false;
+    boolean result = getSharedPreferences().getBoolean(Constants.PREMIUM_USER, false);
+    return result;
+  }
+
+  public void setPremiumUser(boolean paid){
+    SharedPreferences.Editor editor = getSharedPreferences().edit();
+    editor.putBoolean(Constants.PREMIUM_USER, paid).apply();
   }
 }

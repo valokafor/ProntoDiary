@@ -52,6 +52,7 @@ public class Constants {
     public static final String DELETE_EVENT = "delete_event";
     public static final String DELETE_EVENT_TYPE = "delete_event_type";
     public static final String ITEM_ID = "item_id";
+    public static final String PREMIUM_USER = "premium_user";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
@@ -80,6 +81,8 @@ public class Constants {
     public final static int TAGS = 7;
     public final static int TODO_LIST = 8;
     public final static int SHARE_APP = 9;
+    public static final int CONTACT_US= 10;
+    public static final int REMOVE_ADS = 11;
 
 
     public final static String PREFERENCE_FILE = "preference_file";
@@ -201,5 +204,11 @@ public class Constants {
     public static final int YEARLY = 5;
     public static final int SPECIFIC_DAYS = 6;
     public static final int ADVANCED = 7;
+
+    public static final String BASE_64_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjGAoP" +
+            "ezC8gR9XJOULbqEXcsT2fKXNDbwfN+6RWh3A4tgFboX6EbLoQHCUwfzI+li1XdbRTi0hV/Gxp1XS27x06nP1I5OTv0LYT" +
+            "+7GaHYKonhZn6KRDJssvvPn4yg8ykdBPTKd8PubdKyVhGUdJTEXobgflNa/Sso6Wl7Kqp09FFQaAj+N9lt9fnTzU3mYkt" +
+            "oIOV5sBAvXOn5MrNZvD0+k4w3YnmVvGotmjR+SKMpS1wGm2FAmnO0Avia+gL5qu+Pqaur/IrGNY3euu+AkYBI6pnIpez7pC" +
+            "qkrb4jfHfBtYnbpV0/pbrfN+XRZcn8vsIPYPwCyRj9ovUejrrGKeUYnwIDAQAB";
 
 }

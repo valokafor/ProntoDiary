@@ -24,7 +24,7 @@ public class SubTaskDto {
         this.dateCreated = subTask.getDateCreated();
         this.dateModified = subTask.getDateModified();
         this.checked = subTask.isChecked();
-        this.parentTaskId = subTask.getParentProntoTask().getId();
+        this.parentTaskId = subTask.getTask().getId();
     }
 
     public String getId() {

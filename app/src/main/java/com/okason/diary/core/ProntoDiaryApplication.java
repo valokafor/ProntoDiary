@@ -51,7 +51,7 @@ public class ProntoDiaryApplication extends MultiDexApplication {
         initRealm();
         mContext = getApplicationContext();
         LeakCanary.install(this);
-        startService(new Intent(getApplicationContext(), DataDownloadIntentService.class));
+
     }
 
     private void configureCrashlytics() {

@@ -17,7 +17,7 @@ public class ProntoTag extends RealmObject {
     private long dateModified;
 
     private RealmList<Journal> journals;
-    private RealmList<ProntoTask> prontoTasks;
+    private RealmList<ProntoTask> tasks;
 
     public ProntoTag(){
         dateCreated = System.currentTimeMillis();
@@ -74,10 +74,10 @@ public class ProntoTag extends RealmObject {
     }
 
     public RealmList<ProntoTask> getTasks() {
-        return prontoTasks;
+        return tasks;
     }
 
     public void setTasks(RealmList<ProntoTask> prontoTasks) {
-        this.prontoTasks = prontoTasks;
+        this.tasks = prontoTasks;
     }
 }

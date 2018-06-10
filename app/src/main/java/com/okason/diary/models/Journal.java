@@ -26,7 +26,7 @@ public class Journal extends RealmObject{
 
     //Relationships
     private RealmList<Attachment> attachments;
-    private RealmList<ProntoTag> prontoTags;
+    private RealmList<ProntoTag> tags;
     private Folder folder;
 
 
@@ -81,11 +81,11 @@ public class Journal extends RealmObject{
     }
 
     public RealmList<ProntoTag> getTags() {
-        return prontoTags;
+        return tags;
     }
 
     public void setTags(RealmList<ProntoTag> prontoTags) {
-        this.prontoTags = prontoTags;
+        this.tags = prontoTags;
     }
 
     public Folder getFolder() {

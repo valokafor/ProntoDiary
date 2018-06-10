@@ -31,6 +31,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
@@ -42,18 +44,19 @@ import com.okason.diary.data.TaskDao;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.ProntoTag;
 import com.okason.diary.models.ProntoTask;
+import com.okason.diary.models.Reminder;
 import com.okason.diary.reminder.AdvancedRepeatSelector;
 import com.okason.diary.reminder.AlarmReceiver;
 import com.okason.diary.reminder.AlarmUtil;
 import com.okason.diary.reminder.DateAndTimeUtil;
 import com.okason.diary.reminder.DaysOfWeekSelector;
-import com.okason.diary.models.Reminder;
 import com.okason.diary.reminder.TextFormatUtil;
 import com.okason.diary.ui.folder.AddFolderDialogFragment;
 import com.okason.diary.ui.folder.SelectFolderDialogFragment;
 import com.okason.diary.ui.tag.AddTagDialogFragment;
 import com.okason.diary.ui.tag.SelectTagDialogFragment;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.SettingsHelper;
 import com.okason.diary.utils.date.DateHelper;
 import com.okason.diary.utils.date.TimeUtils;
 
@@ -97,6 +100,7 @@ public class AddTaskActivity extends AppCompatActivity implements
     @BindView(R.id.show_times_number) EditText timesEditText;
     @BindView(R.id.show) TextView showText;
     @BindView(R.id.times) TextView timesText;
+    @BindView(R.id.adView) AdView mAdView;
 
 
 
@@ -179,6 +183,17 @@ public class AddTaskActivity extends AppCompatActivity implements
                 }
             }
         });
+
+        if (!SettingsHelper.getHelper(this).isPremiumUser()){
+            mAdView.setVisibility(View.VISIBLE);
+            AdRequest adRequest = new AdRequest.Builder()
+                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                    .build();
+            mAdView.loadAd(adRequest);
+
+        }
+
+
     }
 
     @Override
@@ -189,6 +204,12 @@ public class AddTaskActivity extends AppCompatActivity implements
             showTaskDetail(currentProntoTask);
             showReminderDetail(currentReminder);
             getSupportActionBar().setTitle(getString(R.string.edit_task));
+        }
+
+        if (!SettingsHelper.getHelper(this).isPremiumUser()) {
+            if (mAdView != null){
+                mAdView.resume();
+            }
         }
     }
 
@@ -251,9 +272,9 @@ public class AddTaskActivity extends AppCompatActivity implements
         }
 
         //Show Tags assigned to this prontoTask
-        if (currentProntoTask.getProntoTags() != null && currentProntoTask.getProntoTags().size() > 0){
+        if (currentProntoTask.getTags() != null && currentProntoTask.getTags().size() > 0){
             String tagText = "";
-            for (ProntoTag prontoTag : currentProntoTask.getProntoTags()){
+            for (ProntoTag prontoTag : currentProntoTask.getTags()){
                 tagText = tagText + "#" + prontoTag.getTagName() + ", ";
             }
             tagsTextView.setText(tagText);
@@ -318,6 +339,14 @@ public class AddTaskActivity extends AppCompatActivity implements
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (mAdView != null){
+            mAdView.pause();
+        }
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
@@ -333,6 +362,10 @@ public class AddTaskActivity extends AppCompatActivity implements
     protected void onDestroy() {
         if (realm != null && !realm.isClosed()) {
             realm.close();
+        }
+        if (mAdView != null) {
+            mAdView.destroy();
+            mAdView = null;
         }
         super.onDestroy();
     }

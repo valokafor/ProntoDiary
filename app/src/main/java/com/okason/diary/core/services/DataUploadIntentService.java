@@ -254,8 +254,8 @@ public class DataUploadIntentService extends JobIntentService {
             taskDto.setReminder(reminderDto);
         }
 
-        if (task.getProntoTags().size() > 0){
-            for (ProntoTag tag: task.getProntoTags()){
+        if (task.getTags().size() > 0){
+            for (ProntoTag tag: task.getTags()){
                 ProntoTagDto tagDto = new ProntoTagDto(tag);
                 taskDto.getTags().add(tagDto);
             }

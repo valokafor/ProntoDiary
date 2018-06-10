@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.services.DataDownloadIntentService;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
 
@@ -33,6 +34,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         if (FirebaseAuth.getInstance().getCurrentUser() == null){
             FirebaseAuth.getInstance().signInWithEmailAndPassword(Constants.EMAIL_LOGIN, Constants.EMAIL_PASSWORD);
         }
+        startService(new Intent(this, DataDownloadIntentService.class));
 
     }
 

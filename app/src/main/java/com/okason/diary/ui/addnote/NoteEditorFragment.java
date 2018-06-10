@@ -1206,6 +1206,9 @@ public class NoteEditorFragment extends Fragment {
 
 
         for (Uri uri : uris) {
+            if (mCurrentJournal ==  null){
+                mCurrentJournal = journalDao.createNewJournal();
+            }
             journalDao.createAttachmentFromUri(getContext(), uri, mCurrentJournal.getId());
         }
     }

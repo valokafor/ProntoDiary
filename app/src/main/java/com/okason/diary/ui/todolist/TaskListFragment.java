@@ -15,6 +15,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.TaskItemListener;
 import com.okason.diary.data.TaskDao;
@@ -352,21 +354,25 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
                             TodoListActivity parentActivity = (TodoListActivity) getActivity();
                             parentActivity.setupViewPager();
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Crashlytics.log(Log.DEBUG, TAG, "deletions failed " + e.getLocalizedMessage());
                         }
                     }
 
                     OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
                     for (OrderedCollectionChangeSet.Range range : insertions) {
-                        if (mListAdapter != null) {
+                        try {
                             mListAdapter.notifyItemRangeInserted(range.startIndex, range.length);
+                        } catch (Exception e) {
+                            Crashlytics.log(Log.DEBUG, TAG, "insertions failed " + e.getLocalizedMessage());
                         }
                     }
 
                     OrderedCollectionChangeSet.Range[] modifications = changeSet.getChangeRanges();
                     for (OrderedCollectionChangeSet.Range range : modifications) {
-                        if (mListAdapter != null) {
+                        try {
                             mListAdapter.notifyItemRangeChanged(range.startIndex, range.length);
+                        } catch (Exception e) {
+                            Crashlytics.log(Log.DEBUG, TAG, "modifications failed " + e.getLocalizedMessage());
                         }
                     }
                 }

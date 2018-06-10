@@ -22,6 +22,7 @@ import android.util.Log;
 import com.android.billingclient.api.BillingClient.BillingResponse;
 import com.android.billingclient.api.Purchase;
 import com.okason.diary.NoteListActivity;
+import com.okason.diary.utils.SettingsHelper;
 
 import java.util.List;
 
@@ -32,25 +33,15 @@ import static android.content.Context.MODE_PRIVATE;
  */
 public class MainViewController {
     private static final String TAG = "MainViewController";
-    public static final String SKU_ID_PREMIUM = "premium";
+    public static final String SKU_ID_PREMIUM = "remove_ad";
+    //public static final String SKU_ID_PREMIUM = "android.test.purchased";
 
-
-
-    // How many units (1/4 tank is our unit) fill in the tank.
-    private static final int TANK_MAX = 4;
 
     private final UpdateListener mUpdateListener;
     private NoteListActivity mActivity;
 
-    // Tracks if we currently own subscriptions SKUs
-    private boolean mGoldMonthly;
-    private boolean mGoldYearly;
-
     // Tracks if we currently own a premium car
     private boolean mIsPremium;
-
-    // Current amount of gas in tank, in units
-    private int mTank;
 
     public MainViewController(NoteListActivity activity) {
         mUpdateListener = new UpdateListener();
@@ -58,35 +49,16 @@ public class MainViewController {
         loadData();
     }
 
-    public void useGas() {
-        mTank--;
-        saveData();
-        Log.d(TAG, "Tank is now: " + mTank);
-    }
 
     public UpdateListener getUpdateListener() {
         return mUpdateListener;
     }
 
-    public boolean isTankEmpty() {
-        return mTank <= 0;
-    }
-
-    public boolean isTankFull() {
-        return mTank >= TANK_MAX;
-    }
-
     public boolean isPremiumPurchased() {
-        return mIsPremium;
+        return SettingsHelper.getHelper(mActivity).isPremiumUser();
     }
 
-    public boolean isGoldMonthlySubscribed() {
-        return mGoldMonthly;
-    }
 
-    public boolean isGoldYearlySubscribed() {
-        return mGoldYearly;
-    }
 
 
 
@@ -103,18 +75,8 @@ public class MainViewController {
         public void onConsumeFinished(String token, @BillingResponse int result) {
             Log.d(TAG, "Consumption finished. Purchase token: " + token + ", result: " + result);
 
-            // Note: We know this is the SKU_GAS, because it's the only one we consume, so we don't
-            // check if token corresponding to the expected sku was consumed.
-            // If you have more than one sku, you probably need to validate that the token matches
-            // the SKU you expect.
-            // It could be done by maintaining a map (updating it every time you call consumeAsync)
-            // of all tokens into SKUs which were scheduled to be consumed and then looking through
-            // it here to check which SKU corresponds to a consumed token.
             if (result == BillingResponse.OK) {
-                // Successfully consumed, so we apply the effects of the item in our
-                // game world's logic, which in our case means filling the gas tank a bit
                 Log.d(TAG, "Consumption successful. Provisioning.");
-                mTank = mTank == TANK_MAX ? TANK_MAX : mTank + 1;
                 saveData();
             }
 
@@ -124,41 +86,30 @@ public class MainViewController {
 
         @Override
         public void onPurchasesUpdated(List<Purchase> purchaseList) {
-            mGoldMonthly = false;
-            mGoldYearly = false;
-
             for (Purchase purchase : purchaseList) {
                 switch (purchase.getSku()) {
                     case SKU_ID_PREMIUM:
                         Log.d(TAG, "You are Premium! Congratulations!!!");
                         mIsPremium = true;
+                        SettingsHelper.getHelper(mActivity).setPremiumUser(true);
                         break;
 
                 }
             }
 
-            mActivity.showRefreshedUi();
+           // mActivity.showRefreshedUi();
         }
     }
 
-    /**
-     * Save current tank level to disc
-     *
-     * Note: In a real application, we recommend you save data in a secure way to
-     * prevent tampering.
-     * For simplicity in this sample, we simply store the data using a
-     * SharedPreferences.
-     */
+
     private void saveData() {
         SharedPreferences.Editor spe = mActivity.getPreferences(MODE_PRIVATE).edit();
-        spe.putInt("tank", mTank);
-        spe.apply();
-        Log.d(TAG, "Saved data: tank = " + String.valueOf(mTank));
+
+
     }
 
     private void loadData() {
         SharedPreferences sp = mActivity.getPreferences(MODE_PRIVATE);
-        mTank = sp.getInt("tank", 2);
-        Log.d(TAG, "Loaded data: tank = " + String.valueOf(mTank));
+
     }
 }

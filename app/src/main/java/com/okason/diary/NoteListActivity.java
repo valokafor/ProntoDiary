@@ -215,6 +215,8 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
                         new PrimaryDrawerItem().withName("Folders").withIcon(GoogleMaterial.Icon.gmd_folder).withIdentifier(Constants.FOLDERS),
                         new PrimaryDrawerItem().withName("Tags").withIcon(GoogleMaterial.Icon.gmd_tag).withIdentifier(Constants.TAGS),
                         new PrimaryDrawerItem().withName("Share App").withIcon(GoogleMaterial.Icon.gmd_share).withIdentifier(Constants.SHARE_APP),
+                        new PrimaryDrawerItem().withName("Contact Developer").withIcon(GoogleMaterial.Icon.gmd_email).withIdentifier(Constants.CONTACT_US),
+                        new PrimaryDrawerItem().withName("Remove Ads").withIcon(GoogleMaterial.Icon.gmd_email).withIdentifier(Constants.REMOVE_ADS),
                         new PrimaryDrawerItem().withName("Settings").withIcon(GoogleMaterial.Icon.gmd_settings).withIdentifier(Constants.SETTINGS)
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
@@ -374,6 +376,17 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
             case Constants.TODO_LIST:
                 startActivity(new Intent(mActivity, TodoListActivity.class));
                 break;
+            case Constants.CONTACT_US:
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("message/rfc822");
+                intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"support@okason.com"});
+                intent.putExtra(Intent.EXTRA_SUBJECT, "Pronto Journal Support");
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    makeToast("No email client found");
+                }
+                break;
             case Constants.SHARE_APP:
                 if (settingsHelper.isRegisteredUser() && firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
                     generateInviteLink();
@@ -381,6 +394,10 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
                     startActivity(new Intent(mActivity, AuthUiActivity.class));
                 }
                 break;
+            case Constants.REMOVE_ADS:
+                mBillingManager.initiatePurchaseFlow(MainViewController.SKU_ID_PREMIUM, BillingClient.SkuType.INAPP);
+                break;
+
         }
 
     }

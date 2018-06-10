@@ -53,7 +53,7 @@ public class TaskDao {
             subTask.setDateModified(System.currentTimeMillis());
             subTask.setTitle(subTaskName);
             subTask.setChecked(false);
-            subTask.setParentProntoTask(parentProntoTask);
+            subTask.setTask(parentProntoTask);
             parentProntoTask.getSubTask().add(subTask);
 
             realm.commitTransaction();
@@ -301,7 +301,7 @@ public class TaskDao {
                             subTask.setDateModified(System.currentTimeMillis());
                             subTask.setTitle(subTaskDto.getTitle());
                             subTask.setChecked(false);
-                            subTask.setParentProntoTask(prontoTask);
+                            subTask.setTask(prontoTask);
                             realm.copyToRealmOrUpdate(subTask);
                             prontoTask.getSubTask().add(subTask);
                         }

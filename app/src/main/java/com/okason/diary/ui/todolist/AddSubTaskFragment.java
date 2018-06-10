@@ -159,7 +159,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
     }
 
     private void populateTaskDetails(ProntoTask parentProntoTask) {
-        Reminder reminder = parentProntoTask.getReminder();
+
         String dueDate = null;
         try {
             dueDate = TimeUtils.getReadableModifiedDateWithTime(parentProntoTask.getReminder().getDateAndTime());
@@ -173,27 +173,30 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
             dueDateTextView.setVisibility(View.GONE);
         }
 
-        int repeatType = reminder.getRepeatType();
-        int interval = reminder.getInterval();
-        String repeatText = "";
-        if ( repeatType != Constants.DOES_NOT_REPEAT) {
-            if (interval> 1) {
-                repeatText = TextFormatUtil.formatAdvancedRepeatText(getContext(), repeatType, interval);
-                repeatTextView.setText(repeatText);
-            } else {
-                repeatText = getResources().getStringArray(R.array.repeat_array)[repeatType];
-                repeatTextView.setText(repeatText);
+        Reminder reminder = parentProntoTask.getReminder();
+        if (reminder != null) {
+            int repeatType = reminder.getRepeatType();
+            int interval = reminder.getInterval();
+            String repeatText = "";
+            if ( repeatType != Constants.DOES_NOT_REPEAT) {
+                if (interval> 1) {
+                    repeatText = TextFormatUtil.formatAdvancedRepeatText(getContext(), repeatType, interval);
+                    repeatTextView.setText(repeatText);
+                } else {
+                    repeatText = getResources().getStringArray(R.array.repeat_array)[repeatType];
+                    repeatTextView.setText(repeatText);
+                }
             }
-        }
 
 //        if (reminder.getRepeatType() == Constants.SPECIFIC_DAYS) {
 //            repeatText = TextFormatUtil.formatDaysOfWeekText(getContext(), reminder.getDaysOfWeek());
 //            repeatTextView.setText(repeatText);
 //        }
 
-        if (reminder.getRepeatType() == Constants.SPECIFIC_DAYS) {
-            List<Boolean> daysOfWeek = reminder.getDaysOfWeekList();
-            repeatTextView.setText(TextFormatUtil.formatDaysOfWeekText(getContext(), daysOfWeek));
+            if (reminder.getRepeatType() == Constants.SPECIFIC_DAYS) {
+                List<Boolean> daysOfWeek = reminder.getDaysOfWeekList();
+                repeatTextView.setText(TextFormatUtil.formatDaysOfWeekText(getContext(), daysOfWeek));
+            }
         }
 
         try {

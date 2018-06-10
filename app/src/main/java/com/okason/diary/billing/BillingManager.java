@@ -32,6 +32,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.okason.diary.utils.Constants;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class BillingManager implements PurchasesUpdatedListener {
      * want to make it easy for an attacker to replace the public key with one
      * of their own and then fake messages from the server.
      */
-    private static final String BASE_64_ENCODED_PUBLIC_KEY = "CONSTRUCT_YOUR_KEY_AND_PLACE_IT_HERE";
+    //private static final String BASE_64_ENCODED_PUBLIC_KEY = "CONSTRUCT_YOUR_KEY_AND_PLACE_IT_HERE";
 
     /**
      * Listener to the updates that happen when purchases list was updated or consumption of the
@@ -254,10 +255,10 @@ public class BillingManager implements PurchasesUpdatedListener {
      * @param purchase Purchase to be handled
      */
     private void handlePurchase(Purchase purchase) {
-        if (!verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature())) {
-            Log.i(TAG, "Got a purchase: " + purchase + "; but signature is bad. Skipping...");
-            return;
-        }
+//        if (!verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature())) {
+//            Log.i(TAG, "Got a purchase: " + purchase + "; but signature is bad. Skipping...");
+//            return;
+//        }
 
         Log.d(TAG, "Got a verified purchase: " + purchase);
 
@@ -379,13 +380,13 @@ public class BillingManager implements PurchasesUpdatedListener {
     private boolean verifyValidSignature(String signedData, String signature) {
         // Some sanity checks to see if the developer (that's you!) really followed the
         // instructions to run this sample (don't put these checks on your app!)
-        if (BASE_64_ENCODED_PUBLIC_KEY.contains("CONSTRUCT_YOUR")) {
+        if (Constants.BASE_64_PUBLIC_KEY.contains("CONSTRUCT_YOUR")) {
             throw new RuntimeException("Please update your app's public key at: "
                     + "BASE_64_ENCODED_PUBLIC_KEY");
         }
 
         try {
-            return com.okason.diary.billing.Security.verifyPurchase(BASE_64_ENCODED_PUBLIC_KEY, signedData, signature);
+            return com.okason.diary.billing.Security.verifyPurchase(Constants.BASE_64_PUBLIC_KEY, signedData, signature);
         } catch (IOException e) {
             Log.e(TAG, "Got an exception trying to validate a purchase: " + e);
             return false;

@@ -30,8 +30,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -55,7 +53,6 @@ import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.FileUtility;
 import com.okason.diary.utils.IntentChecker;
-import com.okason.diary.utils.SettingsHelper;
 import com.okason.diary.utils.date.TimeUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -279,20 +276,20 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
                 fragment.show(getActivity().getSupportFragmentManager(), "Dialog");
             }
         });
-        if (currentJournal.getContent().length() > 300 && SettingsHelper.getHelper(getContext()).shouldShowNoteDetailExplainer()){
-            MaterialDialog dialog = new MaterialDialog.Builder(getContext())
-                    .title(R.string.note_detail)
-                    .content(R.string.explain_note_detail)
-                    .positiveText(R.string.label_yes)
-                    .negativeText(R.string.label_cancel)
-                    .onPositive(new MaterialDialog.SingleButtonCallback() {
-                        @Override
-                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            SettingsHelper.getHelper(getContext()).onNoteDetailExplainerShown(false);
-                        }
-                    })
-                    .show();
-        }
+//        if (currentJournal.getContent().length() > 300 && SettingsHelper.getHelper(getContext()).shouldShowNoteDetailExplainer()){
+//            MaterialDialog dialog = new MaterialDialog.Builder(getContext())
+//                    .title(R.string.note_detail)
+//                    .content(R.string.explain_note_detail)
+//                    .positiveText(R.string.label_yes)
+//                    .negativeText(R.string.label_cancel)
+//                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+//                        @Override
+//                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+//                            SettingsHelper.getHelper(getContext()).onNoteDetailExplainerShown(false);
+//                        }
+//                    })
+//                    .show();
+//        }
 
 
 
@@ -308,9 +305,11 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
     }
 
     private void onFolderClicked(Folder clickedFolder) {
-        Intent folderIntent = new Intent(getActivity(), FolderActivity.class);
-        folderIntent.putExtra(Constants.FOLDER_ID, clickedFolder.getId());
-        startActivity(folderIntent);
+        if (clickedFolder != null && clickedFolder.getId() != null) {
+            Intent folderIntent = new Intent(getActivity(), FolderActivity.class);
+            folderIntent.putExtra(Constants.FOLDER_ID, clickedFolder.getId());
+            startActivity(folderIntent);
+        }
     }
 
     private boolean containsAudioRecording(Journal currentJournal) {
