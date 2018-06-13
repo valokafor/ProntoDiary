@@ -25,7 +25,9 @@ public class Reminder extends RealmObject {
     private long dateModified;
     private String daysOfWeek;
 
-    public Reminder(){}
+    public Reminder(){
+
+    }
 
 
     public int getId() {

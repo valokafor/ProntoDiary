@@ -1,6 +1,7 @@
 package com.okason.diary.ui.folder;
 
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -87,6 +88,16 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+
+
+
+        return  mRootView;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
         floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,10 +105,6 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
                 showAddNewFolderDialog();
             }
         });
-
-
-
-        return  mRootView;
     }
 
     @Override
@@ -185,7 +192,9 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     public void showAddNewFolderDialog() {
         addCategoryDialog = AddFolderDialogFragment.newInstance("");
-        addCategoryDialog.show(getActivity().getFragmentManager(), "Dialog");
+        if (getActivity() != null) {
+            addCategoryDialog.show(getActivity().getFragmentManager(), "Dialog");
+        }
     }
 
 

@@ -64,12 +64,10 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
 
 
-    @BindView(R.id.todo_list_recycler_view)
-    RecyclerView mRecyclerView;
-    @BindView(R.id.empty_text)
-    TextView mEmptyText;
+    @BindView(R.id.todo_list_recycler_view) RecyclerView mRecyclerView;
+    @BindView(R.id.empty_text) TextView mEmptyText;
+    @BindView(R.id.fab) FloatingActionButton floatingActionButton;
 
-    private FloatingActionButton floatingActionButton;
     private int priority = Constants.PRIORITY_ALL;
 
 
@@ -106,19 +104,18 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-
-
-        floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(getActivity(), AddTaskActivity.class));
-            }
-        });
         sortMethod = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("sort_options", "title");
         realm = Realm.getDefaultInstance();
         taskDao = new TaskDao(realm);
+
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (getActivity() != null) {
+                    startActivity(new Intent(getActivity(), AddTaskActivity.class));
+                }
+            }
+        });
         return mRootView;
     }
 
@@ -138,7 +135,6 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         showTodoLists(allProntoTasks);
         allProntoTasks.addChangeListener(changeListener);
     }
-
 
 
 

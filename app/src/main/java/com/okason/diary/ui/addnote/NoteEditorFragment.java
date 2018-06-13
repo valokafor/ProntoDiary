@@ -221,6 +221,48 @@ public class NoteEditorFragment extends Fragment {
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_note_editor, container, false);
         ButterKnife.bind(this, mRootView);
+
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        mFirebaseStorage = FirebaseStorage.getInstance();
+        mFirebaseStorageReference = mFirebaseStorage.getReferenceFromUrl(Constants.FIREBASE_STORAGE_BUCKET);
+        mAttachmentStorageReference = mFirebaseStorageReference.child("attachments");
+
+
+        mTitle.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                dataChanged = true;
+
+            }
+        });
+
+        mContent.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                dataChanged = true;
+            }
+        });
         return mRootView;
     }
 
@@ -228,11 +270,9 @@ public class NoteEditorFragment extends Fragment {
         @Override
         public void onChange(Journal journal, @javax.annotation.Nullable ObjectChangeSet changeSet) {
             try {
-                if (changeSet.isDeleted()){
-                    //this journal has been deleted
-                    goBackToParent();
-                } else {
-                    populateNote(journal);
+                if (journal != null) {
+                    mCurrentJournal = journal;
+                    populateNote(mCurrentJournal);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -272,53 +312,8 @@ public class NoteEditorFragment extends Fragment {
             mCurrentJournal = journalDao.createNewJournal();
         }
 
-        mCurrentJournal.addChangeListener(noteChangeListener);
-
-
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        mFirebaseStorage = FirebaseStorage.getInstance();
-        mFirebaseStorageReference = mFirebaseStorage.getReferenceFromUrl(Constants.FIREBASE_STORAGE_BUCKET);
-        mAttachmentStorageReference = mFirebaseStorageReference.child("attachments");
-
-
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-
-        mTitle.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                dataChanged = true;
-
-            }
-        });
-
-        mContent.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                dataChanged = true;
-            }
-        });
 
         if (SettingsHelper.getHelper(getContext()).isPremiumUser()){
             //Do not show Ad
@@ -335,6 +330,9 @@ public class NoteEditorFragment extends Fragment {
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
+        if (mCurrentJournal != null) {
+            mCurrentJournal.removeAllChangeListeners();
+        }
         if (mRecorder != null) {
             mRecorder.release();
             mRecorder = null;
@@ -359,7 +357,7 @@ public class NoteEditorFragment extends Fragment {
                     && TextUtils.isEmpty(mCurrentJournal.getTitle())){
                 journalDao.deleteJournal(mCurrentJournal.getId());
             }
-            mCurrentJournal.removeAllChangeListeners();
+
             realm.close();
             mAdView.destroy();
             mAdView = null;
@@ -570,7 +568,7 @@ public class NoteEditorFragment extends Fragment {
             e.printStackTrace();
         }
 
-        if (journal.getFolder() != null) {
+        if (journal.getFolder() != null && journal.getFolder().getFolderName() != null) {
             mCategory.setText(journal.getFolder().getFolderName());
         } else {
             mCategory.setText(Constants.DEFAULT_CATEGORY);

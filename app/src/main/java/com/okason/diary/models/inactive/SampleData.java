@@ -69,6 +69,9 @@ public class SampleData {
 
 
         try (Realm realm = Realm.getDefaultInstance()) {
+            if (realm == null){
+                return;
+            }
             realm.beginTransaction();
 
 

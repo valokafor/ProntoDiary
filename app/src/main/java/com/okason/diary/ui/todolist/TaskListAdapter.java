@@ -5,6 +5,7 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.TaskItemListener;
 import com.okason.diary.models.ProntoTask;
@@ -30,6 +32,7 @@ import butterknife.ButterKnife;
  */
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
+    private static final String TAG = "TaskListAdapter";
 
     private final List<ProntoTask> mProntoTasks;
     private final Context mContext;
@@ -69,8 +72,17 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         String statusText = TimeUtils.getSubTaskStatus(prontoTask);
         holder.taskCountTextView.setText(statusText);
-        String time = DateHelper.getTimeShort(mContext, prontoTask.getReminder().getDateAndTime());
-        holder.dueTimeTextView.setText(time);
+        if (prontoTask.getReminder() != null) {
+            try {
+                String time = DateHelper.getTimeShort(mContext, prontoTask.getReminder().getDateAndTime());
+                holder.dueTimeTextView.setText(time);
+            } catch (Exception e) {
+                holder.dueTimeTextView.setVisibility(View.GONE);
+                Crashlytics.log(Log.DEBUG, TAG, "TaskListAdapter: " + e.getLocalizedMessage());
+            }
+        } else {
+            holder.dueTimeTextView.setVisibility(View.GONE);
+        }
 
         holder.showMore.setOnClickListener(new View.OnClickListener() {
             @Override

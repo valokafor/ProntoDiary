@@ -137,7 +137,12 @@ public class AttachmentListAdapter extends RecyclerView.Adapter<AttachmentListAd
 
     @Override
     public int getItemCount() {
-        return attachmentList.size();
+        if (attachmentList != null) {
+            return attachmentList.size();
+        } else {
+            return 0;
+        }
+
     }
 
     public void addAttachment(Attachment attachment){

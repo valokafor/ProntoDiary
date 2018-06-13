@@ -288,36 +288,40 @@ public class AddTaskActivity extends AppCompatActivity implements
 
     public void showReminderDetail(Reminder reminder) {
         // Prevent keyboard from opening automatically
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-        timesShown = reminder.getNumberShown();
-        repeatType = reminder.getRepeatType();
-        interval = reminder.getInterval();
-        calendar = DateAndTimeUtil.parseDateAndTime(reminder.getDateAndTime());
-        showText.setText(getString(R.string.times_shown_edit, reminder.getNumberShown()));
-
-        dateTextView.setText(DateAndTimeUtil.toStringReadableDate(calendar));
-        timeTextView.setText(DateAndTimeUtil.toStringReadableTime(calendar, this));
-        timesEditText.setText(String.valueOf(reminder.getNumberToShow()));
-
-        timesText.setVisibility(View.VISIBLE);
-
-        if (reminder.getRepeatType() != Constants.DOES_NOT_REPEAT) {
-            if (reminder.getInterval() > 1) {
-                repeatTextView.setText(TextFormatUtil.formatAdvancedRepeatText(this, repeatType, interval));
-            } else {
-                repeatTextView.setText(getResources().getStringArray(R.array.repeat_array)[reminder.getRepeatType()]);
+        if (reminder != null) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+            if (reminder.getNumberShown() > 0) {
+                timesShown = reminder.getNumberShown();
             }
-            showFrequency(true);
-        }
+            repeatType = reminder.getRepeatType();
+            interval = reminder.getInterval();
+            calendar = DateAndTimeUtil.parseDateAndTime(reminder.getDateAndTime());
+            showText.setText(getString(R.string.times_shown_edit, reminder.getNumberShown()));
 
-        if (reminder.getRepeatType() == Constants.SPECIFIC_DAYS) {
-            daysOfWeek = reminder.getDaysOfWeekList();
-            repeatTextView.setText(TextFormatUtil.formatDaysOfWeekText(this, daysOfWeek));
-        }
+            dateTextView.setText(DateAndTimeUtil.toStringReadableDate(calendar));
+            timeTextView.setText(DateAndTimeUtil.toStringReadableTime(calendar, this));
+            timesEditText.setText(String.valueOf(reminder.getNumberToShow()));
 
-        if (reminder.isIndefinite()) {
-            foreverSwitch.setChecked(true);
-            bottomRow.setVisibility(View.GONE);
+            timesText.setVisibility(View.VISIBLE);
+
+            if (reminder.getRepeatType() != Constants.DOES_NOT_REPEAT) {
+                if (reminder.getInterval() > 1) {
+                    repeatTextView.setText(TextFormatUtil.formatAdvancedRepeatText(this, repeatType, interval));
+                } else {
+                    repeatTextView.setText(getResources().getStringArray(R.array.repeat_array)[reminder.getRepeatType()]);
+                }
+                showFrequency(true);
+            }
+
+            if (reminder.getRepeatType() == Constants.SPECIFIC_DAYS) {
+                daysOfWeek = reminder.getDaysOfWeekList();
+                repeatTextView.setText(TextFormatUtil.formatDaysOfWeekText(this, daysOfWeek));
+            }
+
+            if (reminder.isIndefinite()) {
+                foreverSwitch.setChecked(true);
+                bottomRow.setVisibility(View.GONE);
+            }
         }
     }
 
