@@ -308,13 +308,15 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
     }
 
     public void openFragment(Fragment fragment, String screenTitle) {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .replace(R.id.container, fragment)
-                .addToBackStack(screenTitle)
-                .commit();
-        getSupportActionBar().setTitle(screenTitle);
+        if (!isFinishing()) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                    .replace(R.id.container, fragment)
+                    .addToBackStack(screenTitle)
+                    .commitAllowingStateLoss();
+            getSupportActionBar().setTitle(screenTitle);
+        }
     }
 
 

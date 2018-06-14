@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.R;
 import com.okason.diary.core.events.TagListChangeEvent;
 import com.okason.diary.data.TagDao;
@@ -30,7 +31,7 @@ import io.realm.Realm;
 public class AddTagDialogFragment extends DialogFragment {
 
     private EditText tagEditText;
-    private ProntoTag mProntoTag = null;
+    private ProntoTag mTag = null;
     private Realm realm;
     private TagDao tagDao;
 
@@ -65,7 +66,7 @@ public class AddTagDialogFragment extends DialogFragment {
         if (getArguments() != null && getArguments().containsKey(Constants.TAG_ID)){
             String tagId = getArguments().getString(Constants.TAG_ID);
             if (!TextUtils.isEmpty(tagId)){
-                mProntoTag = tagDao.getTagById(tagId);
+                mTag = tagDao.getTagById(tagId);
 
             }
         }
@@ -87,7 +88,7 @@ public class AddTagDialogFragment extends DialogFragment {
 
             View titleView = (View)inflater.inflate(R.layout.dialog_title, null);
             TextView titleText = (TextView)titleView.findViewById(R.id.text_view_dialog_title);
-            titleText.setText(mProntoTag != null ? getString(R.string.title_edit_tag) : getString(R.string.title_add_tag));
+            titleText.setText(mTag != null ? getString(R.string.title_edit_tag) : getString(R.string.title_add_tag));
             addTagDialog.setCustomTitle(titleView);
 
             tagEditText = (EditText)convertView.findViewById(R.id.edit_text_add_category);
@@ -100,7 +101,7 @@ public class AddTagDialogFragment extends DialogFragment {
 
                 }
             });
-            addTagDialog.setPositiveButton(mProntoTag != null ? getString(R.string.label_update) : getString(R.string.label_add), new DialogInterface.OnClickListener() {
+            addTagDialog.setPositiveButton(mTag != null ? getString(R.string.label_update) : getString(R.string.label_add), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
@@ -108,8 +109,8 @@ public class AddTagDialogFragment extends DialogFragment {
                 }
             });
 
-            if (mProntoTag != null && !TextUtils.isEmpty(mProntoTag.getTagName())){
-                populateFields(mProntoTag);
+            if (mTag != null && !TextUtils.isEmpty(mTag.getTagName())){
+                populateFields(mTag);
                 //addTagDialog.setTitle(mProntoTag.getTagName());
                 tagEditText.setSelection(tagEditText.getText().length());
             }
@@ -162,11 +163,16 @@ public class AddTagDialogFragment extends DialogFragment {
 
     private void saveTag() {
         final String tagName = tagEditText.getText().toString().trim();
-        if (mProntoTag == null){
-            mProntoTag = tagDao.createNewTag();
+        if (mTag == null){
+            mTag = tagDao.createNewTag();
         }
-        tagDao.updatedTagTitle(mProntoTag.getId(), tagName);
+        tagDao.updatedTagTitle(mTag.getId(), tagName);
         EventBus.getDefault().post(new TagListChangeEvent());
+
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, mTag.getId());
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, tagName);
+        FirebaseAnalytics.getInstance(getActivity()).logEvent("add_tag", bundle);
     }
 
     @Override

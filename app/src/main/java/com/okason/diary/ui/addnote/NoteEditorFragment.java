@@ -43,8 +43,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
@@ -103,7 +105,7 @@ import io.realm.RealmObjectChangeListener;
 public class NoteEditorFragment extends Fragment {
 
 
-    private final static String LOG_TAG = "NoteEditorFragment";
+    private final static String TAG = "NoteEditorFragment";
     private boolean dataChanged = false;
 
     private View mRootView;
@@ -568,10 +570,15 @@ public class NoteEditorFragment extends Fragment {
             e.printStackTrace();
         }
 
-        if (journal.getFolder() != null && journal.getFolder().getFolderName() != null) {
-            mCategory.setText(journal.getFolder().getFolderName());
-        } else {
+        try {
+            if (journal.getFolder() != null && journal.getFolder().getFolderName() != null) {
+                mCategory.setText(journal.getFolder().getFolderName());
+            } else {
+                mCategory.setText(Constants.DEFAULT_CATEGORY);
+            }
+        } catch (Exception e) {
             mCategory.setText(Constants.DEFAULT_CATEGORY);
+            Crashlytics.log(Log.DEBUG, TAG, e.getLocalizedMessage() );
         }
         mContent.requestFocus();
         initViewAttachments(journal.getAttachments());
@@ -809,15 +816,15 @@ public class NoteEditorFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= 23) {
             if (getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.v(LOG_TAG, "Permission is granted");
+                Log.v(TAG, "Permission is granted");
                 return true;
             } else {
-                Log.v(LOG_TAG, "Permission is revoked");
+                Log.v(TAG, "Permission is revoked");
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, IMAGE_CAPTURE_REQUEST);
                 return false;
             }
         } else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(LOG_TAG, "Permission is granted  API < 23");
+            Log.v(TAG, "Permission is granted  API < 23");
             return true;
         }
     }
@@ -862,15 +869,15 @@ public class NoteEditorFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= 23) {
             if (getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.v(LOG_TAG, "Permission is granted");
+                Log.v(TAG, "Permission is granted");
                 return true;
             } else {
-                Log.v(LOG_TAG, "Permission is revoked");
+                Log.v(TAG, "Permission is revoked");
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, FILE_PICK_REQUEST);
                 return false;
             }
         } else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(LOG_TAG, "Permission is granted  API < 23");
+            Log.v(TAG, "Permission is granted  API < 23");
             return true;
         }
     }
@@ -882,15 +889,15 @@ public class NoteEditorFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= 23) {
             if (getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.v(LOG_TAG, "Permission is granted");
+                Log.v(TAG, "Permission is granted");
                 return true;
             } else {
-                Log.v(LOG_TAG, "Permission is revoked");
+                Log.v(TAG, "Permission is revoked");
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PICTURE_PICK_REQUEST);
                 return false;
             }
         } else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(LOG_TAG, "Permission is granted  API < 23");
+            Log.v(TAG, "Permission is granted  API < 23");
             return true;
         }
     }
@@ -899,15 +906,15 @@ public class NoteEditorFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= 23) {
             if (getActivity().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.v(LOG_TAG, "Permission is granted");
+                Log.v(TAG, "Permission is granted");
                 return true;
             } else {
-                Log.v(LOG_TAG, "Permission is revoked");
+                Log.v(TAG, "Permission is revoked");
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, SKETCH_CAPTURE_REQUEST);
                 return false;
             }
         } else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(LOG_TAG, "Permission is granted  API < 23");
+            Log.v(TAG, "Permission is granted  API < 23");
             return true;
         }
     }
@@ -922,7 +929,7 @@ public class NoteEditorFragment extends Fragment {
         } catch (IOException ex) {
             // Error occurred while creating the File
             makeToast(getString(R.string.unable_to_save_file));
-            Log.d(LOG_TAG, ex.getLocalizedMessage());
+            Log.d(TAG, ex.getLocalizedMessage());
         }
         // Continue only if the File was successfully created
         mLocalImagePath = photoFile.getAbsolutePath();
@@ -931,7 +938,7 @@ public class NoteEditorFragment extends Fragment {
                     BuildConfig.APPLICATION_ID + ".provider",
                     photoFile);
             attachmentUri = fileUri;
-            Log.d(LOG_TAG, "takePhoto Uri: " + fileUri);
+            Log.d(TAG, "takePhoto Uri: " + fileUri);
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
             startActivityForResult(takePictureIntent, IMAGE_CAPTURE_REQUEST);
         }
@@ -965,7 +972,7 @@ public class NoteEditorFragment extends Fragment {
                 mRecorder.prepare();
                 mRecorder.start();
             } catch (IOException e) {
-                Log.e(LOG_TAG, "prepare() failed");
+                Log.e(TAG, "prepare() failed");
                 makeToast("Unable to record " + e.getLocalizedMessage());
             }
 
@@ -1000,7 +1007,7 @@ public class NoteEditorFragment extends Fragment {
         } catch (IOException ex) {
             // Error occurred while creating the File
             makeToast(getString(R.string.unable_to_save_file));
-            Log.d(LOG_TAG, ex.getLocalizedMessage());
+            Log.d(TAG, ex.getLocalizedMessage());
         }
         // Continue only if the File was successfully created
         mLocalVideoPath = videoFile.getAbsolutePath();
@@ -1009,7 +1016,7 @@ public class NoteEditorFragment extends Fragment {
                     BuildConfig.APPLICATION_ID + ".provider",
                     videoFile);
             attachmentUri = fileUri;
-            Log.d(LOG_TAG, "Video Uri: " + fileUri);
+            Log.d(TAG, "Video Uri: " + fileUri);
             takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, attachmentUri);
         }
         ;
@@ -1029,7 +1036,7 @@ public class NoteEditorFragment extends Fragment {
             mPlayer.prepare();
             mPlayer.start();
         } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
+            Log.e(TAG, "prepare() failed");
         }
     }
 
@@ -1411,6 +1418,12 @@ public class NoteEditorFragment extends Fragment {
             }
 
             journalDao.updatedJournalContent(mCurrentJournal.getId(), content, title);
+
+            //Log Event
+            Bundle bundle = new Bundle();
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, mCurrentJournal.getId());
+            bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, mCurrentJournal.getTitle());
+            FirebaseAnalytics.getInstance(getActivity()).logEvent("add_journal", bundle);
             goBackToParent();
         } else {
             goBackToParent();

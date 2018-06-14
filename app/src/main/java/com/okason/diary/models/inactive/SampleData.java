@@ -75,58 +75,97 @@ public class SampleData {
             realm.beginTransaction();
 
 
-            ProntoTag prontoTag1 = realm.createObject(ProntoTag.class, TAG_ID_1);
-            prontoTag1.setDateCreated(System.currentTimeMillis());
-            prontoTag1.setDateModified(System.currentTimeMillis());
-            prontoTag1.setTagName(TAG_NAME_1);
+            ProntoTag prontoTag1 = realm.where(ProntoTag.class).equalTo("id", TAG_ID_1).findFirst();
+            if (prontoTag1 == null) {
+                prontoTag1 = realm.createObject(ProntoTag.class, TAG_ID_1);
+                prontoTag1.setDateCreated(System.currentTimeMillis());
+                prontoTag1.setDateModified(System.currentTimeMillis());
+                prontoTag1.setTagName(TAG_NAME_1);
+            }
 
-            ProntoTag prontoTag2 = realm.createObject(ProntoTag.class, TAG_ID_2);
-            prontoTag2.setDateCreated(System.currentTimeMillis());
-            prontoTag2.setDateModified(System.currentTimeMillis());
-            prontoTag2.setTagName(TAG_NAME_2);
-
-            ProntoTag prontoTag3 = realm.createObject(ProntoTag.class, TAG_ID_3);
-            prontoTag3.setDateCreated(System.currentTimeMillis());
-            prontoTag3.setDateModified(System.currentTimeMillis());
-            prontoTag3.setTagName(TAG_NAME_3);
-
-            ProntoTag prontoTag4 = realm.createObject(ProntoTag.class, TAG_ID_4);
-            prontoTag4.setDateCreated(System.currentTimeMillis());
-            prontoTag4.setDateModified(System.currentTimeMillis());
-            prontoTag4.setTagName(TAG_NAME_4);
-
-            ProntoTag prontoTag5 = realm.createObject(ProntoTag.class, TAG_ID_5);
-            prontoTag5.setDateCreated(System.currentTimeMillis());
-            prontoTag5.setDateModified(System.currentTimeMillis());
-            prontoTag5.setTagName(TAG_NAME_5);
-
-            Folder folder1 = realm.createObject(Folder.class, FOLDER_ID_1);
-            folder1.setDateCreated(System.currentTimeMillis());
-            folder1.setDateModified(System.currentTimeMillis());
-            folder1.setFolderName(FOLDER_NAME_1);
-
-            Folder folder2 = realm.createObject(Folder.class, FOLDER_ID_2);
-            folder2.setDateCreated(System.currentTimeMillis());
-            folder2.setDateModified(System.currentTimeMillis());
-            folder2.setFolderName(FOLDER_NAME_2);
-
-            Folder folder3 = realm.createObject(Folder.class, FOLDER_ID_3);
-            folder1.setDateCreated(System.currentTimeMillis());
-            folder1.setDateModified(System.currentTimeMillis());
-            folder1.setFolderName(FOLDER_NAME_3);
-
-            Folder folder4 = realm.createObject(Folder.class, FOLDER_ID_4);
-            folder1.setDateCreated(System.currentTimeMillis());
-            folder1.setDateModified(System.currentTimeMillis());
-            folder1.setFolderName(FOLDER_NAME_4);
-
-            Folder folder5 = realm.createObject(Folder.class, FOLDER_ID_5);
-            folder1.setDateCreated(System.currentTimeMillis());
-            folder1.setDateModified(System.currentTimeMillis());
-            folder1.setFolderName(FOLDER_NAME_5);
+            ProntoTag prontoTag2 = realm.where(ProntoTag.class).equalTo("id", TAG_ID_2).findFirst();
+            if (prontoTag2 == null) {
+                prontoTag2 = realm.createObject(ProntoTag.class, TAG_ID_2);
+                prontoTag2.setDateCreated(System.currentTimeMillis());
+                prontoTag2.setDateModified(System.currentTimeMillis());
+                prontoTag2.setTagName(TAG_NAME_2);
+            }
 
 
-            Journal journal1 = realm.createObject(Journal.class, JOURNAL_ID_1);
+            ProntoTag prontoTag3 = realm.where(ProntoTag.class).equalTo("id", TAG_ID_3).findFirst();
+            if (prontoTag3 == null) {
+                prontoTag3 = realm.createObject(ProntoTag.class, TAG_ID_3);
+                prontoTag3.setDateCreated(System.currentTimeMillis());
+                prontoTag3.setDateModified(System.currentTimeMillis());
+                prontoTag3.setTagName(TAG_NAME_3);
+            }
+
+            ProntoTag prontoTag4 = realm.where(ProntoTag.class).equalTo("id", TAG_ID_4).findFirst();
+            if (prontoTag4 == null) {
+                prontoTag4 = realm.createObject(ProntoTag.class, TAG_ID_4);
+                prontoTag4.setDateCreated(System.currentTimeMillis());
+                prontoTag4.setDateModified(System.currentTimeMillis());
+                prontoTag4.setTagName(TAG_NAME_4);
+            }
+
+            ProntoTag prontoTag5 = realm.where(ProntoTag.class).equalTo("id", TAG_ID_5).findFirst();
+            if (prontoTag5 == null) {
+                prontoTag5 = realm.createObject(ProntoTag.class, TAG_ID_5);
+                prontoTag5.setDateCreated(System.currentTimeMillis());
+                prontoTag5.setDateModified(System.currentTimeMillis());
+                prontoTag5.setTagName(TAG_NAME_5);
+            }
+
+
+            Folder folder1 = realm.where(Folder.class).equalTo("id", FOLDER_ID_1).findFirst();
+            if (folder1 == null) {
+                folder1 = realm.createObject(Folder.class, FOLDER_ID_1);
+                folder1.setDateCreated(System.currentTimeMillis());
+                folder1.setDateModified(System.currentTimeMillis());
+                folder1.setFolderName(FOLDER_NAME_1);
+            }
+
+            Folder folder2 = realm.where(Folder.class).equalTo("id", FOLDER_ID_2).findFirst();
+            if (folder2 == null) {
+                folder2 = realm.createObject(Folder.class, FOLDER_ID_2);
+                folder2.setDateCreated(System.currentTimeMillis());
+                folder2.setDateModified(System.currentTimeMillis());
+                folder2.setFolderName(FOLDER_NAME_2);
+
+            }
+
+            Folder folder3 = realm.where(Folder.class).equalTo("id", FOLDER_ID_3).findFirst();
+            if (folder3 == null) {
+                folder3 = realm.createObject(Folder.class, FOLDER_ID_3);
+                folder3.setDateCreated(System.currentTimeMillis());
+                folder3.setDateModified(System.currentTimeMillis());
+                folder3.setFolderName(FOLDER_NAME_3);
+
+            }
+
+            Folder folder4 = realm.where(Folder.class).equalTo("id", FOLDER_ID_4).findFirst();
+            if (folder4 == null) {
+                folder4 = realm.createObject(Folder.class, FOLDER_ID_4);
+                folder4.setDateCreated(System.currentTimeMillis());
+                folder4.setDateModified(System.currentTimeMillis());
+                folder4.setFolderName(FOLDER_NAME_4);
+
+            }
+
+            Folder folder5 = realm.where(Folder.class).equalTo("id", FOLDER_ID_5).findFirst();
+            if (folder5 == null) {
+                folder5 = realm.createObject(Folder.class, FOLDER_ID_5);
+                folder5.setDateCreated(System.currentTimeMillis());
+                folder5.setDateModified(System.currentTimeMillis());
+                folder5.setFolderName(FOLDER_NAME_5);
+
+            }
+
+
+            Journal journal1 = realm.where(Journal.class).equalTo("id", JOURNAL_ID_1).findFirst();
+            if (journal1 == null) {
+                journal1 = realm.createObject(Journal.class, JOURNAL_ID_1);
+            }
             journal1.setTitle("DisneyLand Trip");
             journal1.setContent(context.getString(R.string.sample_journal_1));
             Calendar calendar1 = GregorianCalendar.getInstance();
@@ -170,7 +209,10 @@ public class SampleData {
 
 
 
-            Journal journal2 = realm.createObject(Journal.class, JOURNAL_ID_2);
+            Journal journal2 = realm.where(Journal.class).equalTo("id", JOURNAL_ID_2).findFirst();
+            if (journal2 == null) {
+                journal2 = realm.createObject(Journal.class, JOURNAL_ID_2);
+            }
             journal2.setTitle("European Language");
             journal2.setContent(context.getString(R.string.sample_journal_2));
 
@@ -216,7 +258,11 @@ public class SampleData {
             journal2.getAttachments().add(attachment5);
 
 
-            Journal journal3 = realm.createObject(Journal.class, JOURNAL_ID_3);
+            Journal journal3 = realm.where(Journal.class).equalTo("id", JOURNAL_ID_3).findFirst();
+            if (journal3 == null) {
+                journal3 = realm.createObject(Journal.class, JOURNAL_ID_3);
+            }
+
             journal3.setTitle("Enduring Tradition");
             journal3.setContent(context.getString(R.string.sample_journal_3));
 
@@ -250,8 +296,6 @@ public class SampleData {
             attachment10.setCloudFilePath("https://firebasestorage.googleapis.com/v0/b/prontodiary-bee92.appspot.com/o/sample_audio_file.mp3?alt=media&token=4f658e12-d848-452c-812a-408083532b8d");
             attachment10.setMime_type(Constants.MIME_TYPE_AUDIO);
             journal3.getAttachments().add(attachment10);
-
-
 
             realm.commitTransaction();
 
@@ -353,6 +397,7 @@ public class SampleData {
                     if (sampleTag5 != null){
                         sampleTag5.deleteFromRealm();
                     }
+
                 }
             });
         }

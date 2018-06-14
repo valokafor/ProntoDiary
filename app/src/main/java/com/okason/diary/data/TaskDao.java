@@ -140,12 +140,14 @@ public class TaskDao {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm backgroundRealm) {
-                backgroundRealm.where(SubTask.class).equalTo("id", subTaskId).findFirst().deleteFromRealm();
-
-                //Send Intent to update Firestore data
-                Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
-                intent.putExtra(Constants.TASK_ID, parentId);
-                DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
+                SubTask subTask = backgroundRealm.where(SubTask.class).equalTo("id", subTaskId).findFirst();
+                if (subTask != null){
+                    subTask .deleteFromRealm();
+                    //Send Intent to update Firestore data
+                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                    intent.putExtra(Constants.TASK_ID, parentId);
+                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
+                }
             }
         });
     }

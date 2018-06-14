@@ -33,6 +33,7 @@ import android.widget.TimePicker;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
@@ -121,7 +122,7 @@ public class AddTaskActivity extends AppCompatActivity implements
     private ReminderDao reminderDao;
     private Activity activity;
 
-    private ProntoTask currentProntoTask;
+    private ProntoTask currentTask;
     private Reminder currentReminder;
     private Folder selectedFolder;
     private List<ProntoTag> selectedProntoTags;
@@ -166,7 +167,7 @@ public class AddTaskActivity extends AppCompatActivity implements
 
         if (getIntent() != null && getIntent().hasExtra(Constants.TASK_ID)) {
             String taskId = getIntent().getStringExtra(Constants.TASK_ID);
-            currentProntoTask = taskDao.getTaskById(taskId);
+            currentTask = taskDao.getTaskById(taskId);
         }
 
 
@@ -202,9 +203,9 @@ public class AddTaskActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        if (currentProntoTask != null){
-            currentReminder = currentProntoTask.getReminder();
-            showTaskDetail(currentProntoTask);
+        if (currentTask != null){
+            currentReminder = currentTask.getReminder();
+            showTaskDetail(currentTask);
             showReminderDetail(currentReminder);
             getSupportActionBar().setTitle(getString(R.string.edit_task));
         }
@@ -269,15 +270,15 @@ public class AddTaskActivity extends AppCompatActivity implements
 
 
         try {
-            onFolderSelected(currentProntoTask.getFolder());
+            onFolderSelected(currentTask.getFolder());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         //Show Tags assigned to this prontoTask
-        if (currentProntoTask.getTags() != null && currentProntoTask.getTags().size() > 0){
+        if (currentTask.getTags() != null && currentTask.getTags().size() > 0){
             String tagText = "";
-            for (ProntoTag prontoTag : currentProntoTask.getTags()){
+            for (ProntoTag prontoTag : currentTask.getTags()){
                 tagText = tagText + "#" + prontoTag.getTagName() + ", ";
             }
             tagsTextView.setText(tagText);
@@ -631,8 +632,8 @@ public class AddTaskActivity extends AppCompatActivity implements
 
     private void saveNotification() {
 
-        if (currentProntoTask == null){
-            currentProntoTask = taskDao.createNewTask();
+        if (currentTask == null){
+            currentTask = taskDao.createNewTask();
         }
 
         String taskName = taskNameEditText.getText().toString();
@@ -642,7 +643,7 @@ public class AddTaskActivity extends AppCompatActivity implements
             selectedFolder = folderDao.getOrCreateFolder(getString(R.string.general));
         }
 
-        taskDao.updateTask(currentProntoTask.getId(), taskName, description, priority, selectedFolder.getId());
+        taskDao.updateTask(currentTask.getId(), taskName, description, priority, selectedFolder.getId());
 
         if (shouldSetReminder) {
             if (currentReminder == null){
@@ -659,12 +660,17 @@ public class AddTaskActivity extends AppCompatActivity implements
                 AlarmUtil.setAlarm(this, alarmIntent, currentReminder.getId(), calendar);
             }
 
-            taskDao.addReminder(currentProntoTask.getId(), currentReminder.getId());
+            taskDao.addReminder(currentTask.getId(), currentReminder.getId());
         }
+
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, currentTask.getId());
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, currentTask.getTitle());
+        FirebaseAnalytics.getInstance(activity).logEvent("add_task", bundle);
 
         if (shouldAddSubTasks) {
             Intent addSubTaskIntent = new Intent(activity, AddSubTaskActivity.class);
-            addSubTaskIntent.putExtra(Constants.TASK_ID, currentProntoTask.getId());
+            addSubTaskIntent.putExtra(Constants.TASK_ID, currentTask.getId());
             addSubTaskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(addSubTaskIntent);
         } else {

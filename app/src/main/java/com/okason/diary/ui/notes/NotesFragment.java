@@ -389,7 +389,9 @@ public class NotesFragment extends Fragment
         alertDialog.setPositiveButton(getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-               deleteNote(journal.getId());
+                if (journal != null) {
+                    deleteNote(journal.getId());
+                }
             }
         });
         alertDialog.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {

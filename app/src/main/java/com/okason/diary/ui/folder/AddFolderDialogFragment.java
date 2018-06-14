@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.R;
 import com.okason.diary.data.FolderDao;
 import com.okason.diary.models.Folder;
@@ -164,6 +165,11 @@ public class AddFolderDialogFragment extends DialogFragment {
                 mFolder = folderDao.createNewFolder();
             }
             folderDao.updatedFolderTitle(mFolder.getId(), categoryName);
+
+            Bundle bundle = new Bundle();
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, mFolder.getId());
+            bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, categoryName);
+            FirebaseAnalytics.getInstance(getActivity()).logEvent("add_category", bundle);
 
         }
 
