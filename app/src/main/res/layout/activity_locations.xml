@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.okason.diary.ui.folder.FolderListActivity">
+    tools:context=".ui.location.LocationsActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -21,8 +21,16 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_folder_list"
+    <include layout="@layout/content_locations"
         android:id="@+id/container"/>
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        app:backgroundTint="@color/primary"
+        app:srcCompat="@drawable/ic_add_white_24dp"/>
 
 </android.support.design.widget.CoordinatorLayout>

@@ -32,6 +32,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.crashlytics.android.Crashlytics;
 import com.okason.diary.utils.Constants;
 
 import java.io.IOException;
@@ -348,7 +349,11 @@ public class BillingManager implements PurchasesUpdatedListener {
                 if (billingResponseCode == BillingResponse.OK) {
                     mIsServiceConnected = true;
                     if (executeOnSuccess != null) {
-                        executeOnSuccess.run();
+                        try {
+                            executeOnSuccess.run();
+                        } catch (Exception e) {
+                            Crashlytics.log(Log.DEBUG, TAG, e.getLocalizedMessage());
+                        }
                     }
                 }
                 mBillingClientResponseCode = billingResponseCode;

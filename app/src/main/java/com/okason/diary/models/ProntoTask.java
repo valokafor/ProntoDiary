@@ -26,6 +26,7 @@ public class ProntoTask extends RealmObject{
 
     private Folder folder;
     private Reminder reminder;
+    private Location location;
     private RealmList<ProntoTag> tags;
     private RealmList<SubTask> subTask;
 
@@ -136,5 +137,13 @@ public class ProntoTask extends RealmObject{
 
     public void setReminder(Reminder reminder) {
         this.reminder = reminder;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 }

@@ -2,6 +2,7 @@ package com.okason.diary.models.dto;
 
 import com.okason.diary.models.ProntoTask;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +26,8 @@ public class ProntoTaskDto {
     private List<SubTaskDto> subTask;
 
     public ProntoTaskDto(){
+        tags = new ArrayList<>();
+        subTask = new ArrayList<>();
         dateCreated = System.currentTimeMillis();
     }
 
@@ -36,6 +39,8 @@ public class ProntoTaskDto {
         this.dateModified = task.getDateModified();
         this.checked = task.isChecked();
         this.priority = task.getPriority();
+        this.tags = new ArrayList<>();
+        this.subTask = new ArrayList<>();
     }
 
     public String getId() {

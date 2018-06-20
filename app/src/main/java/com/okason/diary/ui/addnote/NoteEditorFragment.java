@@ -136,7 +136,7 @@ public class NoteEditorFragment extends Fragment {
 
 
     @BindView(R.id.edit_text_category)
-    EditText mCategory;
+    EditText folderEditText;
 
     @BindView(R.id.edit_text_title)
     EditText mTitle;
@@ -271,16 +271,17 @@ public class NoteEditorFragment extends Fragment {
     private final RealmObjectChangeListener<Journal> noteChangeListener = new RealmObjectChangeListener<Journal>() {
         @Override
         public void onChange(Journal journal, @javax.annotation.Nullable ObjectChangeSet changeSet) {
-            try {
-                if (journal != null) {
-                    mCurrentJournal = journal;
-                    populateNote(mCurrentJournal);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (changeSet.isDeleted()){
+                //Do nothing
+                Crashlytics.log(Log.DEBUG, TAG, "Journal was delete");
             }
 
-
+            for (String fieldName: changeSet.getChangedFields()){
+                if (fieldName.equals("folder")){
+                    String folderName = journal.getFolder().getFolderName();
+                    folderEditText.setText(folderName);
+                }
+            }
         }
     };
 
@@ -296,6 +297,7 @@ public class NoteEditorFragment extends Fragment {
         if (mAdView != null){
             mAdView.resume();
         }
+        attachListenerToJournal();
     }
 
     private void initResources() {
@@ -326,6 +328,13 @@ public class NoteEditorFragment extends Fragment {
                     .build();
             mAdView.loadAd(adRequest);
         }
+    }
+
+    private void attachListenerToJournal(){
+        if (mCurrentJournal == null){
+            mCurrentJournal = journalDao.createNewJournal();
+        }
+        mCurrentJournal.addChangeListener(noteChangeListener);
     }
 
     @Override
@@ -480,7 +489,7 @@ public class NoteEditorFragment extends Fragment {
 
         if (selectedFolder != null){
             String folderName = selectedFolder.getFolderName();
-            mCategory.setText(folderName);
+            folderEditText.setText(folderName);
         }
         if (mCurrentJournal == null){
             mCurrentJournal = journalDao.createNewJournal();
@@ -567,22 +576,26 @@ public class NoteEditorFragment extends Fragment {
         try {
             mTitle.setText(journal.getTitle());
         } catch (Exception e) {
-            e.printStackTrace();
+            Crashlytics.log(Log.DEBUG, TAG, e.getLocalizedMessage());
         }
 
         try {
             if (journal.getFolder() != null && journal.getFolder().getFolderName() != null) {
-                mCategory.setText(journal.getFolder().getFolderName());
+                folderEditText.setText(journal.getFolder().getFolderName());
             } else {
-                mCategory.setText(Constants.DEFAULT_CATEGORY);
+                folderEditText.setText(Constants.DEFAULT_CATEGORY);
             }
         } catch (Exception e) {
-            mCategory.setText(Constants.DEFAULT_CATEGORY);
+            folderEditText.setText(Constants.DEFAULT_CATEGORY);
             Crashlytics.log(Log.DEBUG, TAG, e.getLocalizedMessage() );
         }
         mContent.requestFocus();
-        initViewAttachments(journal.getAttachments());
-        initTagLayout(journal.getTags());
+        if (journal != null && journal.getAttachments() != null) {
+            initViewAttachments(journal.getAttachments());
+        }
+        if (journal != null && journal.getTags() != null) {
+            initTagLayout(journal.getTags());
+        }
 
 
     }
@@ -1216,7 +1229,14 @@ public class NoteEditorFragment extends Fragment {
 
         for (Uri uri : uris) {
             if (mCurrentJournal ==  null){
-                mCurrentJournal = journalDao.createNewJournal();
+                try {
+                    mCurrentJournal = journalDao.createNewJournal();
+                } catch (Exception e) {
+                    realm = Realm.getDefaultInstance();
+                    journalDao = new JournalDao(realm);
+                    mCurrentJournal = journalDao.createNewJournal();
+                    Crashlytics.log(Log.DEBUG, TAG, e.getLocalizedMessage());
+                }
             }
             journalDao.createAttachmentFromUri(getContext(), uri, mCurrentJournal.getId());
         }

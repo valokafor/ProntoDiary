@@ -495,6 +495,8 @@
         which was created for the bliss of souls like mine.</string>
     <string name="start_listening">Listen to the Audio</string>
     <string name="stop_listening">Stop listening</string>
+    <string name="title_activity_locations">Locations</string>
+    <string name="no_location_found">You have not added any location, use the + button to start. Use your locations to set location reminder.</string>
 
 
 </resources>

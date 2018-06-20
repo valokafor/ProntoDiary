@@ -9,21 +9,7 @@
     <dimen name="theme_corner_radius">5dp</dimen>
     <integer name="small_size">5</integer>
 
-    <!-- Text Size -->
-    <dimen name="text_size_lined_editor">22sp</dimen>
-    <dimen name="text_size_tiny">6sp</dimen>
-    <dimen name="text_size_xtiny">8sp</dimen>
-    <dimen name="text_size_small">12sp</dimen>
-    <dimen name="text_size_normal">14sp</dimen>
-    <dimen name="text_size_xnormal">16sp</dimen>
-    <dimen name="text_size_xxnormal">18sp</dimen>
-    <dimen name="text_size_header">20sp</dimen>
-    <dimen name="text_size_large">24sp</dimen>
-    <dimen name="text_size_xlarge">26sp</dimen>
-    <dimen name="text_size_xxlarge">28sp</dimen>
-    <dimen name="text_size_huge">30sp</dimen>
-    <dimen name="text_width_height">170dp</dimen>
-    <dimen name="text_size_height">30sp</dimen>
+ \
 
     <!-- Margin & padding -->
     <dimen name="margin_padding_xtiny">4dp</dimen>
@@ -47,7 +33,26 @@
     <dimen name="attachment_thumnbail_weight">125dp</dimen>
     <dimen name="vector_icon_size">25dp</dimen>
 
-    <!-- Attachment dialog -->
+   <!-- Text Size -->
+   <dimen name="text_size_lined_editor">22sp</dimen>
+   <dimen name="text_size_tiny">6sp</dimen>
+   <dimen name="text_size_xtiny">8sp</dimen>
+   <dimen name="text_size_small">12sp</dimen>
+   <dimen name="text_size_normal">14sp</dimen>
+   <dimen name="text_size_xnormal">16sp</dimen>
+   <dimen name="text_size_xxnormal">18sp</dimen>
+   <dimen name="text_size_header">20sp</dimen>
+   <dimen name="text_size_large">24sp</dimen>
+   <dimen name="text_size_xlarge">26sp</dimen>
+   <dimen name="text_size_xxlarge">28sp</dimen>
+   <dimen name="text_size_huge">30sp</dimen>
+   <dimen name="text_width_height">170dp</dimen>
+   <dimen name="text_size_height">30sp</dimen>
+
+
+
+
+   <!-- Attachment dialog -->
     <dimen name="attachment_dialog_text_size">16sp</dimen>
     <dimen name="attachment_dialog_drawable_padding">10dp</dimen>
     <dimen name="attachment_dialog_items_padding">10dp</dimen>
