@@ -198,6 +198,10 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
 
 
     private void populateScreen() {
+        if (currentJournal == null){
+            return;
+        }
+
         if (currentJournal != null){
             if (currentJournal.getAttachments() != null && currentJournal.getAttachments().size() > 0){
                 showHideImageViews(currentJournal.getAttachments());

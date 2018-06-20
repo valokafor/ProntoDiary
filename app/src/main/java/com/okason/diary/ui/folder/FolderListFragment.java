@@ -1,7 +1,6 @@
 package com.okason.diary.ui.folder;
 
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -89,23 +88,20 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-
-
-
-        return  mRootView;
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        floatingActionButton = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        floatingActionButton = (FloatingActionButton) mRootView.findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showAddNewFolderDialog();
             }
         });
+
+
+
+
+        return  mRootView;
     }
+
 
     @Override
     public void onResume() {
@@ -117,6 +113,10 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
+        setupList();
+    }
+
+    private void setupList() {
         mFolders = folderDao.getAllFolders();
         showFolders(mFolders);
         mFolders.addChangeListener(listener);
@@ -185,6 +185,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAddNewCategory(FolderAddedEvent event){
         addCategoryDialog.dismiss();
+
     }
 
 
@@ -310,13 +311,15 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
                 if (mAdapter != null) {
                     mAdapter.notifyItemRangeRemoved(range.startIndex, range.length);
                 }
+                setupList();
             }
 
             OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
             for (OrderedCollectionChangeSet.Range range : insertions) {
-                if (mAdapter != null) {
-                    mAdapter.notifyItemRangeInserted(range.startIndex, range.length);
+                if (mAdapter == null){
+                    setupList();
                 }
+                mAdapter.notifyItemRangeInserted(range.startIndex, range.length);
             }
 
             OrderedCollectionChangeSet.Range[] modifications = changeSet.getChangeRanges();

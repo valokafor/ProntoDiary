@@ -1,9 +1,10 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:ads="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.okason.diary.ui.folder.FolderListFragment">
+                xmlns:ads="http://schemas.android.com/apk/res-auto"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context="com.okason.diary.ui.folder.FolderListFragment">
 
 
     <com.google.android.gms.ads.AdView
@@ -26,7 +27,7 @@
         android:paddingLeft="@dimen/margin_padding_tiny"
         android:paddingRight="@dimen/margin_padding_tiny"
         android:paddingTop="@dimen/margin_padding_tiny"
-        android:visibility="gone" />
+        android:visibility="gone"/>
 
 
     <TextView
@@ -41,7 +42,18 @@
         android:textColor="@color/primary_dark"
         android:textSize="@dimen/text_size_huge"
         android:textStyle="italic"
-        android:visibility="visible" />
+        android:visibility="visible"/>
+
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="@dimen/fab_margin"
+        app:backgroundTint="@color/primary"
+        app:srcCompat="@drawable/ic_add_white_24dp"/>
 
 
 </RelativeLayout>
