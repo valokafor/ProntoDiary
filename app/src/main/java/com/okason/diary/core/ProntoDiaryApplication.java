@@ -1,7 +1,6 @@
 package com.okason.diary.core;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.multidex.MultiDexApplication;
@@ -15,7 +14,7 @@ import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerUIUtils;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.R;
-import com.okason.diary.core.services.DataDownloadIntentService;
+import com.okason.diary.data.Migration;
 import com.okason.diary.models.Reminder;
 import com.okason.diary.models.inactive.ProntoJournalUser;
 import com.squareup.leakcanary.LeakCanary;
@@ -66,8 +65,9 @@ public class ProntoDiaryApplication extends MultiDexApplication {
     private void initRealm() {
         Realm.init(this);
         RealmConfiguration configuration = new RealmConfiguration.Builder()
-                .schemaVersion(1)
+                .schemaVersion(3)
                 .name("Pronto_Journal.realm")
+                .migration(new Migration())
                 .build();
         Realm.setDefaultConfiguration(configuration);
 

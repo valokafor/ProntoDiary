@@ -30,6 +30,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -155,7 +156,11 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
     public void onResume() {
         super.onResume();
         if (currentJournal != null){
-            populateScreen();
+            try {
+                populateScreen();
+            } catch (Exception e) {
+                Crashlytics.log(Log.DEBUG, TAG, "Error populating Note detail screen");
+            }
         }
     }
 

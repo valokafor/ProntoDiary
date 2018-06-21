@@ -263,8 +263,10 @@ public class DataUploadIntentService extends JobIntentService {
 
         if (task.getSubTask().size() > 0){
             for (SubTask subTask: task.getSubTask()){
-                SubTaskDto subTaskDto = new SubTaskDto(subTask);
-                taskDto.getSubTask().add(subTaskDto);
+                if (subTask != null) {
+                    SubTaskDto subTaskDto = new SubTaskDto(subTask);
+                    taskDto.getSubTask().add(subTaskDto);
+                }
             }
         }
 

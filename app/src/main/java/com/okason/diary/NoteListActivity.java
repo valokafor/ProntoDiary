@@ -49,6 +49,7 @@ import com.okason.diary.billing.MainViewController;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.auth.AuthUiActivity;
 import com.okason.diary.ui.folder.FolderListActivity;
+import com.okason.diary.ui.location.LocationsActivity;
 import com.okason.diary.ui.notes.NotesFragment;
 import com.okason.diary.ui.settings.SettingsActivity;
 import com.okason.diary.ui.tag.TagListActivity;
@@ -214,6 +215,7 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
                         new PrimaryDrawerItem().withName("Todo List").withIcon(GoogleMaterial.Icon.gmd_format_list_bulleted).withIdentifier(Constants.TODO_LIST),
                         new PrimaryDrawerItem().withName("Folders").withIcon(GoogleMaterial.Icon.gmd_folder).withIdentifier(Constants.FOLDERS),
                         new PrimaryDrawerItem().withName("Tags").withIcon(GoogleMaterial.Icon.gmd_tag).withIdentifier(Constants.TAGS),
+                        new PrimaryDrawerItem().withName("Locations").withIcon(GoogleMaterial.Icon.gmd_google_maps).withIdentifier(Constants.LOCATION),
                         new PrimaryDrawerItem().withName("Share App").withIcon(GoogleMaterial.Icon.gmd_share).withIdentifier(Constants.SHARE_APP),
                         new PrimaryDrawerItem().withName("Contact Developer").withIcon(GoogleMaterial.Icon.gmd_email).withIdentifier(Constants.CONTACT_US),
                         new PrimaryDrawerItem().withName("Remove Ads").withIcon(GoogleMaterial.Icon.gmd_email).withIdentifier(Constants.REMOVE_ADS),
@@ -350,6 +352,9 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
                 break;
             case Constants.TODO_LIST:
                 startActivity(new Intent(mActivity, TodoListActivity.class));
+                break;
+            case Constants.LOCATION:
+                startActivity(new Intent(mActivity, LocationsActivity.class));
                 break;
             case Constants.CONTACT_US:
                 Intent intent = new Intent(Intent.ACTION_SEND);

@@ -83,6 +83,7 @@ public class Constants {
     public final static int SHARE_APP = 9;
     public static final int CONTACT_US= 10;
     public static final int REMOVE_ADS = 11;
+    public static final int LOCATION = 12;
 
 
     public final static String PREFERENCE_FILE = "preference_file";
