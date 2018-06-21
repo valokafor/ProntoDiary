@@ -113,6 +113,10 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
+        setupList();
+    }
+
+    private void setupList() {
         mFolders = folderDao.getAllFolders();
         showFolders(mFolders);
         mFolders.addChangeListener(listener);
@@ -181,6 +185,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAddNewCategory(FolderAddedEvent event){
         addCategoryDialog.dismiss();
+
     }
 
 
@@ -306,13 +311,15 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
                 if (mAdapter != null) {
                     mAdapter.notifyItemRangeRemoved(range.startIndex, range.length);
                 }
+                setupList();
             }
 
             OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
             for (OrderedCollectionChangeSet.Range range : insertions) {
-                if (mAdapter != null) {
-                    mAdapter.notifyItemRangeInserted(range.startIndex, range.length);
+                if (mAdapter == null){
+                    setupList();
                 }
+                mAdapter.notifyItemRangeInserted(range.startIndex, range.length);
             }
 
             OrderedCollectionChangeSet.Range[] modifications = changeSet.getChangeRanges();
