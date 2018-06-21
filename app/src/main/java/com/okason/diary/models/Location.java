@@ -4,7 +4,7 @@ import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
-public class Location extends RealmObject{
+public class Location extends RealmObject {
     @PrimaryKey
     private String id;
     private String name;
@@ -71,3 +71,4 @@ public class Location extends RealmObject{
         this.name = name;
     }
 }
+
