@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.okason.diary.data.LocationDao;
 import com.okason.diary.models.Location;
 import com.okason.diary.R;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.Realm;
+import io.realm.RealmResults;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -29,6 +31,8 @@ public class LocationListFragment extends Fragment {
     @BindView(R.id.empty_text) TextView emptyText;
 
     private Realm realm;
+    private RealmResults<Location> locations;
+    private LocationDao locationDao;
 
 
     public LocationListFragment() {
@@ -43,11 +47,20 @@ public class LocationListFragment extends Fragment {
         rootView = inflater.inflate(R.layout.fragment_location_list, container, false);
         ButterKnife.bind(this, rootView);
         realm = Realm.getDefaultInstance();
+        locationDao = new LocationDao(realm);
+        locations = locationDao.getAllLocations();
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         return rootView;
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        showLocations(locations);
     }
 
     public void showLocations(List<Location> locations){

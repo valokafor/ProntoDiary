@@ -1,0 +1,38 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <EditText
+        android:id="@+id/edit_text_location_name"
+        android:layout_margin="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_enter_location_name"
+        android:textSize="@dimen/text_size_xnormal"
+        android:inputType="textCapWords"
+        android:padding="@dimen/margin_padding_tiny"
+        android:gravity="left" />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/edit_text_add_address"
+            android:layout_margin="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_enter_address"
+            android:textSize="@dimen/text_size_xnormal"
+            android:inputType="textCapWords"
+            android:padding="@dimen/margin_padding_tiny"
+            android:gravity="left" />
+    </android.support.design.widget.TextInputLayout>
+
+</FrameLayout>

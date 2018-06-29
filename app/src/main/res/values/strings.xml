@@ -497,6 +497,8 @@
     <string name="stop_listening">Stop listening</string>
     <string name="title_activity_locations">Locations</string>
     <string name="no_location_found">You have not added any location, use the + button to start. Use your locations to set location reminder.</string>
+    <string name="hint_enter_location_name">Location name  e.g Home, Office.etc,</string>
+    <string name="hint_enter_address">Location addes - 123 main street</string>
 
 
 </resources>
