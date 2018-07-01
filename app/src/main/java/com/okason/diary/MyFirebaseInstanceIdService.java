@@ -1,7 +1,5 @@
-package com.okason.diary.core.services;
+package com.okason.diary;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -14,9 +12,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
+import com.okason.diary.core.events.OnFirebaseTokenRefreshed;
 import com.okason.diary.models.inactive.ProntoJournalUser;
 import com.okason.diary.utils.Constants;
-import com.okason.diary.utils.SettingsHelper;
+
+import org.greenrobot.eventbus.EventBus;
 
 public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
 
@@ -33,15 +33,17 @@ public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
             super.onTokenRefresh();
             final String token = FirebaseInstanceId.getInstance().getToken();
 
+            EventBus.getDefault().post(new OnFirebaseTokenRefreshed(token));
+
             Log.d(TAG, "FCM token retrieved: " + token);
 
-            //Save to settings on main thread
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    SettingsHelper.getHelper(getApplicationContext()).setMessagingToken(token);
-                }
-            });
+//            //Save to settings on main thread
+//            new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    SettingsHelper.getHelper(getApplicationContext()).setMessagingToken(token);
+//                }
+//            });
 
 
             //Update Token in Database after token refresh

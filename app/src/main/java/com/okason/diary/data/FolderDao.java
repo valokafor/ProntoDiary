@@ -66,9 +66,9 @@ public class FolderDao {
                     EventBus.getDefault().post(new FolderAddedEvent(selectedFolder.getId()));
 
                     //Update Firebase Record
-                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
-                    intent.putExtra(Constants.FOLDER_ID, id);
-                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
+//                    Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+//                    intent.putExtra(Constants.FOLDER_ID, id);
+//                    DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
                 }
             }
         });

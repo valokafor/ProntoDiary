@@ -48,17 +48,17 @@ public class TagDao {
     public ProntoTag createNewTag() {
         String id = UUID.randomUUID().toString();
         realm.beginTransaction();
-        ProntoTag prontoTag = realm.createObject(ProntoTag.class, id);
-        prontoTag.setDateCreated(System.currentTimeMillis());
-        prontoTag.setDateModified(System.currentTimeMillis());
+        ProntoTag tag = realm.createObject(ProntoTag.class, id);
+        tag.setDateCreated(System.currentTimeMillis());
+        tag.setDateModified(System.currentTimeMillis());
         realm.commitTransaction();
-        return prontoTag;
+        return tag;
     }
 
     public ProntoTag getTagByName(String tagName) {
         try {
-            ProntoTag selectedProntoTag = realm.where(ProntoTag.class).equalTo("tagName", tagName).findFirst();
-            return selectedProntoTag;
+            ProntoTag selectedTag = realm.where(ProntoTag.class).equalTo("tagName", tagName).findFirst();
+            return selectedTag;
         } catch (Exception e) {
             return null;
         }
@@ -66,11 +66,11 @@ public class TagDao {
 
 
     public ProntoTag getOrCreateTag(String tagName) {
-        ProntoTag prontoTag = getTagById(tagName);
-        if (prontoTag == null){
-            prontoTag = createNewTag();
+        ProntoTag tag = getTagById(tagName);
+        if (tag == null){
+            tag = createNewTag();
         }
-        return prontoTag;
+        return tag;
     }
 
 
@@ -156,6 +156,20 @@ public class TagDao {
     }
 
 
+    public ProntoTag createOrUpdateTag(String tagName) {
+
+        String id = UUID.randomUUID().toString();
+        realm.beginTransaction();
+        ProntoTag prontoTag = new ProntoTag();
+        prontoTag.setId(id);
+        prontoTag.setDateCreated(System.currentTimeMillis());
+        prontoTag.setDateModified(System.currentTimeMillis());
+        prontoTag.setTagName(tagName);
+        realm.insert(prontoTag);
+        realm.commitTransaction();
+        return prontoTag;
+
+    }
 }
 
 

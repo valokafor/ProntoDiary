@@ -2,13 +2,20 @@ package com.okason.diary.utils;
 
 import android.text.TextUtils;
 
+import io.realm.Realm;
+import io.realm.SyncConfiguration;
+import io.realm.SyncUser;
+
 /**
  * Created by Valentine on 9/4/2015.
  */
 public class Constants {
 
-    public static final String DYNAMIC_LINK_DOMAIN = "by3kf.app.goo.gl/";
 
+    public static final String DYNAMIC_LINK_DOMAIN = "by3kf.app.goo.gl/";
+    public static final String REALM_CLOUD_INSTANCE = "pronto-diary.us1.cloud.realm.io";
+    public static final String REALM_AUTH_URL = "https://" + REALM_CLOUD_INSTANCE + "/auth";
+    public static final String REALM_BASE_URL = "realms://" + REALM_CLOUD_INSTANCE + "/~/userJournals";
     public static final String REALM_DATABASE = "pronto_notepad.realm";
     public static final String ANONYMOUS_ACCOUNT_USER_ID = "anonymous_account_id";
     public static final String AUTH_METHOD_GOOGLE = "Google";
@@ -17,7 +24,7 @@ public class Constants {
     public static final String FIRST_LOGIN = "first_login";
     public static final String UNREGISTERED_USER = "unregistered_user";
     public static final String NOTE_TITLE = "note_title";
-    public static final String RESULT_OK = "ok";
+    public static final String RxESULT_OK = "ok";
     public static final String SERIALIZED_ATTACHMENT_ID = "serialized_attachment_id";
     public static final String SELECTED_ID = "selected_id";
     public static final String ERROR_MESSAGE = "error_message";
@@ -189,6 +196,7 @@ public class Constants {
     public static final String REMINDER_MONTHLY = "monthly";
     public static final String REMINDER_YEARLY = "yearly";
     public static final String EMAIL_LOGIN = "anonymous_user@prontodiary.com";
+    public static final String PRONTO_USER_GENERIC = "pronto_user@prontodiary.com";
     public static final String EMAIL_PASSWORD = "pr0ntodi@ry!";
 
 
@@ -211,5 +219,17 @@ public class Constants {
             "+7GaHYKonhZn6KRDJssvvPn4yg8ykdBPTKd8PubdKyVhGUdJTEXobgflNa/Sso6Wl7Kqp09FFQaAj+N9lt9fnTzU3mYkt" +
             "oIOV5sBAvXOn5MrNZvD0+k4w3YnmVvGotmjR+SKMpS1wGm2FAmnO0Avia+gL5qu+Pqaur/IrGNY3euu+AkYBI6pnIpez7pC" +
             "qkrb4jfHfBtYnbpV0/pbrfN+XRZcn8vsIPYPwCyRj9ovUejrrGKeUYnwIDAQAB";
+
+
+
+    public static Realm setUpRealm() {
+        String url = "realms://pronto-diary.us1.cloud.realm.io/~/journal";
+        SyncConfiguration configuration = SyncUser.current()
+                .createConfiguration(url)
+                .build();
+        Realm realm = Realm.getInstance(configuration);
+
+        return realm;
+    }
 
 }

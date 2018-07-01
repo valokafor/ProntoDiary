@@ -20,6 +20,8 @@ import com.okason.diary.data.FolderDao;
 import com.okason.diary.models.Folder;
 import com.okason.diary.utils.Constants;
 
+import java.util.UUID;
+
 import io.realm.Realm;
 
 
@@ -162,9 +164,14 @@ public class AddFolderDialogFragment extends DialogFragment {
         final String categoryName = mFolderEditText.getText().toString().trim();
         if (!TextUtils.isEmpty(categoryName)) {
             if (mFolder == null){
-                mFolder = folderDao.createNewFolder();
+                realm.beginTransaction();
+                mFolder = new Folder();
+                mFolder.setFolderName(categoryName);
+                mFolder.setId(UUID.randomUUID().toString());
+                realm.insert(mFolder);
+                realm.commitTransaction();
             }
-            folderDao.updatedFolderTitle(mFolder.getId(), categoryName);
+           // folderDao.updatedFolderTitle(mFolder.getId(), categoryName);
 
             Bundle bundle = new Bundle();
             bundle.putString(FirebaseAnalytics.Param.ITEM_ID, mFolder.getId());

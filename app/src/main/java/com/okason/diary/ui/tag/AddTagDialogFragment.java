@@ -167,6 +167,7 @@ public class AddTagDialogFragment extends DialogFragment {
             mTag = tagDao.createNewTag();
         }
         tagDao.updatedTagTitle(mTag.getId(), tagName);
+        mTag = tagDao.createOrUpdateTag(tagName);
         EventBus.getDefault().post(new TagListChangeEvent());
 
         Bundle bundle = new Bundle();

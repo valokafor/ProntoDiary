@@ -11,7 +11,6 @@ import com.okason.diary.utils.Constants;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.UUID;
 
 import io.realm.Realm;
 
@@ -20,6 +19,7 @@ import io.realm.Realm;
  */
 
 public class SampleData {
+    private static final String TAG = "SampleData";
     public final static String FOLDER_NAME_1 = "Family";
     public final static String FOLDER_NAME_2 = "Work";
     public final static String FOLDER_NAME_3 = "Productivity";
@@ -52,6 +52,17 @@ public class SampleData {
     public final static String JOURNAL_ID_5 = "bee82d9a-6780-11e8-adc0-fa7ae01bbebc";
 
 
+    public final static String ATTACHMENT_ID_1 = "729581f1-1148-43e1-85be-731fe4b21fbf";
+    public final static String ATTACHMENT_ID_2 = "44703080-387f-4545-9fb0-d552b18753fa";
+    public final static String ATTACHMENT_ID_3 = "7d971f28-a059-4926-a782-9e3e4164f5ad";
+    public final static String ATTACHMENT_ID_4 = "c0a812f0-b2c6-45fa-9a1f-dcc7e0640d25";
+    public final static String ATTACHMENT_ID_5 = "fc59ef8c-1571-465b-bce5-42cdabd9b027";
+    public final static String ATTACHMENT_ID_6 = "ecb08360-a883-464c-bf2e-7d5499dafd44";
+    public final static String ATTACHMENT_ID_7 = "bb01f71a-22dd-4d38-9c01-32af1486d6c8";
+    public final static String ATTACHMENT_ID_8 = "91410f3e-0682-421b-a517-67c5318d40cd";
+    public final static String ATTACHMENT_ID_9 = "86679f3a-5d7c-408f-b7f3-8c714a99c322";
+    public final static String ATTACHMENT_ID_10 = "c64205b1-a802-4cb0-acb9-1e1d050ce058";
+
 
 
     private final Context context;
@@ -68,7 +79,7 @@ public class SampleData {
     public void getSampleNotesRealm() {
 
 
-        try (Realm realm = Realm.getDefaultInstance()) {
+        try (Realm realm = Constants.setUpRealm()) {
             if (realm == null){
                 return;
             }
@@ -187,22 +198,29 @@ public class SampleData {
             folder2.getJournals().add(journal1);
 
 
-            Attachment attachment1 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
+            Attachment attachment1 = new Attachment();
+            attachment1.setId(ATTACHMENT_ID_1);
             attachment1.setCloudFilePath("https://4.img-dpreview.com/files/p/E~TS590x0~articles/3925134721/0266554465.jpeg");
             attachment1.setMime_type(Constants.MIME_TYPE_IMAGE);
+            realm.insert(attachment1);
             journal1.getAttachments().add(attachment1);
 
-            Attachment attachment2 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
+            Attachment attachment2 = new Attachment();
+            attachment2.setId(ATTACHMENT_ID_2);
             attachment2.setCloudFilePath("https://firebasestorage.googleapis.com/v0/b/prontoquote-3e2ff.appspot.com/o/category_images%2Fentrepreneur.jpg?alt=media&token=e4955940-abd5-4835-b992-62e8057c158a");
             attachment2.setMime_type(Constants.MIME_TYPE_IMAGE);
+            realm.insert(attachment2);
             journal1.getAttachments().add(attachment2);
 
-            Attachment attachment3 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
+            Attachment attachment3 = new Attachment();
+            attachment3.setId(ATTACHMENT_ID_3);
             attachment3.setCloudFilePath("http://cdn.iphonehacks.com/wp-content/uploads/2011/10/iphone-4s-camera-1.jpg");
             attachment3.setMime_type(Constants.MIME_TYPE_IMAGE);
+            realm.insert(attachment3);
             journal1.getAttachments().add(attachment3);
 
-            Attachment attachment4 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
+            Attachment attachment4 = new Attachment();
+            attachment4.setId(ATTACHMENT_ID_4);
             attachment4.setCloudFilePath("https://randomuser.me/api/portraits/men/59.jpg");
             attachment4.setMime_type(Constants.MIME_TYPE_IMAGE);
             journal1.getAttachments().add(attachment4);
@@ -236,27 +254,25 @@ public class SampleData {
             journal2.setFolder(folder1);
             folder1.getJournals().add(journal2);
 
-
-            Attachment attachment6 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
-            attachment6.setCloudFilePath("https://firebasestorage.googleapis.com/v0/b/prontoquote-3e2ff.appspot.com/o/category_images%2Fcivilization.jpg?alt=media&token=e4efe700-68c9-424e-9a67-11b633c77f31");
-            attachment6.setMime_type(Constants.MIME_TYPE_IMAGE);
-            journal2.getAttachments().add(attachment6);
-
-            Attachment attachment7 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
-            attachment7.setCloudFilePath("https://firebasestorage.googleapis.com/v0/b/prontoquote-3e2ff.appspot.com/o/category_images%2Fbusiness.jpg?alt=media&token=96725118-b505-4df4-afd2-43cdc8468d64");
-            attachment7.setMime_type(Constants.MIME_TYPE_IMAGE);
-            journal2.getAttachments().add(attachment7);
-
-            Attachment attachment8 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
-            attachment8.setCloudFilePath("https://firebasestorage.googleapis.com/v0/b/prontoquote-3e2ff.appspot.com/o/category_images%2Farchitecture.jpg?alt=media&token=6aaf2500-09b7-43f6-b5f6-a68935addc6d");
-            attachment8.setMime_type(Constants.MIME_TYPE_IMAGE);
-            journal2.getAttachments().add(attachment8);
-
-            Attachment attachment5 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
+            Attachment attachment5 = realm.createObject(Attachment.class, ATTACHMENT_ID_5);
             attachment5.setCloudFilePath("https://youtu.be/htONbnz_wL4");
             attachment5.setMime_type(Constants.MIME_TYPE_VIDEO);
             journal2.getAttachments().add(attachment5);
 
+            Attachment attachment6 = realm.createObject(Attachment.class, ATTACHMENT_ID_6);
+            attachment6.setCloudFilePath("https://firebasestorage.googleapis.com/v0/b/prontoquote-3e2ff.appspot.com/o/category_images%2Fcivilization.jpg?alt=media&token=e4efe700-68c9-424e-9a67-11b633c77f31");
+            attachment6.setMime_type(Constants.MIME_TYPE_IMAGE);
+            journal2.getAttachments().add(attachment6);
+
+            Attachment attachment7 = realm.createObject(Attachment.class, ATTACHMENT_ID_7);
+            attachment7.setCloudFilePath("https://firebasestorage.googleapis.com/v0/b/prontoquote-3e2ff.appspot.com/o/category_images%2Fbusiness.jpg?alt=media&token=96725118-b505-4df4-afd2-43cdc8468d64");
+            attachment7.setMime_type(Constants.MIME_TYPE_IMAGE);
+            journal2.getAttachments().add(attachment7);
+
+            Attachment attachment8 = realm.createObject(Attachment.class, ATTACHMENT_ID_8);
+            attachment8.setCloudFilePath("https://firebasestorage.googleapis.com/v0/b/prontoquote-3e2ff.appspot.com/o/category_images%2Farchitecture.jpg?alt=media&token=6aaf2500-09b7-43f6-b5f6-a68935addc6d");
+            attachment8.setMime_type(Constants.MIME_TYPE_IMAGE);
+            journal2.getAttachments().add(attachment8);
 
             Journal journal3 = realm.where(Journal.class).equalTo("id", JOURNAL_ID_3).findFirst();
             if (journal3 == null) {
@@ -286,13 +302,13 @@ public class SampleData {
             journal3.setFolder(folder1);
             folder1.getJournals().add(journal3);
 
-            Attachment attachment9 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
+            Attachment attachment9 = realm.createObject(Attachment.class, ATTACHMENT_ID_9);
             attachment9.setCloudFilePath("http://s1.1zoom.me/big0/557/Dubai_Emirates_UAE_442993.jpg");
             attachment9.setMime_type(Constants.MIME_TYPE_IMAGE);
             journal3.getAttachments().add(attachment9);
 
 
-            Attachment attachment10 = realm.createObject(Attachment.class, UUID.randomUUID().toString());
+            Attachment attachment10 = realm.createObject(Attachment.class, ATTACHMENT_ID_10);
             attachment10.setCloudFilePath("https://firebasestorage.googleapis.com/v0/b/prontodiary-bee92.appspot.com/o/sample_audio_file.mp3?alt=media&token=4f658e12-d848-452c-812a-408083532b8d");
             attachment10.setMime_type(Constants.MIME_TYPE_AUDIO);
             journal3.getAttachments().add(attachment10);
@@ -309,41 +325,26 @@ public class SampleData {
                 public void execute(Realm backgroundRealm) {
                     Journal sampleJournal1 = backgroundRealm.where(Journal.class).equalTo("id", JOURNAL_ID_1).findFirst();
                     if (sampleJournal1 != null){
-                        for (Attachment attachment: sampleJournal1.getAttachments()){
-                            attachment.deleteFromRealm();
-                        }
                         sampleJournal1.deleteFromRealm();
                     }
 
                     Journal sampleJournal2 = backgroundRealm.where(Journal.class).equalTo("id", JOURNAL_ID_2).findFirst();
                     if (sampleJournal2 != null){
-                        for (Attachment attachment: sampleJournal2.getAttachments()){
-                            attachment.deleteFromRealm();
-                        }
                         sampleJournal2.deleteFromRealm();
                     }
 
                     Journal sampleJournal3 = backgroundRealm.where(Journal.class).equalTo("id", JOURNAL_ID_3).findFirst();
                     if (sampleJournal3 != null){
-                        for (Attachment attachment: sampleJournal3.getAttachments()){
-                            attachment.deleteFromRealm();
-                        }
                         sampleJournal3.deleteFromRealm();
                     }
 
                     Journal sampleJournal4 = backgroundRealm.where(Journal.class).equalTo("id", JOURNAL_ID_4).findFirst();
                     if (sampleJournal4 != null){
-                        for (Attachment attachment: sampleJournal4.getAttachments()){
-                            attachment.deleteFromRealm();
-                        }
                         sampleJournal4.deleteFromRealm();
                     }
 
                     Journal sampleJournal5 = backgroundRealm.where(Journal.class).equalTo("id", JOURNAL_ID_5).findFirst();
                     if (sampleJournal5 != null){
-                        for (Attachment attachment: sampleJournal5.getAttachments()){
-                            attachment.deleteFromRealm();
-                        }
                         sampleJournal5.deleteFromRealm();
                     }
 
@@ -397,6 +398,17 @@ public class SampleData {
                     if (sampleTag5 != null){
                         sampleTag5.deleteFromRealm();
                     }
+
+                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_1).findFirst().deleteFromRealm();
+                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_2).findFirst().deleteFromRealm();
+                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_3).findFirst().deleteFromRealm();
+                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_4).findFirst().deleteFromRealm();
+                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_5).findFirst().deleteFromRealm();
+                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_6).findFirst().deleteFromRealm();
+                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_7).findFirst().deleteFromRealm();
+                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_8).findFirst().deleteFromRealm();
+                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_9).findFirst().deleteFromRealm();
+                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_10).findFirst().deleteFromRealm();
 
                 }
             });

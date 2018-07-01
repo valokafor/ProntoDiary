@@ -110,14 +110,20 @@
         </activity>
 
         <service
-            android:name=".core.services.MyFirebaseInstanceIdService"
+            android:name=".MyFirebaseInstanceIdService"
             android:enabled="true"
             android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
         </service>
         <service
             android:name=".core.services.MyFirebaseMessagingService"
             android:enabled="true"
             android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
         </service>
 
         <activity
@@ -231,6 +237,14 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.okason.diary.NoteListActivity"/>
+        </activity>
+
+        <service
+            android:name=".core.services.LocalToSyncIntentService"
+            android:exported="false">
+        </service>
+
+        <activity android:name=".utils.RealmTestActivity">
         </activity>
     </application>
 

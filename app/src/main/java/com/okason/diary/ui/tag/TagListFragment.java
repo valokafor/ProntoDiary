@@ -46,12 +46,9 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
     private TagListAdapter mAdapter;
     private View mRootView;
 
-    @BindView(R.id.tag_recycler_view)
-    RecyclerView mRecyclerView;
-    @BindView(R.id.empty_text)
-    TextView mEmptyText;
-    @BindView(R.id.add_tag_fab)
-    FloatingActionButton addTagbutton;
+    @BindView(R.id.tag_recycler_view) RecyclerView mRecyclerView;
+    @BindView(R.id.empty_text) TextView mEmptyText;
+    @BindView(R.id.add_tag_fab) FloatingActionButton addTagbutton;
 
     private AddTagDialogFragment addTagDialog;
     private String sortColumn = "title";

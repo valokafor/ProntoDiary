@@ -49,6 +49,10 @@ android {
 
 
 
+
+
+
+
 configurations {
     all*.exclude group: 'commons-logging', module: 'commons-logging'
 }
@@ -71,12 +75,17 @@ ext {
     espressoVersion = "3.0.1"
     floatingSearchViewVersion = "2.1.1"
     firebaseLibraryVersion = "16.0.1"
+    firebaseMessagingVersion = "17.1.0"
     firebaseUIVersion = "3.2.2"
     gsonVersion = "2.2.4"
     glideVersion = "4.7.1"
     materialDialogVersion = "0.9.6.0";
     eventBusVersion = "3.1.1"
     crashlyticsVersion = "2.9.3"
+}
+
+realm {
+    syncEnabled = true
 }
 
 dependencies {
@@ -91,7 +100,7 @@ dependencies {
     implementation "com.android.support:design:$supportLibraryVersion"
     implementation "com.google.firebase:firebase-core:$firebaseLibraryVersion"
     implementation "com.google.firebase:firebase-ads:$firebaseLibraryVersion"
-    implementation "com.google.firebase:firebase-messaging:$firebaseLibraryVersion"
+    implementation "com.google.firebase:firebase-messaging:$firebaseMessagingVersion"
     implementation "com.google.firebase:firebase-auth:$firebaseLibraryVersion"
     implementation "com.google.android.gms:play-services-auth:$firebaseLibraryVersion"
     implementation "com.google.android.gms:play-services-location:$firebaseLibraryVersion"
@@ -102,6 +111,7 @@ dependencies {
     implementation "com.google.firebase:firebase-invites:$firebaseLibraryVersion"
     implementation "com.crashlytics.sdk.android:crashlytics:$crashlyticsVersion"
     implementation "com.firebaseui:firebase-ui-auth:$firebaseUIVersion"
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "com.android.support.test:runner:$runnerVersion"
     androidTestImplementation "com.android.support.test.espresso:espresso-core:$espressoVersion"

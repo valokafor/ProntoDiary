@@ -1,5 +1,6 @@
 package com.okason.diary.ui.settings;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -7,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.models.inactive.SampleData;
 
@@ -45,7 +47,10 @@ public class SettingsFragment extends PreferenceFragment {
                 Bundle bundle = new Bundle();
                 bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "Remove Sample Data");
                 FirebaseAnalytics.getInstance(getActivity()).logEvent("remove_sample_data", bundle);
-                getActivity().onBackPressed();
+
+                Intent intent = new Intent(getActivity(), NoteListActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
                 return true;
             }
         });

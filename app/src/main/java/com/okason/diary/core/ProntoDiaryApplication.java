@@ -47,7 +47,7 @@ public class ProntoDiaryApplication extends MultiDexApplication {
             return;
         }
         initDrawer();
-        initRealm();
+        Realm.init(this);
         mContext = getApplicationContext();
         LeakCanary.install(this);
 
