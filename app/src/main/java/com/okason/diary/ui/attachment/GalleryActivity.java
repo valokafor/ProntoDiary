@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 
 import com.okason.diary.R;
 import com.okason.diary.data.JournalDao;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Journal;
 import com.okason.diary.utils.Constants;
@@ -43,7 +44,7 @@ public class GalleryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
         ButterKnife.bind(this);
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         imageOnlyAttachments = new ArrayList<>();
 
         //Pass in the Journal as a JSON to avoid having to query for the Journal from Firebase

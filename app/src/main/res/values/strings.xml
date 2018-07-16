@@ -42,7 +42,7 @@
     <string name="sync_reason_4">Peace of mind, if something happens to your device, be rest assured that your data will be waiting for you on your next device.</string>
     <string name="sync_reason_5">Your app will continue to work 100% offline. Only syncs when you have internet access.</string>
 
-    <string name="sync_reason">  Welcome to Pronto Journal! \n Enable Cloud Backup \n\nLogin or create an account and enable secure, cloud backup of your Diaries, Journals and Todo List. You can access them from any Android device. It\'s free. Always!.</string>
+    <string name="sync_reason">  \nSign up and enable secure, cloud backup of your Journals, Diaries and Todo List. You can access them from any Android device. It\'s free. Always!.</string>
 
 
     <!--Account Register and Login Related-->
@@ -417,6 +417,7 @@
     <string name="toast_higher_number">Repeat number must be higher</string>
     <string name="times_shown_edit">Shown %1$d out of</string>
     <string name="repeats_on">Repeats on:</string>
+    <string name="signup_title">Sign up</string>
 
     <string-array name="repeat_array">
         <item>Does not repeat</item>
@@ -493,12 +494,22 @@
         much for my strength -- I sink under the weight of the splendour of these visions! A wonderful serenity has taken possession of my entire soul,
         like these sweet mornings of spring which I enjoy with my whole heart. I am alone, and feel the charm of existence in this spot,
         which was created for the bliss of souls like mine.</string>
+
+
     <string name="start_listening">Listen to the Audio</string>
     <string name="stop_listening">Stop listening</string>
     <string name="title_activity_locations">Locations</string>
     <string name="no_location_found">You have not added any location, use the + button to start. Use your locations to set location reminder.</string>
     <string name="hint_enter_location_name">Location name  e.g Home, Office.etc,</string>
     <string name="hint_enter_address">Location addes - 123 main street</string>
+    <string name="splash_welcome_txt">Easy to use Journal, Diary and Todo List</string>
+    <string name="get_started_btn_label">Get Started</string>
+    <string name="label_login_with_space">"  Login"</string>
+    <string name="have_an_acccount">Have an account?</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="do_not_have_an_acccount">Don\'t have an account?</string>
+    <string name="sign_up_with_space">"  Sign up"</string>
+    <string name="welcome_back_message">Welcome back! \n Login to enable cloud sync</string>
 
 
 </resources>

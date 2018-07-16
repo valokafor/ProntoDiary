@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.R;
 import com.okason.diary.data.FolderDao;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Folder;
 import com.okason.diary.utils.Constants;
 
@@ -71,7 +72,7 @@ public class AddFolderDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         folderDao = new FolderDao(realm);
         final AlertDialog.Builder addFolderDialog = new AlertDialog.Builder(getActivity(), R.style.dialog);
 

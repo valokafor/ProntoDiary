@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.TagDao;
 import com.okason.diary.models.ProntoTag;
 
@@ -57,7 +58,7 @@ public class SelectTagDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         tagDao = new TagDao(realm);
         allProntoTags = tagDao.getAllTags();
     }

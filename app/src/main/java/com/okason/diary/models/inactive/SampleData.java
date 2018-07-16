@@ -3,6 +3,7 @@ package com.okason.diary.models.inactive;
 import android.content.Context;
 
 import com.okason.diary.R;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Journal;
@@ -79,7 +80,7 @@ public class SampleData {
     public void getSampleNotesRealm() {
 
 
-        try (Realm realm = Constants.setUpRealm()) {
+        try (Realm realm = RealmManager.setUpRealm()) {
             if (realm == null){
                 return;
             }

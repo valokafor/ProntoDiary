@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.data.JournalDao;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Journal;
 import com.okason.diary.ui.notedetails.NoteDetailFragment;
 import com.okason.diary.utils.Constants;
@@ -43,7 +44,7 @@ public class AddNoteActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
         mActivity = this;
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationIcon(R.drawable.ic_action_check_white);
 

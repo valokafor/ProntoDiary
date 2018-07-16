@@ -12,6 +12,7 @@ import android.view.MenuItem;
 
 import com.okason.diary.R;
 import com.okason.diary.data.FolderDao;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Folder;
 import com.okason.diary.ui.notes.NotesFragment;
 import com.okason.diary.utils.Constants;
@@ -37,7 +38,7 @@ public class FolderActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         folderDao = new FolderDao(realm);
 
 

@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.data.JournalDao;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Journal;
 import com.okason.diary.utils.Constants;
 
@@ -49,7 +50,7 @@ public class NoteDetailDialogFragment extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        realm = realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
     }
 
     public NoteDetailDialogFragment() {

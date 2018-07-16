@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import com.okason.diary.R;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.data.JournalDao;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Journal;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.utils.Constants;
@@ -34,7 +35,7 @@ public class NoteDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_detail);
         ButterKnife.bind(this);
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 

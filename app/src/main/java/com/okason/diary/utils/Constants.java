@@ -2,10 +2,6 @@ package com.okason.diary.utils;
 
 import android.text.TextUtils;
 
-import io.realm.Realm;
-import io.realm.SyncConfiguration;
-import io.realm.SyncUser;
-
 /**
  * Created by Valentine on 9/4/2015.
  */
@@ -222,14 +218,17 @@ public class Constants {
 
 
 
-    public static Realm setUpRealm() {
-        String url = "realms://pronto-diary.us1.cloud.realm.io/~/journal";
-        SyncConfiguration configuration = SyncUser.current()
-                .createConfiguration(url)
-                .build();
-        Realm realm = Realm.getInstance(configuration);
+//    public static Realm setUpRealm() {
+//        String url = "realms://pronto-diary.us1.cloud.realm.io/~/journal";
+//        SyncConfiguration configuration = SyncUser.current()
+//                .createConfiguration(url)
+//                .fullSynchronization()
+//                .build();
+//        Realm realm = Realm.getInstance(configuration);
+//
+//        return realm;
+//    }
 
-        return realm;
-    }
+
 
 }

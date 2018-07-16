@@ -22,6 +22,7 @@ import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.data.FolderDao;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.ProntoTag;
 
@@ -74,7 +75,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         folderDao = new FolderDao(realm);
     }
 

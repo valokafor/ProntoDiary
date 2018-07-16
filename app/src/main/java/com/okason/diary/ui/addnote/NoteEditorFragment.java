@@ -64,6 +64,7 @@ import com.okason.diary.core.listeners.OnTagSelectedListener;
 import com.okason.diary.core.services.FileUploadIntentService;
 import com.okason.diary.data.FolderDao;
 import com.okason.diary.data.JournalDao;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Journal;
@@ -301,7 +302,7 @@ public class NoteEditorFragment extends Fragment {
     }
 
     private void initResources() {
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         journalDao = new JournalDao(realm);
         folderDao = new FolderDao(realm);
 

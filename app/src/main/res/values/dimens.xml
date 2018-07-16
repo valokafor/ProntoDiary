@@ -86,6 +86,7 @@
     <dimen name="dialog_padding_side">24dp</dimen>
     <dimen name="item_offset">5dp</dimen>
     <dimen name="toolbar_placeholder_height">56dp</dimen>
+    <dimen name="splash_btn_width">130dp</dimen>
 
     <!-- Default screen margins, per the Android Design guidelines. -->
 

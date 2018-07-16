@@ -15,13 +15,7 @@ public class SettingsHelper {
   private static SettingsHelper INSTANCE;
 
   private static final String MESSAGING_TOKEN = "MessagingToken";
-  private static final String PAIRING_COMPLETE = "PairingComplete";
-  private static final String TV_NAME = "TvName";
-  private static final String EPG_COUNTRY = "EpgCountry";
-  private static final String EPG_AREA = "EpgArea";
-  private static final String EPG_ZIP_CODE = "EpgZipCode";
-  private static final String EPG_PROVIDER = "EpgProvider";
-  private static final String REST_SERVER = "RestServer";
+
 
   private Context context;
  // private FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
@@ -69,8 +63,7 @@ public class SettingsHelper {
 
 
   public boolean isRegisteredUser() {
-    return true;
-    //return getSharedPreferences().getBoolean(Constants.REGISTERED_USER, false);
+    return getSharedPreferences().getBoolean(Constants.REGISTERED_USER, false);
   }
 
   public void setRegisteredUser(boolean registered){

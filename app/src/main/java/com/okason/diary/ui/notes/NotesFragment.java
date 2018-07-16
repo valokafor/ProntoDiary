@@ -32,6 +32,7 @@ import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.NoteItemListener;
 import com.okason.diary.data.JournalDao;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Journal;
 import com.okason.diary.ui.attachment.GalleryActivity;
@@ -135,7 +136,7 @@ public class NotesFragment extends Fragment
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_note_list, container, false);
         ButterKnife.bind(this, mRootView);
-        realm = Constants.setUpRealm();
+        realm = RealmManager.setUpRealm();
         journalDao = new JournalDao(realm);
         filteredJournals = new ArrayList<>();
         firebaseAnalytics = FirebaseAnalytics.getInstance(getContext());

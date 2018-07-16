@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.OnTagSelectedListener;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.TagDao;
 import com.okason.diary.models.ProntoTag;
 import com.okason.diary.utils.Constants;
@@ -83,7 +84,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
                 showAddNewTagDialog();
             }
         });
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         tagDao = new TagDao(realm);
         prontoTags = tagDao.getAllTags();
         return mRootView;

@@ -59,6 +59,7 @@ import com.okason.diary.utils.SettingsHelper;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.SyncUser;
 
 public class NoteListActivity extends AppCompatActivity implements BillingProvider {
     private SharedPreferences preferences;
@@ -255,11 +256,12 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
                 .withFireOnInitialOnClick(true)
                 .withSavedInstance(savedInstanceState)
                 .build();
-        drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Enable Sync").withIcon(GoogleMaterial.Icon.gmd_lock_open).withIdentifier(Constants.LOGIN));
+
      //   drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Logout").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.LOGOUT));
 
-        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getDisplayName())) {
-            drawer.removeStickyFooterItemAtPosition(0);
+        if (SyncUser.current() == null) {
+            drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Enable Sync").withIcon(GoogleMaterial.Icon.gmd_lock_open).withIdentifier(Constants.LOGIN));
+           // drawer.removeStickyFooterItemAtPosition(0);
         }
 
         if (SettingsHelper.getHelper(mActivity).isPremiumUser()){

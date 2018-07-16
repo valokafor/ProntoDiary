@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.R;
 import com.okason.diary.core.events.TagListChangeEvent;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.TagDao;
 import com.okason.diary.models.ProntoTag;
 import com.okason.diary.utils.Constants;
@@ -44,7 +45,7 @@ public class AddTagDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         tagDao = new TagDao(realm);
 
     }
