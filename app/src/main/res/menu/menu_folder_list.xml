@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ui.notedetails.NoteDetailActivity">
 
-    <!--<item android:id="@+id/action_add"-->
-        <!--android:title="@string/action_add"-->
-        <!--android:icon="@drawable/ic_add_white_24dp"-->
-        <!--app:showAsAction="always"/>-->
+    <item android:id="@+id/action_add"
+        android:title="@string/action_add"
+        android:icon="@drawable/ic_add_white_24dp"
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/action_search"

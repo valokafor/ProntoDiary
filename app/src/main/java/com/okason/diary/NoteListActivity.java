@@ -221,7 +221,6 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
                         new PrimaryDrawerItem().withName("Todo List").withIcon(GoogleMaterial.Icon.gmd_format_list_bulleted).withIdentifier(Constants.TODO_LIST),
                         new PrimaryDrawerItem().withName("Folders").withIcon(GoogleMaterial.Icon.gmd_folder).withIdentifier(Constants.FOLDERS),
                         new PrimaryDrawerItem().withName("Tags").withIcon(GoogleMaterial.Icon.gmd_tag).withIdentifier(Constants.TAGS),
-                        new PrimaryDrawerItem().withName("Locations").withIcon(GoogleMaterial.Icon.gmd_google_maps).withIdentifier(Constants.LOCATION),
                         new PrimaryDrawerItem().withName("Share App").withIcon(GoogleMaterial.Icon.gmd_share).withIdentifier(Constants.SHARE_APP),
                         new PrimaryDrawerItem().withName("Contact Developer").withIcon(GoogleMaterial.Icon.gmd_email).withIdentifier(Constants.CONTACT_US),
                         new PrimaryDrawerItem().withName("Remove Ads").withIcon(GoogleMaterial.Icon.gmd_money).withIdentifier(Constants.REMOVE_ADS),

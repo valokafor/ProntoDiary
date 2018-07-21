@@ -4,7 +4,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 xmlns:ads="http://schemas.android.com/apk/res-auto"
-                tools:context="com.okason.diary.ui.prontoTag.TagListFragment">
+                tools:context="com.okason.diary.ui.tag.TagListFragment">
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
@@ -51,6 +51,7 @@
         android:layout_alignParentRight="true"
         app:backgroundTint="@color/primary"
         android:layout_margin="@dimen/fab_margin"
+        android:visibility="gone"
         app:srcCompat="@drawable/ic_add_white_24dp"/>
 
 </RelativeLayout>

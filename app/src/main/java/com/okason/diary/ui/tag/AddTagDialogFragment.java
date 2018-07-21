@@ -16,13 +16,12 @@ import android.widget.TextView;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.R;
-import com.okason.diary.core.events.TagListChangeEvent;
 import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.TagDao;
 import com.okason.diary.models.ProntoTag;
 import com.okason.diary.utils.Constants;
 
-import org.greenrobot.eventbus.EventBus;
+import java.util.UUID;
 
 import io.realm.Realm;
 
@@ -161,20 +160,43 @@ public class AddTagDialogFragment extends DialogFragment {
     }
 
 
+//
+//    private void saveTag() {
+//        final String tagName = tagEditText.getText().toString().trim();
+//        if (mTag == null){
+//            mTag = tagDao.createNewTag(tagName);
+//        }
+//        tagDao.updatedTagTitle(mTag.getId(), tagName);
+//        mTag = tagDao.createOrUpdateTag(tagName);
+//        EventBus.getDefault().post(new TagListChangeEvent());
+//
+//        Bundle bundle = new Bundle();
+//        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, mTag.getId());
+//        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, tagName);
+//        FirebaseAnalytics.getInstance(getActivity()).logEvent("add_tag", bundle);
+//    }
+
 
     private void saveTag() {
         final String tagName = tagEditText.getText().toString().trim();
-        if (mTag == null){
-            mTag = tagDao.createNewTag(tagName);
-        }
-        tagDao.updatedTagTitle(mTag.getId(), tagName);
-        mTag = tagDao.createOrUpdateTag(tagName);
-        EventBus.getDefault().post(new TagListChangeEvent());
+        if (!TextUtils.isEmpty(tagName)) {
+            if (mTag == null){
+                realm.beginTransaction();
+                mTag = new ProntoTag();
+                mTag.setTagName(tagName);
+                mTag.setId(UUID.randomUUID().toString());
+                realm.insert(mTag);
+                realm.commitTransaction();
 
-        Bundle bundle = new Bundle();
-        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, mTag.getId());
-        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, tagName);
-        FirebaseAnalytics.getInstance(getActivity()).logEvent("add_tag", bundle);
+                Bundle bundle = new Bundle();
+                bundle.putString(FirebaseAnalytics.Param.ITEM_ID, mTag.getId());
+                bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, tagName);
+                FirebaseAnalytics.getInstance(getActivity()).logEvent("add_tag", bundle);
+            }
+            tagDao.updatedTagTitle(mTag.getId(), tagName);
+
+        }
+
     }
 
     @Override

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -49,7 +48,7 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
     @BindView(R.id.tag_recycler_view) RecyclerView mRecyclerView;
     @BindView(R.id.empty_text) TextView mEmptyText;
-    @BindView(R.id.add_tag_fab) FloatingActionButton addTagbutton;
+   // @BindView(R.id.add_tag_fab) FloatingActionButton addTagbutton;
 
     private AddTagDialogFragment addTagDialog;
     private String sortColumn = "title";
@@ -78,12 +77,12 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
         ButterKnife.bind(this, mRootView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        addTagbutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAddNewTagDialog();
-            }
-        });
+//        addTagbutton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                showAddNewTagDialog();
+//            }
+//        });
         realm = RealmManager.setUpRealm();
         tagDao = new TagDao(realm);
         prontoTags = tagDao.getAllTags();
@@ -118,15 +117,16 @@ public class TagListFragment extends Fragment implements OnTagSelectedListener{
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-//        inflater.inflate(R.menu.menu_tag_list, menu);
-//        MenuItem search = menu.findItem(R.id.action_search);
-        menu.clear();
+        inflater.inflate(R.menu.menu_tag_list, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        if (id == R.id.action_add){
+            showAddNewTagDialog();
+        }
         return super.onOptionsItemSelected(item);
     }
 

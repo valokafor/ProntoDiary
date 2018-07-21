@@ -4,7 +4,6 @@ package com.okason.diary.ui.folder;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -61,7 +60,7 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     private RealmResults<Folder> mFolders;
     private FolderDao folderDao;
     private ProntoTag prontoTag;
-    private FloatingActionButton floatingActionButton;
+   // private FloatingActionButton floatingActionButton;
 
 
 
@@ -88,18 +87,6 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        floatingActionButton = (FloatingActionButton) mRootView.findViewById(R.id.fab);
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showAddNewFolderDialog();
-            }
-        });
-
-
-
-
         return  mRootView;
     }
 
@@ -149,8 +136,6 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-
         int id = item.getItemId();
         switch (id){
             case R.id.action_add:
