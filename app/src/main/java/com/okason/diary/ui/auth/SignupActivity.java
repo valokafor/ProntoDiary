@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.SettingsHelper;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -99,6 +100,7 @@ public class SignupActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(SyncUser user) {
                         showProgress(false);
+                        SettingsHelper.getHelper(activity).setRegisteredUser(true);
                         navigateToListOfJournals();
                     }
 

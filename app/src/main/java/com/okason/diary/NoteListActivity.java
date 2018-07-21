@@ -32,6 +32,7 @@ import com.google.firebase.dynamiclinks.DynamicLink;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 import com.google.firebase.dynamiclinks.ShortDynamicLink;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
@@ -524,6 +525,20 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
      */
     public void showRefreshedUi() {
         makeToast("showRefreshedUi");
+    }
+
+    /**
+     * Start the service to confirm FCM is set up properly.
+     */
+    private void setupMessagingService() {
+        Log.d(TAG, "Set up messaging services.");
+        String token = SettingsHelper.getHelper(this).getMessagingToken();
+        if (token == null) {
+            // need to retrieve a messaging token
+            Log.d(TAG, "No FCM token defined. Requesting new token.");
+            FirebaseInstanceId.getInstance().getToken();
+            // wait until response is received via event bus
+        }
     }
 
 }

@@ -120,4 +120,6 @@ public class SettingsHelper {
     SharedPreferences.Editor editor = getSharedPreferences().edit();
     editor.putBoolean(Constants.PREMIUM_USER, paid).apply();
   }
+
+
 }

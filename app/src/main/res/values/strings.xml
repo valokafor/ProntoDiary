@@ -510,6 +510,9 @@
     <string name="do_not_have_an_acccount">Don\'t have an account?</string>
     <string name="sign_up_with_space">"  Sign up"</string>
     <string name="welcome_back_message">Welcome back! \n Login to enable cloud sync</string>
+    <string name="hint_enter_email">Enter email address</string>
+    <string name="hint_enter_email_prefill">\"\"</string>
+    <string name="forgot_passord_message">Enter your login email address</string>
 
 
 </resources>
