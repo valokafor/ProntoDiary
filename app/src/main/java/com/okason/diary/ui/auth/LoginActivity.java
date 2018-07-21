@@ -19,7 +19,9 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.services.LocalToSyncIntentService;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.SettingsHelper;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -127,11 +129,13 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             if (isValidEmail(username)) {
                 showProgress(true);
-                SyncCredentials credentials = SyncCredentials.usernamePassword(username, password, true);
+                SyncCredentials credentials = SyncCredentials.usernamePassword(username, password, false);
                 SyncUser.logInAsync(credentials, Constants.REALM_AUTH_URL, new SyncUser.Callback<SyncUser>() {
                     @Override
                     public void onSuccess(SyncUser user) {
                         showProgress(false);
+                        SettingsHelper.getHelper(activity).setRegisteredUser(true);
+                        startService(new Intent(activity, LocalToSyncIntentService.class));
                         navigateToListOfJournals();
                     }
 

@@ -49,6 +49,7 @@ import com.okason.diary.billing.BillingProvider;
 import com.okason.diary.billing.MainViewController;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.auth.SignupActivity;
 import com.okason.diary.ui.folder.FolderListActivity;
 import com.okason.diary.ui.location.LocationsActivity;
 import com.okason.diary.ui.notes.NotesFragment;
@@ -169,6 +170,9 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (mBillingManager != null) {
+            mBillingManager.destroy();
+        }
     }
 
 
@@ -347,7 +351,7 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
                 logout();
                 break;
             case Constants.LOGIN:
-                startActivity(new Intent(mActivity, AuthUiActivity.class));
+                startActivity(new Intent(mActivity, SignupActivity.class));
                 break;
             case Constants.DELETE:
                 //Delete Account

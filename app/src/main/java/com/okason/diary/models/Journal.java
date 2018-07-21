@@ -1,5 +1,7 @@
 package com.okason.diary.models;
 
+import com.okason.diary.models.dto.JournalDto;
+
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
@@ -21,6 +23,14 @@ public class Journal extends RealmObject{
     public Journal(){
         dateCreated = System.currentTimeMillis();
         dateModified = System.currentTimeMillis();
+    }
+
+    public Journal(JournalDto journal){
+        this.id = journal.getId();
+        this.title = journal.getTitle();
+        this.content = journal.getContent();
+        this.dateCreated = journal.getDateCreated();
+        this.dateModified = journal.getDateModified();
     }
 
 

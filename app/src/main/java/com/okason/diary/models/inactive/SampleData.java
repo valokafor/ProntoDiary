@@ -320,7 +320,7 @@ public class SampleData {
     }
 
     public void removeSampleData(){
-        try (Realm realm = Realm.getDefaultInstance()){
+        try (Realm realm = RealmManager.setUpRealm();){
             realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm backgroundRealm) {

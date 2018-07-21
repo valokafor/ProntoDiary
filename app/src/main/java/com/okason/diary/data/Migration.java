@@ -35,4 +35,16 @@ public class Migration implements RealmMigration {
         }
 
     }
+
+
+    public int hashCode() {
+        return Migration.class.hashCode();
+    }
+
+    public boolean equals(Object object) {
+        if(object == null) {
+            return false;
+        }
+        return object instanceof Migration;
+    }
 }

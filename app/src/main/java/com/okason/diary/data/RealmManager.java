@@ -10,8 +10,11 @@ import io.realm.SyncUser;
 public class RealmManager {
 
     public static SyncConfiguration getSyncConfig() {
+        String url = "realms://pronto-diary.us1.cloud.realm.io/~/journal";
         SyncConfiguration configuration = SyncUser.current()
-                .getDefaultConfiguration();
+                .createConfiguration(url)
+                .fullSynchronization()
+                .build();
         return configuration;
     }
 
@@ -19,7 +22,7 @@ public class RealmManager {
         RealmConfiguration configuration = new RealmConfiguration.Builder()
                 .name(Constants.REALM_DATABASE)
                 .schemaVersion(5)
-                .deleteRealmIfMigrationNeeded()
+                .migration(new Migration())
                 .build();
         return configuration;
     }
@@ -29,12 +32,7 @@ public class RealmManager {
             Realm realm = Realm.getInstance(getLocalConfig());
             return realm;
         } else {
-            String url = "realms://pronto-diary.us1.cloud.realm.io/~/journal";
-            SyncConfiguration configuration = SyncUser.current()
-                    .createConfiguration(url)
-                    .fullSynchronization()
-                    .build();
-            Realm realm = Realm.getInstance(configuration);
+            Realm realm = Realm.getInstance(getSyncConfig());
             return realm;
         }
 

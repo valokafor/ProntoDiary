@@ -171,13 +171,13 @@ public class AddFolderDialogFragment extends DialogFragment {
                 mFolder.setId(UUID.randomUUID().toString());
                 realm.insert(mFolder);
                 realm.commitTransaction();
-            }
-           // folderDao.updatedFolderTitle(mFolder.getId(), categoryName);
 
-            Bundle bundle = new Bundle();
-            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, mFolder.getId());
-            bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, categoryName);
-            FirebaseAnalytics.getInstance(getActivity()).logEvent("add_category", bundle);
+                Bundle bundle = new Bundle();
+                bundle.putString(FirebaseAnalytics.Param.ITEM_ID, mFolder.getId());
+                bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, categoryName);
+                FirebaseAnalytics.getInstance(getActivity()).logEvent("add_category", bundle);
+            }
+            folderDao.updatedFolderTitle(mFolder.getId(), categoryName);
 
         }
 

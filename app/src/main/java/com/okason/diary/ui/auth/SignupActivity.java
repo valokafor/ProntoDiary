@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
+import com.okason.diary.core.services.LocalToSyncIntentService;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.SettingsHelper;
 
@@ -101,6 +102,7 @@ public class SignupActivity extends AppCompatActivity {
                     public void onSuccess(SyncUser user) {
                         showProgress(false);
                         SettingsHelper.getHelper(activity).setRegisteredUser(true);
+                        startService(new Intent(activity, LocalToSyncIntentService.class));
                         navigateToListOfJournals();
                     }
 

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.okason.diary.BuildConfig;
 import com.okason.diary.core.ProntoDiaryApplication;
@@ -15,11 +14,13 @@ import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Journal;
 import com.okason.diary.models.ProntoTag;
+import com.okason.diary.models.dto.AttachmentDto;
+import com.okason.diary.models.dto.FolderDto;
 import com.okason.diary.models.dto.JournalDto;
+import com.okason.diary.models.dto.ProntoTagDto;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.FileHelper;
 import com.okason.diary.utils.StorageHelper;
-import com.okason.diary.utils.date.TimeUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -312,62 +313,72 @@ public class JournalDao {
         return journals;
     }
 
-    public void addJournalFromCloud(JournalDto dto) {
-        realm.executeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                Log.d(TAG, "addJournalFromCloud called");
-                if (dto != null && !TextUtils.isEmpty(dto.getId())) {
-                    Journal journal = getJournalById(dto.getId());
-                    if (journal == null) {
-                        Log.d(TAG, "journal " + dto.getTitle() + "from Cloud does not exist locally");
-                        String journalId = UUID.randomUUID().toString();
-                        journal = realm.createObject(Journal.class, journalId);
-                        updateJournalFromCloud(realm, journal, dto);
-                        return;
+    public void addJournalDtoToRealm(JournalDto dto) {
+
+        if (dto != null && !TextUtils.isEmpty(dto.getId())) {
+
+            //Create or Get Folder, this spuns a Realm Transaction of its own
+            Folder folder = null;
+            if (dto.getFolder() != null){
+                FolderDto folderDto = dto.getFolder();
+                folder= new FolderDao(realm).getOrCreateFolder(folderDto.getFolderName());
+            }
+
+            //Now create the Realm object
+
+            Journal journal = getJournalById(dto.getId());
+            if (journal == null) {
+                realm.beginTransaction();
+                journal = new Journal(dto);
+                journal = realm.copyToRealmOrUpdate(journal);
+
+                //Add Folder to Journal
+                if (folder != null){
+                    journal.setFolder(folder);
+                    folder.getJournals().add(journal);
+                }
+                realm.commitTransaction();
+            }
+
+
+            //Check if Attachment exists
+            if (dto.getAttachments().size() > 0){
+                //Update Attachments in a transaction
+                realm.beginTransaction();
+                for (AttachmentDto attachmentDto: dto.getAttachments()){
+                    if (attachmentDto.getId() != null) {
+                        Attachment attachment = getAttachmentById(attachmentDto.getId());
+                        if (attachment == null) {
+                            attachment = new Attachment(attachmentDto);
+                            attachment = realm.copyToRealmOrUpdate(attachment);
+                        }
+                        if (attachment != null) {
+                            journal.getAttachments().add(attachment);
+                        }
                     }
+                }
+                realm.commitTransaction();
+
+            }
 
 
-                    boolean recentlyUpdated = TimeUtils.isCloudModifiedDateAfterLocalModifiedDate(dto.getDateModified(),
-                            journal.getDateModified());
-
-                    if (recentlyUpdated){
-                        Log.d(TAG, "journal " + dto.getTitle() + "from Cloud does has been updated recently");
-                        updateJournalFromCloud(realm, journal, dto);
-                        return;
-                    } else {
-                        return;
+            //Update the list of applicable ProntoTags
+            if (dto.getTags().size() > 0){
+                TagDao tagDao = new TagDao(realm);
+                for (ProntoTagDto tagDto: dto.getTags()){
+                    ProntoTag tag = tagDao.getOrCreateTag(tagDto.getTagName());
+                    if (tag != null){
+                        addTag(journal.getId(), tag.getId());
                     }
                 }
             }
 
-        });
-    }
-
-    private void updateJournalFromCloud(Realm realm, Journal journal, JournalDto dto) {
-        journal.setDateCreated(dto.getDateCreated());
-        journal.setDateModified(dto.getDateModified());
-        journal.setTitle(dto.getTitle());
-        journal.setContent(dto.getContent());
-        if (dto.getFolder() != null){
-            String fId = dto.getFolder().getId();
-            Log.d(TAG, "Folder Id: " + fId);
-            Folder folder = realm.where(Folder.class).equalTo("id", fId).findFirst();
-            if (folder == null){
-                folder = realm.createObject(Folder.class, fId);
-                folder.setDateCreated(dto.getFolder().getDateCreated());
-                folder.setDateModified(dto.getFolder().getDateModified());
-                folder.setFolderName(dto.getFolder().getFolderName());
-            }
-
-            if (folder != null){
-                journal.setFolder(folder);
-                folder.getJournals().add(journal);
-            }
 
         }
 
     }
+
+
 
 
 }

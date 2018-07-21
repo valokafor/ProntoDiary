@@ -2,6 +2,8 @@ package com.okason.diary.models;
 
 import android.net.Uri;
 
+import com.okason.diary.models.dto.AttachmentDto;
+
 import java.io.File;
 
 import io.realm.RealmObject;
@@ -49,6 +51,20 @@ public class Attachment extends RealmObject {
         this.dateCreated  = System.currentTimeMillis();
 
     }
+
+    public Attachment(AttachmentDto attachment){
+        this.id = attachment.getId();
+        this.uri = attachment.getUri();
+        this.cloudFilePath = attachment.getCloudFilePath();
+        this.localFilePath = attachment.getLocalFilePath();
+        this.mime_type = attachment.getMime_type();
+        this.name = attachment.getName();
+        this.comment = attachment.getComment();
+        this.size = attachment.getSize();
+        this.length = attachment.getLength();
+        this.dateCreated = System.currentTimeMillis();
+    }
+
 
     public Attachment(Uri uri, String imagePath, String mime_type, String name) {
         this.uri = uri.toString();

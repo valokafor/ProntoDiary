@@ -44,12 +44,13 @@ public class FolderDao {
         return folder;
     }
 
-    public Folder createNewFolder() {
+    public Folder createNewFolder(String foldername) {
         String id = UUID.randomUUID().toString();
         realm.beginTransaction();
         Folder folder = realm.createObject(Folder.class, id);
         folder.setDateCreated(System.currentTimeMillis());
         folder.setDateModified(System.currentTimeMillis());
+        folder.setFolderName(foldername);
         realm.commitTransaction();
         return folder;
     }
@@ -101,7 +102,7 @@ public class FolderDao {
     public Folder getOrCreateFolder(String foldername) {
         Folder folder = getFolderByName(foldername);
         if (folder == null){
-            folder = createNewFolder();
+            folder = createNewFolder(foldername);
         }
         return folder;
     }

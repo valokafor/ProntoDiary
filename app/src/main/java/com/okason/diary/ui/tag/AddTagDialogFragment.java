@@ -165,7 +165,7 @@ public class AddTagDialogFragment extends DialogFragment {
     private void saveTag() {
         final String tagName = tagEditText.getText().toString().trim();
         if (mTag == null){
-            mTag = tagDao.createNewTag();
+            mTag = tagDao.createNewTag(tagName);
         }
         tagDao.updatedTagTitle(mTag.getId(), tagName);
         mTag = tagDao.createOrUpdateTag(tagName);

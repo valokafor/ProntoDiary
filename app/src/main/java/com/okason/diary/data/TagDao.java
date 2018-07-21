@@ -38,6 +38,7 @@ public class TagDao {
     public ProntoTag getTagById(String tagId) {
         try {
             ProntoTag selectedProntoTag = realm.where(ProntoTag.class).equalTo("id", tagId).findFirst();
+
             return selectedProntoTag;
         } catch (Exception e) {
             return null;
@@ -45,12 +46,13 @@ public class TagDao {
     }
 
 
-    public ProntoTag createNewTag() {
+    public ProntoTag createNewTag(String tagName) {
         String id = UUID.randomUUID().toString();
         realm.beginTransaction();
         ProntoTag tag = realm.createObject(ProntoTag.class, id);
         tag.setDateCreated(System.currentTimeMillis());
         tag.setDateModified(System.currentTimeMillis());
+        tag.setTagName(tagName);
         realm.commitTransaction();
         return tag;
     }
@@ -66,9 +68,9 @@ public class TagDao {
 
 
     public ProntoTag getOrCreateTag(String tagName) {
-        ProntoTag tag = getTagById(tagName);
+        ProntoTag tag = getTagByName(tagName);
         if (tag == null){
-            tag = createNewTag();
+            tag = createNewTag(tagName);
         }
         return tag;
     }

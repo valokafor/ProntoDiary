@@ -175,7 +175,7 @@ public class DataDownloadIntentService extends IntentService {
                             JournalDao journalDao = new JournalDao(realm);
                             for (JournalDto journalDto: journals){
                                 if (journalDto != null) {
-                                    journalDao.addJournalFromCloud(journalDto);
+                                    journalDao.addJournalDtoToRealm(journalDto);
                                 }
                             }
                         } catch (Exception e) {

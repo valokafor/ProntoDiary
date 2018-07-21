@@ -68,7 +68,9 @@ public class AttachmentDto {
     }
 
     public AttachmentDto(Attachment attachment){
+        this.id = attachment.getId();
         this.uri = attachment.getUri();
+        this.cloudFilePath = attachment.getCloudFilePath();
         this.localFilePath = attachment.getLocalFilePath();
         this.mime_type = attachment.getMime_type();
         this.name = attachment.getName();
