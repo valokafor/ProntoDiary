@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.ReminderDao;
 import com.okason.diary.models.Reminder;
 import com.okason.diary.utils.Constants;
@@ -37,7 +38,7 @@ public class AlarmUtil {
     }
 
     public static void setNextAlarm(Context context, int reminderId) {
-        try(Realm realm = Realm.getDefaultInstance()) {
+        try(Realm realm = RealmManager.setUpRealm()) {
             ReminderDao reminderDao = new ReminderDao(realm);
             Reminder reminder = reminderDao.getReminderById(reminderId);
             Calendar calendar = DateAndTimeUtil.parseDateAndTime(reminder.getDateAndTime());

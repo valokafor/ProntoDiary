@@ -39,6 +39,7 @@ import com.okason.diary.R;
 import com.okason.diary.core.events.FolderAddedEvent;
 import com.okason.diary.core.listeners.OnFolderSelectedListener;
 import com.okason.diary.data.FolderDao;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.ReminderDao;
 import com.okason.diary.data.TagDao;
 import com.okason.diary.data.TaskDao;
@@ -150,7 +151,7 @@ public class AddTaskActivity extends AppCompatActivity implements
         ButterKnife.bind(this);
         activity = this;
 
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         taskDao = new TaskDao(realm);
         folderDao = new FolderDao(realm);
         tagDao = new TagDao(realm);

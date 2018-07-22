@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 
 import com.okason.diary.R;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.TaskDao;
 import com.okason.diary.models.ProntoTask;
 import com.okason.diary.utils.Constants;
@@ -28,7 +29,7 @@ public class AddSubTaskActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         taskDao = new TaskDao(realm);
 
         //Only start the Add Sub ProntoTask Fragment if a valid ProntoTask object was passed in

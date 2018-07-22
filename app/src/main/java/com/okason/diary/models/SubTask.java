@@ -1,5 +1,7 @@
 package com.okason.diary.models;
 
+import com.okason.diary.models.dto.SubTaskDto;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -16,6 +18,16 @@ public class SubTask extends RealmObject{
     private long dateModified;
     private boolean checked;
     private ProntoTask task;
+
+    public SubTask(){}
+
+    public SubTask(SubTaskDto subTask){
+        this.id = subTask.getId();
+        this.title = subTask.getTitle();
+        this.dateCreated = subTask.getDateCreated();
+        this.dateModified = subTask.getDateModified();
+        this.checked = subTask.isChecked();
+    }
 
     public String getId() {
         return id;

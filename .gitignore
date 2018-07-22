@@ -7,3 +7,7 @@
 /build
 /captures
 .externalNativeBuild
+/.idea/encodings.xml
+.idea/caches/
+app/release/
+

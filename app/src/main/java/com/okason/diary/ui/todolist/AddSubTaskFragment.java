@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.SubTaskItemListener;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.TaskDao;
 import com.okason.diary.models.ProntoTask;
 import com.okason.diary.models.SubTask;
@@ -108,7 +109,7 @@ public class AddSubTaskFragment extends Fragment implements SubTaskItemListener 
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_add_sub_task, container, false);
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         taskDao = new TaskDao(realm);
 
         ButterKnife.bind(this, rootView);

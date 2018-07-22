@@ -27,6 +27,7 @@ import android.widget.TextView;
 import com.crashlytics.android.Crashlytics;
 import com.okason.diary.R;
 import com.okason.diary.core.listeners.TaskItemListener;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.TaskDao;
 import com.okason.diary.models.ProntoTask;
 import com.okason.diary.utils.Constants;
@@ -105,7 +106,7 @@ public class TaskListFragment extends Fragment implements TaskItemListener,
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         sortMethod = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("sort_options", "title");
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         taskDao = new TaskDao(realm);
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {

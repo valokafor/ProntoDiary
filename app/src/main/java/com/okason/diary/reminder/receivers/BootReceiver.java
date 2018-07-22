@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.ReminderDao;
 import com.okason.diary.reminder.AlarmReceiver;
 import com.okason.diary.reminder.AlarmUtil;
@@ -22,7 +23,7 @@ public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        Realm realm = Realm.getDefaultInstance();
+        Realm realm = RealmManager.setUpRealm();
         ReminderDao reminderDao = new ReminderDao(realm);
         RealmResults<Reminder> reminderList = reminderDao.getAllReminders();
         List<Reminder> activeReminders = new ArrayList<>();

@@ -44,6 +44,7 @@ import com.okason.diary.R;
 import com.okason.diary.core.GlideApp;
 import com.okason.diary.core.events.EditNoteButtonClickedEvent;
 import com.okason.diary.data.JournalDao;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Attachment;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.Journal;
@@ -142,7 +143,7 @@ public class NoteDetailFragment extends Fragment implements View.OnClickListener
                              Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_note_detail, container, false);
         ButterKnife.bind(this, mRootView);
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         mFirebaseStorage = FirebaseStorage.getInstance();

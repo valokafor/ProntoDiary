@@ -1,13 +1,17 @@
 package com.okason.diary.data;
 
 import android.content.Intent;
+import android.text.TextUtils;
 
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.services.DataUploadIntentService;
 import com.okason.diary.models.Folder;
+import com.okason.diary.models.ProntoTag;
 import com.okason.diary.models.ProntoTask;
 import com.okason.diary.models.Reminder;
 import com.okason.diary.models.SubTask;
+import com.okason.diary.models.dto.FolderDto;
+import com.okason.diary.models.dto.ProntoTagDto;
 import com.okason.diary.models.dto.ProntoTaskDto;
 import com.okason.diary.models.dto.SubTaskDto;
 import com.okason.diary.utils.Constants;
@@ -313,5 +317,68 @@ public class TaskDao {
 
             }
         });
+    }
+
+    public void adddTaskDtoToRealm(ProntoTaskDto dto) {
+        if (dto != null && !TextUtils.isEmpty(dto.getId())) {
+
+            //Create or Get Folder, this spuns a Realm Transaction of its own
+            Folder folder = null;
+            if (dto.getFolder() != null){
+                FolderDto folderDto = dto.getFolder();
+                folder= new FolderDao(realm).getOrCreateFolder(folderDto.getFolderName());
+            }
+
+            //Now create the Realm object
+
+            ProntoTask task = getTaskById(dto.getId());
+            if (task == null) {
+                realm.beginTransaction();
+                task = new ProntoTask(dto);
+                task = realm.copyToRealmOrUpdate(task);
+
+                //Add Folder to Task
+                if (folder != null){
+                    task.setFolder(folder);
+                    folder.getTasks().add(task);
+                }
+                realm.commitTransaction();
+            }
+
+            //Update the list of applicable ProntoTags
+            if (dto.getTags().size() > 0){
+                TagDao tagDao = new TagDao(realm);
+                for (ProntoTagDto tagDto: dto.getTags()){
+                    ProntoTag tag = tagDao.getOrCreateTag(tagDto.getTagName());
+                    if (tag != null){
+                        realm.beginTransaction();
+                        task.getTags().add(tag);
+                        tag.getTasks().add(task);
+                        realm.commitTransaction();
+                    }
+                }
+            }
+
+
+
+            //Check if SubTask exists
+            if (dto.getSubTask().size() > 0){
+                //Update SubTask in a transaction
+                realm.beginTransaction();
+                for (SubTaskDto subTaskDto: dto.getSubTask()){
+                    if (subTaskDto.getId() != null) {
+                        SubTask subTask = new SubTask(subTaskDto);
+                        subTask.setTask(task);
+                        task.getSubTask().add(subTask);
+                    }
+                }
+                realm.commitTransaction();
+
+            }
+
+
+
+
+        }
     }
 }

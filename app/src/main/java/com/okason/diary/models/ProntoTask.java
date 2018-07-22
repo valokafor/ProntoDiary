@@ -1,5 +1,7 @@
 package com.okason.diary.models;
 
+import com.okason.diary.models.dto.ProntoTaskDto;
+
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
@@ -33,6 +35,17 @@ public class ProntoTask extends RealmObject{
     public ProntoTask(){
         dateCreated = System.currentTimeMillis();
     }
+
+    public ProntoTask(ProntoTaskDto dto){
+        this.id = dto.getId();
+        this.title = dto.getTitle();
+        this.description = dto.getDescription();
+        this.dateCreated = dto.getDateCreated();
+        this.dateModified = dto.getDateModified();
+        this.checked = dto.isChecked();
+        this.priority = dto.getPriority();
+    }
+
 
     public String getId() {
         return id;

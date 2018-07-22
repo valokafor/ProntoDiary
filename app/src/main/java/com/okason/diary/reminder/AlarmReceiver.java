@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.ReminderDao;
 import com.okason.diary.models.Reminder;
 import com.okason.diary.ui.todolist.AddTaskActivity;
@@ -23,7 +24,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(final Context context, final Intent intent) {
 
-        try (Realm realm = Realm.getDefaultInstance()) {
+        try (Realm realm = RealmManager.setUpRealm()) {
             ReminderDao reminderDao = new ReminderDao(realm);
             Reminder reminder = reminderDao.getReminderById(intent.getIntExtra("NOTIFICATION_ID", 0));
 

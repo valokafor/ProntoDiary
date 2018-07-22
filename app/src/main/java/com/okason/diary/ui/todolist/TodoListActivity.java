@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
 import com.okason.diary.R;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.data.TaskDao;
 
 import io.realm.Realm;
@@ -32,7 +33,7 @@ public class TodoListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo_list);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        realm = Realm.getDefaultInstance();
+        realm = RealmManager.setUpRealm();
         taskDao = new TaskDao(realm);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
