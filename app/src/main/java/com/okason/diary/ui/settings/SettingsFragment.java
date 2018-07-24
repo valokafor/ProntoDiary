@@ -11,6 +11,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.models.inactive.SampleData;
+import com.okason.diary.ui.auth.PinEntryActivity;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -51,6 +52,16 @@ public class SettingsFragment extends PreferenceFragment {
                 Intent intent = new Intent(getActivity(), NoteListActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
+                return true;
+            }
+        });
+
+
+        Preference addPasscode = findPreference("enable_pass_code");
+        addPasscode.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                startActivity(new Intent(getActivity(), PinEntryActivity.class));
                 return true;
             }
         });

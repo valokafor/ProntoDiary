@@ -513,6 +513,18 @@
     <string name="hint_enter_email">Enter email address</string>
     <string name="hint_enter_email_prefill">\"\"</string>
     <string name="forgot_passord_message">Enter your login email address</string>
+    <string name="title_activity_pin_entry">Pincode Setup</string>
+    <string name="pass_code">Passcode</string>
+    <string name="pref_enable_pass_code">Enable passcode</string>
+    <string name="pref_enable_pass_code_summary">Protect your memories with a passcode</string>
+    <string name="pref_remove_pass_code">Remove passcode</string>
+    <string name="pref_remove_pass_code_summary">Remove passcode</string>
+    <string name="label_save">Save</string>
+    <string name="label_remove">Remove</string>
+    <string name="pin_code_setup_title">Use pin code to protect your Journals and Todo Lists</string>
+    <string name="hint_enter_passcode">Enter pincode</string>
+    <string name="hint_enter_email_for_passcode">Email (for recovery only)</string>
+    <string name="hint_repeat_email">Repeat email</string>
 
 
 </resources>

@@ -1,0 +1,15 @@
+package com.okason.diary.ui.appintro;
+
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+
+import com.okason.diary.R;
+
+public class StartupActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_startup);
+    }
+}

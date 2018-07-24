@@ -71,16 +71,7 @@ public class SettingsHelper {
     editor.putBoolean(Constants.REGISTERED_USER, registered).apply();
   }
 
-  public void saveAnonymousUserId(String userId){
-    SharedPreferences.Editor editor = getSharedPreferences().edit();
-    editor.putString(Constants.ANONYMOUS_ACCOUNT_USER_ID, userId).apply();
 
-  }
-
-  public String getAnonymousUserId(){
-    String userId = getSharedPreferences().getString(Constants.ANONYMOUS_ACCOUNT_USER_ID, "");
-    return userId;
-  }
 
 
   public boolean shouldShowNoteDetailExplainer() {
@@ -120,6 +111,26 @@ public class SettingsHelper {
     SharedPreferences.Editor editor = getSharedPreferences().edit();
     editor.putBoolean(Constants.PREMIUM_USER, paid).apply();
   }
+
+  public void saveUserPinCode(int pinNumber){
+    SharedPreferences.Editor editor = getSharedPreferences().edit();
+    editor.putInt(Constants.PIN_CODE, pinNumber).apply();
+    editor.putBoolean(Constants.PIN_CODE_ENABLED, true).apply();
+
+  }
+
+  public void removePinCode(){
+    SharedPreferences.Editor editor = getSharedPreferences().edit();
+    editor.putInt(Constants.PIN_CODE, 0).apply();
+    editor.putBoolean(Constants.PIN_CODE_ENABLED, false).apply();
+
+  }
+
+  public boolean isPinCodeEnabled(){
+    boolean result = getSharedPreferences().getBoolean(Constants.PIN_CODE_ENABLED, false);
+    return result;
+  }
+
 
 
 }

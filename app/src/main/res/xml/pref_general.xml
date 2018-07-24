@@ -82,5 +82,20 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        android:title="@string/pass_code">
+
+        <Preference
+            android:title="@string/pref_enable_pass_code"
+            android:summary="@string/pref_enable_pass_code_summary"
+            android:key="enable_pass_code"/>
+
+        <Preference
+            android:title="@string/pref_remove_pass_code"
+            android:summary="@string/pref_remove_pass_code_summary"
+            android:key="remove_pass_code"/>
+
+    </PreferenceCategory>
+
 
 </PreferenceScreen>

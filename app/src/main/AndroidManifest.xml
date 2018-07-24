@@ -89,8 +89,7 @@
 
         <activity android:name=".ui.sketch.SketchActivity">
         </activity>
-        <activity
-            android:name=".core.SplashScreenActivity">
+        <activity android:name=".core.SplashScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -243,8 +242,6 @@
             android:exported="false">
         </service>
 
-        <activity android:name=".utils.RealmTestActivity">
-        </activity>
         <activity
             android:name=".ui.auth.SignupActivity"
             android:windowSoftInputMode="stateAlwaysHidden">
@@ -252,6 +249,18 @@
         <activity
             android:name=".ui.auth.LoginActivity"
             android:windowSoftInputMode="stateAlwaysHidden">
+        </activity>
+        <activity
+            android:name=".ui.auth.PinEntryActivity"
+            android:label="@string/title_activity_pin_entry"
+            android:parentActivityName=".NoteListActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.okason.diary.NoteListActivity"/>
+        </activity>
+        <activity android:name=".ui.appintro.StartupActivity">
         </activity>
     </application>
 

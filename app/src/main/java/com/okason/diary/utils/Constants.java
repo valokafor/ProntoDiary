@@ -56,6 +56,8 @@ public class Constants {
     public static final String DELETE_EVENT_TYPE = "delete_event_type";
     public static final String ITEM_ID = "item_id";
     public static final String PREMIUM_USER = "premium_user";
+    public static final String PIN_CODE = "pin_code";
+    public static final String PIN_CODE_ENABLED = "pin_code_enabled";
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
