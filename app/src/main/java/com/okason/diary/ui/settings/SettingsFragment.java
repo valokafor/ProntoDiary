@@ -6,12 +6,14 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
 import com.okason.diary.models.inactive.SampleData;
 import com.okason.diary.ui.auth.PinEntryActivity;
+import com.okason.diary.utils.SettingsHelper;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -62,6 +64,19 @@ public class SettingsFragment extends PreferenceFragment {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 startActivity(new Intent(getActivity(), PinEntryActivity.class));
+                return true;
+            }
+        });
+
+        Preference removePasscode = findPreference("remove_pass_code");
+        removePasscode.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                SettingsHelper.getHelper(getActivity()).removePinCode();
+                Toast.makeText(getActivity(), getString(R.string.pin_code_removed), Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getActivity(), NoteListActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
                 return true;
             }
         });

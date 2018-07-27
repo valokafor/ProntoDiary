@@ -1,10 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.appintro.StartupActivity">
+    android:layout_height="match_parent">
 
-</android.support.constraint.ConstraintLayout>
+    <ImageView
+        android:id="@+id/splashBg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="fitStart"
+        android:src="@drawable/diary" />
+
+    <RelativeLayout
+        android:id="@+id/containerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/margin_padding_large">
+
+        <TextView
+            style="@style/LabelStyle"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="150dp"
+            android:text="@string/splash_welcome_txt" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true">
+
+            <Button
+                android:id="@+id/btn_login"
+                style="@style/StrokeButtonStyle"
+                android:minWidth="@dimen/splash_btn_width"
+                android:text="@string/label_login"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btn_get_started"
+                style="@style/SolidButtonStyle"
+                android:layout_alignParentEnd="true"
+                android:minWidth="@dimen/splash_btn_width"
+                android:text="@string/get_started_btn_label"
+                android:textSize="14sp" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

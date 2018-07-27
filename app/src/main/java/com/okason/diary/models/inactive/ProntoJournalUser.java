@@ -1,8 +1,5 @@
 package com.okason.diary.models.inactive;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by valokafor on 6/1/17.
  */
@@ -10,18 +7,19 @@ import java.util.List;
 public class ProntoJournalUser {
     private String firebaseUid;
     private String name;
-    private List<String> fcmTokens;
+    private String fcmTokens;
     private String emailAddress;
     private boolean isEmailValid;
     private long totalFileSize;
     private boolean isPremium;
     private String dateCreated;
     private long dateModified;
+    private int pinCode;
 
     public ProntoJournalUser(){
         firebaseUid = "";
         name = "";
-        fcmTokens = new ArrayList<>();
+        fcmTokens = "";
         emailAddress = "";
         isEmailValid = false;
         totalFileSize = 0;
@@ -45,11 +43,11 @@ public class ProntoJournalUser {
         this.name = name;
     }
 
-    public List<String> getFcmTokens() {
+    public String getFcmTokens() {
         return fcmTokens;
     }
 
-    public void setFcmTokens(List<String> fcmTokens) {
+    public void setFcmTokens(String fcmTokens) {
         this.fcmTokens = fcmTokens;
     }
 
@@ -99,5 +97,13 @@ public class ProntoJournalUser {
 
     public void setDateModified(long dateModified) {
         this.dateModified = dateModified;
+    }
+
+    public int getPinCode() {
+        return pinCode;
+    }
+
+    public void setPinCode(int pinCode) {
+        this.pinCode = pinCode;
     }
 }

@@ -525,6 +525,11 @@
     <string name="hint_enter_passcode">Enter pincode</string>
     <string name="hint_enter_email_for_passcode">Email (for recovery only)</string>
     <string name="hint_repeat_email">Repeat email</string>
+    <string name="progress_dialo">Initializing</string>
+    <string name="enter_pin_code">Enter Pincode</string>
+    <string name="pin_code_required">Pincode required to proceed</string>
+    <string name="hint_pincode">xxxxxxx</string>
+    <string name="pin_code_removed">Pincode removed!</string>
 
 
 </resources>

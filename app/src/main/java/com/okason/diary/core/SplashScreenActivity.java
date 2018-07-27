@@ -3,99 +3,100 @@ package com.okason.diary.core;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
-import android.view.View;
+import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.ui.auth.LoginActivity;
-import com.okason.diary.ui.auth.SignupActivity;
+import com.okason.diary.ui.appintro.StartupActivity;
 import com.okason.diary.utils.Constants;
-import com.okason.diary.utils.PermissionHelper;
 import com.okason.diary.utils.SettingsHelper;
 
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import io.realm.ObjectServerError;
-import io.realm.Realm;
-import io.realm.SyncCredentials;
-import io.realm.SyncUser;
-
 public class SplashScreenActivity extends AppCompatActivity {
+    private SharedPreferences sharedPreferences;
 
     public static final String TAG = "SplashScreenActivity";
-    private ConnectivityManager connectivityManager;
-    private SharedPreferences sharedPreferences;
-    private CountDownTimer fcmTokenTimer;
-    private long TOKEN_INTERVAL = 1000 * 6 ;;
     private Activity activity;
+    private MaterialDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash_screen);
-        ButterKnife.bind(this);
         activity = this;
+        setupMessagingService();
+        firebaseLogin();
 
-        if (SyncUser.current() != null){
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean firstRun = sharedPreferences.getBoolean("first_run", true);
+        if (firstRun) {
+            startActivity(new Intent(activity, StartupActivity.class));
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("first_run", false).commit();
+        } else if (SettingsHelper.getHelper(this).isPinCodeEnabled()) {
+            promptForPincode();
+
+        } else {
             navigateToListOfJournals();
         }
+
     }
 
+    private void promptForPincode() {
+        dialog = new MaterialDialog.Builder(this)
+                .title(R.string.enter_pin_code)
+                .content(R.string.pin_code_required)
+                .inputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD)
+                .input(R.string.hint_pincode, 0, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(MaterialDialog dialog, CharSequence input) {
+                        verifyPincode(input);
+                    }
 
 
-    @OnClick(R.id.btn_login)
-    public void onClickLoginButton(View view){
-        boolean registeredUser = SettingsHelper.getHelper(activity).isRegisteredUser();
-        if (registeredUser){
-            startActivity(new Intent(activity, LoginActivity.class));
-        } else {
-            startActivity(new Intent(activity, SignupActivity.class));
+                }).show();
+    }
+
+    private void firebaseLogin() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null){
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(Constants.PRONTO_USER_GENERIC, Constants.EMAIL_PASSWORD);
         }
     }
 
-    @OnClick(R.id.btn_get_started)
-    public void onGetStartedButtonClicked(View view){
-        navigateToListOfJournals();
+    private void verifyPincode(CharSequence input) {
+        int savedPinCode = SettingsHelper.getHelper(SplashScreenActivity.this).getSavedPinCode();
+        int pinCode = Integer.parseInt(input.toString());
+        if (savedPinCode == pinCode){
+            navigateToListOfJournals();
+        } else {
+            Toast.makeText(activity, "Wrong pincode", Toast.LENGTH_SHORT).show();
+            promptForPincode();
+        }
     }
 
+    /**
+     * Start the service to confirm FCM is set up properly.
+     */
+    private void setupMessagingService() {
+        Log.d(TAG, "Set up messaging services.");
+        String token = SettingsHelper.getHelper(this).getMessagingToken();
+        if (token == null) {
+            Log.d(TAG, "No FCM token defined. Requesting new token.");
+            FirebaseInstanceId.getInstance().getToken();
 
-
-
-    private void loginProntoUser(String token) {
-        SyncCredentials credentials = SyncCredentials.usernamePassword("val@okason.com", "abcd1234");
-        SyncUser.logInAsync(credentials, Constants.REALM_AUTH_URL, new SyncUser.Callback<SyncUser>() {
-            @Override
-            public void onSuccess(SyncUser user) {
-                setUpDefaultRealm();
-                PermissionHelper.initializePermissions(() -> navigateToListOfJournals());
-
-            }
-
-            @Override
-            public void onError(ObjectServerError error) {
-                Log.d(TAG, "Sync Anonymous user failed " + error.getErrorMessage());
-            }
-        });
+        }
     }
-
-
 
     private void navigateToListOfJournals() {
         Intent intent = new Intent(SplashScreenActivity.this, NoteListActivity.class);
         startActivity(intent);
     }
-
-    private void setUpDefaultRealm() {
-        Realm.setDefaultConfiguration(SyncUser.current().getDefaultConfiguration());
-    }
-
-
-
 
 
 

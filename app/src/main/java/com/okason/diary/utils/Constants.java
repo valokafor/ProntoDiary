@@ -31,7 +31,7 @@ public class Constants {
     public static final String FOLDER_ID = "folder_id";
     public static final String EMAIL_ADDRESSS = "email_address";
     public static final String PASSWORD = "password";
-    public static final String PRONTO_DIARY_USER_CLOUD_REFERENCE = "pronto_diary_users";
+    public static final String PRONTO_DIARY_USER_CLOUD_REFERENCE = "pronto_journal_users";
     public static final String REALM_USER_JSON = "realmJson";
     public static final String ACCOUNT_TAG = "account";
     public static final String TAG_ID = "tag_id";
@@ -194,7 +194,7 @@ public class Constants {
     public static final String REMINDER_MONTHLY = "monthly";
     public static final String REMINDER_YEARLY = "yearly";
     public static final String EMAIL_LOGIN = "anonymous_user@prontodiary.com";
-    public static final String PRONTO_USER_GENERIC = "pronto_user@prontodiary.com";
+    public static final String PRONTO_USER_GENERIC = "pronto_user@prontojournal.com";
     public static final String EMAIL_PASSWORD = "pr0ntodi@ry!";
 
 

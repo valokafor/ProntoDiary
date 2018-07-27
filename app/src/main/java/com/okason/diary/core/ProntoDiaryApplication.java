@@ -14,7 +14,7 @@ import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerUIUtils;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.R;
-import com.okason.diary.data.Migration;
+import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Reminder;
 import com.okason.diary.models.inactive.ProntoJournalUser;
 import com.squareup.leakcanary.LeakCanary;
@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import io.fabric.sdk.android.Fabric;
 import io.realm.Realm;
-import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 
 /**
@@ -47,7 +46,7 @@ public class ProntoDiaryApplication extends MultiDexApplication {
             return;
         }
         initDrawer();
-        Realm.init(this);
+        initRealm();
         mContext = getApplicationContext();
         LeakCanary.install(this);
 
@@ -64,16 +63,7 @@ public class ProntoDiaryApplication extends MultiDexApplication {
 
     private void initRealm() {
         Realm.init(this);
-        RealmConfiguration configuration = new RealmConfiguration.Builder()
-                .schemaVersion(3)
-                .name("Pronto_Journal.realm")
-                .migration(new Migration())
-                .build();
-        Realm.setDefaultConfiguration(configuration);
-
-
-        Realm realm = Realm.getInstance(configuration);
-
+        Realm realm = RealmManager.setUpRealm();
         try {
             reminderPrimaryKey = new AtomicLong(realm.where(Reminder.class).max("id").longValue() + 1);
         } catch (Exception e) {

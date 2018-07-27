@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -111,9 +110,6 @@ public class DataDownloadIntentService extends IntentService {
         user.setEmailAddress(firebaseUser.getEmail());
         user.setName(firebaseUser.getDisplayName());
         String fcmToken = SettingsHelper.getHelper(getApplicationContext()).getMessagingToken();
-        if (!TextUtils.isEmpty(fcmToken)) {
-            user.getFcmTokens().add(fcmToken);
-        }
         user.setDateCreated(TimeUtils.getReadableDateWithoutTime(System.currentTimeMillis()));
         user.setDateModified(System.currentTimeMillis());
         profileCloudReference.set(user);

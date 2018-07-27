@@ -89,7 +89,9 @@
 
         <activity android:name=".ui.sketch.SketchActivity">
         </activity>
-        <activity android:name=".core.SplashScreenActivity">
+        <activity android:name=".core.SplashScreenActivity"
+                  android:theme="@style/SplashTheme">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -108,7 +110,7 @@
         </activity>
 
         <service
-            android:name=".MyFirebaseInstanceIdService"
+            android:name=".core.services.MyFirebaseInstanceIdService"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

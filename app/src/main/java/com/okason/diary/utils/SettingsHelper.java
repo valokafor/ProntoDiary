@@ -126,6 +126,11 @@ public class SettingsHelper {
 
   }
 
+  public int getSavedPinCode(){
+    int result = getSharedPreferences().getInt(Constants.PIN_CODE, 0);
+    return result;
+  }
+
   public boolean isPinCodeEnabled(){
     boolean result = getSharedPreferences().getBoolean(Constants.PIN_CODE_ENABLED, false);
     return result;

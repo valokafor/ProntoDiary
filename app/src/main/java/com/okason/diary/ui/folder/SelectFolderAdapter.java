@@ -31,7 +31,11 @@ public class SelectFolderAdapter extends ArrayAdapter<Folder> {
 
     @Override
     public int getCount() {
-        return mCategories.size();
+        if (mCategories == null) {
+            return 0;
+        } else {
+            return mCategories.size();
+        }
     }
 
 

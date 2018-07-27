@@ -1,4 +1,4 @@
-package com.okason.diary;
+package com.okason.diary.core.services;
 
 import android.util.Log;
 
