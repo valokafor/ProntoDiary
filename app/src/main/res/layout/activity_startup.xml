@@ -34,7 +34,7 @@
                 android:id="@+id/btn_login"
                 style="@style/StrokeButtonStyle"
                 android:minWidth="@dimen/splash_btn_width"
-                android:text="@string/label_login"
+                android:text="@string/label_get_premium"
                 android:textSize="14sp" />
 
             <Button

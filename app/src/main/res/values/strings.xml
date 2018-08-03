@@ -44,6 +44,15 @@
 
     <string name="sync_reason">  \nSign up and enable secure, cloud backup of your Journals, Diaries and Todo List. You can access them from any Android device. It\'s free. Always!.</string>
 
+    <string name="sync_reason_upgrade">  \nComplete registration and enable secure, cloud backup of your Journals, Diaries and Todo List. You can access them from any Android device.</string>
+
+
+
+    <string name="sync_reason_premium">  \nSupport us by upgrading to premium user and remove ads, enable secure, cloud backup of your Journals,
+        Diaries and Todo List. You can access them from any Android device. \n\nPlus you get lifetime access to all of our exciting upcoming features
+        such as task collaboration, support for multiple types of Journals and much more.
+    </string>
+
 
     <!--Account Register and Login Related-->
     <string name="prompt_username">Email Address</string>
@@ -334,7 +343,7 @@
     <string name="title_activity_add_sub_task">AddSubTaskActivity</string>
     <string name="repeat_date_before_due_date">Task repeat date is before Task due date.</string>
     <string name="no_parent_task_found">No Parent Task found</string>
-    <string name="completing_sign_in">Completing sign in</string>
+    <string name="completing_sign_in">Complete Registration</string>
 
     <!-- Settings screen -->
     <string name="pref_header_notifications">Notifications</string>
@@ -530,6 +539,9 @@
     <string name="pin_code_required">Pincode required to proceed</string>
     <string name="hint_pincode">xxxxxxx</string>
     <string name="pin_code_removed">Pincode removed!</string>
+    <string name="title_upgrade_to_premium">Upgrade to Premium</string>
+    <string name="upgrade">Upgrade</string>
+    <string name="label_get_premium">Get Premium</string>
 
 
 </resources>

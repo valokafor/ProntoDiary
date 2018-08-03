@@ -3,10 +3,18 @@ package com.okason.diary.core.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.data.FolderDao;
 import com.okason.diary.data.JournalDao;
@@ -25,6 +33,10 @@ import com.okason.diary.models.dto.JournalDto;
 import com.okason.diary.models.dto.ProntoTagDto;
 import com.okason.diary.models.dto.ProntoTaskDto;
 import com.okason.diary.models.dto.SubTaskDto;
+import com.okason.diary.models.inactive.ProntoJournalUser;
+import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.SettingsHelper;
+import com.okason.diary.utils.date.TimeUtils;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -83,6 +95,10 @@ public class LocalToSyncIntentService extends IntentService {
         localRealm.close();
         syncRealm.close();
 
+        createProntoUser(intent);
+
+
+
         Bundle bundleFinish = new Bundle();
         FirebaseAnalytics.getInstance(getApplicationContext()).logEvent("copy_local_to_sync_finished", bundleFinish);
 
@@ -91,6 +107,41 @@ public class LocalToSyncIntentService extends IntentService {
         startActivity(restartIntent);
 
 
+    }
+
+    private void createProntoUser(Intent intent) {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+
+            FirebaseFirestore database = FirebaseFirestore.getInstance();
+            String fcmToken = SettingsHelper.getHelper(getApplicationContext()).getMessagingToken();
+            boolean premiumUser = SettingsHelper.getHelper(getApplicationContext()).isPremiumUser();
+            if (!TextUtils.isEmpty(fcmToken)) {
+                DocumentReference profileCloudReference = database.collection(Constants.PRONTO_DIARY_USER_CLOUD_REFERENCE).document(fcmToken);
+                String email = intent.getStringExtra(Constants.EMAIL_ADDRESSS);
+                profileCloudReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot snapshot = task.getResult();
+                            ProntoJournalUser user;
+                            if (snapshot.exists()) {
+                                user = snapshot.toObject(ProntoJournalUser.class);
+                            } else {
+                                user = new ProntoJournalUser();
+                                user.setDateCreated(TimeUtils.getReadableDateWithoutTime(System.currentTimeMillis()));
+                            }
+                            user.setFcmTokens(fcmToken);
+                            user.setDateModified(System.currentTimeMillis());
+                            user.setEmailAddress(email);
+                            user.setPremium(premiumUser);
+                            profileCloudReference.set(user);
+                        }
+
+                    }
+                });
+            }
+
+        }
     }
 
     private void copyLocalTasksToSync(RealmResults<ProntoTask> tasks) {

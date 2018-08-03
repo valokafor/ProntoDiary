@@ -19,7 +19,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.android.billingclient.api.BillingClient;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -44,11 +43,9 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.mikepenz.materialdrawer.model.interfaces.Nameable;
 import com.mikepenz.materialdrawer.util.KeyboardUtil;
-import com.okason.diary.billing.BillingManager;
-import com.okason.diary.billing.BillingProvider;
-import com.okason.diary.billing.MainViewController;
 import com.okason.diary.ui.addnote.AddNoteActivity;
 import com.okason.diary.ui.auth.AuthUiActivity;
+import com.okason.diary.ui.auth.PremiumUpsellActivity;
 import com.okason.diary.ui.auth.SignupActivity;
 import com.okason.diary.ui.folder.FolderListActivity;
 import com.okason.diary.ui.location.LocationsActivity;
@@ -61,9 +58,8 @@ import com.okason.diary.utils.SettingsHelper;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.realm.SyncUser;
 
-public class NoteListActivity extends AppCompatActivity implements BillingProvider {
+public class NoteListActivity extends AppCompatActivity {
     private SharedPreferences preferences;
     SharedPreferences.Editor editor;
     private boolean unregisteredUser = false;
@@ -94,8 +90,8 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
     private Uri mInvitationUrl;
     private FloatingActionButton floatingActionButton;
 
-    private BillingManager mBillingManager;
-    private MainViewController mViewController;
+   // private BillingManager mBillingManager;
+    //private MainViewController mViewController;
 
 
     @BindView(R.id.root)
@@ -121,10 +117,6 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
         setupNavigationDrawer(savedInstanceBundle);
         showFloatingActionButton();
         //new SampleData(this).getSampleNotesRealm();;
-
-        mViewController = new MainViewController(this);
-        // Create and initialize BillingManager which talks to BillingLibrary
-        mBillingManager = new BillingManager(this, mViewController.getUpdateListener());
 
     }
 
@@ -160,19 +152,12 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
         super.onResume();
        showNoteListFragment();
       //  checkForDynamicLinkInvite(getIntent());
-        if (mBillingManager != null
-                && mBillingManager.getBillingClientResponseCode() == BillingClient.BillingResponse.OK) {
-            mBillingManager.queryPurchases();
-        }
 
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mBillingManager != null) {
-            mBillingManager.destroy();
-        }
     }
 
 
@@ -223,7 +208,6 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
                         new PrimaryDrawerItem().withName("Tags").withIcon(GoogleMaterial.Icon.gmd_tag).withIdentifier(Constants.TAGS),
                         new PrimaryDrawerItem().withName("Share App").withIcon(GoogleMaterial.Icon.gmd_share).withIdentifier(Constants.SHARE_APP),
                         new PrimaryDrawerItem().withName("Contact Developer").withIcon(GoogleMaterial.Icon.gmd_email).withIdentifier(Constants.CONTACT_US),
-                        new PrimaryDrawerItem().withName("Remove Ads").withIcon(GoogleMaterial.Icon.gmd_money).withIdentifier(Constants.REMOVE_ADS),
                         new PrimaryDrawerItem().withName("Settings").withIcon(GoogleMaterial.Icon.gmd_settings).withIdentifier(Constants.SETTINGS)
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
@@ -261,20 +245,9 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
                 .withSavedInstance(savedInstanceState)
                 .build();
 
-     //   drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Logout").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.LOGOUT));
-
-        if (SyncUser.current() == null) {
-            drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Enable Sync").withIcon(GoogleMaterial.Icon.gmd_lock_open).withIdentifier(Constants.LOGIN));
-           // drawer.removeStickyFooterItemAtPosition(0);
+        if (!SettingsHelper.getHelper(mActivity).isPremiumUser()){
+            drawer.addStickyFooterItem(new PrimaryDrawerItem().withName("Get Premium").withIcon(GoogleMaterial.Icon.gmd_lock).withIdentifier(Constants.REMOVE_ADS));
         }
-
-        if (SettingsHelper.getHelper(mActivity).isPremiumUser()){
-            drawer.removeItem(Constants.REMOVE_ADS);
-        }
-//        else {
-//            drawer.removeStickyFooterItemAtPosition(1);
-//        }
-
 
     }
 
@@ -381,7 +354,7 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
                 }
                 break;
             case Constants.REMOVE_ADS:
-                mBillingManager.initiatePurchaseFlow(MainViewController.SKU_ID_PREMIUM, BillingClient.SkuType.INAPP);
+                startActivity(new Intent(mActivity, PremiumUpsellActivity.class));
                 break;
 
         }
@@ -510,25 +483,7 @@ public class NoteListActivity extends AppCompatActivity implements BillingProvid
     }
 
 
-    @Override
-    public BillingManager getBillingManager() {
-        return mBillingManager;
-    }
 
-    @Override
-    public boolean isPremiumPurchased() {
-        return mViewController.isPremiumPurchased();
-    }
-
-    public void onBillingManagerSetupFinished() {
-
-    }
-    /**
-     * Remove loading spinner and refresh the UI
-     */
-    public void showRefreshedUi() {
-        makeToast("showRefreshedUi");
-    }
 
     /**
      * Start the service to confirm FCM is set up properly.

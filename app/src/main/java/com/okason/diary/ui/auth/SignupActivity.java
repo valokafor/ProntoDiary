@@ -1,5 +1,6 @@
 package com.okason.diary.ui.auth;
 
+import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -8,6 +9,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.EditText;
@@ -36,6 +38,8 @@ public class SignupActivity extends AppCompatActivity {
     @BindView(R.id.password) EditText passwordView;
     @BindView(R.id.password_confirmation) EditText passwordConfirmationView;
 
+    private final static String TAG = "SignupActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,11 +53,35 @@ public class SignupActivity extends AppCompatActivity {
         startActivity(new Intent(activity, LoginActivity.class));
     }
 
+    @OnClick(R.id.username)
+    public void onTouchUsernameEdittext(View view){
+        Intent intent = AccountManager.newChooseAccountIntent(
+                null,
+                null,
+                new String[] {"com.google"},
+                false,
+                null,
+                null,
+                null,
+                null);
+
+        startActivityForResult(intent, 12);
+    }
+
     @OnClick(R.id.email_register_button)
     public void onClickRegisterButton(View view){
         attemptRegister();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 12 && resultCode == RESULT_OK) {
+            String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+            usernameView.setText(accountName);
+            passwordView.requestFocus();
+            Log.d(TAG, accountName);
+        }
+    }
 
     private void attemptRegister() {
         usernameView.setError(null);
@@ -101,8 +129,11 @@ public class SignupActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(SyncUser user) {
                         showProgress(false);
+                        Toast.makeText(activity, "Thanks for registering, confirmation email sent", Toast.LENGTH_SHORT).show();
                         SettingsHelper.getHelper(activity).setRegisteredUser(true);
-                        startService(new Intent(activity, LocalToSyncIntentService.class));
+                        Intent intent = new Intent(activity, LocalToSyncIntentService.class);
+                        intent.putExtra(Constants.EMAIL_ADDRESSS, username);
+                        startService(intent);
                         navigateToListOfJournals();
                     }
 

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:src="@mipmap/ic_launcher"
+        android:layout_margin="@dimen/margin_padding_normal"
+        android:layout_gravity="center_horizontal"
+        android:contentDescription="@string/accessibility_logo" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:textSize="@dimen/text_size_header"
+        android:layout_marginBottom="@dimen/margin_padding_small"
+        android:fontFamily="@font/sf_pro_display_semibold"
+        android:text="@string/splash_welcome_txt" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_margin="@dimen/margin_padding_small"
+        android:layout_marginBottom="@dimen/text_size_xnormal"
+        android:textSize="@dimen/text_size_xnormal"
+        android:fontFamily="@font/sf_pro_display_medium"
+        android:text="@string/sync_reason_premium"/>
+
+
+    <TextView
+        android:id="@+id/text_view_monthly"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/accent"
+        android:textStyle="italic|bold"
+        android:textSize="@dimen/text_size_header"
+        android:gravity="center_horizontal"
+        android:enabled="false"
+        android:layout_marginTop="@dimen/margin_padding_xlarge"
+        android:layout_marginBottom="@dimen/margin_padding_small"
+        android:text="$2.99 - Monthly"/>
+
+    <TextView
+        android:id="@+id/text_view_lifetime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/primary"
+        android:textStyle="italic|bold"
+        android:gravity="center_horizontal"
+        android:textSize="@dimen/text_size_header"
+        android:layout_margin="@dimen/margin_padding_small"
+        android:text="$1.99 - Lifetime"/>
+
+
+
+
+
+
+
+
+
+
+
+
+    <RelativeLayout
+        android:id="@+id/containerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_margin="@dimen/margin_padding_small">
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true">
+
+            <Button
+                android:id="@+id/btn_cancel"
+                style="@style/StrokeButtonStyle"
+                android:minWidth="@dimen/splash_btn_width"
+                android:text="@string/label_cancel"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btn_upgrade"
+                style="@style/SolidButtonStyle"
+                android:layout_alignParentEnd="true"
+                android:minWidth="@dimen/splash_btn_width"
+                android:text="@string/upgrade"
+                android:textSize="14sp" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+</LinearLayout>

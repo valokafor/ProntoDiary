@@ -87,7 +87,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/hint_enter_email_for_passcode"
-                    android:inputType="textEmailAddress"/>
+                    android:inputType="textEmailAddress"
+                    android:focusable="false"
+                    android:clickable="true"/>
             </android.support.design.widget.TextInputLayout>
 
             <View

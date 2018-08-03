@@ -89,9 +89,9 @@
 
         <activity android:name=".ui.sketch.SketchActivity">
         </activity>
-        <activity android:name=".core.SplashScreenActivity"
-                  android:theme="@style/SplashTheme">
-
+        <activity
+            android:name=".core.SplashScreenActivity"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -246,6 +246,7 @@
 
         <activity
             android:name=".ui.auth.SignupActivity"
+            android:label="@string/completing_sign_in"
             android:windowSoftInputMode="stateAlwaysHidden">
         </activity>
         <activity
@@ -263,6 +264,9 @@
                 android:value="com.okason.diary.NoteListActivity"/>
         </activity>
         <activity android:name=".ui.appintro.StartupActivity">
+        </activity>
+        <activity android:name=".ui.auth.PremiumUpsellActivity"
+            android:label="@string/title_upgrade_to_premium">
         </activity>
     </application>
 

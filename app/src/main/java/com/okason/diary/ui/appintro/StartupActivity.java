@@ -12,11 +12,9 @@ import android.view.View;
 
 import com.okason.diary.NoteListActivity;
 import com.okason.diary.R;
-import com.okason.diary.ui.auth.LoginActivity;
-import com.okason.diary.ui.auth.SignupActivity;
+import com.okason.diary.ui.auth.PremiumUpsellActivity;
 import com.okason.diary.utils.Constants;
 import com.okason.diary.utils.PermissionHelper;
-import com.okason.diary.utils.SettingsHelper;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -49,12 +47,13 @@ public class StartupActivity extends AppCompatActivity {
 
     @OnClick(R.id.btn_login)
     public void onClickLoginButton(View view){
-        boolean registeredUser = SettingsHelper.getHelper(activity).isRegisteredUser();
-        if (registeredUser){
-            startActivity(new Intent(activity, LoginActivity.class));
-        } else {
-            startActivity(new Intent(activity, SignupActivity.class));
-        }
+//        boolean registeredUser = SettingsHelper.getHelper(activity).isRegisteredUser();
+//        if (registeredUser){
+//            startActivity(new Intent(activity, LoginActivity.class));
+//        } else {
+//            startActivity(new Intent(activity, SignupActivity.class));
+//        }
+        startActivity(new Intent(activity, PremiumUpsellActivity.class));
     }
 
     @OnClick(R.id.btn_get_started)

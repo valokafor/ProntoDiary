@@ -5,11 +5,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -53,6 +55,13 @@ public class SplashScreenActivity extends AppCompatActivity {
                 .title(R.string.enter_pin_code)
                 .content(R.string.pin_code_required)
                 .inputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD)
+                .negativeText("Forgot Pin?")
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        promptForEmail();
+                    }
+                })
                 .input(R.string.hint_pincode, 0, new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(MaterialDialog dialog, CharSequence input) {
@@ -61,6 +70,11 @@ public class SplashScreenActivity extends AppCompatActivity {
 
 
                 }).show();
+    }
+
+    //Todo - Implement pincode recovery
+    private void promptForEmail() {
+
     }
 
     private void firebaseLogin() {

@@ -21,7 +21,7 @@ import android.util.Log;
 
 import com.android.billingclient.api.BillingClient.BillingResponse;
 import com.android.billingclient.api.Purchase;
-import com.okason.diary.NoteListActivity;
+import com.okason.diary.ui.auth.PremiumUpsellActivity;
 import com.okason.diary.utils.SettingsHelper;
 
 import java.util.List;
@@ -38,10 +38,11 @@ public class MainViewController {
 
 
     private final UpdateListener mUpdateListener;
-    private NoteListActivity mActivity;
+    private PremiumUpsellActivity mActivity;
 
 
-    public MainViewController(NoteListActivity activity) {
+
+    public MainViewController(PremiumUpsellActivity activity) {
         mUpdateListener = new UpdateListener();
         mActivity = activity;
         loadData();
@@ -89,6 +90,7 @@ public class MainViewController {
                     case SKU_ID_PREMIUM:
                         Log.d(TAG, "You are Premium! Congratulations!!!");
                         SettingsHelper.getHelper(mActivity).setPremiumUser(true);
+                        mActivity.showRefreshedUi();
                         break;
 
                 }

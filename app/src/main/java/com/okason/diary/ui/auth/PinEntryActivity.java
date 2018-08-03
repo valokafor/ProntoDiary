@@ -1,5 +1,6 @@
 package com.okason.diary.ui.auth;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
@@ -10,6 +11,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,6 +20,7 @@ import android.widget.TextView;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -49,6 +52,7 @@ public class PinEntryActivity extends AppCompatActivity {
     private FirebaseUser firebaseUser;
     private String userId;
     private FirebaseFirestore database;
+    private final static String TAG = "PinEntryActivity";
 
 
     @Override
@@ -62,13 +66,35 @@ public class PinEntryActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    @OnClick(R.id.input_email)
+    public void onEmailfieldTouched(View view){
+        Intent intent = AccountManager.newChooseAccountIntent(
+                null,
+                null,
+                new String[] {"com.google"},
+                false,
+                null,
+                null,
+                null,
+                null);
+
+        startActivityForResult(intent, 12);
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 12 && resultCode == RESULT_OK) {
+            String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+            emailInputEditText.setText(accountName);
+            repeatEmailEditText.setText(accountName);
+            Log.d(TAG, accountName);
+        }
+    }
+
 
     @OnClick(R.id.btn_save)
     public void onSaveButtonClicked(View view){
-
-
-
-
 
         String pinInput = pinInputEditText.getText().toString().trim();
         if (TextUtils.isEmpty(pinInput)) {
@@ -76,9 +102,17 @@ public class PinEntryActivity extends AppCompatActivity {
             pinInputEditText.setError(getString(R.string.error_field_required));
             return;
         }
+        String firstCharacter = pinInput.substring(0, 1);
+        if (firstCharacter.equals("0")){
+            makeToast("Pincode should not start with zero");
+            return;
+        }
 
         int pinCode = Integer.parseInt(pinInput);
         settingsHelper.saveUserPinCode(pinCode);
+
+        Bundle bundle = new Bundle();
+        FirebaseAnalytics.getInstance(activity).logEvent("add_pin_code", bundle);
 
         String email = emailInputEditText.getText().toString();
         String repeatEmail = repeatEmailEditText.getText().toString();
