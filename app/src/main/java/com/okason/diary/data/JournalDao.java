@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.okason.diary.BuildConfig;
 import com.okason.diary.core.ProntoDiaryApplication;
 import com.okason.diary.core.events.AttachingFileCompleteEvent;
@@ -182,29 +184,33 @@ public class JournalDao {
 
                 if (f != null) {
                     String attachmentId = UUID.randomUUID().toString();
-                    Uri fileUri = FileProvider.getUriForFile(ProntoDiaryApplication.getAppContext(),
-                            BuildConfig.APPLICATION_ID + ".provider",
-                            f);
-                    String filePath = f.getAbsolutePath();
-                    String mimeType = StorageHelper.getMimeTypeInternal(mContext, uri);
+                    try {
+                        Uri fileUri = FileProvider.getUriForFile(ProntoDiaryApplication.getAppContext(),
+                                BuildConfig.APPLICATION_ID + ".provider",
+                                f);
+                        String filePath = f.getAbsolutePath();
+                        String mimeType = StorageHelper.getMimeTypeInternal(mContext, uri);
 
 
-                    Attachment attachment = backgroundRealm.createObject(Attachment.class, attachmentId);
-                    attachment.setUri(fileUri.toString());
-                    attachment.setLocalFilePath(filePath);
-                    attachment.setMime_type(mimeType);
-                    attachment.setName(name);
-                    attachment.setSize(f.length());
+                        Attachment attachment = backgroundRealm.createObject(Attachment.class, attachmentId);
+                        attachment.setUri(fileUri.toString());
+                        attachment.setLocalFilePath(filePath);
+                        attachment.setMime_type(mimeType);
+                        attachment.setName(name);
+                        attachment.setSize(f.length());
 
-                    Journal journal = backgroundRealm.where(Journal.class).equalTo("id", journalId).findFirst();
-                    if (journal != null && attachment != null){
-                        journal.getAttachments().add(attachment);
-                        journal.setDateModified(System.currentTimeMillis());
-                        EventBus.getDefault().post(new AttachingFileCompleteEvent(attachment.getId()));
+                        Journal journal = backgroundRealm.where(Journal.class).equalTo("id", journalId).findFirst();
+                        if (journal != null && attachment != null){
+                            journal.getAttachments().add(attachment);
+                            journal.setDateModified(System.currentTimeMillis());
+                            EventBus.getDefault().post(new AttachingFileCompleteEvent(attachment.getId()));
 
-                        Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
-                        intent.putExtra(Constants.JOURNAL_ID, journalId);
-                        DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
+                            Intent intent = new Intent(ProntoDiaryApplication.getAppContext(), DataUploadIntentService.class);
+                            intent.putExtra(Constants.JOURNAL_ID, journalId);
+                            DataUploadIntentService.enqueueWork(ProntoDiaryApplication.getAppContext(), intent);
+                        }
+                    } catch (Exception e) {
+                        Crashlytics.log(Log.DEBUG, TAG, "Attachment error: " + e.getLocalizedMessage());
                     }
                 }
     ;

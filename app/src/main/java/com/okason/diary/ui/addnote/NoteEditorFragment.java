@@ -136,34 +136,16 @@ public class NoteEditorFragment extends Fragment {
     private StorageReference mAttachmentStorageReference;
 
 
-    @BindView(R.id.edit_text_category)
-    EditText folderEditText;
-
-    @BindView(R.id.edit_text_title)
-    EditText mTitle;
-
-    @BindView(R.id.edit_text_note)
-    EditText mContent;
-
-    @BindView(R.id.image_attachment)
-    ImageView mImageAttachment;
-
-    @BindView(R.id.sketch_attachment)
-    ImageView mSketchAttachment;
-
-    @BindView(R.id.attachment_container)
-    FrameLayout attachmentContainer;
-
-    @BindView(R.id.attachment_list_recyclerview)
-    RecyclerView attachmentRecyclerView;
-
-    @BindView(R.id.creation)
-    TextView dateCreated;
-
+    @BindView(R.id.edit_text_category) EditText folderEditText;
+    @BindView(R.id.edit_text_title) EditText mTitle;
+    @BindView(R.id.edit_text_note) EditText mContent;
+    @BindView(R.id.image_attachment) ImageView mImageAttachment;
+    @BindView(R.id.sketch_attachment) ImageView mSketchAttachment;
+    @BindView(R.id.attachment_container) FrameLayout attachmentContainer;
+    @BindView(R.id.attachment_list_recyclerview) RecyclerView attachmentRecyclerView;
+    @BindView(R.id.creation) TextView dateCreated;
     @BindView(R.id.last_modification) TextView dateModified;
-
-    @BindView(R.id.timestap_layout)
-    LinearLayout mTimeStampLayout;
+    @BindView(R.id.timestap_layout) LinearLayout mTimeStampLayout;
 
     private final int EXTERNAL_PERMISSION_REQUEST = 1;
     private final int RECORD_AUDIO_PERMISSION_REQUEST = 2;
@@ -203,7 +185,6 @@ public class NoteEditorFragment extends Fragment {
             return noteId;
         }
         return "";
-
     }
 
     public static NoteEditorFragment newInstance(String noteId){
@@ -230,7 +211,6 @@ public class NoteEditorFragment extends Fragment {
         mFirebaseStorage = FirebaseStorage.getInstance();
         mFirebaseStorageReference = mFirebaseStorage.getReferenceFromUrl(Constants.FIREBASE_STORAGE_BUCKET);
         mAttachmentStorageReference = mFirebaseStorageReference.child("attachments");
-
 
         mTitle.addTextChangedListener(new TextWatcher() {
             @Override
@@ -408,7 +388,6 @@ public class NoteEditorFragment extends Fragment {
                 updateContentIfNeeded();
                 showSelectTag();
                 break;
-
 
         }
         return true;

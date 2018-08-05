@@ -516,6 +516,7 @@
     <string name="label_login_with_space">"  Login"</string>
     <string name="have_an_acccount">Have an account?</string>
     <string name="forgot_password">Forgot password?</string>
+    <string name="forgot_pincode">Forgot Pincode?</string>
     <string name="do_not_have_an_acccount">Don\'t have an account?</string>
     <string name="sign_up_with_space">"  Sign up"</string>
     <string name="welcome_back_message">Welcome back! \n Login to enable cloud sync</string>
@@ -542,6 +543,7 @@
     <string name="title_upgrade_to_premium">Upgrade to Premium</string>
     <string name="upgrade">Upgrade</string>
     <string name="label_get_premium">Get Premium</string>
+    <string name="missing_record">Missing record, contact developer</string>
 
 
 </resources>

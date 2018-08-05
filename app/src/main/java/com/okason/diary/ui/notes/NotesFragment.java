@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.okason.diary.NoteListActivity;
@@ -38,6 +39,7 @@ import com.okason.diary.models.Journal;
 import com.okason.diary.ui.attachment.GalleryActivity;
 import com.okason.diary.ui.notedetails.NoteDetailActivity;
 import com.okason.diary.utils.Constants;
+import com.okason.diary.utils.SettingsHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -142,16 +144,16 @@ public class NotesFragment extends Fragment
         firebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
 
 
-//        if (!SettingsHelper.getHelper(getContext()).isPremiumUser()){
-//            mAdView.setVisibility(View.VISIBLE);
-//            AdRequest adRequest = new AdRequest.Builder()
-//                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-//                    .build();
-//            mAdView.loadAd(adRequest);
-//
-//        }else {
-//            mAdView.setVisibility(View.GONE);
-//        }
+        if (!SettingsHelper.getHelper(getContext()).isPremiumUser()){
+            mAdView.setVisibility(View.VISIBLE);
+            AdRequest adRequest = new AdRequest.Builder()
+                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                    .build();
+            mAdView.loadAd(adRequest);
+
+        }else {
+            mAdView.setVisibility(View.GONE);
+        }
         return mRootView;
     }
 
@@ -171,11 +173,11 @@ public class NotesFragment extends Fragment
         Log.d(TAG, "sortMethod: " + sortMethod);
         initRecyclerView();
         fetchNotes();
-//        if (!SettingsHelper.getHelper(getContext()).isPremiumUser()) {
-//            if (mAdView != null){
-//                mAdView.resume();
-//            }
-//        }
+        if (!SettingsHelper.getHelper(getContext()).isPremiumUser()) {
+            if (mAdView != null){
+                mAdView.resume();
+            }
+        }
     }
 
     private void fetchNotes() {

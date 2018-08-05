@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
+import com.crashlytics.android.Crashlytics;
 import com.okason.diary.R;
 import com.okason.diary.core.GlideApp;
 import com.okason.diary.core.listeners.NoteItemListener;
@@ -36,6 +38,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
     private NoteItemListener mItemListener;
     private View noteView;
     private boolean isAudioPlaying = false;
+    private final static String TAG = "NotesAdapter";
 
 
     public NotesAdapter(List<Journal> journals, Context mContext){
@@ -134,11 +137,22 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        return mJournals.size();
+        if (mJournals != null && mJournals.size() > 0) {
+            return mJournals.size();
+        } else {
+            return 0;
+        }
     }
 
     public Journal getItem(int position) {
-        return mJournals.get(position);
+        try {
+            Journal journal = mJournals.get(position);
+            return journal;
+        } catch (Exception e) {
+            Crashlytics.log(Log.DEBUG, TAG, "Error fetching Journal");
+            return null;
+        }
+
     }
 
     public void replaceData(List<Journal> journals) {

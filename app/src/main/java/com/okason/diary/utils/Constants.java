@@ -32,6 +32,7 @@ public class Constants {
     public static final String EMAIL_ADDRESSS = "email_address";
     public static final String PASSWORD = "password";
     public static final String PRONTO_DIARY_USER_CLOUD_REFERENCE = "pronto_journal_users";
+    public static final String FORGOT_PINCODE_REF = "forgot_pincode";
     public static final String REALM_USER_JSON = "realmJson";
     public static final String ACCOUNT_TAG = "account";
     public static final String TAG_ID = "tag_id";
