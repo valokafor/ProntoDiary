@@ -16,8 +16,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -53,6 +55,7 @@ public class PinEntryActivity extends AppCompatActivity {
     private String userId;
     private FirebaseFirestore database;
     private final static String TAG = "PinEntryActivity";
+    private int pinCode = 0;
 
 
     @Override
@@ -108,7 +111,18 @@ public class PinEntryActivity extends AppCompatActivity {
             return;
         }
 
-        int pinCode = Integer.parseInt(pinInput);
+        try {
+            pinCode = Integer.parseInt(pinInput);
+        } catch (NumberFormatException e) {
+            Crashlytics.log(Log.DEBUG, TAG, e.getLocalizedMessage());
+            Toast.makeText(activity, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+        }
+
+        if (pinCode == 0){
+            return;
+        }
+
+
         settingsHelper.saveUserPinCode(pinCode);
 
         Bundle bundle = new Bundle();

@@ -1,7 +1,9 @@
 package com.okason.diary.models.inactive;
 
 import android.content.Context;
+import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.okason.diary.R;
 import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Attachment;
@@ -400,16 +402,20 @@ public class SampleData {
                         sampleTag5.deleteFromRealm();
                     }
 
-                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_1).findFirst().deleteFromRealm();
-                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_2).findFirst().deleteFromRealm();
-                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_3).findFirst().deleteFromRealm();
-                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_4).findFirst().deleteFromRealm();
-                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_5).findFirst().deleteFromRealm();
-                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_6).findFirst().deleteFromRealm();
-                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_7).findFirst().deleteFromRealm();
-                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_8).findFirst().deleteFromRealm();
-                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_9).findFirst().deleteFromRealm();
-                    backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_10).findFirst().deleteFromRealm();
+                    try {
+                        backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_1).findFirst().deleteFromRealm();
+                        backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_2).findFirst().deleteFromRealm();
+                        backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_3).findFirst().deleteFromRealm();
+                        backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_4).findFirst().deleteFromRealm();
+                        backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_5).findFirst().deleteFromRealm();
+                        backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_6).findFirst().deleteFromRealm();
+                        backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_7).findFirst().deleteFromRealm();
+                        backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_8).findFirst().deleteFromRealm();
+                        backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_9).findFirst().deleteFromRealm();
+                        backgroundRealm.where(Attachment.class).equalTo("id", ATTACHMENT_ID_10).findFirst().deleteFromRealm();
+                    } catch (Exception e) {
+                        Crashlytics.log(Log.DEBUG, TAG, "Error deleting Sample attachments");
+                    }
 
                 }
             });

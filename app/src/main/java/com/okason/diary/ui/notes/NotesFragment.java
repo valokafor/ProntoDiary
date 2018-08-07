@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -357,8 +358,14 @@ public class NotesFragment extends Fragment
 
 
     public void showSingleDetailUi(Journal selectedJournal) {
-        String id = selectedJournal.getId();
-        startActivity(NoteDetailActivity.getStartIntent(getContext(), id));
+        String id = null;
+        try {
+            id = selectedJournal.getId();
+            startActivity(NoteDetailActivity.getStartIntent(getContext(), id));
+        } catch (Exception e) {
+            Crashlytics.log(Log.DEBUG, TAG,"Error getting Journal ID");
+        }
+
     }
 
 
