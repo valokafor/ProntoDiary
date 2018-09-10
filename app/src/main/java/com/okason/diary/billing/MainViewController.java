@@ -34,6 +34,7 @@ import static android.content.Context.MODE_PRIVATE;
 public class MainViewController {
     private static final String TAG = "MainViewController";
     public static final String SKU_ID_PREMIUM = "remove_ad";
+    public static final String SKU_ID_PRONTO_JOURNAL_PREMIUM = "pronto_journal_premium";
     //public static final String SKU_ID_PREMIUM = "android.test.purchased";
 
 
@@ -88,6 +89,11 @@ public class MainViewController {
             for (Purchase purchase : purchaseList) {
                 switch (purchase.getSku()) {
                     case SKU_ID_PREMIUM:
+                        Log.d(TAG, "You are Premium! Congratulations!!!");
+                        SettingsHelper.getHelper(mActivity).setPremiumUser(false);
+                       // mActivity.showRefreshedUi();
+                        break;
+                    case SKU_ID_PRONTO_JOURNAL_PREMIUM:
                         Log.d(TAG, "You are Premium! Congratulations!!!");
                         SettingsHelper.getHelper(mActivity).setPremiumUser(true);
                         mActivity.showRefreshedUi();

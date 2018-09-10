@@ -1,5 +1,7 @@
 package com.okason.diary.ui.todolist;
 
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,7 +49,11 @@ public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.
             holder.taskTitle.setText(selectedSubTask.getTitle());
 
             boolean isChecked = selectedSubTask.isChecked();
-            holder.checkBox.setChecked(isChecked);
+            if (isChecked) {
+                holder.checkBox.setChecked(isChecked);
+                holder.taskTitle.setTypeface(null, Typeface.ITALIC);
+                holder.taskTitle.setPaintFlags(holder.taskTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            }
         }
 
     }
@@ -95,7 +101,7 @@ public class SubTaskListAdapter extends RecyclerView.Adapter<SubTaskListAdapter.
                 public void onClick(View view) {
                     int position = getLayoutPosition();
                     final SubTask deletedSubTask = subTasks.get(position);
-                    taskItemListener.onSubTaskDeleted(deletedSubTask.getTitle());
+                    taskItemListener.onSubTaskDeleted(deletedSubTask.getId());
 
                 }
             });

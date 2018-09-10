@@ -2,6 +2,7 @@ package com.okason.diary.ui.folder;
 
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -24,6 +25,7 @@ import com.okason.diary.data.FolderDao;
 import com.okason.diary.data.RealmManager;
 import com.okason.diary.models.Folder;
 import com.okason.diary.models.ProntoTag;
+import com.okason.diary.utils.Constants;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -200,7 +202,10 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
 
 
     @Override
-    public void onCategorySelected(Folder selectedCategory) {
+    public void onFolderSelected(Folder selectedCategory) {
+        Intent folderIntent = new Intent(getActivity(), FolderActivity.class);
+        folderIntent.putExtra(Constants.FOLDER_ID, selectedCategory.getId());
+        startActivity(folderIntent);
 
     }
 
@@ -211,13 +216,13 @@ public class FolderListFragment extends Fragment implements OnFolderSelectedList
     }
 
     @Override
-    public void onDeleteCategoryButtonClicked(Folder selectedFolder) {
+    public void onDeleteFolderButtonClicked(Folder selectedFolder) {
         showConfirmDeleteCategoryPrompt(selectedFolder);
 
     }
 
     @Override
-    public void onAddCategoryButtonClicked() {
+    public void onAddFolderButtonClicked() {
 
     }
 

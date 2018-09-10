@@ -475,7 +475,7 @@ public class AddTaskActivity extends AppCompatActivity implements
 
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
             @Override
-            public void onCategorySelected(Folder folder) {
+            public void onFolderSelected(Folder folder) {
                 onFolderSelected(folder);
                 selectFolderDialogFragment.dismiss();
             }
@@ -486,12 +486,12 @@ public class AddTaskActivity extends AppCompatActivity implements
             }
 
             @Override
-            public void onDeleteCategoryButtonClicked(Folder selectedCategory) {
+            public void onDeleteFolderButtonClicked(Folder selectedCategory) {
 
             }
 
             @Override
-            public void onAddCategoryButtonClicked() {
+            public void onAddFolderButtonClicked() {
                showAddNewFolderDialog();
 
             }

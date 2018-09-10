@@ -79,7 +79,7 @@ public class SelectFolderDialogFragment extends DialogFragment {
         addCategoryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCategorySelectedListener.onAddCategoryButtonClicked();
+                mCategorySelectedListener.onAddFolderButtonClicked();
             }
         });
 
@@ -91,7 +91,7 @@ public class SelectFolderDialogFragment extends DialogFragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Folder mSelectedCategory = mCategories.get(position);
                 if (mSelectedCategory != null){
-                    mCategorySelectedListener.onCategorySelected(mSelectedCategory);
+                    mCategorySelectedListener.onFolderSelected(mSelectedCategory);
                 }
             }
         });

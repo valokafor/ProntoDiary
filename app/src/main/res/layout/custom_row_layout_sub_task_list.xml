@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_action_drag_handle"
+            android:visibility="gone"
             android:background="@null"/>
 
         <CheckBox

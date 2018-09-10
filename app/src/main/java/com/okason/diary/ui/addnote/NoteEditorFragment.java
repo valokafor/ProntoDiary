@@ -491,7 +491,7 @@ public class NoteEditorFragment extends Fragment {
 
         selectFolderDialogFragment.setCategorySelectedListener(new OnFolderSelectedListener() {
             @Override
-            public void onCategorySelected(Folder selectedCategory) {
+            public void onFolderSelected(Folder selectedCategory) {
                 journalDao.setFolder(mCurrentJournal.getId(), selectedCategory.getId());
                 selectFolderDialogFragment.dismiss();
             }
@@ -502,12 +502,12 @@ public class NoteEditorFragment extends Fragment {
             }
 
             @Override
-            public void onDeleteCategoryButtonClicked(Folder selectedCategory) {
+            public void onDeleteFolderButtonClicked(Folder selectedCategory) {
 
             }
 
             @Override
-            public void onAddCategoryButtonClicked() {
+            public void onAddFolderButtonClicked() {
                 showAddNewFolderDialog();
 
             }

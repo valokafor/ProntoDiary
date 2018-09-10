@@ -21,6 +21,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.Realm;
 
+/**
+ * This activity shows a Viewpager with two views
+ * One view shows the Journals that belongs to this Folder
+ * One view shows the TodoLists that belog to this Folder
+ */
 public class FolderActivity extends AppCompatActivity {
     @BindView(R.id.viewpager)
     ViewPager viewPager;

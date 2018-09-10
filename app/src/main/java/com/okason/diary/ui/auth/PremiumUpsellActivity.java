@@ -63,7 +63,7 @@ public class PremiumUpsellActivity extends AppCompatActivity implements BillingP
 
     @OnClick(R.id.btn_upgrade)
     public void onUpgradeButtonClicked(View view){
-        mBillingManager.initiatePurchaseFlow(MainViewController.SKU_ID_PREMIUM, BillingClient.SkuType.INAPP);
+        mBillingManager.initiatePurchaseFlow(MainViewController.SKU_ID_PRONTO_JOURNAL_PREMIUM        , BillingClient.SkuType.INAPP);
 
     }
 

@@ -7,8 +7,8 @@ import com.okason.diary.models.Folder;
  * Created by Valentine on 3/6/2016.
  */
 public interface OnFolderSelectedListener {
-    void onCategorySelected(Folder selectedCategory);
-    void onEditCategoryButtonClicked(Folder selectedCategory);
-    void onDeleteCategoryButtonClicked(Folder selectedCategory);
-    void onAddCategoryButtonClicked();
+    void onFolderSelected(Folder selectedFolder);
+    void onEditCategoryButtonClicked(Folder selectedFolder);
+    void onDeleteFolderButtonClicked(Folder selectedFolder);
+    void onAddFolderButtonClicked();
 }

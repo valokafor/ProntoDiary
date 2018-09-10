@@ -1,6 +1,7 @@
 package com.okason.diary.ui.folder;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -95,9 +96,19 @@ public class FolderListAdapter extends RecyclerView.Adapter<FolderListAdapter.Vi
                 @Override
                 public void onClick(View v) {
                     Folder categoryToBeDeleted = mFolders.get(getLayoutPosition());
-                    mListener.onDeleteCategoryButtonClicked(categoryToBeDeleted);
+                    mListener.onDeleteFolderButtonClicked(categoryToBeDeleted);
                 }
             });
+
+            folderName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Folder selectedFolder = mFolders.get(getAdapterPosition());
+                    mListener.onFolderSelected(selectedFolder);
+                }
+            });
+
+            folderName.setPaintFlags(folderName.getPaintFlags() |   Paint.UNDERLINE_TEXT_FLAG);
 
         }
     }
